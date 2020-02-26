@@ -1,0 +1,59 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _options = require("../options");
+
+var _statement = _interopRequireDefault(require("./statement"));
+
+var _scopeflags = require("../util/scopeflags");
+
+var _scope = _interopRequireDefault(require("../util/scope"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class Parser extends _statement.default {
+  constructor(options, input) {
+    options = (0, _options.getOptions)(options);
+    super(options, input);
+    const ScopeHandler = this.getScopeHandler();
+    this.options = options;
+    this.inModule = this.options.sourceType === "module";
+    this.scope = new ScopeHandler(this.raise.bind(this), this.inModule);
+    this.plugins = pluginsMap(this.options.plugins);
+    this.filename = options.sourceFilename;
+  }
+
+  getScopeHandler() {
+    return _scope.default;
+  }
+
+  parse() {
+    this.scope.enter(_scopeflags.SCOPE_PROGRAM);
+    const file = this.startNode();
+    const program = this.startNode();
+    this.nextToken();
+    file.errors = null;
+    this.parseTopLevel(file, program);
+    file.errors = this.state.errors;
+    return file;
+  }
+
+}
+
+exports.default = Parser;
+
+function pluginsMap(plugins) {
+  const pluginMap = new Map();
+
+  for (let _i = 0; _i < plugins.length; _i++) {
+    const plugin = plugins[_i];
+    const [name, options] = Array.isArray(plugin) ? plugin : [plugin, {}];
+    if (!pluginMap.has(name)) pluginMap.set(name, options || {});
+  }
+
+  return pluginMap;
+}
