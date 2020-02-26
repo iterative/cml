@@ -1,0 +1,61 @@
+name: 'dvc-action'
+description: 'DVC - continuous delivery for machine learning'
+
+inputs:
+    ############ Main params ############ 
+    cloud: # Values: s3, gcp, azure, ssh
+        required: true
+        default: "s3"
+
+    repro_file:
+        required: false
+        default: ''
+
+    metrics_files:
+        required: false
+        default: ''
+
+    # String with a list of data-file names to pull. Empty string - all.
+    pull_files:
+        required: false
+        default: ''
+
+    ############ Technical ############ 
+    check_credentials:
+        required: false
+        default: true
+
+    ############ GitHub Checks ############ 
+    pull:
+        required: false
+        default: true
+
+    reproduce:
+        required: false
+        default: true
+
+    data_diff:
+        required: false
+        default: true
+
+    metrics_diff:
+        required: false
+        default: true
+
+outputs:
+    pull_time: # id of output
+        description: 'Time to puul data'
+    
+    reproduce_time:
+        description: 'Time to reproduce'
+    
+    data_diff_time:
+        description: 'Time to compute data difference'
+
+    metrics_diff_time:
+        description: 'Time to compute metrics difference'
+
+runs:
+    using: 'node12'
+    main: 'dist/index.js'
+
