@@ -1,15 +1,13 @@
 {
   "name": "dvc-action",
   "version": "1.0.3",
-  "description": "",
   "main": "index.js",
   "bin": {
     "dvc-action": "./bin/bin.js",
     "dvcreport": "./bin/dvcreport.js"
   },
   "scripts": {
-    "build": "ncc build index.js -o dist",
-    "lint": "eslint index.js",
+    "build": "ncc build index.js -o dist -m",
     "test": "eslint index.js && jest"
   },
   "dependencies": {

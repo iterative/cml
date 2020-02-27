@@ -11,10 +11,15 @@ const dvc_diff_report_md = (data, max_chars) => {
   
   let summary = '';
   
+  const massive = [];
+  for (let idx=0; idx<10000; idx++) {
+    massive.push({path: `folder/file${idx}.png`});
+  }
+
   const { added, modified, deleted } = data; 
   const sections = [
       { lbl: 'Added', files: added },
-      { lbl: 'Modified', files: modified },
+      { lbl: 'Modified', files: massive },
       { lbl: 'Deleted', files: deleted },
   ];
 
