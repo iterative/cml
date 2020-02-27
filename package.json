@@ -1,0 +1,27 @@
+{
+  "name": "dvc-action",
+  "version": "1.0.3",
+  "main": "index.js",
+  "bin": {
+    "dvc-action": "./bin/bin.js",
+    "dvcreport": "./bin/dvcreport.js"
+  },
+  "scripts": {
+    "build": "ncc build index.js -o dist -m",
+    "test": "eslint index.js && jest"
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/github": "^2.0.0",
+    "json-to-markdown-table2": "^1.0.1",
+    "numeral": "^2.0.6",
+    "simple-git": "^1.131.0",
+    "underscore": "^1.9.2",
+    "yargs": "^15.1.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
+    "eslint": "^6.3.0",
+    "jest": "^24.9.0"
+  }
+}

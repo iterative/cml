@@ -1,0 +1,22 @@
+name: default
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: "npm ci"
+      run: npm ci
+
+    - name: "npm run build"
+      run: npm run build
+
+    - name: "check"
+      run: |
+        git diff --exit-code --stat -- . ':!node_modules' \
+        || (echo "##[error] run 'npm run build' before commiting to repo" \
+        && exit 1)
