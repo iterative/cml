@@ -66,13 +66,10 @@ const init_remote = async opts => {
 
   // gs
   if (dvc_remote_list.includes('gs://')) {
-    const {
-      GOOGLE_APPLICATION_CREDENTIALS,
-      GDRIVE_USER_CREDENTIALS
-    } = process.env;
+    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
     if (GOOGLE_APPLICATION_CREDENTIALS) {
       const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
-      await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
+      await fs.writeFile(path, GOOGLE_APPLICATION_CREDENTIALS);
       process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
     } else {
       throw new Error(
