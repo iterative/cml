@@ -1,6 +1,6 @@
 name: default
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   check:
@@ -12,11 +12,5 @@ jobs:
     - name: "npm ci"
       run: npm ci
 
-    - name: "npm run build"
-      run: npm run build
-
-    - name: "check"
-      run: |
-        git diff --exit-code --stat -- . ':!node_modules' \
-        || (echo "##[error] run 'npm run build' before commiting to repo" \
-        && exit 1)
+    - name: "lint"
+      run: npm run lint
