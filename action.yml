@@ -1,5 +1,5 @@
 name: 'DVC-action'
-description: 'DVC action for CD4ML'
+description: 'DVC - continuous delivery for machine learning'
 
 inputs:
   github_token: 
