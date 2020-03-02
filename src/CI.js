@@ -1,4 +1,5 @@
-const { git, exec, fs, path } = require('./utils');
+const { git, exec, fs } = require('./utils');
+const path = require('path');
 const DVC = require('./Dvc');
 const Report = require('./Report');
 

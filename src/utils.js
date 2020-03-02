@@ -1,6 +1,5 @@
 const util = require('util');
 const fs = require('fs').promises;
-const path = require('path');
 const git = require('simple-git/promise');
 
 fs.exists = async file => {
@@ -26,6 +25,5 @@ const exec = async (command, opts) => {
 };
 
 exports.fs = fs;
-exports.path = path;
 exports.exec = exec;
 exports.git = git('./');
