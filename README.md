@@ -1,9 +1,11 @@
 # DVC Github action for continuous delivery for machine learning [![GitHub Actions Workflow](https://github.com/iterative/dvc-action/workflows/dvc-action/badge.svg)](https://github.com/iterative/dvc-action/actions)
 
-1. Introduction
-2. [Usage](##usage)
-3. [Working with DVC remotes](##working-with-dvc-remotes)
-4. [Examples](##examples)
+1. [Introduction](#introduction)
+2. [Usage](#usage)
+3. [Working with DVC remotes](#working-with-dvc-remotes)
+4. [Examples](#examples)
+
+## Introduction
 
 DVC is a great tool as a data versioning system, but also is great as a build
 tool for ML experimentation. This action offers the possibility of using DVC to
@@ -16,6 +18,9 @@ The action performs in your push or pull requests:
 2.  Push changes into DVC remote and Git remote
 3.  Generates a DVC Report as a Github check displaying all the experiment
     metrics
+
+![image](https://user-images.githubusercontent.com/414967/75673142-854ad800-5c82-11ea-97f4-256beca83754.png)
+![image](https://user-images.githubusercontent.com/414967/75673087-677d7300-5c82-11ea-8ccb-be6a4f81eb5d.png)
 
 ## Usage
 
@@ -71,7 +76,7 @@ value like 78 for neutral is invalid.
 ### env variables
 
 DVC remote is set using env variables see
-[Working with DVC remotes](##working-with-dvc-remotes).
+[Working with DVC remotes](#working-with-dvc-remotes).
 
 ## Working with DVC remotes
 
