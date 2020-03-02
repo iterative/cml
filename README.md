@@ -1,16 +1,20 @@
-# DVC Github action for CD4ML [![GitHub Actions Workflow](https://github.com/iterative/dvc-action/workflows/dvc-action/badge.svg)](https://github.com/iterative/dvc-action/actions)
+# DVC Github action for continuous delivery for machine learning [![GitHub Actions Workflow](https://github.com/iterative/dvc-action/workflows/dvc-action/badge.svg)](https://github.com/iterative/dvc-action/actions)
+
+1. Introduction
+2. [Usage](##usage)
+3. [Working with DVC remotes](##working-with-dvc-remotes)
+4. [Examples](##examples)
 
 DVC is a great tool as a data versioning system, but also is great as a build
 tool for ML experimentation. This action offers the possibility of using DVC to
-stablish your ML pipeline to be runned by Github Actions CI/CD were you could
-use your own runners with special capabilities like GPUs. Think on Gradle or
-Maven for ML.
+establish your ML pipeline to be run by Github Actions CI/CD were you could use
+your own runners with special capabilities like GPUs.
 
-The action performs:
+The action performs in your push or pull requests:
 
-1.  Dvc repro
-2.  Push changes into dvc remote and git remote
-3.  Generates a DVC Report as a github check displaying all the experiment
+1.  DVC [repro](https://dvc.org/doc/command-reference/repro)
+2.  Push changes into DVC remote and Git remote
+3.  Generates a DVC Report as a Github check displaying all the experiment
     metrics
 
 ## Usage
@@ -45,7 +49,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repro_targets: your-file.dvc
-
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -56,23 +59,23 @@ jobs:
 | Variable             | Type   | Required | Default | Info                                                                                       |
 | -------------------- | ------ | -------- | ------- | ------------------------------------------------------------------------------------------ |
 | github_token         | string | yes      |         | Is the github_token, this is setted automatically by Github as a secret.                   |
-| repro_targets        | string | no       | Dvcfile | Comma delimited array of dvc files. If None is given will skip the process.                |
+| repro_targets        | string | no       | Dvcfile | Comma delimited array of DVC files. If None is given will skip the process.                |
 | metrics_diff_targets | string | no       |         | Comma delimited array of metrics files. If not specified will ask for all the metric files |
 
 ### Support for [ci skip] comment
 
-If your commit comment includes the tag the dvc action will skip returning a 0
+If your commit comment includes the tag the DVC action will skip returning a 0
 status code (success). Github is only accepting 0 or 1 as status codes. Any
 value like 78 for neutral is invalid.
 
 ### env variables
 
-Dvc remote is set using env variables see
+DVC remote is set using env variables see
 [Working with DVC remotes](##working-with-dvc-remotes).
 
 ## Working with DVC remotes
 
-Dvc support different kinds of remote
+DVC support different kinds of remote
 [storage](https://dvc.org/doc/command-reference/remote/add). To setup them
 properly you have to setup credentials (if needed) as enviroment variables. We
 choose env variables and not inputs to be compatible with other github actions
