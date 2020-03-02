@@ -8,7 +8,6 @@ const SKIP = '[ci skip]';
 
 const commit_skip_ci = async () => {
   const last_log = await exec('git log -1');
-  console.log(last_log);
   return last_log.includes(SKIP);
 };
 
