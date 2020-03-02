@@ -25,12 +25,7 @@ const exec = async (command, opts) => {
   return stdout;
 };
 
-const uuid = () => {
-  return String(new Date().getUTCMilliseconds());
-};
-
 exports.fs = fs;
 exports.path = path;
 exports.exec = exec;
-exports.uuid = uuid;
 exports.git = git('./');
