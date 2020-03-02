@@ -2,7 +2,7 @@
 
 const yargs = require('yargs');
 
-const { dvc_report } = require('./../src/CI');
+const { dvc_report } = require('../src/ci');
 
 const run = async argv => {
   const { output, a_rev, b_rev, diff_target, metrics_diff_targets } = argv;

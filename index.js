@@ -1,10 +1,10 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-const DVC = require('./src/Dvc');
-const CI = require('./src/CI');
+const DVC = require('./src/dvc');
+const CI = require('./src/ci');
 
-const Report = require('./src/Report');
+const Report = require('./src/report');
 Report.METRICS_FORMAT = core.getInput('metrics_format');
 
 const {

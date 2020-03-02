@@ -1,7 +1,7 @@
 const { git, exec, fs } = require('./utils');
 const path = require('path');
-const DVC = require('./Dvc');
-const Report = require('./Report');
+const DVC = require('./dvc');
+const Report = require('./report');
 
 const DVC_TITLE = 'Dvc Report';
 const DVC_TAG_PREFIX = 'dvc_';
