@@ -1,5 +1,3 @@
-[![GitHub Actions Workflow](https://github.com/iterative/dvc-action/workflows/dvc-action/badge.svg)](https://github.com/iterative/dvc-action/actions)
-
 # DVC Github action for continuous delivery for machine learning
 
 1. [Introduction](#introduction)
