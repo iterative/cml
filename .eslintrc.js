@@ -15,7 +15,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018
   },
-  ignorePatterns: ['assets/',  'dist/index.js', 'node_modules/'],
+  ignorePatterns: ['assets/',  'dist/', 'node_modules/'],
   rules: {
     'camelcase': [1, {'properties': 'never'}],
     'prettier/prettier': 'error'

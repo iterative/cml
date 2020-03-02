@@ -1,2 +1,4 @@
 node_modules/
 .DS_Store
+dist/report.css
+dist/showdown.min.js

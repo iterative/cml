@@ -13,7 +13,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run build && git add ."
+      "pre-commit": "lint-staged && npm run build && git add dist/index.js"
     }
   },
   "lint-staged": {
