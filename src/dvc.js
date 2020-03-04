@@ -113,8 +113,7 @@ const init_remote = async opts => {
       await exec('dvc pull -f', { throw_err: false });
       console.log('Pulling from Dvc remote completed');
     } catch (err) {
-      console.error(err);
-      throw new Error('Failed pulling from Dvc remote');
+      console.error('Failed pulling from Dvc remote');
     }
   }
 };

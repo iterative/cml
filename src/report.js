@@ -6,7 +6,7 @@ const MAX_CHARS = 65000;
 const METRICS_FORMAT = '0[.][0000000]';
 
 const dvc_diff_report_md = (data, max_chars) => {
-  if (!data) return 'No metrics available';
+  if (!data || !Object.keys(data).length) return 'No metrics available';
 
   let summary = '';
 

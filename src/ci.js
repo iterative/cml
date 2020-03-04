@@ -54,23 +54,32 @@ const run_dvc_repro = async opts => {
 const dvc_report = async opts => {
   const { from, to, output, metrics_diff_targets, refParser } = opts;
 
-  const dvc_diff = await DVC.diff({ from, to });
-  const dvc_metrics_diff = await DVC.metrics_diff({
-    from,
-    to,
-    targets: metrics_diff_targets
-  });
+  let dvc_diff = {};
+  let dvc_metrics_diff = {};
+  let others = [];
 
-  const logs = await git.log();
-  const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
-  const refs = tags.map(tag => tag.hash).reverse();
-  refs.pop();
+  try {
+    dvc_diff = await DVC.diff({ from, to });
+    dvc_metrics_diff = await DVC.metrics_diff({
+      from,
+      to,
+      targets: metrics_diff_targets
+    });
 
-  const others = refs;
-  if (refParser) {
-    for (let i = 0; i < others.length; i++) {
-      others[i] = await refParser(others[i]);
+    const logs = await git.log();
+    const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
+    const refs = tags.map(tag => tag.hash).reverse();
+    refs.pop();
+
+    others = refs;
+    if (refParser) {
+      for (let i = 0; i < others.length; i++) {
+        others[i] = await refParser(others[i]);
+      }
     }
+  } catch (err) {
+    console.log('Error while processing report data');
+    console.log(err);
   }
 
   const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, others });
