@@ -112,7 +112,7 @@ const run = async () => {
   });
 
   console.log('Generating Dvc Report');
-  const from = repro_ran ? head_sha : '';
+  const from = core.getInput('rev');
   const to = repro_ran || '';
   const dvc_report_out = await CI.dvc_report({
     from,

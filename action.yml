@@ -20,6 +20,10 @@ inputs:
     required: false
     default: '0[.][0000000]'
 
+  rev:
+    required: false
+    default: 'origin/master'
+
 runs:
   using: 'node12'
   main: 'dist/index.js'
