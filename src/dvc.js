@@ -1,8 +1,9 @@
-const { exec, fs } = require('./utils');
+const { exec } = require('./utils');
+const fs = require('fs').promises;
 
 const setup = async () => {
   try {
-    await exec('dvc');
+    await exec('dvc version');
   } catch (err) {
     console.log('Installing Dvc ...');
     await exec('pip3 uninstall -y enum34', { throw_err: false });

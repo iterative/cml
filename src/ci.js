@@ -1,5 +1,6 @@
-const { git, exec, fs } = require('./utils');
+const { git, exec } = require('./utils');
 const path = require('path');
+const fs = require('fs').promises;
 const DVC = require('./dvc');
 const Report = require('./report');
 
@@ -91,10 +92,6 @@ const dvc_report = async opts => {
     await fs.copyFile(
       path.join(__dirname, '../assets', 'report.css'),
       path.join(output, 'report.css')
-    );
-    await fs.copyFile(
-      path.join(__dirname, '../assets', 'showdown.min.js'),
-      path.join(output, 'showdown.min.js')
     );
   }
 

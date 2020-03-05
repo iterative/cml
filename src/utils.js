@@ -1,16 +1,5 @@
 const util = require('util');
-const fs = require('fs').promises;
 const git = require('simple-git/promise');
-
-fs.exists = async file => {
-  try {
-    await fs.access(file, fs.F_OK);
-  } catch (err) {
-    return false;
-  }
-
-  return true;
-};
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -24,6 +13,5 @@ const exec = async (command, opts) => {
   return stdout;
 };
 
-exports.fs = fs;
 exports.exec = exec;
 exports.git = git('./');

@@ -1,6 +1,7 @@
 const json_2_mdtable = require('json-to-markdown-table2');
 const numeral = require('numeral');
 const _ = require('underscore');
+var showdown = require('showdown');
 
 const MAX_CHARS = 65000;
 const METRICS_FORMAT = '0[.][0000000]';
@@ -30,7 +31,7 @@ const dvc_diff_report_md = (data, max_chars) => {
     section.summary = '';
 
     section.files.forEach(file => {
-      const file_text = ` - <font size="2">${file.path}</font> \n`;
+      const file_text = ` - ${file.path} \n`;
       count += file_text.length;
 
       if (count < max_chars) section.summary += file_text;
@@ -55,11 +56,8 @@ const dvc_metrics_diff_report_md = data => {
       const old = numeral(output[metric].old).format(METRICS_FORMAT);
 
       const arrow = output[metric].diff > 0 ? '+' : '';
-      const color = output[metric].diff > 0 ? 'green' : 'red';
       const diff = output[metric].diff
-        ? `<font color="${color}">${arrow}${numeral(output[metric].diff).format(
-            METRICS_FORMAT
-          )}</font>`
+        ? `${arrow}${numeral(output[metric].diff).format(METRICS_FORMAT)}`
         : 'no available';
 
       values.push({ path, metric, old, new: new_, diff });
@@ -104,13 +102,18 @@ const dvc_report_md = opts => {
   return summary;
 };
 
-const md_to_html = markdown => `
+const md_to_html = markdown => {
+  const converter = new showdown.Converter({ tables: true });
+  converter.setFlavor('github');
+  const html = converter.makeHtml(markdown);
+
+  return `
 <!doctype html>
 <html>
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-		<title>GitHub Markdown CSS demo</title>
+		<title>DVC Report</title>
 		<link rel="stylesheet" href="report.css">
 		<style>
 			body {
@@ -123,21 +126,13 @@ const md_to_html = markdown => `
 		</style>
 	</head>
 	<body>
-        <div class="markdown-body" id="content">
-        </div>
-    </body>
-    <script src="showdown.min.js"></script>
-    <script>
-const text = \`${markdown}\`;
-
-const converter = new showdown.Converter({ tables: true })
-converter.setFlavor('github');
-
-const html=converter.makeHtml(text);
-document.getElementById("content").innerHTML = html; 
-</script>
+      <div class="markdown-body" id="content">
+        ${html}
+      </div>
+  </body>
 </html>
 `;
+};
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
