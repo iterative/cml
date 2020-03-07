@@ -103,7 +103,7 @@ const run = async () => {
   await DVC.setup();
   await DVC.init_remote({ dvc_pull });
 
-  const repro_ran = await CI.run_dvc_repro({
+  const repro_ran = await CI.run_dvc_repro_push({
     user_email,
     user_name,
     remote,
