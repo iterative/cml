@@ -61,12 +61,23 @@ const dvc_report = async opts => {
 
   try {
     dvc_diff = await DVC.diff({ from, to });
+  } catch (err) {
+    console.log('Error while processing dvc diff');
+    console.log(err);
+  }
+
+  try {
     dvc_metrics_diff = await DVC.metrics_diff({
       from,
       to,
       targets: metrics_diff_targets
     });
+  } catch (err) {
+    console.log('Error while processing dvc metrics diff');
+    console.log(err);
+  }
 
+  try {
     const logs = await git.log();
     const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
     const refs = tags.map(tag => tag.hash).reverse();
@@ -79,7 +90,7 @@ const dvc_report = async opts => {
       }
     }
   } catch (err) {
-    console.log('Error while processing report data');
+    console.log('Error while processing others');
     console.log(err);
   }
 
