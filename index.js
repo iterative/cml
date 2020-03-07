@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
+const { exec } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
 
@@ -87,6 +88,9 @@ const run = async () => {
   const dvc_pull = core.getInput('dvc_pull');
   const repro_targets = getInputArray('repro_targets');
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
+
+  console.log('Fetching...');
+  await exec('git fetch --prune --unshallow');
 
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.SKIP} found; skipping task`);
