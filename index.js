@@ -115,7 +115,7 @@ const run = async () => {
     repro_targets
   });
 
-  console.log('Generating Dvc Report');
+  console.log('Generating DVC Report');
   const from = core.getInput('rev');
   const to = repro_ran || '';
   const dvc_report_out = await CI.dvc_report({
