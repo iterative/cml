@@ -40,12 +40,16 @@ The action performs in your push or pull requests:
 
 ## Usage
 
+> :eyes: Knowledge of [Github Actions](https://help.github.com/en/actions) and
+> [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
+> fully comprenhension.
+
 This action depends on:
 
 - actions/checkout V2
 - actions/setup-python
 
-Simple example of your workflow with DVC action:
+Example of a simple DVC-action workflow:
 
 ```yaml
 name: your-workflow-name
@@ -72,6 +76,20 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
+
+This workflow will run everytime that you push code or do a Pull Request. When
+triggered DVC-action will setup the runner and DVC will run the pipelines
+specified by repro_targets. Two scenarios may happen:
+
+1. DVC repro is up to date and there is nothing to do. This means that the
+   commit that you have done in your code is not related to your DVC pipelines
+   and there is nothing to do.
+2. DVC pipeline has changed and DVC will run repro, updating the output that may
+   generate (models, data...) in your DVC remote storage and then commiting,
+   tagging and pushing the changes in git remote.
+
+Additionally, you may extend your workflow to generate your releases or even
+deploy automatically your models.
 
 ## Input variables
 
@@ -121,7 +139,7 @@ to keep them secure.
     AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 ```
 
-:point_right: AWS_SESSION_TOKEN is optional.
+> :point_right: AWS_SESSION_TOKEN is optional.
 
 #### Azure
 
@@ -144,9 +162,9 @@ env:
 
 #### Google Storage
 
-:warning: Normally, GOOGLE_APPLICATION_CREDENTIALS points to the path of the
-json file that contains the credentials. However in the action this variable
-CONTAINS the content of the file. Copy that json and add it as a secret.
+> :warning: Normally, GOOGLE_APPLICATION_CREDENTIALS points to the path of the
+> json file that contains the credentials. However in the action this variable
+> CONTAINS the content of the file. Copy that json and add it as a secret.
 
 ```yaml
 env:
@@ -155,11 +173,11 @@ env:
 
 #### Google Drive
 
-:warning: After configuring your
-[Google Drive credentials](https://dvc.org/doc/command-reference/remote/add) you
-will find a json file at
-`your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy that json and
-add it as a secret.
+> :warning: After configuring your
+> [Google Drive credentials](https://dvc.org/doc/command-reference/remote/add)
+> you will find a json file at
+> `your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy that json and
+> add it as a secret.
 
 ```yaml
 env:
