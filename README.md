@@ -13,6 +13,21 @@ establish your ML pipeline to be run by Github Actions CI/CD were you could use
 [your own runners](https://help.github.com/en/actions/hosting-your-own-runners)
 with special capabilities like GPUs.
 
+Major beneficts of using DVC-action in your ML projects includes:
+
+- Reproducibility: DVC is always in charge of maintain your experiment tracking
+  all the dependencies, so you don't have to. Additionally your experiment is
+  always running under the same software constrains so you dont have to worry
+  about replicating the same enviroment again.
+- Observability: DVC offers you metrics to be tracked. In DVC-action we make
+  those metrics more human friendly and we also offer direct access to other
+  experiments run.
+- Releases: DVC-action tags every experiment that runs with repro. Aside of that
+  DVC-action is just a job inside your workflow that could generate your model
+  releases or deployment according to your bussiness requirements.
+- Teaming: Give visibility to your experiments or releases to your teammates
+  working toguether.
+
 The action performs in your push or pull requests:
 
 1.  DVC [repro](https://dvc.org/doc/command-reference/repro)
@@ -60,22 +75,24 @@ jobs:
 
 ## Input variables
 
-| Variable             | Type   | Required | Default       | Info                                                                                    |
-| -------------------- | ------ | -------- | ------------- | --------------------------------------------------------------------------------------- |
-| github_token         | string | yes      |               | Is the github_token, this is setted automatically by Github as a secret.                |
-| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.             |
-| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files  |
-| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1. Defaults to origin/master |
+| Variable             | Type   | Required | Default       | Info                                                                                   |
+| -------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------- |
+| github_token         | string | yes      |               | Is the github_token, this is setted automatically by Github as a secret.               |
+| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.            |
+| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files |
+| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1.                          |
 
 ### Support for [ci skip] comment
 
-If your commit comment includes the tag the DVC action will skip returning a 0
-status code (success). Github is only accepting 0 or 1 as status codes. Any
-value like 78 for neutral is invalid.
+Many CI/CD verdors supports a special comment [ci skip] in the commit avoid run
+the CI. We support this, ff your commit comment includes the tag the DVC action
+will skip the CI returning an exit code of 0. We know that ideally the code
+should be 78 however, at the time of this writing, Github is only accepting 0 or
+1 as status codes.
 
 ### env variables
 
-DVC remote is set using env variables see
+DVC remote is setup using env variables see
 [Working with DVC remotes](#working-with-dvc-remotes).
 
 ## Working with DVC remotes
