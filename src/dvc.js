@@ -5,7 +5,7 @@ const setup = async () => {
   try {
     await exec('dvc version');
   } catch (err) {
-    console.log('Installing Dvc ...');
+    console.log('Installing DVC ...');
     await exec('pip3 uninstall -y enum34', { throw_err: false });
     await exec('pip3 install --quiet dvc[all]');
   }
@@ -19,20 +19,20 @@ const init_remote = async opts => {
     return;
   }
 
-  console.log('Initiating Dvc remote ...');
+  console.log('Initiating DVC remote ...');
 
   const dvc_remote_list = (
     await exec('dvc remote list', { throw_err: false })
   ).toLowerCase();
   const has_dvc_remote = dvc_remote_list.length > 0;
 
-  if (!has_dvc_remote) throw new Error('Experiment does not have Dvc remote!');
+  if (!has_dvc_remote) throw new Error('Experiment does not have DVC remote!');
 
   // s3
   if (dvc_remote_list.includes('s3://')) {
     const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
     if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      throw new Error(`S3 dvc remote found but no credentials found`);
+      throw new Error(`S3 DVC remote found but no credentials found`);
     }
   }
 
@@ -43,7 +43,7 @@ const init_remote = async opts => {
       AZURE_STORAGE_CONTAINER_NAME
     } = process.env;
     if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
-      throw new Error(`Azure dvc remote found but no credentials found`);
+      throw new Error(`Azure DVC remote found but no credentials found`);
     }
   }
 
@@ -61,7 +61,7 @@ const init_remote = async opts => {
       !OSS_ACCESS_KEY_SECRET ||
       !OSS_ENDPOINT
     ) {
-      throw new Error(`Aliyin dvc remote found but no credentials found`);
+      throw new Error(`Aliyin DVC remote found but no credentials found`);
     }
   }
 
@@ -74,7 +74,7 @@ const init_remote = async opts => {
       process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
     } else {
       throw new Error(
-        `Google storage dvc remote found but no credentials found`
+        `Google storage DVC remote found but no credentials found`
       );
     }
   }
@@ -86,7 +86,7 @@ const init_remote = async opts => {
       const path = '.dvc/tmp/gdrive-user-credentials.json';
       await fs.writeFile(path, GDRIVE_USER_CREDENTIALS);
     } else {
-      throw new Error(`Google drive dvc remote found but no credentials found`);
+      throw new Error(`Google drive DVC remote found but no credentials found`);
     }
   }
 
@@ -98,7 +98,7 @@ const init_remote = async opts => {
       await fs.writeFile(path, DVC_REMOTE_SSH_KEY);
       await exec(`echo ${path} >> ~/.ssh/known_hosts`);
     } else {
-      throw new Error(`SSH dvc remote found but no credentials found`);
+      throw new Error(`SSH DVC remote found but no credentials found`);
     }
   }
 
@@ -109,12 +109,12 @@ const init_remote = async opts => {
   }
 
   if (has_dvc_remote) {
-    console.log('Pulling from Dvc remote ...');
+    console.log('Pulling from DVC remote ...');
     try {
       await exec('dvc pull -f', { throw_err: false });
-      console.log('Pulling from Dvc remote completed');
+      console.log('Pulling from DVC remote completed');
     } catch (err) {
-      console.error('Failed pulling from Dvc remote');
+      console.error('Failed pulling from DVC remote');
     }
   }
 };

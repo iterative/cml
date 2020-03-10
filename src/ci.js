@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const DVC = require('./dvc');
 const Report = require('./report');
 
-const DVC_TITLE = 'Dvc Report';
+const DVC_TITLE = 'DVC Report';
 const DVC_TAG_PREFIX = 'dvc_';
 const SKIP = '[ci skip]';
 
