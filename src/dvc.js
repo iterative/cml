@@ -104,7 +104,6 @@ const init_remote = async opts => {
 
   // HDFS
   if (dvc_remote_list.includes('hdfs://')) {
-    // TODO: implement
     throw new Error(`HDFS secrets not yet implemented`);
   }
 
