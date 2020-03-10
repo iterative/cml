@@ -11,15 +11,15 @@ const setup = async () => {
   }
 };
 
-const init_remote = async opts => {
+const setup_remote = async opts => {
   const { dvc_pull = true } = opts;
 
   if (!dvc_pull) {
-    console.log('Skipping dvc_pull by user');
+    console.log('Skipping dvc_pull');
     return;
   }
 
-  console.log('Initiating DVC remote ...');
+  console.log('Setting DVC remote ...');
 
   const dvc_remote_list = (
     await exec('dvc remote list', { throw_err: false })
@@ -107,14 +107,12 @@ const init_remote = async opts => {
     throw new Error(`HDFS secrets not yet implemented`);
   }
 
-  if (has_dvc_remote) {
-    console.log('Pulling from DVC remote ...');
-    try {
-      await exec('dvc pull -f', { throw_err: false });
-      console.log('Pulling from DVC remote completed');
-    } catch (err) {
-      console.error('Failed pulling from DVC remote');
-    }
+  console.log('Pulling from DVC remote ...');
+  try {
+    await exec('dvc pull -f');
+    console.log('Pulling from DVC remote completed');
+  } catch (err) {
+    console.error('Failed pulling from DVC remote');
   }
 };
 
@@ -156,7 +154,7 @@ const metrics_diff = async opts => {
 };
 
 exports.setup = setup;
-exports.init_remote = init_remote;
+exports.setup_remote = setup_remote;
 exports.repro = repro;
 exports.diff = diff;
 exports.metrics_diff = metrics_diff;
