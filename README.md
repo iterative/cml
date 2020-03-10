@@ -10,7 +10,8 @@
 DVC is a great tool as a data versioning system, but also is great as a build
 tool for ML experimentation. This action offers the possibility of using DVC to
 establish your ML pipeline to be run by Github Actions CI/CD were you could use
-your own runners with special capabilities like GPUs.
+[your own runners](https://help.github.com/en/actions/hosting-your-own-runners)
+with special capabilities like GPUs.
 
 The action performs in your push or pull requests:
 
