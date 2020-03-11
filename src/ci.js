@@ -36,7 +36,6 @@ const run_dvc_repro_push = async opts => {
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
-  await exec('dvc commit');
 
   const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(
     /(\r\n|\n|\r)/gm,
