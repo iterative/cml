@@ -89,7 +89,7 @@ const run = async () => {
   const repro_targets = getInputArray('repro_targets');
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
 
-  console.log('Fetching...');
+  console.log('Fetch all history for all tags and branches');
   await exec('git fetch --prune --unshallow');
 
   if (await CI.commit_skip_ci()) {
