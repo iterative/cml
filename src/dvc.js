@@ -34,7 +34,7 @@ const setup_remote = async opts => {
   if (dvc_remote_list.includes('s3://')) {
     const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
     if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      throw new Error(`S3 DVC remote found but no credentials found`);
+      console.log(`S3 DVC remote found but no credentials found`);
     }
   }
 
@@ -45,7 +45,7 @@ const setup_remote = async opts => {
       AZURE_STORAGE_CONTAINER_NAME
     } = process.env;
     if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
-      throw new Error(`Azure DVC remote found but no credentials found`);
+      console.log(`Azure DVC remote found but no credentials found`);
     }
   }
 
@@ -63,7 +63,7 @@ const setup_remote = async opts => {
       !OSS_ACCESS_KEY_SECRET ||
       !OSS_ENDPOINT
     ) {
-      throw new Error(`Aliyin DVC remote found but no credentials found`);
+      console.log(`Aliyin DVC remote found but no credentials found`);
     }
   }
 
@@ -75,9 +75,7 @@ const setup_remote = async opts => {
       await fs.writeFile(path, GOOGLE_APPLICATION_CREDENTIALS);
       process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
     } else {
-      throw new Error(
-        `Google storage DVC remote found but no credentials found`
-      );
+      console.log(`Google storage DVC remote found but no credentials found`);
     }
   }
 
@@ -85,7 +83,7 @@ const setup_remote = async opts => {
   if (dvc_remote_list.includes('gdrive://')) {
     const { GDRIVE_USER_CREDENTIALS_DATA } = process.env;
     if (!GDRIVE_USER_CREDENTIALS_DATA) {
-      throw new Error(`Google drive DVC remote found but no credentials found`);
+      console.log(`Google drive DVC remote found but no credentials found`);
     }
   }
 
@@ -97,7 +95,7 @@ const setup_remote = async opts => {
       await fs.writeFile(path, DVC_REMOTE_SSH_KEY);
       await exec(`echo ${path} >> ~/.ssh/known_hosts`);
     } else {
-      throw new Error(`SSH DVC remote found but no credentials found`);
+      console.log(`SSH DVC remote found but no credentials found`);
     }
   }
 
