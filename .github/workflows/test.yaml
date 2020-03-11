@@ -1,0 +1,16 @@
+name: test
+
+on: [pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: "npm ci"
+      run: npm ci
+
+    - name: "lint"
+      run: npm run lint

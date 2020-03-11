@@ -1,0 +1,65 @@
+{
+  "name": "dvc-action",
+  "version": "1.0.3",
+  "author": {
+    "name": "Iterative Inc",
+    "url": "http://iterative.ai"
+  },
+  "license": "Apache-2.0",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
+  "main": "index.js",
+  "bin": {
+    "dvcreport": "./bin/dvcreport.js"
+  },
+  "scripts": {
+    "lintfix": "eslint --fix ./",
+    "lint": "eslint ./",
+    "build": "ncc build index.js -o dist -m",
+    "test": "jest"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && npm run build && git add dist/index.js"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ],
+    "*.md": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/github": "^2.0.0",
+    "json-to-markdown-table2": "^1.0.1",
+    "numeral": "^2.0.6",
+    "showdown": "^1.9.1",
+    "simple-git": "^1.131.0",
+    "underscore": "^1.9.2",
+    "yargs": "^15.1.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "husky": "^4.2.3",
+    "jest": "^24.9.0",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1"
+  }
+}
