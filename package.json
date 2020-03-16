@@ -14,7 +14,8 @@
   ],
   "main": "index.js",
   "bin": {
-    "dvcreport": "./bin/dvcreport.js"
+    "dvcreport": "./bin/dvcreport.js",
+    "dvc_action_run": "./bin/dvc-action-run.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
