@@ -1,0 +1,22 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - master
+  deployment:
+
+jobs:
+  publish_dockehub:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Publish to dockerhub
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: iterative/dvc-cicd
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerfile: ./docker/Dockerfile
