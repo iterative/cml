@@ -42,6 +42,7 @@
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0",
     "json-to-markdown-table2": "^1.0.1",
+    "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
     "showdown": "^1.9.1",
     "simple-git": "^1.131.0",

@@ -5,8 +5,8 @@ const Report = require('./src/report');
 const {
   git_fetch_all,
   check_ran_ref,
-  handleError,
-  refParser,
+  handle_error,
+  ref_parser,
   publish_report,
   is_pr,
   ref,
@@ -54,7 +54,7 @@ const run = async () => {
   await DVC.setup();
   await DVC.setup_remote({ dvc_pull });
 
-  const repro_ran = await CI.run_dvc_repro_push({
+  const repro_sha = await CI.run_dvc_repro_push({
     user_email,
     user_name,
     remote,
@@ -63,19 +63,20 @@ const run = async () => {
   });
 
   console.log('Generating DVC Report');
-  const to = repro_ran || '';
+  const to = repro_sha || '';
   const dvc_report_out = await CI.dvc_report({
     from,
     to,
     metrics_diff_targets,
-    refParser
+    ref_parser
   });
 
   console.log('Publishing Report ');
   await publish_report({
-    head_sha: repro_ran || head_sha,
+    repro_sha,
+    head_sha: repro_sha || head_sha,
     report: dvc_report_out.md
   });
 };
 
-run().catch(e => handleError(e));
+run().catch(e => handle_error(e));

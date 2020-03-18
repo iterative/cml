@@ -51,7 +51,7 @@ const create_check_dvc_report = async opts => {
   return check;
 };
 
-const refParser = async ref => {
+const ref_parser = async ref => {
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
   const check = checks.data.check_runs.filter(
     check => check.name === CI.DVC_TITLE
@@ -81,7 +81,7 @@ const publish_report = async opts => {
   await create_check_dvc_report(opts);
 };
 
-const handleError = e => {
+const handle_error = e => {
   core.setFailed(e.message);
 };
 
@@ -91,8 +91,8 @@ exports.head_sha = HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.remote = REMOTE;
+exports.ref_parser = ref_parser;
 exports.check_ran_ref = check_ran_ref;
 exports.git_fetch_all = git_fetch_all;
 exports.publish_report = publish_report;
-exports.handleError = handleError;
-exports.refParser = refParser;
+exports.handle_error = handle_error;
