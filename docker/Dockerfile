@@ -19,7 +19,9 @@ RUN yes | pip3 install dvc[all]
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
 RUN apt install -y nodejs
-RUN npm install -g iterative/dvc-cicd#master
 
-COPY "entrypoint.sh" "/entrypoint.sh"
+ADD "./" "/dvc-cml"
+RUN npm install -g /dvc-cml
+
+COPY "./docker/entrypoint.sh" "/entrypoint.sh"
 CMD ["/entrypoint.sh"]
