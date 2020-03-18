@@ -20,4 +20,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile: ./docker/Dockerfile
           context: ./
+          cache: true
+          tag_names: true
 
