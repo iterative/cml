@@ -1,28 +1,5 @@
-name: 'DVC-action'
-description: 'DVC - continuous delivery for machine learning'
-
-inputs:
-  github_token: 
-    required: true
-
-  dvc_pull:
-    required: false
-    default: true
-
-  repro_targets:
-    required: false
-    default: 'Dvcfile'
-
-  metrics_diff_targets:
-    required: false
-
-  metrics_format:
-    required: false
-    default: '0[.][0000000]'
-
-  rev:
-    required: false
-    default: 'origin/master'
+name: 'dvc-cml'
+description: 'DVC - continuous machine learning'
 
 runs:
   using: 'node12'

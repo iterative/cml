@@ -41,7 +41,7 @@ const run_dvc_repro_push = async opts => {
     /(\r\n|\n|\r)/gm,
     ''
   );
-  const tag = `${DVC_TAG_PREFIX}${sha.slice(0, 7)}`;
+  const tag = sha_tag(sha);
 
   console.log('pushing');
   await exec(`git tag ${tag}`, { throw_err: false });
@@ -52,7 +52,7 @@ const run_dvc_repro_push = async opts => {
 };
 
 const dvc_report = async opts => {
-  const { from, to, output, metrics_diff_targets, refParser } = opts;
+  const { from, to, output, metrics_diff_targets, ref_parser } = opts;
 
   let dvc_diff = {};
   let dvc_metrics_diff = {};
@@ -83,9 +83,9 @@ const dvc_report = async opts => {
     refs.pop();
 
     others = refs;
-    if (refParser) {
+    if (ref_parser) {
       for (let i = 0; i < others.length; i++) {
-        others[i] = await refParser(others[i]);
+        others[i] = await ref_parser(others[i]);
       }
     }
   } catch (err) {
@@ -108,8 +108,15 @@ const dvc_report = async opts => {
   return { dvc_diff, dvc_metrics_diff, others, md, html };
 };
 
+const sha_tag = sha => {
+  if (!sha) return null;
+
+  return `${DVC_TAG_PREFIX}${sha.slice(0, 7)}`;
+};
+
 exports.DVC_TITLE = DVC_TITLE;
 exports.SKIP = SKIP;
 exports.commit_skip_ci = commit_skip_ci;
 exports.run_dvc_repro_push = run_dvc_repro_push;
 exports.dvc_report = dvc_report;
+exports.sha_tag = sha_tag;
