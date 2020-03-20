@@ -17,24 +17,24 @@ You can also deploy
 or [your own Gitlab runners](https://docs.gitlab.com/runner/) with special
 capabilities like GPUs...
 
-Major beneficts of using DVC-CML in your ML projects includes:
+Major benefits of using DVC-CML in your ML projects includes:
 
 - Reproducibility: DVC is always in charge of maintain your experiment tracking
   all the dependencies, so you don't have to. Additionally your experiment is
-  always running under the same constrains so you dont have to worry about
-  replicating the same enviroment again.
+  always running under the same constrains so you don't have to worry about
+  replicating the same environment again.
 - Observability: DVC offers you metrics to be tracked. In DVC-action we make
   those metrics more human friendly and we also offer direct access to other
-  experiments run through the DVC Report offeered as checks in Github or
-  Releases in Gitlab.
+  experiments run through the DVC Report offered as checks in Github or Releases
+  in Gitlab.
 - Releases: DVC-action tags every experiment that runs with repro generating the
-  report. Aside of that DVC-cml is just a step in your
+  report. Aside of that DVC-CML is just a step in your
   [Github Workflow](https://help.github.com/en/actions/getting-started-with-github-actions/core-concepts-for-github-actions#workflow)
   or [Gitlab Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) that could
-  generate your model releases or deployment according to your bussiness
+  generate your model releases or deployment according to your business
   requirements.
 - Teaming: Give visibility to your experiments or releases to your teammates
-  working toguether.
+  working together.
 
 DVC-cml performs in your push or pull requests:
 
@@ -51,13 +51,13 @@ DVC-cml performs in your push or pull requests:
 ## Usage
 
 <details>
-<summary>DVC-cml for Github</summary>
+<summary>DVC-CML for Github</summary>
 
 > :eyes: Knowledge of [Github Actions](https://help.github.com/en/actions) and
 > [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
-> fully comprenhension.
+> fully comprehension.
 
-Example of a simple DVC-cml workflow:
+Example of a simple DVC-CML workflow:
 
 > :eyes: Note the use of the container
 
@@ -88,17 +88,17 @@ jobs:
 </details>
 
 <details>
-<summary>DVC-cml for Gitlab</summary>
+<summary>DVC-CML for Gitlab</summary>
 
 > :eyes: Knowledge of
 > [Gitlab CI/CD Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) and
 > [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
-> fully comprenhension.
+> fully comprehension.
 
-Example of a simple DVC-cml workflow in Gitlab:
+Example of a simple DVC-CML workflow in Gitlab:
 
-> :eyes: Some needed variables like remote credentials and GITLAB_TOKEN are
-> setted as CI/CD enviroment variables
+> :eyes: Some required environment variables like remote credentials and
+> GITLAB_TOKEN are set as CI/CD environment variables in Gitlab's UI
 
 ```yaml
 stages:
@@ -106,7 +106,7 @@ stages:
 
 dvc:
   stage: dvc_action_run
-  image: davidgortega/dvc-cml:dev
+  image: dvcorg/dvc-cml:latest
   variables:
     repro_targets: 'eval.dvc'
   script:
@@ -116,15 +116,15 @@ dvc:
 
 </details>
 
-This workflow will run everytime that you push code or do a Pull/Merge Request.
-When triggered DVC-cml will setup the runner and DVC will run the pipelines
-specified by repro_targets. Two scenarios may happen:
+This workflow will run every time that you push code or do a Pull/Merge Request.
+When triggered DVC-CML will setup the runner and DVC will run the pipelines
+specified by `repro_targets`. Two scenarios may happen:
 
 1. DVC repro is up to date and there is nothing to do. This means that the
    commit that you have done in your code is not related to your DVC pipelines
    and there is nothing to do.
 2. DVC pipeline has changed and DVC will run repro, updating the output that may
-   generate (models, data...) in your DVC remote storage and then commiting,
+   generate (models, data...) in your DVC remote storage and then committing,
    tagging and pushing the changes in git remote.
 
 Additionally, you may extend your CI/CD Pipeline/Workflow to generate your
@@ -132,7 +132,7 @@ releases or even deploy automatically your models.
 
 ### Support for [ci skip] comment in Github
 
-Many CI/CD verdors supports a special comment [ci skip] in the commit avoid run
+Many CI/CD vendors supports a special comment [ci skip] in the commit avoid run
 the CI. We support this, ff your commit comment includes the tag the DVC action
 will skip the CI returning an exit code of 0. We know that ideally the code
 should be 78 however, at the time of this writing, Github is only accepting 0 or
@@ -140,16 +140,16 @@ should be 78 however, at the time of this writing, Github is only accepting 0 or
 
 ### env variables
 
-| Variable             | Type   | Required | Default       | Info                                                                                           |
-| -------------------- | ------ | -------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| github_token         | string | yes      |               | Is the github_token, this is setted automatically by Github as a secret. Only Needed on Github |
-| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                    |
-| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files         |
-| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1.                                  |
+| Variable             | Type   | Required | Default       | Info                                                                                        |
+| -------------------- | ------ | -------- | ------------- | ------------------------------------------------------------------------------------------- |
+| github_token         | string | yes      |               | Is the github_token, this is set automatically by Github as a secret. Only Needed on Github |
+| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                 |
+| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files      |
+| rev                  | string | no       | origin/master | Revision to be compared with current experiment. I.E. HEAD~1.                               |
 
-> :warning: In Gitlab is needed that you generate the GITLAB_TOKEN that is
+> :warning: In Gitlab is required that you generate the GITLAB_TOKEN that is
 > analogous to GITHUB_TOKEN. See
-> [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example For a
+> [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example for a
 > complete walkthrough.
 
 DVC remote is setup using env variables see
@@ -159,8 +159,8 @@ DVC remote is setup using env variables see
 
 DVC support different kinds of remote
 [storage](https://dvc.org/doc/command-reference/remote/add). To setup them
-properly you have to setup credentials (if needed) as enviroment variables. We
-choose env variables and not inputs to be compatible with other github actions
+properly you have to setup credentials (if needed) as environment variables. We
+choose env variables and not inputs to be compatible with other Github Actions
 that set credentials like
 https://github.com/aws-actions/configure-aws-credentials.  
 We recommend you to set those variables as
