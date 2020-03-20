@@ -1,5 +1,5 @@
-name: 'DVC-action'
-description: 'DVC - continuous delivery for machine learning'
+name: 'dvc-cml'
+description: 'DVC - continuous machine learning'
 
 runs:
   using: 'node12'

@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-LABEL Iterative Inc
+LABEL Iterative, Inc
 
 RUN apt-get update --fix-missing
 RUN apt-get install -y \

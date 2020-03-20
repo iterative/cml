@@ -15,7 +15,7 @@ jobs:
       - name: Publish to dockerhub
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
-          name: davidgortega/dvc-cml
+          name: dvcorg/dvc-cml
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerfile: ./docker/Dockerfile
