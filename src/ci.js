@@ -51,12 +51,35 @@ const run_dvc_repro_push = async opts => {
   return sha;
 };
 
+const other_experiments = async ref_parser => {
+  try {
+    const logs = await git.log();
+    const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
+    const refs = tags.map(tag => tag.hash).reverse();
+    refs.pop();
+
+    const others = refs;
+    if (ref_parser) {
+      for (let i = 0; i < others.length; i++) {
+        others[i] = await ref_parser(others[i]);
+      }
+    }
+
+    return others;
+  } catch (err) {
+    console.log('Error while processing others');
+    console.log(err);
+  }
+
+  return [];
+};
+
 const dvc_report = async opts => {
   const { from, to, output, metrics_diff_targets, ref_parser } = opts;
 
   let dvc_diff = {};
   let dvc_metrics_diff = {};
-  let others = [];
+  const others = await other_experiments(ref_parser);
 
   try {
     dvc_diff = await DVC.diff({ from, to });
@@ -76,24 +99,18 @@ const dvc_report = async opts => {
     console.log(err);
   }
 
-  try {
-    const logs = await git.log();
-    const tags = logs.all.filter(log => log.refs.includes(`${DVC_TAG_PREFIX}`));
-    const refs = tags.map(tag => tag.hash).reverse();
-    refs.pop();
+  const sha_from = await git.revparse([from]);
+  const sha_to = await git.revparse([to]);
 
-    others = refs;
-    if (ref_parser) {
-      for (let i = 0; i < others.length; i++) {
-        others[i] = await ref_parser(others[i]);
-      }
-    }
-  } catch (err) {
-    console.log('Error while processing others');
-    console.log(err);
-  }
-
-  const md = await Report.dvc_report_md({ dvc_diff, dvc_metrics_diff, others });
+  const md = await Report.dvc_report_md({
+    from,
+    to,
+    sha_from,
+    sha_to,
+    dvc_diff,
+    dvc_metrics_diff,
+    others
+  });
   const html = Report.md_to_html(md);
 
   if (opts.output) {
@@ -118,5 +135,6 @@ exports.DVC_TITLE = DVC_TITLE;
 exports.SKIP = SKIP;
 exports.commit_skip_ci = commit_skip_ci;
 exports.run_dvc_repro_push = run_dvc_repro_push;
+exports.other_experiments = other_experiments;
 exports.dvc_report = dvc_report;
 exports.sha_tag = sha_tag;

@@ -26,15 +26,15 @@ const getInputArray = (key, default_value) => {
 
 const run = async () => {
   const {
-    dvc_pull = true,
-    from = 'origin/master',
-    metrics_format = '0[.][0000000]'
+    baseline = 'origin/master',
+    metrics_format = '0[.][0000000]',
+    dvc_pull = true
   } = process.env;
-
-  Report.METRICS_FORMAT = metrics_format;
 
   const repro_targets = getInputArray('repro_targets', ['Dvcfile']);
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
+
+  Report.METRICS_FORMAT = metrics_format;
 
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.SKIP} found; skipping task`);
@@ -63,9 +63,9 @@ const run = async () => {
   });
 
   console.log('Generating DVC Report');
-  const to = repro_sha || '';
+  const to = repro_sha || head_sha;
   const dvc_report_out = await CI.dvc_report({
-    from,
+    from: baseline,
     to,
     metrics_diff_targets,
     ref_parser
