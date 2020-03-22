@@ -129,7 +129,7 @@ const dvc_report_md = opts => {
     MAX_CHARS - (metrics_diff_md.length + others_md.length)
   );
 
-  const summary = `${header} \n\n### Metrics \n\n ${metrics_diff_md} \n\n### Data \n\n${diff_md} \n\n### Other experiments \n${others_md}`;
+  const summary = `${header} \n\n#### Metrics \n\n ${metrics_diff_md} \n\n#### Data \n\n${diff_md} \n\n#### Other experiments \n${others_md}`;
 
   return summary;
 };
