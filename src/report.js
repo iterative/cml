@@ -20,7 +20,7 @@ const header_md = opts => {
   const { from, sha_from, sha_to } = opts;
   const is_same = sha_from === sha_to;
   const warn = is_same ? exports.same_warning(from) : '';
-  const summary = `### DVC Report rev:${from} ( ${ci.sha_tag(
+  const summary = `### Baseline: ${from} ( ${ci.sha_tag(
     sha_from
   )} vs ${ci.sha_tag(sha_to)} ) \n${warn}`;
 
