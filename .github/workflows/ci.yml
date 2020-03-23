@@ -1,0 +1,30 @@
+name: test
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: "npm ci"
+      run: npm ci
+
+    - name: "lint"
+      run: npm run lint
+
+    - name: "tests"
+      run: npm run test
+
+    - name: Publish to dockerhub
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/dvc-cml
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile
+        context: ./
+        cache: true
+        tag_names: true
