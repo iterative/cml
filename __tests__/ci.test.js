@@ -35,7 +35,6 @@ describe('Dvc Report', () => {
   });
 
   test('Comparing with itself, warning is displayed', async () => {
-    jest.mock('../src/report');
     const dvc_diff = {};
     const dvc_metrics_diff = {};
     const others = { all: [] };
@@ -47,6 +46,7 @@ describe('Dvc Report', () => {
     git.log.mockResolvedValue(others);
 
     await ci.dvc_report({ from, to });
+
     expect(git.revparse.mock.calls.length).toBe(2);
     expect(report.same_warning.mock.calls.length).toBe(1);
   });
