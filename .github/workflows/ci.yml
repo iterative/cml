@@ -3,7 +3,7 @@ name: test
 on: [push, pull_request]
 
 jobs:
-  check:
+  test_and_deploy:
     runs-on: ubuntu-latest
 
     steps:
