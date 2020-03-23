@@ -3,8 +3,6 @@ const numeral = require('numeral');
 const _ = require('underscore');
 var showdown = require('showdown');
 
-const ci = require('./ci');
-
 const MAX_CHARS = 65000;
 const METRICS_FORMAT = '0[.][0000000]';
 
@@ -16,13 +14,17 @@ const same_warning = from => {
   return `>:warning: You are comparing ref ${from} with itself, no diff available. \nPlease [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly`;
 };
 
+const sha_short = sha => {
+  return sha.slice(0, 7);
+};
+
 const header_md = opts => {
   const { from, sha_from, sha_to } = opts;
   const is_same = sha_from === sha_to;
   const warn = is_same ? exports.same_warning(from) : '';
-  const summary = `### Baseline: ${from} ( ${ci.sha_tag(
+  const summary = `### Baseline: ${from} ( ${sha_short(
     sha_from
-  )} vs ${ci.sha_tag(sha_to)} ) \n${warn}`;
+  )} vs ${sha_short(sha_to)} ) \n${warn}`;
 
   return summary;
 };
@@ -103,7 +105,7 @@ const others_report_md = others => {
   _.last(others, max).forEach(other => {
     if (other.link && other.label)
       summary += ` - [${other.label}](${other.link})\n`;
-    else summary += ` - ${other.substr(0, 7)}\n`;
+    else summary += ` - ${sha_short(other)}\n`;
   });
 
   summary += '\n</details>';
