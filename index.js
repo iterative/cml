@@ -4,6 +4,7 @@ const Report = require('./src/report');
 const {
   METRICS_FORMAT,
   BASELINE,
+  DVC_TAG_PREFIX,
   DVC_PULL,
   REPRO_TARGETS,
   METRICS_DIFF_TARGETS
@@ -35,6 +36,7 @@ const run = async () => {
   const {
     baseline = BASELINE,
     metrics_format = METRICS_FORMAT,
+    tag_prefix = DVC_TAG_PREFIX,
     dvc_pull = DVC_PULL
   } = process.env;
 
@@ -44,7 +46,8 @@ const run = async () => {
     METRICS_DIFF_TARGETS
   );
 
-  Report.METRICS_FORMAT = metrics_format;
+  Report.DVC_TAG_PREFIX = metrics_format;
+  CI.DVC_TAG_PREFIX = tag_prefix;
 
   if (await CI.commit_skip_ci()) {
     console.log(`${CI.CI_SKIP_MESSAGE} found; skipping task`);

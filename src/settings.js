@@ -1,5 +1,5 @@
 const DVC_TITLE = 'DVC Report';
-const DVC_TAG_PREFIX = 'dvc_';
+const DVC_TAG_PREFIX = '';
 const CI_SKIP_MESSAGE = '[ci skip]';
 const METRICS_FORMAT = '0[.][0000000]';
 const BASELINE = 'origin/master';
