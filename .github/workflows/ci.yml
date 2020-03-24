@@ -1,0 +1,33 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  test_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: "npm ci"
+      run: npm ci
+
+    - name: "lint"
+      run: npm run lint
+
+    - name: "tests"
+      run: npm run test
+
+    - name: Publish to dockerhub
+      # only publish if push to master (dvcorg/dvc-cml:latest) 
+      # or create a tag in the repo (dvcorg/dvc-cml:tag)
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/dvc-cml
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile
+        context: ./
+        cache: true
+        tag_names: true
