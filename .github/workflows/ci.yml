@@ -19,6 +19,8 @@ jobs:
       run: npm run test
 
     - name: Publish to dockerhub
+      # only publish if push to master (dvcorg/dvc-cml:latest) 
+      # or create a tag in the repo (dvcorg/dvc-cml:tag)
       if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
