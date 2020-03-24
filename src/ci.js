@@ -48,7 +48,12 @@ const run_dvc_repro_push = async opts => {
   console.log('pushing');
   const tag_prefix = dvc_tag_prefix();
   const create_tag = tag_prefix && tag_prefix.length > 0;
+
   if (create_tag) await exec(`git tag ${tag}`, { throw_err: false });
+  else
+    console.log(
+      "No tag prefix is set. Won't do tags. This makes experiments list not appear and may make reports not appear aswell"
+    );
 
   await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
   await exec('dvc push');
