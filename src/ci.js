@@ -62,24 +62,28 @@ const run_dvc_repro_push = async opts => {
 };
 
 const other_experiments = async ref_parser => {
-  try {
-    const logs = await git.log();
-    const tags = logs.all.filter(log =>
-      log.refs.includes(`${dvc_tag_prefix()}`)
-    );
-    const refs = tags.map(tag => tag.hash).reverse();
-    refs.pop();
+  const tag_prefix = dvc_tag_prefix();
 
-    const others = refs;
-    if (ref_parser) {
-      for (let i = 0; i < others.length; i++) {
-        others[i] = await ref_parser(others[i]);
+  if (tag_prefix) {
+    try {
+      const logs = await git.log();
+      const tags = logs.all.filter(log =>
+        log.refs.startsWith(`tag: ${tag_prefix}`)
+      );
+      const refs = tags.map(tag => tag.hash).reverse();
+      refs.pop();
+
+      const others = refs;
+      if (ref_parser) {
+        for (let i = 0; i < others.length; i++) {
+          others[i] = await ref_parser(others[i]);
+        }
       }
-    }
 
-    return others;
-  } catch (err) {
-    console.log('Error while processing others');
+      return others;
+    } catch (err) {
+      console.log('Error while processing others');
+    }
   }
 
   return [];
@@ -112,7 +116,7 @@ const dvc_report = async opts => {
 
   const sha_from = await git.revparse([from]);
   const sha_to = await git.revparse([to]);
-
+  const no_tag = !(dvc_tag_prefix() && dvc_tag_prefix().length);
   const md = await Report.dvc_report_md({
     from,
     to,
@@ -120,7 +124,8 @@ const dvc_report = async opts => {
     sha_to,
     dvc_diff,
     dvc_metrics_diff,
-    others
+    others,
+    no_tag
   });
   const html = Report.md_to_html(md);
 
