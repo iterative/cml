@@ -6,6 +6,29 @@ var showdown = require('showdown');
 const MAX_CHARS = 65000;
 const METRICS_FORMAT = '0[.][0000000]';
 
+const metrics_format = () => {
+  return this.METRICS_FORMAT;
+};
+
+const same_warning = from => {
+  return `>:warning: You are comparing ref ${from} with itself, no diff available. \nPlease [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly`;
+};
+
+const sha_short = sha => {
+  return sha.slice(0, 7);
+};
+
+const header_md = opts => {
+  const { from, sha_from, sha_to } = opts;
+  const is_same = sha_from === sha_to;
+  const warn = is_same ? exports.same_warning(from) : '';
+  const summary = `### Baseline: ${from} ( ${sha_short(
+    sha_from
+  )} vs ${sha_short(sha_to)} ) \n${warn}`;
+
+  return summary;
+};
+
 const dvc_diff_report_md = (data, max_chars) => {
   if (!data || !Object.keys(data).length) return 'No metrics available';
 
@@ -45,6 +68,8 @@ const dvc_diff_report_md = (data, max_chars) => {
 };
 
 const dvc_metrics_diff_report_md = data => {
+  const format = metrics_format();
+
   if (!data || !Object.keys(data).length) return 'No metrics available';
 
   const values = [];
@@ -52,12 +77,12 @@ const dvc_metrics_diff_report_md = data => {
   for (const path in data) {
     const output = data[path];
     for (const metric in output) {
-      const new_ = numeral(output[metric].new).format(METRICS_FORMAT);
-      const old = numeral(output[metric].old).format(METRICS_FORMAT);
+      const new_ = numeral(output[metric].new).format(format);
+      const old = numeral(output[metric].old).format(format);
 
       const arrow = output[metric].diff > 0 ? '+' : '';
       const diff = output[metric].diff
-        ? `${arrow}${numeral(output[metric].diff).format(METRICS_FORMAT)}`
+        ? `${arrow}${numeral(output[metric].diff).format(format)}`
         : 'no available';
 
       values.push({ path, metric, old, new: new_, diff });
@@ -79,8 +104,8 @@ const others_report_md = others => {
 
   _.last(others, max).forEach(other => {
     if (other.link && other.label)
-      summary += `[${other.label}](${other.link}) `;
-    else summary += `${other.substr(0, 7)} `;
+      summary += ` - [${other.label}](${other.link})\n`;
+    else summary += ` - ${sha_short(other)}\n`;
   });
 
   summary += '\n</details>';
@@ -89,7 +114,16 @@ const others_report_md = others => {
 };
 
 const dvc_report_md = opts => {
-  const { dvc_diff, dvc_metrics_diff, others = [] } = opts;
+  const {
+    from,
+    to,
+    sha_from,
+    sha_to,
+    dvc_diff,
+    dvc_metrics_diff,
+    others = []
+  } = opts;
+  const header = header_md({ from, to, sha_from, sha_to });
   const metrics_diff_md = dvc_metrics_diff_report_md(dvc_metrics_diff);
   const others_md = others_report_md(others);
   const diff_md = dvc_diff_report_md(
@@ -97,7 +131,7 @@ const dvc_report_md = opts => {
     MAX_CHARS - (metrics_diff_md.length + others_md.length)
   );
 
-  const summary = `### Data \n\n${diff_md} \n\n### Metrics \n\n ${metrics_diff_md} \n\n### Other experiments \n${others_md}`;
+  const summary = `${header} \n\n#### Metrics \n\n ${metrics_diff_md} \n\n#### Data \n\n${diff_md} \n\n#### Other experiments \n${others_md}`;
 
   return summary;
 };
@@ -137,3 +171,4 @@ const md_to_html = markdown => {
 exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;
+exports.same_warning = same_warning;

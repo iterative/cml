@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const yargs = require('yargs');
-
 const { dvc_report } = require('../src/ci');
 
 const run = async argv => {
@@ -29,8 +28,8 @@ const argv = yargs
   .default('diff_target', '')
   .default('metrics_diff_targets', '')
   .array('metrics_diff_targets')
-  .default('a_rev', '')
-  .default('b_rev', '')
+  .default('a_rev', 'HEAD~1')
+  .default('b_rev', 'HEAD')
   .help('h')
   .alias('h', 'help').argv;
 
