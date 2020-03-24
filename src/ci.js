@@ -4,13 +4,11 @@ const fs = require('fs').promises;
 const DVC = require('./dvc');
 const Report = require('./report');
 
-const DVC_TITLE = 'DVC Report';
-const DVC_TAG_PREFIX = 'dvc_';
-const SKIP = '[ci skip]';
+const { DVC_TITLE, DVC_TAG_PREFIX, CI_SKIP_MESSAGE } = require('./settings');
 
 const commit_skip_ci = async () => {
   const last_log = await exec('git log -1');
-  return last_log.includes(SKIP);
+  return last_log.includes(CI_SKIP_MESSAGE);
 };
 
 const run_dvc_repro_push = async opts => {
@@ -35,7 +33,7 @@ const run_dvc_repro_push = async opts => {
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
 
   await exec(`git add --all`);
-  await exec(`git commit -a -m "dvc repro ${SKIP}"`);
+  await exec(`git commit -a -m "dvc repro ${CI_SKIP_MESSAGE}"`);
 
   const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(
     /(\r\n|\n|\r)/gm,
@@ -131,7 +129,7 @@ const sha_tag = sha => {
 };
 
 exports.DVC_TITLE = DVC_TITLE;
-exports.SKIP = SKIP;
+exports.CI_SKIP_MESSAGE = CI_SKIP_MESSAGE;
 exports.commit_skip_ci = commit_skip_ci;
 exports.run_dvc_repro_push = run_dvc_repro_push;
 exports.other_experiments = other_experiments;

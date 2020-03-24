@@ -1,6 +1,13 @@
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
 const Report = require('./src/report');
+const {
+  METRICS_FORMAT,
+  BASELINE,
+  DVC_PULL,
+  REPRO_TARGETS,
+  METRICS_DIFF_TARGETS
+} = require('./src/settings');
 
 const {
   git_fetch_all,
@@ -26,18 +33,21 @@ const getInputArray = (key, default_value) => {
 
 const run = async () => {
   const {
-    baseline = 'origin/master',
-    metrics_format = '0[.][0000000]',
-    dvc_pull = true
+    baseline = BASELINE,
+    metrics_format = METRICS_FORMAT,
+    dvc_pull = DVC_PULL
   } = process.env;
 
-  const repro_targets = getInputArray('repro_targets', ['Dvcfile']);
-  const metrics_diff_targets = getInputArray('metrics_diff_targets');
+  const repro_targets = getInputArray('repro_targets', REPRO_TARGETS);
+  const metrics_diff_targets = getInputArray(
+    'metrics_diff_targets',
+    METRICS_DIFF_TARGETS
+  );
 
   Report.METRICS_FORMAT = metrics_format;
 
   if (await CI.commit_skip_ci()) {
-    console.log(`${CI.SKIP} found; skipping task`);
+    console.log(`${CI.CI_SKIP_MESSAGE} found; skipping task`);
     return;
   }
 
@@ -71,7 +81,7 @@ const run = async () => {
     ref_parser
   });
 
-  console.log('Publishing Report ');
+  console.log('Publishing Report');
   await publish_report({
     repro_sha,
     head_sha: repro_sha || head_sha,
