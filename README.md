@@ -100,6 +100,10 @@ Example of a simple DVC-CML workflow in Gitlab:
 > :eyes: Some required environment variables like remote credentials and
 > GITLAB_TOKEN are set as CI/CD environment variables in Gitlab's UI
 
+> :warning: `tag_prefix` needs to be set in order to have DVC Reports I.E. dvc\_
+> . This will generate tags in your repo with the report as release notes
+> ![image](https://user-images.githubusercontent.com/414967/77463321-b93e9680-6e05-11ea-99bc-bf44f7bdf8d9.png)
+
 ```yaml
 stages:
   - dvc_action_run
@@ -140,13 +144,14 @@ should be 78 however, at the time of this writing, Github is only accepting 0 or
 
 ### env variables
 
-| Variable             | Type   | Required | Default       | Info                                                                                         |
-| -------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------------- |
-| github_token         | string | yes      |               | Is the github_token, this is set automatically by Github as a secret. Only Needed on Github  |
-| baseline             | string | no       | origin/master | Revision to be compared with current experiment. I.E. origin/master, HEAD~1 or a commit sha. |
-| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                  |
-| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files       |
-| metrics_format       | string | no       | 0[.][0000000] | Metrics format following [numeral.js](http://numeraljs.com/)                                 |
+| Variable             | Type   | Required | Default       | Info                                                                                                                                                                                                                                   |
+| -------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| github_token         | string | yes      |               | Is the github_token, this is set automatically by Github as a secret. Only Needed on Github                                                                                                                                            |
+| baseline             | string | no       | origin/master | Revision to be compared with current experiment. I.E. origin/master, HEAD~1 or a commit sha.                                                                                                                                           |
+| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                                                                                                                                                            |
+| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files                                                                                                                                                 |
+| tag_prefix           | string | no       |               | If set a new tag will be created in the repo with the name `${tag_prefix}${short_sha}`. This will enable the "Latest 5 experiments in the branch" list in the report and will enable the DVC Report in Gitlab as a release description |
+| metrics_format       | string | no       | 0[.][0000000] | Metrics format following [numeral.js](http://numeraljs.com/)                                                                                                                                                                           |
 
 > :warning: In Gitlab is required that you generate the GITLAB_TOKEN that is
 > analogous to GITHUB_TOKEN. See
