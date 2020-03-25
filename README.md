@@ -40,10 +40,8 @@ DVC-cml performs in your push or pull requests:
 
 1.  DVC [repro](https://dvc.org/doc/command-reference/repro)
 2.  Push changes into DVC remote and Git remote
-3.
-
-- In Github generates a Github check displaying the DVC Report
-- In Gitlab generates a Tag/Release displaying the DVC Report
+3.  - In Github generates a Github check displaying the DVC Report
+    - In Gitlab generates a Tag/Release displaying the DVC Report
 
 ![image](https://user-images.githubusercontent.com/414967/75673142-854ad800-5c82-11ea-97f4-256beca83754.png)
 ![image](https://user-images.githubusercontent.com/414967/75673087-677d7300-5c82-11ea-8ccb-be6a4f81eb5d.png)
@@ -100,7 +98,7 @@ Example of a simple DVC-CML workflow in Gitlab:
 > :eyes: Some required environment variables like remote credentials and
 > GITLAB_TOKEN are set as CI/CD environment variables in Gitlab's UI
 
-> :warning: `tag_prefix` needs to be set in order to have DVC Reports I.E. dvc\_
+> :warning: `tag_prefix` should be set in order to have DVC Reports, i.e. dvc\_
 > . This will generate tags in your repo with the report as release notes
 > ![image](https://user-images.githubusercontent.com/414967/77463321-b93e9680-6e05-11ea-99bc-bf44f7bdf8d9.png)
 
@@ -142,36 +140,35 @@ will skip the CI returning an exit code of 0. We know that ideally the code
 should be 78 however, at the time of this writing, Github is only accepting 0 or
 1 as status codes.
 
-### env variables
+### Variables
 
-| Variable             | Type   | Required | Default       | Info                                                                                                                                                                                                                                   |
-| -------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| github_token         | string | yes      |               | Is the github_token, this is set automatically by Github as a secret. Only Needed on Github                                                                                                                                            |
-| baseline             | string | no       | origin/master | Revision to be compared with current experiment. I.E. origin/master, HEAD~1 or a commit sha.                                                                                                                                           |
-| repro_targets        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                                                                                                                                                            |
-| metrics_diff_targets | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files                                                                                                                                                 |
-| tag_prefix           | string | no       |               | If set a new tag will be created in the repo with the name `${tag_prefix}${short_sha}`. This will enable the "Latest 5 experiments in the branch" list in the report and will enable the DVC Report in Gitlab as a release description |
-| metrics_format       | string | no       | 0[.][0000000] | Metrics format following [numeral.js](http://numeraljs.com/)                                                                                                                                                                           |
+> :warning: In Github Actions they are set via `env:` not `inputs:`
+
+> :eyes: In Gitlab pipeline they are set via `variables:`
+
+| Variable               | Type   | Required | Default       | Info                                                                                                                                                                                                                                   |
+| ---------------------- | ------ | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `github_token`         | string | yes      |               | Is the `github_token`, this is set automatically by Github as a secret. Only Needed on Github.                                                                                                                                         |
+| `baseline`             | string | no       | origin/master | Revision to be compared with current experiment, i.e. origin/master, HEAD~1 or a commit sha.                                                                                                                                           |
+| `repro_targets`        | string | no       | Dvcfile       | Comma delimited array of DVC files. If None is given will skip the process.                                                                                                                                                            |
+| `metrics_diff_targets` | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files.                                                                                                                                                |
+| `tag_prefix`           | string | no       |               | If set a new tag will be created in the repo with the name `${tag_prefix}${short_sha}`. This will enable the "Latest 5 experiments in the branch" list in the report and will enable the DVC Report in Gitlab as a release description |
+| `metrics_format`       | string | no       | 0[.][0000000] | Metrics format following [numeral.js](http://numeraljs.com/)                                                                                                                                                                           |
 
 > :warning: In Gitlab is required that you generate the GITLAB_TOKEN that is
 > analogous to GITHUB_TOKEN. See
 > [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example for a
 > complete walkthrough.
 
-DVC remote is setup using env variables see
-[Working with DVC remotes](#working-with-dvc-remotes).
-
 ## Working with DVC remotes
 
 DVC support different kinds of remote
 [storage](https://dvc.org/doc/command-reference/remote/add). To setup them
-properly you have to setup credentials (if needed) as environment variables. We
-choose env variables and not inputs to be compatible with other Github Actions
-that set credentials like
-https://github.com/aws-actions/configure-aws-credentials.  
-We recommend you to set those variables as
+properly you have to setup credentials (if needed) as Github
 [secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-to keep them secure.
+or Gitlab masked
+[enviroment variables](https://docs.gitlab.com/ee/ci/variables/README.html) to
+keep them secure.
 
 #### S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...)
 

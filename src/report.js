@@ -15,7 +15,7 @@ const setup_env_vars = () => {
 };
 
 const no_tag_warning = () => {
-  return `> :warning: Without a \`\`\`tag_prefix\`\`\` interbranch experiments won't be listed\n${setup_env_vars()}`;
+  return `> :warning: Without a \`\`\`tag_prefix\`\`\` "Last 5 experiments" list won't be listed\n${setup_env_vars()}`;
 };
 
 const same_warning = from => {

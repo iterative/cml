@@ -21,7 +21,8 @@
     "lintfix": "eslint --fix ./",
     "lint": "eslint ./",
     "build": "ncc build index.js -o dist -m",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {

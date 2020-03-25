@@ -82,7 +82,7 @@ const other_experiments = async ref_parser => {
 
       return others;
     } catch (err) {
-      console.log('Error while processing others');
+      console.log(`Error while processing others: ${err.message}`);
     }
   }
 
