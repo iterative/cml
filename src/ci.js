@@ -32,7 +32,12 @@ const run_dvc_repro_push = async opts => {
   console.log('Updating remotes');
   await exec(`git config --local user.email "${user_email}"`);
   await exec(`git config --local user.name "${user_name}"`);
-  await exec(`git remote add remote "${remote}"`, { throw_err: false });
+
+  try {
+    await exec(`git remote add remote "${remote}"`);
+  } catch (err) {
+    console.log(`git remote add remote failed: ${err.message}`);
+  }
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "dvc repro ${SKIP}"`);
