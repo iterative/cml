@@ -1,0 +1,85 @@
+ARG UBUNTU_VERSION=18.04
+
+ARG ARCH=
+ARG CUDA=10.1
+FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
+
+# ARCH and CUDA are specified again because the FROM directive resets ARGs
+# (but their default value is retained if set previously)
+ARG ARCH
+ARG CUDA
+ARG CUDNN=7.6.4.38-1
+ARG CUDNN_MAJOR_VERSION=7
+ARG LIB_DIR_PREFIX=x86_64
+ARG LIBNVINFER=6.0.1-1
+ARG LIBNVINFER_MAJOR_VERSION=6
+
+# Needed for string substitution
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
+    build-essential \
+    apt-utils \
+    apt-transport-https \
+    ca-certificates \
+    software-properties-common \
+    pkg-config \
+    curl \
+    unzip
+
+# Install latest git
+RUN add-apt-repository ppa:git-core/ppa -y
+RUN apt-get update
+RUN apt-get install -y git
+
+# Upgrade pip
+RUN apt-get install -y python3-pip && pip3 install --upgrade pip
+RUN apt-get install -y python-pip && pip2 install --upgrade pip
+RUN pip install --upgrade setuptools
+
+# Install nodejs 12x
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
+RUN apt-get install -y nodejs
+
+# Install dvc
+RUN yes | pip3 install dvc[all]
+
+# Install dvc-cml
+ADD "./" "/dvc-cml"
+RUN npm install -g /dvc-cml
+
+LABEL Iterative, Inc
+
+RUN apt-get install -y --no-install-recommends \
+    cuda-command-line-tools-${CUDA/./-} \
+    libcublas10=10.2.1.243-1 \ 
+    cuda-nvrtc-${CUDA/./-} \
+    cuda-cufft-${CUDA/./-} \
+    cuda-curand-${CUDA/./-} \
+    cuda-cusolver-${CUDA/./-} \
+    cuda-cusparse-${CUDA/./-} \
+    libcudnn7=${CUDNN}+cuda${CUDA} \
+    libfreetype6-dev \
+    libhdf5-serial-dev \
+    libzmq3-dev
+        
+# For CUDA profiling
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# TENSORFLOW
+# Install TensorRT 
+RUN [[ "${ARCH}" = "ppc64le" ]] || { apt-get update && \
+    apt-get install -y --no-install-recommends libnvinfer${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
+    libnvinfer-plugin${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*; }
+
+# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
+# dynamic linker run-time bindings
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
+    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
+    && ldconfig
+# TENSORFLOW ENDS
+
+COPY "./docker/entrypoint.sh" "/entrypoint.sh"
+CMD ["/entrypoint.sh"]
