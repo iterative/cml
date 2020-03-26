@@ -250,7 +250,6 @@ env:
 Our docker image is already supporting cuda 10.1 and libcudnn7.
 
 1. You need to setup properly your nvidia drivers. Here is a recipe for Ubuntu
-   18.04
 
    ```sh
     distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
@@ -270,7 +269,7 @@ Our docker image is already supporting cuda 10.1 and libcudnn7.
    dvc:
      runs-on: [self-hosted, linux]
      container:
-       image: docker://dvcorg/dvc-cml:gpu
+       image: docker://dvcorg/dvc-cml-gpu:latest
        options: --gpus "device=0"
    ```
    `runs-on` specifies that the job is going to be run by your runner `options`
