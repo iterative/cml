@@ -3,15 +3,23 @@ const numeral = require('numeral');
 const _ = require('underscore');
 var showdown = require('showdown');
 
+const { METRICS_FORMAT } = require('./settings');
 const MAX_CHARS = 65000;
-const METRICS_FORMAT = '0[.][0000000]';
 
 const metrics_format = () => {
   return this.METRICS_FORMAT;
 };
 
+const setup_env_vars = () => {
+  return 'Please [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly';
+};
+
+const no_tag_warning = () => {
+  return `> :warning: Without a \`\`\`tag_prefix\`\`\` "Last 5 experiments" list won't be listed\n${setup_env_vars()}`;
+};
+
 const same_warning = from => {
-  return `>:warning: You are comparing ref ${from} with itself, no diff available. \nPlease [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly`;
+  return `>:warning: You are comparing ref ${from} with itself, no diff available. \n${setup_env_vars()}`;
 };
 
 const sha_short = sha => {
@@ -94,11 +102,11 @@ const dvc_metrics_diff_report_md = data => {
   return summary;
 };
 
-const others_report_md = others => {
+const others_report_md = (others, no_tag) => {
+  if (no_tag) no_tag_warning();
   if (!others.length) return 'No other experiments available';
 
   const max = 5;
-
   let summary = `<details><summary>Experiments</summary>\n\n 
   Latest ${Math.min(others.length, max)} experiments in the branch:\n`;
 
@@ -121,11 +129,13 @@ const dvc_report_md = opts => {
     sha_to,
     dvc_diff,
     dvc_metrics_diff,
-    others = []
+    others = [],
+    no_tag = false
   } = opts;
+
   const header = header_md({ from, to, sha_from, sha_to });
   const metrics_diff_md = dvc_metrics_diff_report_md(dvc_metrics_diff);
-  const others_md = others_report_md(others);
+  const others_md = others_report_md(others, no_tag);
   const diff_md = dvc_diff_report_md(
     dvc_diff,
     MAX_CHARS - (metrics_diff_md.length + others_md.length)
@@ -171,4 +181,5 @@ const md_to_html = markdown => {
 exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;
+exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
