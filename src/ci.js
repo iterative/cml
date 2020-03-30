@@ -37,7 +37,7 @@ const run_dvc_repro_push = async opts => {
   await exec(`git remote add remote "${remote}"`, { throw_err: false });
 
   await exec(`git add --all`);
-  await exec(`git commit -a -m "dvc repro ${CI_SKIP_MESSAGE}"`);
+  await exec(`git commit -a -m "DVC-CML: generated report ${CI_SKIP_MESSAGE}"`);
 
   const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(
     /(\r\n|\n|\r)/gm,
