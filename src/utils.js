@@ -3,12 +3,17 @@ const git = require('simple-git/promise');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
-  const { debug } = opts || {};
-  const { stdout, stderr } = await execp(command);
+  return new Promise(function(resolve, reject) {
+    const { debug } = opts || {};
 
-  if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
+    execp(command, (error, stdout, stderr) => {
+      if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
 
-  return stdout;
+      if (error) reject(error);
+
+      resolve(stdout.trim());
+    });
+  });
 };
 
 exports.exec = exec;
