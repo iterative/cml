@@ -9,9 +9,10 @@ const {
   CI_PROJECT_URL,
   CI_COMMIT_REF_NAME,
   CI_COMMIT_SHA,
-  GITLAB_TOKEN,
   GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME
+  GITLAB_USER_NAME,
+  GITLAB_TOKEN,
+  repo_token
 } = process.env;
 
 const [owner, repo] = CI_PROJECT_PATH.split('/');
@@ -20,7 +21,9 @@ const REF = CI_COMMIT_REF_NAME;
 const HEAD_SHA = CI_COMMIT_SHA;
 const USER_EMAIL = GITLAB_USER_EMAIL;
 const USER_NAME = GITLAB_USER_NAME;
-const REMOTE = `https://${owner}:${GITLAB_TOKEN}@gitlab.com/${owner}/${repo}.git`;
+
+const TOKEN = repo_token || GITLAB_TOKEN;
+const REMOTE = `https://${owner}:${TOKEN}@gitlab.com/${owner}/${repo}.git`;
 
 const ref_parser = async ref => {
   const tag = CI.sha_tag(ref);
@@ -51,7 +54,7 @@ const publish_report = async opts => {
   const body = new URLSearchParams();
   body.append('description', report);
 
-  const headers = { 'PRIVATE-TOKEN': GITLAB_TOKEN };
+  const headers = { 'PRIVATE-TOKEN': TOKEN };
   await fetch(endpoint, { method: 'POST', headers, body });
 };
 

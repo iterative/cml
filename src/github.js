@@ -6,12 +6,13 @@ const github = require('@actions/github');
 
 const {
   GITHUB_REPOSITORY,
-  GITHUB_TOKEN,
   GITHUB_WORKFLOW,
   GITHUB_HEAD_REF,
   GITHUB_REF,
   GITHUB_SHA,
-  GITHUB_EVENT_NAME
+  GITHUB_EVENT_NAME,
+  GITHUB_TOKEN,
+  repo_token
 } = process.env;
 
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
@@ -20,9 +21,11 @@ const REF = IS_PR ? GITHUB_HEAD_REF : GITHUB_REF;
 const HEAD_SHA = GITHUB_SHA;
 const USER_EMAIL = 'action@github.com';
 const USER_NAME = 'GitHub Action';
-const REMOTE = `https://${owner}:${GITHUB_TOKEN}@github.com/${owner}/${repo}.git`;
 
-const octokit = new github.GitHub(GITHUB_TOKEN);
+const TOKEN = repo_token || GITHUB_TOKEN;
+const REMOTE = `https://${owner}:${TOKEN}@github.com/${owner}/${repo}.git`;
+
+const octokit = new github.GitHub(TOKEN);
 
 const create_check_dvc_report = async opts => {
   const {
