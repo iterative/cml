@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: dvc_action_run
+      - name: dvc_cml_run
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -80,7 +80,7 @@ jobs:
         repro_targets: your_dvc_target.dvc
       run: |
         # install your project dependencies
-        dvc_action_run
+        dvc_cml_run
 ```
 
 </details>
@@ -104,16 +104,16 @@ Example of a simple DVC-CML workflow in Gitlab:
 
 ```yaml
 stages:
-  - dvc_action_run
+  - dvc_cml_run
 
 dvc:
-  stage: dvc_action_run
+  stage: dvc_cml_run
   image: dvcorg/dvc-cml:latest
   variables:
     repro_targets: 'eval.dvc'
   script:
     - pip install tensorflow wget
-    - dvc_action_run
+    - dvc_cml_run
 ```
 
 </details>
