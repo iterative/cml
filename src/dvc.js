@@ -83,8 +83,8 @@ const setup_remote = async opts => {
 
   // gdrive
   if (dvc_remote_list.includes('gdrive://')) {
-    const { GDRIVE_USER_CREDENTIALS_DATA } = process.env;
-    if (!GDRIVE_USER_CREDENTIALS_DATA) {
+    const { GDRIVE_CREDENTIALS_DATA } = process.env;
+    if (!GDRIVE_CREDENTIALS_DATA) {
       console.log(`Google drive DVC remote found but no credentials found`);
     }
   }
