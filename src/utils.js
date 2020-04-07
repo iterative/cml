@@ -13,5 +13,17 @@ const exec = async (command, opts) => {
   return stdout;
 };
 
+const randid = () => {
+  return (
+    Math.random()
+      .toString(36)
+      .substring(2, 7) +
+    Math.random()
+      .toString(36)
+      .substring(2, 7)
+  );
+};
+
 exports.exec = exec;
+exports.randid = randid;
 exports.git = git('./');

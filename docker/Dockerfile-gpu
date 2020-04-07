@@ -1,21 +1,10 @@
-ARG UBUNTU_VERSION=18.04
-
 ARG ARCH=
 ARG CUDA=10.1
+ARG UBUNTU_VERSION=18.04
+
 FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
 
-# ARCH and CUDA are specified again because the FROM directive resets ARGs
-# (but their default value is retained if set previously)
-ARG ARCH
-ARG CUDA
-ARG CUDNN=7.6.4.38-1
-ARG CUDNN_MAJOR_VERSION=7
-ARG LIB_DIR_PREFIX=x86_64
-ARG LIBNVINFER=6.0.1-1
-ARG LIBNVINFER_MAJOR_VERSION=6
-
-# Needed for string substitution
-SHELL ["/bin/bash", "-c"]
+LABEL maintainer="Iterative Inc"
 
 RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
     build-essential \
@@ -25,54 +14,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
     software-properties-common \
     pkg-config \
     curl \
+    wget \
     unzip
 
-# Install latest git
-RUN add-apt-repository ppa:git-core/ppa -y
-RUN apt-get update
-RUN apt-get install -y git
+ARG CUDA
+ARG CUDNN=7.6.4.38-1
+ARG CUDNN_MAJOR_VERSION=7
+ARG LIBNVINFER=6.0.1-1
+ARG LIBNVINFER_MAJOR_VERSION=6
+ARG CUBLAS=10.2.1.243-1
+ARG CUBLAS_MAJOR_VERSION=10
 
-# Upgrade pip
-RUN apt-get install -y python3-pip && pip3 install --upgrade pip
-RUN apt-get install -y python-pip && pip2 install --upgrade pip
-RUN pip install --upgrade setuptools
-
-# Install nodejs 12x
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
-RUN apt-get install -y nodejs
-
-# Install dvc
-RUN yes | pip3 install dvc[all]
-
-# Install dvc-cml
-ADD "./" "/dvc-cml"
-RUN npm install -g /dvc-cml
-
-LABEL Iterative, Inc
+SHELL ["/bin/bash", "-c"]
 
 RUN apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
-    libcublas10=10.2.1.243-1 \ 
+    libcublas${CUBLAS_MAJOR_VERSION}=${CUBLAS} \ 
     cuda-nvrtc-${CUDA/./-} \
     cuda-cufft-${CUDA/./-} \
     cuda-curand-${CUDA/./-} \
     cuda-cusolver-${CUDA/./-} \
     cuda-cusparse-${CUDA/./-} \
-    libcudnn7=${CUDNN}+cuda${CUDA} \
+    libcudnn${CUDNN_MAJOR_VERSION}=${CUDNN}+cuda${CUDA} \
     libfreetype6-dev \
     libhdf5-serial-dev \
     libzmq3-dev
         
-# For CUDA profiling
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
 # Install TensorRT 
-RUN [[ "${ARCH}" = "ppc64le" ]] || { apt-get update && \
-    apt-get install -y --no-install-recommends libnvinfer${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
+RUN apt-get install -y --no-install-recommends libnvinfer${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
     libnvinfer-plugin${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*; }
+    && rm -rf /var/lib/apt/lists/*
 
 # Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
 # dynamic linker run-time bindings
@@ -81,5 +56,51 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && ldconfig
 # TENSORFLOW ENDS
 
-COPY "./docker/entrypoint.sh" "/entrypoint.sh"
-CMD ["/entrypoint.sh"]
+
+# Install latest git
+RUN add-apt-repository ppa:git-core/ppa -y
+RUN apt-get update
+RUN apt-get install -y git
+
+# Upgrade pip
+RUN apt-get install -y python-pip && pip2 install --upgrade pip
+RUN apt-get install -y python3-pip && pip3 install --upgrade pip
+RUN rm /usr/local/bin/pip && ln -s /usr/local/bin/pip2 /usr/local/bin/pip
+
+# Install dvc
+RUN yes | pip3 install dvc[all]
+
+# Install nodejs 12x
+RUN apt-get update && apt-get install -y gpg-agent
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
+RUN apt-get install -y nodejs
+
+# Install dvc-cml
+ADD "./" "/dvc-cml"
+RUN npm install -g /dvc-cml
+
+ENV RUNNER_PATH=/home/runner
+RUN mkdir ${RUNNER_PATH}
+WORKDIR ${RUNNER_PATH}
+
+ENV RUNNER_LABELS=dvc-cml
+ENV RUNNER_RUNTIME=nvidia
+ENV RUNNER_RUNTIME=dvcorg/dvc-cml-gpu:latest
+
+# DOCKER
+RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+RUN curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
+
+# GITLAB RUNNER
+RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64
+RUN chmod +x /usr/local/bin/gitlab-runner
+RUN gitlab-runner install --user=root --working-directory=${RUNNER_PATH}
+
+# GITHUB RUNNER
+ENV RUNNER_ALLOW_RUNASROOT=1
+RUN wget https://github.com/DavidGOrtega/gh-runner/releases/download/v2.200.1/actions-runner-linux-x64-2.200.1.tar.gz
+RUN tar xzf actions-runner-linux-x64-2.200.1.tar.gz
+RUN ./bin/installdependencies.sh
+
+CMD ["dvc_cml_runner"]
