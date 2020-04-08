@@ -6,7 +6,9 @@ const setup = async () => {
     await exec('dvc version');
   } catch (err) {
     console.log('Installing DVC ...');
-    await exec('pip3 uninstall -y enum34', { throw_err: false });
+    try {
+      await exec('pip3 uninstall -y enum34');
+    } catch (e) {}
     await exec('pip3 install --quiet dvc[all]');
   }
 };
@@ -81,8 +83,8 @@ const setup_remote = async opts => {
 
   // gdrive
   if (dvc_remote_list.includes('gdrive://')) {
-    const { GDRIVE_USER_CREDENTIALS_DATA } = process.env;
-    if (!GDRIVE_USER_CREDENTIALS_DATA) {
+    const { GDRIVE_CREDENTIALS_DATA } = process.env;
+    if (!GDRIVE_CREDENTIALS_DATA) {
       console.log(`Google drive DVC remote found but no credentials found`);
     }
   }

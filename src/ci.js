@@ -42,25 +42,22 @@ const run_dvc_repro_push = async opts => {
   }
 
   await exec(`git add --all`);
-  await exec(`git commit -a -m "dvc repro ${CI_SKIP_MESSAGE}"`);
+  await exec(`git commit -a -m "DVC-CML: generated report ${CI_SKIP_MESSAGE}"`);
 
-  const sha = (await exec(`git rev-parse HEAD`, { throw_err: false })).replace(
-    /(\r\n|\n|\r)/gm,
-    ''
-  );
+  const sha = (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
   const tag = sha_tag(sha);
 
   console.log('pushing');
   const tag_prefix = dvc_tag_prefix();
   const create_tag = tag_prefix && tag_prefix.length > 0;
 
-  if (create_tag) await exec(`git tag ${tag}`, { throw_err: false });
+  if (create_tag) await exec(`git tag ${tag}`);
   else
     console.log(
       "No tag prefix is set. Won't do tags. This makes experiments list not appear and may make reports not appear aswell"
     );
 
-  await exec(`git push remote HEAD:${ref} --tags`, { throw_err: false });
+  await exec(`git push remote HEAD:${ref} --tags`);
   await exec('dvc push');
 
   return sha;
