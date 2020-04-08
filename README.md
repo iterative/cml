@@ -2,9 +2,10 @@
 
 1. [Introduction](#introduction)
 2. [Usage](#usage)
-3. [Working with DVC remotes](#working-with-dvc-remotes)
-4. [How to use GPUs](#how-to-use-gpus)
-5. [Examples](#examples)
+3. [How to use GPUs](#how-to-use-gpus)
+4. [DVC-CML runner](#dvc-cml-runner)
+5. [Working with DVC remotes](#working-with-dvc-remotes)
+6. [Examples](#examples)
 
 ## Introduction
 
@@ -161,6 +162,240 @@ should be 78 however, at the time of this writing, Github is only accepting 0 or
 > [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example for a
 > complete walkthrough.
 
+## How to use GPUs
+
+> :rocket: To simplify installation and setup of the runners the DVC-CML docker
+> image can act also as a thin wrapper of Gitlab and Github runners just using
+> `docker run`. See [DVC-CML runner](#dvc-cml-runner)
+
+Our DVC-CML GPU docker
+[image](https://hub.docker.com/repository/docker/dvcorg/dvc-cml-gpu) is an
+Ubuntu 18.04 that already supports:
+
+- cuda 10.1
+- libcudnn 7
+- cublas 10
+- libinfer 10
+
+#### Setup
+
+1. You need to setup properly your nvidia drivers and nvidia-docker in your host
+   machine.
+   ```sh
+    sudo ubuntu-drivers autoinstall
+    sudo apt-get install nvidia-docker2
+    sudo systemctl restart docker
+   ```
+2. Launch your own runner following your CI vendor instructions.
+   <details>
+   <summary>
+   Github
+   </summary>
+
+Repo settings -> Actions -> Add Runner button
+
+  </details>
+
+  <details>
+  <summary>
+  Gitlab
+  </summary>
+
+Repo settings -> CI/CD -> Runners -> Specific Runners
+
+```sh
+gitlab-runner register \
+    --non-interactive \
+    --run-untagged="true" \
+    --locked="false" \
+    --access-level="not_protected" \
+    --executor "docker" \
+    --docker-runtime "nvidia" \
+    --docker-image "dvcorg/dvc-cml-gpu:latest" \
+    --url "https://gitlab.com/" \
+    --tag-list "dvc-cml" \
+    --registration-token "here_goes_your_gitlab_runner_token"
+
+gitlab-runner start
+```
+
+  </details>
+
+3. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
+   <details>
+   <summary>
+   Github
+   </summary>
+
+```yaml
+# Github
+dvc:
+  runs-on: [self-hosted]
+  container:
+    image: docker://dvcorg/dvc-cml-gpu:latest
+    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+```
+
+  </details>
+   
+  <details>
+  <summary>
+  Gitlab
+  </summary>
+
+```yaml
+# Gitlab
+dvc:
+ tags:
+   - dvc-cml
+ stage: dvc_action_run
+ image: dvcorg/dvc-cml-gpu:latest
+
+ variables:
+   NVIDIA_VISIBLE_DEVICES: all
+   ...
+```
+
+   </details>
+
+#### Pitfalls
+
+- "My runner says: Got permission denied while trying to connect to the Docker
+  daemon socket". You need to add your user to the docker group. Check your OS
+  configuration for further details. Recipe for ubuntu:
+
+```sh
+sudo groupadd docker
+sudo usermod -aG docker ${USER}
+#your group membership is needs to be re-evaluated logout and login again or:
+su -s ${USER}
+```
+
+- "With Github runners I can't specify custom tags to reach different runners".
+  We know, It's a
+  [Github limitation](https://github.com/actions/runner/issues/262). We have
+  included dvc-cml in our self-runners.
+
+- "I have followed all the steps and I could not make it work". Try to run
+  nvidia-smi in the `run` section in your workflow and see if gpu is available
+  to your docker container.
+  ![image](https://user-images.githubusercontent.com/414967/77680444-dac98a80-6f8b-11ea-89bf-66e653503934.png)
+
+## DVC-CML self-runner
+
+To simplify the use of self-runners with or without GPU our docker image is a
+thin wrapper over Gitlab and Github runners. There are two ways of running them:
+
+#### 1.- Running with shell executor
+
+The runner uses the always the same "machine" clearing only the worspace but not
+the software installed or used volumes in the execution.
+
+<details>
+  <summary>
+  Github
+  </summary>
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_REPO=https://github.com/DavidGOrtega/dvc-mnist-v1 \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_REPO=https://github.com/DavidGOrtega/dvc-mnist-v1 \
+  dvcorg/dvc-cml:latest
+```
+
+</details>
+
+<details>
+  <summary>
+  Gitlab
+  </summary>
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  dvcorg/dvc-cml:latest
+```
+
+</details>
+
+#### 2.- Running with docker executor (docker in docker)
+
+The runner creates a docker container generating a new enviroment every time.
+
+<details>
+  <summary>
+  Github
+  </summary>
+
+> :warning: Github does not supports docker executor yet.
+
+</details>
+
+<details>
+  <summary>
+  Gitlab
+  </summary>
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_EXECUTOR=docker \
+  -v "/var/run/docker.sock":"/var/run/docker.sock" \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_EXECUTOR=docker \
+  -v "/var/run/docker.sock":"/var/run/docker.sock" \
+  dvcorg/dvc-cml:latest
+```
+
+Additionally modify your CI Pipeline like you would do with Gitlab's runner.
+
+```yaml
+  dvc:
+  tags:
+    - dvc-cml
+  stage: dvc_action_run
+  image: dvcorg/dvc-cml-gpu:latest
+
+  variables:
+    NVIDIA_VISIBLE_DEVICES: all
+    ...
+```
+
+</details>
+
+Once you have launched it you should see your runner registered in your CI
+vendor.
+
+> :thumbsup: Stopping the runner docker container will automatically unregister
+> the runner from the CI
+
+#### Parameters
+
+| Variable          | Required             | Default | Info                                                                                  |
+| ----------------- | -------------------- | ------- | ------------------------------------------------------------------------------------- |
+| `RUNNER_TOKEN`    | Yes                  |         | The runner token provided by Github or Gitlab                                         |
+| `RUNNER_EXECUTOR` | No                   | shell   | Can be `docker` or `shell`                                                            |
+| `RUNNER_REPO`     | Yes, for Github only |         | URL of your repo. For Github only.                                                    |
+| `RUNNER_LABELS`   | No                   | dvc-cml | Comma delimited list of labels. i.e. label1,label2. In Github only dvc-cml is allowed |
+
 ## Working with DVC remotes
 
 DVC support different kinds of remote
@@ -236,66 +471,6 @@ env:
 env:
   DVC_REMOTE_SSH_KEY: ${{ secrets.DVC_REMOTE_SSH_KEY }}
 ```
-
-## Examples
-
-- [Tensorflow Mnist for Github Actions](https://github.com/iterative/dvc-cml/wiki/Tensorflow-Mnist-for-Github-Actions)
-- [Tensorflow Mnist for Gitlab CI](https://github.com/iterative/dvc-cml/wiki/Tensorflow-Mnist-for-Gitlab-CI)
-
-## How to use GPUs
-
-> :warning: GPUS are only supported for now in Github Actions. Gitlab is comming
-> soon.
-
-Our docker image is already supporting cuda 10.1 and libcudnn7.
-
-1. You need to setup properly your nvidia drivers. Here is a recipe for Ubuntu
-
-   ```sh
-    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-    sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
-    sudo systemctl restart docker
-   ```
-
-2. Launch your own runner
-   1. Goto you project settings -> Actions -> Add Runner button
-      ![image](https://user-images.githubusercontent.com/414967/77658863-3afe0380-6f6f-11ea-8a02-304c6394ca1c.png)
-   2. Follow the instructions given by Github depending on your OS.
-3. Modify your workflow to setup your gpu in your dvc job.
-   ```yaml
-   dvc:
-     runs-on: [self-hosted, linux]
-     container:
-       image: docker://dvcorg/dvc-cml-gpu:latest
-       options: --gpus "device=0"
-   ```
-   `runs-on` specifies that the job is going to be run by your runner `options`
-   add the --gpus
-   [docker run option](https://docs.docker.com/engine/reference/commandline/run/#options).
-
-#### Pitfalls
-
-- "My runner says: Got permission denied while trying to connect to the Docker
-  daemon socket". You need to add your user to the docker group. Check your OS
-  configuration for further details. Recipe for ubuntu:
-
-```sh
-sudo groupadd docker
-sudo usermod -aG docker ${USER}
-#your group membership is needs to be re-evaluated logout and login again or:
-su -s ${USER}
-```
-
-- "I can't specify custom tags to reach different runners". We know, It's a
-  [Github limitation](https://github.com/actions/runner/issues/262).
-
-- "I have followed all the steps and I could not make it work". Try to run
-  nvidia-smi in the `run` section in your workflow and see if gpu is available
-  to your docker container.
-  ![image](https://user-images.githubusercontent.com/414967/77680444-dac98a80-6f8b-11ea-89bf-66e653503934.png)
 
 ## Examples
 
