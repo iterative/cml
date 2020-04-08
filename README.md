@@ -68,7 +68,7 @@ on: [push, pull_request]
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest]
     container: docker://dvcorg/dvc-cml:latest
 
     steps:
@@ -267,7 +267,6 @@ dvc:
 ```sh
 sudo groupadd docker
 sudo usermod -aG docker ${USER}
-#your group membership is needs to be re-evaluated logout and login again or:
 su -s ${USER}
 ```
 
@@ -284,7 +283,21 @@ su -s ${USER}
 ## DVC-CML self-runner
 
 To simplify the use of self-runners with or without GPU our docker image is a
-thin wrapper over Gitlab and Github runners. There are two ways of running them:
+thin wrapper over Gitlab and Github runners. Using the DVC-CML self-runner you
+gain the following benefits:
+
+- Easy to deploy
+- Stopping the container automatically unregister the runner
+- Github runner also can use the tag dvc-cml
+
+```yaml
+jobs:
+run:
+  runs-on: [dvc-cml]
+  container: docker://dvcorg/dvc-cml:latest
+```
+
+There are two ways of running them:
 
 #### 1.- Running with shell executor
 
