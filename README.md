@@ -2,8 +2,10 @@
 
 1. [Introduction](#introduction)
 2. [Usage](#usage)
-3. [Working with DVC remotes](#working-with-dvc-remotes)
-4. [Examples](#examples)
+3. [How to use GPUs](#how-to-use-gpus)
+4. [DVC-CML self-hosted runner](#dvc-cml-self-hosted-runner)
+5. [Working with DVC remotes](#working-with-dvc-remotes)
+6. [Examples](#examples)
 
 ## Introduction
 
@@ -66,7 +68,7 @@ on: [push, pull_request]
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest]
     container: docker://dvcorg/dvc-cml:latest
 
     steps:
@@ -103,6 +105,7 @@ Example of a simple DVC-CML workflow in Gitlab:
 > ![image](https://user-images.githubusercontent.com/414967/77463321-b93e9680-6e05-11ea-99bc-bf44f7bdf8d9.png)
 
 ```yaml
+# .gitlab-ci.yml
 stages:
   - dvc_cml_run
 
@@ -154,6 +157,277 @@ should be 78 however, at the time of this writing, Github is only accepting 0 or
 | `metrics_diff_targets` | string | no       |               | Comma delimited array of metrics files. If not specified will use all the metric files.                                                                                                                                                |
 | `tag_prefix`           | string | no       |               | If set a new tag will be created in the repo with the name `${tag_prefix}${short_sha}`. This will enable the "Latest 5 experiments in the branch" list in the report and will enable the DVC Report in Gitlab as a release description |
 | `metrics_format`       | string | no       | 0[.][0000000] | Metrics format following [numeral.js](http://numeraljs.com/)                                                                                                                                                                           |
+
+> :warning: In Gitlab is required that you generate the GITLAB_TOKEN that is
+> analogous to GITHUB_TOKEN. See
+> [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example for a
+> complete walkthrough.
+
+## How to use GPUs
+
+> :rocket: To simplify installation and setup of the runners the DVC-CML docker
+> image can act also as a thin wrapper of Gitlab and Github runners just using
+> `docker run`. See [DVC-CML self-hosted runner](#dvc-cml-self-hosted-runner)
+
+Our DVC-CML GPU docker
+[image](https://hub.docker.com/repository/docker/dvcorg/dvc-cml-gpu) is an
+Ubuntu 18.04 that already supports:
+
+- cuda 10.1
+- libcudnn 7
+- cublas 10
+- libinfer 10
+
+#### Setup
+
+1. You need to setup properly your nvidia drivers and nvidia-docker in your host
+   machine.
+   ```sh
+    sudo ubuntu-drivers autoinstall
+    sudo apt-get install nvidia-docker2
+    sudo systemctl restart docker
+   ```
+2. Launch your own runner following your CI vendor instructions.
+
+<details>
+<summary>Github</summary>
+
+Repo settings -> Actions -> Add Runner button
+
+</details>
+
+<details>
+<summary>Gitlab</summary>
+
+Repo settings -> CI/CD -> Runners -> Specific Runners
+
+```sh
+gitlab-runner register \
+    --non-interactive \
+    --run-untagged="true" \
+    --locked="false" \
+    --access-level="not_protected" \
+    --executor "docker" \
+    --docker-runtime "nvidia" \
+    --docker-image "dvcorg/dvc-cml-gpu:latest" \
+    --url "https://gitlab.com/" \
+    --tag-list "dvc-cml" \
+    --registration-token "here_goes_your_gitlab_runner_token"
+
+gitlab-runner start
+```
+
+</details>
+
+3. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
+
+<details>
+<summary>Github</summary>
+
+```yaml
+# Github
+dvc:
+  runs-on: [self-hosted]
+  container:
+    image: docker://dvcorg/dvc-cml-gpu:latest
+    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+```
+
+</details>
+   
+<details>
+<summary>Gitlab</summary>
+
+```yaml
+# Gitlab
+dvc:
+ tags:
+   - dvc-cml
+ stage: dvc_action_run
+ image: dvcorg/dvc-cml-gpu:latest
+
+ variables:
+   NVIDIA_VISIBLE_DEVICES: all
+   ...
+```
+
+</details>
+
+#### Pitfalls
+
+- "My runner says: Got permission denied while trying to connect to the Docker
+  daemon socket". You need to add your user to the docker group. Check your OS
+  configuration for further details. Recipe for ubuntu:
+
+```sh
+sudo groupadd docker
+sudo usermod -aG docker ${USER}
+su -s ${USER}
+```
+
+- "With Github runners I can't specify custom tags to reach different runners".
+  We know, It's a
+  [Github limitation](https://github.com/actions/runner/issues/262). However our
+  docker based self-runner fully supports custom tags.
+
+- "I have followed all the steps and I could not make it work". Try to run
+  nvidia-smi in the `run` section in your workflow and see if gpu is available
+  to your docker container.
+  ![image](https://user-images.githubusercontent.com/414967/77680444-dac98a80-6f8b-11ea-89bf-66e653503934.png)
+
+## DVC-CML self-hosted runner
+
+To simplify the use of self-hosted runners with or without GPU our docker image
+is a thin wrapper over Gitlab and Github runners. Using the DVC-CML self-hosted
+runner you gain the following benefits:
+
+- Easy to deploy
+- Stopping the container automatically unregister the runner
+- Injects custom labels in Github
+
+There are two ways of running them:
+
+#### 1.- Running with shell executor
+
+The runner uses the always the same "machine" clearing only the worspace but not
+the software installed or used volumes in the execution.
+
+<details>
+  <summary>
+  Github
+  </summary>
+
+With GPU:
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_REPO=https://github.com/DavidGOrtega/dvc-mnist-v1 \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_REPO=https://github.com/DavidGOrtega/dvc-mnist-v1 \
+  dvcorg/dvc-cml:latest
+```
+
+```yaml
+name: your-workflow-name
+
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: [dvc-cml,gpu]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: dvc_cml_run
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        repro_targets: your_dvc_target.dvc
+      run: |
+        # install your project dependencies
+        dvc_cml_run
+```
+
+> :warning: Note the absence of the container field in the yaml file. The runner
+> is actually the container. Note also custom labels `dvc-cml,gpu`
+
+</details>
+
+<details>
+  <summary>
+  Gitlab
+  </summary>
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  dvcorg/dvc-cml:latest
+```
+
+</details>
+
+#### 2.- Running with docker executor (docker in docker)
+
+The runner creates a docker container generating a new environment every time.
+
+<details>
+  <summary>
+  Github
+  </summary>
+
+> :warning: Github does not supports docker executor yet.
+
+</details>
+
+<details>
+  <summary>
+  Gitlab
+  </summary>
+
+```sh
+docker run --rm \
+  --runtime nvidia \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_EXECUTOR=docker \
+  -v "/var/run/docker.sock":"/var/run/docker.sock" \
+  dvcorg/dvc-cml-gpu:latest
+
+# without GPU
+docker run --rm \
+  -e RUNNER_TOKEN=YOUR_RUNNER_TOKEN \
+  -e RUNNER_EXECUTOR=docker \
+  -v "/var/run/docker.sock":"/var/run/docker.sock" \
+  dvcorg/dvc-cml:latest
+```
+
+Additionally modify your CI Pipeline like you would do with Gitlab's runner.
+
+```yaml
+  dvc:
+  tags:
+    - dvc-cml
+  stage: dvc_action_run
+  image: dvcorg/dvc-cml-gpu:latest
+
+  variables:
+    NVIDIA_VISIBLE_DEVICES: all
+    ...
+```
+
+</details>
+
+Once you have launched it you should see your runner registered in your CI
+vendor.
+
+> :thumbsup: Stopping the runner docker container will automatically unregister
+> the runner from the CI
+
+#### Parameters
+
+| Variable          | Required             | Default | Info                                                |
+| ----------------- | -------------------- | ------- | --------------------------------------------------- |
+| `RUNNER_TOKEN`    | Yes                  |         | The runner token provided by Github or Gitlab       |
+| `RUNNER_EXECUTOR` | No                   | shell   | Can be `docker` or `shell`                          |
+| `RUNNER_REPO`     | Yes, for Github only |         | URL of your repo. For Github only.                  |
+| `RUNNER_LABELS`   | No                   | dvc-cml | Comma delimited list of labels. i.e. label1,label2. |
+
+> :eyes: In Github UI you won't see your custom labels since Github runner is
+> not yet supporting them. We have added that functionality in our version of
+> the Github runner.
 
 ## Working with DVC remotes
 
