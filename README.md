@@ -3,7 +3,7 @@
 1. [Introduction](#introduction)
 2. [Usage](#usage)
 3. [How to use GPUs](#how-to-use-gpus)
-4. [DVC-CML runner](#dvc-cml-runner)
+4. [DVC-CML self-runner](#dvc-cml-self-runner)
 5. [Working with DVC remotes](#working-with-dvc-remotes)
 6. [Examples](#examples)
 
