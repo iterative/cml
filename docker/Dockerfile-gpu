@@ -89,4 +89,4 @@ RUN apt update && apt-get install -y --no-install-recommends libnvinfer${LIBNVIN
     && ldconfig
 # TENSORFLOW ENDS
 
-CMD ["dvc_cml_start_runner"]
+CMD ["dvc_cml_docker_entrypoint"]
