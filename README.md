@@ -3,7 +3,7 @@
 1. [Introduction](#introduction)
 2. [Usage](#usage)
 3. [How to use GPUs](#how-to-use-gpus)
-4. [DVC-CML self-runner](#dvc-cml-self-runner)
+4. [DVC-CML self-hosted runner](#dvc-cml-self-hosted-runner)
 5. [Working with DVC remotes](#working-with-dvc-remotes)
 6. [Examples](#examples)
 
@@ -105,6 +105,7 @@ Example of a simple DVC-CML workflow in Gitlab:
 > ![image](https://user-images.githubusercontent.com/414967/77463321-b93e9680-6e05-11ea-99bc-bf44f7bdf8d9.png)
 
 ```yaml
+# .gitlab-ci.yml
 stages:
   - dvc_cml_run
 
@@ -166,7 +167,7 @@ should be 78 however, at the time of this writing, Github is only accepting 0 or
 
 > :rocket: To simplify installation and setup of the runners the DVC-CML docker
 > image can act also as a thin wrapper of Gitlab and Github runners just using
-> `docker run`. See [DVC-CML runner](#dvc-cml-runner)
+> `docker run`. See [DVC-CML self-hosted runner](#dvc-cml-self-hosted-runner)
 
 Our DVC-CML GPU docker
 [image](https://hub.docker.com/repository/docker/dvcorg/dvc-cml-gpu) is an
@@ -187,8 +188,9 @@ Ubuntu 18.04 that already supports:
     sudo systemctl restart docker
    ```
 2. Launch your own runner following your CI vendor instructions.
-   <details>
-   <summary>Github</summary>
+
+<details>
+<summary>Github</summary>
 
 Repo settings -> Actions -> Add Runner button
 
@@ -217,9 +219,10 @@ gitlab-runner start
 
 </details>
 
-1. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
-   <details>
-   <summary>Github</summary>
+3. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
+
+<details>
+<summary>Github</summary>
 
 ```yaml
 # Github
@@ -272,22 +275,15 @@ su -s ${USER}
   to your docker container.
   ![image](https://user-images.githubusercontent.com/414967/77680444-dac98a80-6f8b-11ea-89bf-66e653503934.png)
 
-## DVC-CML self-runner
+## DVC-CML self-hosted runner
 
-To simplify the use of self-runners with or without GPU our docker image is a
-thin wrapper over Gitlab and Github runners. Using the DVC-CML self-runner you
-gain the following benefits:
+To simplify the use of self-hosted runners with or without GPU our docker image
+is a thin wrapper over Gitlab and Github runners. Using the DVC-CML self-hosted
+runner you gain the following benefits:
 
 - Easy to deploy
 - Stopping the container automatically unregister the runner
 - Injects custom labels in Github
-
-```yaml
-jobs:
-run:
-  runs-on: [dvc-cml]
-  container: docker://dvcorg/dvc-cml:latest
-```
 
 There are two ways of running them:
 
@@ -300,6 +296,8 @@ the software installed or used volumes in the execution.
   <summary>
   Github
   </summary>
+
+With GPU:
 
 ```sh
 docker run --rm \
@@ -314,6 +312,32 @@ docker run --rm \
   -e RUNNER_REPO=https://github.com/DavidGOrtega/dvc-mnist-v1 \
   dvcorg/dvc-cml:latest
 ```
+
+```yaml
+name: your-workflow-name
+
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: [dvc-cml,gpu]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: dvc_cml_run
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        repro_targets: your_dvc_target.dvc
+      run: |
+        # install your project dependencies
+        dvc_cml_run
+```
+
+> :warning: Note the absence of the container field in the yaml file. The runner
+> is actually the container. Note also custom labels `dvc-cml,gpu`
 
 </details>
 
@@ -338,7 +362,7 @@ docker run --rm \
 
 #### 2.- Running with docker executor (docker in docker)
 
-The runner creates a docker container generating a new enviroment every time.
+The runner creates a docker container generating a new environment every time.
 
 <details>
   <summary>

@@ -32,7 +32,7 @@ jobs:
         cache: true
         tag_names: true
 
-    - name: Publish gpu to dockerhub
+    - name: Publish image with GPU support to dockerhub
       if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
       with:

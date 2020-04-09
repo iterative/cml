@@ -17,7 +17,7 @@
     "dvcreport": "./bin/dvcreport.js",
     "dvc_action_run": "./bin/dvc-cml-run.js",
     "dvc_cml_run": "./bin/dvc-cml-run.js",
-    "dvc_cml_start_runner": "./bin/dvc-cml-runner.js"
+    "dvc_cml_start_runner": "./bin/dvc-cml-start-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
