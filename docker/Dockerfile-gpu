@@ -99,8 +99,8 @@ RUN gitlab-runner install --user=root --working-directory=${RUNNER_PATH}
 
 # GITHUB RUNNER
 ENV RUNNER_ALLOW_RUNASROOT=1
-RUN wget https://github.com/DavidGOrtega/gh-runner/releases/download/v2.200.1/actions-runner-linux-x64-2.200.1.tar.gz
-RUN tar xzf actions-runner-linux-x64-2.200.1.tar.gz
+RUN wget https://github.com/DavidGOrtega/gh-runner/releases/download/v2.200.8/actions-runner-linux-x64-2.200.8.tar.gz
+RUN tar xzf actions-runner-linux-x64-2.200.8.tar.gz
 RUN ./bin/installdependencies.sh
 
 CMD ["dvc_cml_start_runner"]

@@ -188,18 +188,14 @@ Ubuntu 18.04 that already supports:
    ```
 2. Launch your own runner following your CI vendor instructions.
    <details>
-   <summary>
-   Github
-   </summary>
+   <summary>Github</summary>
 
 Repo settings -> Actions -> Add Runner button
 
-  </details>
+</details>
 
-  <details>
-  <summary>
-  Gitlab
-  </summary>
+<details>
+<summary>Gitlab</summary>
 
 Repo settings -> CI/CD -> Runners -> Specific Runners
 
@@ -219,13 +215,11 @@ gitlab-runner register \
 gitlab-runner start
 ```
 
-  </details>
+</details>
 
-3. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
+1. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
    <details>
-   <summary>
-   Github
-   </summary>
+   <summary>Github</summary>
 
 ```yaml
 # Github
@@ -236,12 +230,10 @@ dvc:
     options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
 ```
 
-  </details>
+</details>
    
-  <details>
-  <summary>
-  Gitlab
-  </summary>
+<details>
+<summary>Gitlab</summary>
 
 ```yaml
 # Gitlab
@@ -256,7 +248,7 @@ dvc:
    ...
 ```
 
-   </details>
+</details>
 
 #### Pitfalls
 
@@ -272,8 +264,8 @@ su -s ${USER}
 
 - "With Github runners I can't specify custom tags to reach different runners".
   We know, It's a
-  [Github limitation](https://github.com/actions/runner/issues/262). We have
-  included dvc-cml in our self-runners.
+  [Github limitation](https://github.com/actions/runner/issues/262). However our
+  docker based self-runner fully supports custom tags.
 
 - "I have followed all the steps and I could not make it work". Try to run
   nvidia-smi in the `run` section in your workflow and see if gpu is available
@@ -288,7 +280,7 @@ gain the following benefits:
 
 - Easy to deploy
 - Stopping the container automatically unregister the runner
-- Github runner also can use the tag dvc-cml
+- Injects custom labels in Github
 
 ```yaml
 jobs:
@@ -402,12 +394,16 @@ vendor.
 
 #### Parameters
 
-| Variable          | Required             | Default | Info                                                                                  |
-| ----------------- | -------------------- | ------- | ------------------------------------------------------------------------------------- |
-| `RUNNER_TOKEN`    | Yes                  |         | The runner token provided by Github or Gitlab                                         |
-| `RUNNER_EXECUTOR` | No                   | shell   | Can be `docker` or `shell`                                                            |
-| `RUNNER_REPO`     | Yes, for Github only |         | URL of your repo. For Github only.                                                    |
-| `RUNNER_LABELS`   | No                   | dvc-cml | Comma delimited list of labels. i.e. label1,label2. In Github only dvc-cml is allowed |
+| Variable          | Required             | Default | Info                                                |
+| ----------------- | -------------------- | ------- | --------------------------------------------------- |
+| `RUNNER_TOKEN`    | Yes                  |         | The runner token provided by Github or Gitlab       |
+| `RUNNER_EXECUTOR` | No                   | shell   | Can be `docker` or `shell`                          |
+| `RUNNER_REPO`     | Yes, for Github only |         | URL of your repo. For Github only.                  |
+| `RUNNER_LABELS`   | No                   | dvc-cml | Comma delimited list of labels. i.e. label1,label2. |
+
+> :eyes: In Github UI you won't see your custom labels since Github runner is
+> not yet supporting them. We have added that functionality in our version of
+> the Github runner.
 
 ## Working with DVC remotes
 

@@ -50,10 +50,6 @@ const run = async () => {
     throw new Error('Github only supports shell executor');
   }
 
-  if (IS_GITHUB && RUNNER_LABELS !== 'dvc-cml') {
-    throw new Error('Github does not allow to set labels other than dvc-cml');
-  }
-
   console.log(`Starting runner with ${RUNNER_EXECUTOR} executor`);
 
   if (IS_GITHUB) {
