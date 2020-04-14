@@ -1,6 +1,9 @@
 const { exec } = require('./utils');
 const fs = require('fs').promises;
 
+const GOOGLE_APPLICATION_CREDENTIALS_PATH =
+  '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
+
 const setup = async () => {
   try {
     await exec('dvc version');
@@ -13,128 +16,75 @@ const setup = async () => {
   }
 };
 
+const setup_credentials = async credentials => {
+  console.log('Setting DVC credentials ...');
+
+  const { GOOGLE_APPLICATION_CREDENTIALS } = credentials;
+
+  if (GOOGLE_APPLICATION_CREDENTIALS) {
+    await fs.mkdir('.dvc/tmp', { recursive: true });
+    await fs.writeFile(
+      GOOGLE_APPLICATION_CREDENTIALS_PATH,
+      GOOGLE_APPLICATION_CREDENTIALS
+    );
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = GOOGLE_APPLICATION_CREDENTIALS_PATH;
+  }
+};
+
 const setup_remote = async opts => {
-  const { dvc_pull = true } = opts;
+  const { dvc_pull } = opts;
 
-  if (!dvc_pull) {
-    console.log('Skipping dvc_pull');
+  await this.setup_credentials(process.env);
+
+  if (dvc_pull === 'None') {
+    console.log('DVC pull skipped by None');
     return;
-  }
-
-  console.log('Setting DVC remote ...');
-
-  const dvc_remote_list = (
-    await exec('dvc remote list', { throw_err: false })
-  ).toLowerCase();
-  const has_dvc_remote = dvc_remote_list.length > 0;
-
-  if (!has_dvc_remote) throw new Error('Experiment does not have DVC remote!');
-
-  await fs.mkdir('.dvc/tmp', { recursive: true });
-
-  // s3
-  if (dvc_remote_list.includes('s3://')) {
-    const { AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY } = process.env;
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      console.log(`S3 DVC remote found but no credentials found`);
-    }
-  }
-
-  // azure
-  if (dvc_remote_list.includes('azure://')) {
-    const {
-      AZURE_STORAGE_CONNECTION_STRING,
-      AZURE_STORAGE_CONTAINER_NAME
-    } = process.env;
-    if (!AZURE_STORAGE_CONNECTION_STRING || !AZURE_STORAGE_CONTAINER_NAME) {
-      console.log(`Azure DVC remote found but no credentials found`);
-    }
-  }
-
-  // Aliyn
-  if (dvc_remote_list.includes('oss://')) {
-    const {
-      OSS_BUCKET,
-      OSS_ACCESS_KEY_ID,
-      OSS_ACCESS_KEY_SECRET,
-      OSS_ENDPOINT
-    } = process.env;
-    if (
-      !OSS_BUCKET ||
-      !OSS_ACCESS_KEY_ID ||
-      !OSS_ACCESS_KEY_SECRET ||
-      !OSS_ENDPOINT
-    ) {
-      console.log(`Aliyin DVC remote found but no credentials found`);
-    }
-  }
-
-  // gs
-  if (dvc_remote_list.includes('gs://')) {
-    const { GOOGLE_APPLICATION_CREDENTIALS } = process.env;
-    if (GOOGLE_APPLICATION_CREDENTIALS) {
-      const path = '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
-      await fs.writeFile(path, GOOGLE_APPLICATION_CREDENTIALS);
-      process.env.GOOGLE_APPLICATION_CREDENTIALS = path;
-    } else {
-      console.log(`Google storage DVC remote found but no credentials found`);
-    }
-  }
-
-  // gdrive
-  if (dvc_remote_list.includes('gdrive://')) {
-    const { GDRIVE_CREDENTIALS_DATA } = process.env;
-    if (!GDRIVE_CREDENTIALS_DATA) {
-      console.log(`Google drive DVC remote found but no credentials found`);
-    }
-  }
-
-  // ssh
-  if (dvc_remote_list.includes('ssh://')) {
-    const { DVC_REMOTE_SSH_KEY } = process.env;
-    if (DVC_REMOTE_SSH_KEY) {
-      const path = '~/.ssh/dvc_remote.pub';
-      await fs.writeFile(path, DVC_REMOTE_SSH_KEY);
-      await exec(`echo ${path} >> ~/.ssh/known_hosts`);
-    } else {
-      console.log(`SSH DVC remote found but no credentials found`);
-    }
-  }
-
-  // HDFS
-  if (dvc_remote_list.includes('hdfs://')) {
-    throw new Error(`HDFS secrets not yet implemented`);
   }
 
   console.log('Pulling from DVC remote ...');
   try {
-    await exec('dvc pull -f');
+    await this.pull({ force: true, targets: dvc_pull });
     console.log('Pulling from DVC remote completed');
   } catch (err) {
-    console.error('Failed pulling from DVC remote');
-    console.error(err);
+    const { message } = err;
+
+    // Only throw if not credentials since it may throw if never ran repro before
+    // or won't have tracked folders
+    // https://github.com/iterative/dvc/issues/3433
+    if (message.includes('Unable to locate credentials')) throw err;
+    else console.error(`Failed pulling from DVC remote: ${message}`);
   }
+};
+
+const pull = async opts => {
+  const { force = false, targets = [] } = opts;
+  const targets_param = targets.length ? targets.join(' ') : '';
+  opts.command = `dvc pull ${force ? '-f ' : ''}${targets_param}`.trim();
+
+  console.log(opts.command);
+  const dvc_out = await exec(opts.command);
+
+  return dvc_out;
 };
 
 const repro = async opts => {
   const { targets = [] } = opts;
   const targets_param = targets.length ? targets.join(' ') : '';
-  const dvc_out = await exec(`dvc repro ${targets_param}`, {
-    throw_err: false
-  });
+  opts.command = `dvc repro ${targets_param}`;
+
+  console.log(opts.command);
+  const dvc_out = await exec(opts.command);
+
   return dvc_out;
 };
 
 const diff = async opts => {
   const { from = '', to = '', target } = opts;
   const target_param = target ? `--target ${target}` : '';
-  const json = await exec(
-    `dvc diff ${target_param} --show-json ${from} ${to}`,
-    { throw_err: false }
-  );
+  opts.command = `dvc diff ${target_param} --show-json ${from} ${to}`;
 
-  console.log(`dvc diff ${target_param} --show-json ${from} ${to}`);
-  console.log(json);
+  console.log(opts.command);
+  const json = await exec(opts.command);
 
   if (json) return JSON.parse(json);
 };
@@ -142,19 +92,19 @@ const diff = async opts => {
 const metrics_diff = async opts => {
   const { from = '', to = '', targets = [] } = opts;
   const targets_param = targets.length ? `--targets ${targets.join(' ')}` : '';
-  const json = await exec(
-    `dvc metrics diff ${targets_param} --show-json ${from} ${to}`,
-    { throw_err: false }
-  );
+  opts.command = `dvc metrics diff ${targets_param} --show-json ${from} ${to}`;
 
-  console.log(`dvc metrics diff ${targets_param} --show-json ${from} ${to}`);
-  console.log(json);
+  console.log(opts.command);
+  const json = await exec(opts.command);
 
   if (json) return JSON.parse(json);
 };
 
+exports.GOOGLE_APPLICATION_CREDENTIALS_PATH = GOOGLE_APPLICATION_CREDENTIALS_PATH;
 exports.setup = setup;
 exports.setup_remote = setup_remote;
+exports.setup_credentials = setup_credentials;
+exports.pull = pull;
 exports.repro = repro;
 exports.diff = diff;
 exports.metrics_diff = metrics_diff;

@@ -1,4 +1,4 @@
-const { exec } = require('./utils');
+const { exec, getInputArray } = require('./utils');
 
 describe('Exec', () => {
   test('exec is await and outputs hello', async () => {
@@ -15,5 +15,18 @@ describe('Exec', () => {
     }
 
     expect(error).not.toBeNull();
+  });
+});
+
+describe('getInputArray', () => {
+  test('None, comma and not existing env variable', async () => {
+    process.env.DVC_TEST = 'None';
+    expect(getInputArray('DVC_TEST')).toBe('None');
+
+    process.env.DVC_TEST = 'one,two,three';
+    expect(getInputArray('DVC_TEST')).toStrictEqual(['one', 'two', 'three']);
+
+    expect(getInputArray('DVC_NOT_EXIST')).toStrictEqual([]);
+    expect(getInputArray('DVC_NOT_EXIST', ['one'])).toStrictEqual(['one']);
   });
 });

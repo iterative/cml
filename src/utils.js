@@ -11,7 +11,7 @@ const exec = async (command, opts) => {
 
       if (error) reject(error);
 
-      resolve(stdout.trim());
+      resolve((stdout || stderr).trim());
     });
   });
 };
@@ -27,6 +27,15 @@ const randid = () => {
   );
 };
 
+const getInputArray = (key, default_value) => {
+  if (process.env[key] === 'None') return process.env[key];
+
+  return process.env[key]
+    ? process.env[key].split(/[ ,]+/)
+    : default_value || [];
+};
+
 exports.exec = exec;
 exports.randid = randid;
+exports.getInputArray = getInputArray;
 exports.git = git('./');
