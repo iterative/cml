@@ -332,7 +332,14 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         repro_targets: your_dvc_target.dvc
       run: |
-        # install your project dependencies
+        # Install your project dependencies.
+        # An examlpe for Python3:
+        apt-get install -y python3 python3-pip
+        pip3 install --upgrade pip
+        update-alternatives --install /usr/bin/python python $(which python3) 10
+        update-alternatives --install /usr/bin/pip pip $(which pip3) 10
+        test -f requirements.txt && pip3 install -r requirements.txt
+        # Run report:
         dvc_cml_run
 ```
 
