@@ -1,3 +1,4 @@
+const { getInputArray } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
 const Report = require('./src/report');
@@ -5,9 +6,7 @@ const {
   METRICS_FORMAT,
   BASELINE,
   DVC_TAG_PREFIX,
-  DVC_PULL,
-  REPRO_TARGETS,
-  METRICS_DIFF_TARGETS
+  REPRO_TARGETS
 } = require('./src/settings');
 
 const {
@@ -26,25 +25,16 @@ const {
   ? require('./src/github')
   : require('./src/gitlab');
 
-const getInputArray = (key, default_value) => {
-  return process.env[key]
-    ? process.env[key].split(/[ ,]+/)
-    : default_value || [];
-};
-
 const run = async () => {
   const {
     baseline = BASELINE,
     metrics_format = METRICS_FORMAT,
-    tag_prefix = DVC_TAG_PREFIX,
-    dvc_pull = DVC_PULL
+    tag_prefix = DVC_TAG_PREFIX
   } = process.env;
 
   const repro_targets = getInputArray('repro_targets', REPRO_TARGETS);
-  const metrics_diff_targets = getInputArray(
-    'metrics_diff_targets',
-    METRICS_DIFF_TARGETS
-  );
+  const metrics_diff_targets = getInputArray('metrics_diff_targets');
+  const dvc_pull = getInputArray('dvc_pull');
 
   Report.DVC_TAG_PREFIX = metrics_format;
   CI.DVC_TAG_PREFIX = tag_prefix;
