@@ -44,8 +44,8 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
     chmod +x /usr/local/bin/gitlab-runner && \
     gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
-    wget https://github.com/DavidGOrtega/gh-runner/releases/download/v2.168.0.1/actions-runner-linux-x64-2.168.0.1.tar.gz && \
-    tar xzf actions-runner-linux-x64-2.168.0.1.tar.gz && \
+    wget https://github.com/actions/runner/releases/download/v2.169.0/actions-runner-linux-x64-2.169.0.tar.gz && \
+    tar xzf actions-runner-linux-x64-2.169.0.tar.gz && \
     ./bin/installdependencies.sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
