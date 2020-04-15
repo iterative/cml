@@ -1,5 +1,6 @@
 const util = require('util');
 const git = require('simple-git/promise');
+const { INPUT_SKIP } = require('./settings');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -28,7 +29,7 @@ const randid = () => {
 };
 
 const getInputArray = (key, default_value) => {
-  if (process.env[key] === 'None') return process.env[key];
+  if (process.env[key] === INPUT_SKIP) return process.env[key];
 
   return process.env[key]
     ? process.env[key].split(/[ ,]+/)

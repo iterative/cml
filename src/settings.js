@@ -6,6 +6,7 @@ const BASELINE = 'origin/master';
 const REPRO_TARGETS = ['Dvcfile'];
 const A_REV = BASELINE;
 const B_REV = 'HEAD';
+const INPUT_SKIP = '-';
 
 exports.DVC_TITLE = DVC_TITLE;
 exports.DVC_TAG_PREFIX = DVC_TAG_PREFIX;
@@ -15,3 +16,4 @@ exports.BASELINE = BASELINE;
 exports.REPRO_TARGETS = REPRO_TARGETS;
 exports.A_REV = A_REV;
 exports.B_REV = B_REV;
+exports.INPUT_SKIP = INPUT_SKIP;
