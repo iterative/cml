@@ -67,5 +67,5 @@ RUN apt update && apt-get install -y --no-install-recommends libnvinfer${LIBNVIN
     && ldconfig
 # TENSORFLOW ENDS
 
-COPY entrypoint.sh ./
+COPY ./docker/entrypoint.sh ./
 CMD ["entrypoint.sh"]
