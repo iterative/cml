@@ -16,8 +16,7 @@
   "bin": {
     "dvcreport": "./bin/dvcreport.js",
     "dvc_action_run": "./bin/dvc-cml-run.js",
-    "dvc_cml_run": "./bin/dvc-cml-run.js",
-    "dvc_cml_docker_entrypoint": "./bin/dvc-cml-docker-entrypoint.js"
+    "dvc_cml_run": "./bin/dvc-cml-run.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
