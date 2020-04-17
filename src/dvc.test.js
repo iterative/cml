@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const dvc = require('./dvc');
 const { exec } = require('./utils');
+const { INPUT_SKIP } = require('./settings');
 
 afterAll(async () => {
   await exec('rm -rf .dvc');
@@ -37,11 +38,11 @@ describe('Remote', () => {
     );
   });
 
-  test('If not dvc_pull should return without throwing an exception and returning 1', async () => {
+  test('If not dvc_pull should return without throwing an exception', async () => {
     dvc.setup_credentials = jest.fn(dvc.setup_credentials);
     dvc.pull = jest.fn(dvc.pull);
 
-    await dvc.setup_remote({ dvc_pull: 'None' });
+    await dvc.setup_remote({ dvc_pull: INPUT_SKIP });
     expect(dvc.setup_credentials.mock.calls.length).toBe(1);
     expect(dvc.pull.mock.calls.length).toBe(0);
   });

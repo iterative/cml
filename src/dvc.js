@@ -1,5 +1,6 @@
-const { exec } = require('./utils');
 const fs = require('fs').promises;
+const { exec } = require('./utils');
+const { INPUT_SKIP } = require('./settings');
 
 const GOOGLE_APPLICATION_CREDENTIALS_PATH =
   '.dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json';
@@ -36,8 +37,8 @@ const setup_remote = async opts => {
 
   await this.setup_credentials(process.env);
 
-  if (dvc_pull === 'None') {
-    console.log('DVC pull skipped by None');
+  if (dvc_pull === INPUT_SKIP) {
+    console.log(`DVC pull skipped by ${INPUT_SKIP}`);
     return;
   }
 
