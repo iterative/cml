@@ -7,8 +7,11 @@ const {
   CI_API_V4_URL,
   CI_PROJECT_PATH,
   CI_PROJECT_URL,
+  CI_PROJECT_ID,
   CI_COMMIT_REF_NAME,
   CI_COMMIT_SHA,
+  CI_JOB_NAME,
+  CI_MERGE_REQUEST_ID,
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
@@ -16,7 +19,7 @@ const {
 } = process.env;
 
 const [owner, repo] = CI_PROJECT_PATH.split('/');
-const IS_PR = false;
+const IS_PR = CI_MERGE_REQUEST_ID;
 const REF = CI_COMMIT_REF_NAME;
 const HEAD_SHA = CI_COMMIT_SHA;
 const USER_EMAIL = GITLAB_USER_EMAIL;
@@ -32,8 +35,22 @@ const ref_parser = async ref => {
   return { label: tag, link };
 };
 
-const check_ran_ref = async opts => {
-  console.log('Not yet implemented.');
+const project_jobs = async () => {
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs`;
+  const headers = { 'PRIVATE-TOKEN': TOKEN };
+  const jobs = await fetch(endpoint, { method: 'POST', headers });
+
+  return jobs;
+};
+
+const check_ran_ref = async () => {
+  const jobs = await this.project_jobs();
+
+  return (
+    jobs.filter(job => {
+      return job.commit.id === CI_COMMIT_SHA && job.name === CI_JOB_NAME;
+    }).length > 1
+  );
 };
 
 const git_fetch_all = async () => {
@@ -70,6 +87,7 @@ exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.remote = REMOTE;
 exports.ref_parser = ref_parser;
+exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
 exports.git_fetch_all = git_fetch_all;
 exports.publish_report = publish_report;
