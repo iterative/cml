@@ -6,7 +6,7 @@ const github = require('@actions/github');
 
 const {
   GITHUB_REPOSITORY,
-  GITHUB_WORKFLOW,
+  GITHUB_JOB,
   GITHUB_HEAD_REF,
   GITHUB_REF,
   GITHUB_SHA,
@@ -71,7 +71,7 @@ const check_ran_ref = async opts => {
 
   return (
     checks.data.check_runs.filter(check => {
-      return check.name.includes(`${GITHUB_WORKFLOW}`);
+      return check.name.includes(`${GITHUB_JOB}`);
     }).length > 1
   );
 };
