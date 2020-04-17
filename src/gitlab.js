@@ -37,8 +37,9 @@ const ref_parser = async ref => {
 
 const project_jobs = async () => {
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/jobs`;
-  const headers = { 'PRIVATE-TOKEN': TOKEN };
-  const jobs = await fetch(endpoint, { method: 'POST', headers });
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(endpoint, { method: 'GET', headers });
+  const jobs = await response.json();
 
   return jobs;
 };
