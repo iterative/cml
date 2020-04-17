@@ -4,7 +4,12 @@ const fs = require('fs').promises;
 const DVC = require('./dvc');
 const Report = require('./report');
 
-const { DVC_TITLE, DVC_TAG_PREFIX, CI_SKIP_MESSAGE } = require('./settings');
+const {
+  DVC_TITLE,
+  DVC_TAG_PREFIX,
+  CI_SKIP_MESSAGE,
+  INPUT_SKIP
+} = require('./settings');
 
 const dvc_tag_prefix = () => {
   return this.DVC_TAG_PREFIX;
@@ -18,9 +23,9 @@ const commit_skip_ci = async () => {
 const run_dvc_repro_push = async opts => {
   const { repro_targets, user_email, user_name, remote, ref } = opts;
 
-  if (repro_targets === 'None') {
-    console.log('DVC repro skipped by None');
-    return false;
+  if (repro_targets === INPUT_SKIP) {
+    console.log(`DVC repro skipped by ${INPUT_SKIP}`);
+    return;
   }
 
   console.log(`Running dvc repro ${repro_targets}`);
