@@ -36,7 +36,12 @@ const getInputArray = (key, default_value) => {
     : default_value || [];
 };
 
+const getInputBoolean = (key, default_value) => {
+  return process.env[key] ? process.env[key] === 'true' : default_value;
+};
+
 exports.exec = exec;
 exports.randid = randid;
 exports.getInputArray = getInputArray;
+exports.getInputBoolean = getInputBoolean;
 exports.git = git('./');

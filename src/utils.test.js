@@ -1,5 +1,5 @@
-const { exec, getInputArray } = require('./utils');
-const { INPUT_SKIP, REPRO_TARGETS } = require('./settings');
+const { exec, getInputArray, getInputBoolean } = require('./utils');
+const { INPUT_SKIP, REPRO_TARGETS, SKIP_PUSH } = require('./settings');
 
 describe('Exec', () => {
   test('exec is await and outputs hello', async () => {
@@ -31,19 +31,22 @@ describe('getInputArray', () => {
     expect(getInputArray('DVC_NOT_EXIST', ['one'])).toStrictEqual(['one']);
   });
 
-  test('sdsd', async () => {
+  test('test inputs', async () => {
     process.env.repro_targets = '-';
     process.env.dvc_pull = '-';
 
     expect(getInputArray('repro_targets', REPRO_TARGETS)).toBe(INPUT_SKIP);
     expect(getInputArray('dvc_pull')).toBe(INPUT_SKIP);
+    expect(getInputBoolean('skip_push', SKIP_PUSH)).toBe(false);
 
     process.env.repro_targets = 'train.dvc';
     process.env.dvc_pull = 'data,models';
+    process.env.skip_push = 'true';
 
     expect(getInputArray('repro_targets', REPRO_TARGETS)).toStrictEqual([
       'train.dvc'
     ]);
     expect(getInputArray('dvc_pull')).toStrictEqual(['data', 'models']);
+    expect(getInputBoolean('skip_push', SKIP_PUSH)).toBe(true);
   });
 });

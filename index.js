@@ -1,4 +1,4 @@
-const { getInputArray } = require('./src/utils');
+const { getInputArray, getInputBoolean } = require('./src/utils');
 const DVC = require('./src/dvc');
 const CI = require('./src/ci');
 const Report = require('./src/report');
@@ -6,7 +6,8 @@ const {
   METRICS_FORMAT,
   BASELINE,
   DVC_TAG_PREFIX,
-  REPRO_TARGETS
+  REPRO_TARGETS,
+  SKIP_PUSH
 } = require('./src/settings');
 
 const {
@@ -35,6 +36,7 @@ const run = async () => {
   const repro_targets = getInputArray('repro_targets', REPRO_TARGETS);
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
   const dvc_pull = getInputArray('dvc_pull');
+  const skip_push = getInputBoolean('skip_push', SKIP_PUSH);
 
   Report.DVC_TAG_PREFIX = metrics_format;
   CI.DVC_TAG_PREFIX = tag_prefix;
@@ -62,7 +64,8 @@ const run = async () => {
     user_name,
     remote,
     ref,
-    repro_targets
+    repro_targets,
+    skip_push
   });
 
   console.log('Generating DVC Report');

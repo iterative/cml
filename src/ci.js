@@ -21,7 +21,7 @@ const commit_skip_ci = async () => {
 };
 
 const run_dvc_repro_push = async opts => {
-  const { repro_targets, user_email, user_name, remote, ref } = opts;
+  const { repro_targets, user_email, user_name, remote, ref, skip_push } = opts;
 
   if (repro_targets === INPUT_SKIP) {
     console.log(`DVC repro skipped by ${INPUT_SKIP}`);
@@ -48,6 +48,8 @@ const run_dvc_repro_push = async opts => {
 
   await exec(`git add --all`);
   await exec(`git commit -a -m "DVC-CML: generated report ${CI_SKIP_MESSAGE}"`);
+
+  if (skip_push) return ref;
 
   const sha = (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
   const tag = sha_tag(sha);
