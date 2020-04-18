@@ -1,4 +1,4 @@
-name: "Publush CML dockers"
+name: "Publish CML dockers"
 
 on: [push, pull_request]
 
