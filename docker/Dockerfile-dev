@@ -1,0 +1,26 @@
+FROM dvcorg/dvc-cml:latest
+
+LABEL maintainer="Iterative Inc"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --fix-missing \
+            python3 \
+            python3-pip && \
+    pip3 install --upgrade pip && \
+    update-alternatives --install \
+            /usr/bin/python python $(which python3) 10
+
+RUN apt-get remove -y dvc && \
+    apt-get install -y --no-install-recommends --fix-missing \
+        git \
+        python3-setuptools \
+        python3-dev && \
+    git clone https://github.com/iterative/dvc/ && \
+    cd dvc && \
+    git checkout 128fa7f && \
+    pip install -U -e .[all,tests] && \
+    cd .. && \
+    rm -rf dvc
+
+COPY ./docker/entrypoint.sh ./
+CMD ["entrypoint.sh"]

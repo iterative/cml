@@ -6,23 +6,29 @@ FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
 
 LABEL maintainer="Iterative Inc"
 
-RUN apt-get update && apt-get install -y --no-install-recommends --fix-missing \
-    build-essential \
-    apt-utils \
-    apt-transport-https \
-    ca-certificates \
-    software-properties-common \
-    pkg-config \
-    curl \
-    wget \
-    unzip \
-    gpg-agent && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --fix-missing \
+        build-essential \
+        apt-utils \
+        apt-transport-https \
+        ca-certificates \
+        software-properties-common \
+        pkg-config \
+        curl \
+        wget \
+        unzip \
+        gpg-agent \
+        locales && \
     add-apt-repository universe -y && \
     add-apt-repository ppa:git-core/ppa -y && \
     apt-get install -y git && \
     curl -sL https://deb.nodesource.com/setup_12.x | bash && \
     apt-get install -y nodejs  && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    locale-gen en_US.UTF-8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # Install update pip and nodejs, install dvc and dvc-cml
 ADD "./" "/dvc-cml"
@@ -34,37 +40,42 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
 # CUDNN
 ARG CUDA
 ARG CUDNN=7.6.4.38-1
-ARG CUDNN_MAJOR_VERSION=7
+ARG CUDNN_MAJOR=7
 ARG LIBNVINFER=6.0.1-1
-ARG LIBNVINFER_MAJOR_VERSION=6
+ARG LIBNVINFER_MAJOR=6
 ARG CUBLAS=10.2.1.243-1
-ARG CUBLAS_MAJOR_VERSION=10
+ARG CUBLAS_MAJOR=10
 
 SHELL ["/bin/bash", "-c"]
 
 RUN apt update && apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
-    libcublas${CUBLAS_MAJOR_VERSION}=${CUBLAS} \ 
+    libcublas${CUBLAS_MAJOR}=${CUBLAS} \ 
     cuda-nvrtc-${CUDA/./-} \
     cuda-cufft-${CUDA/./-} \
     cuda-curand-${CUDA/./-} \
     cuda-cusolver-${CUDA/./-} \
     cuda-cusparse-${CUDA/./-} \
-    libcudnn${CUDNN_MAJOR_VERSION}=${CUDNN}+cuda${CUDA} \
+    libcudnn${CUDNN_MAJOR}=${CUDNN}+cuda${CUDA} \
     libfreetype6-dev \
     libhdf5-serial-dev \
     libzmq3-dev && \ 
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
         
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
-RUN apt update && apt-get install -y --no-install-recommends libnvinfer${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
-    libnvinfer-plugin${LIBNVINFER_MAJOR_VERSION}=${LIBNVINFER}+cuda${CUDA} \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
-    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
-    && ldconfig
+RUN apt update && \
+    apt-get install -y --no-install-recommends \
+        libnvinfer${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} \
+        libnvinfer-plugin${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s /usr/local/cuda/lib64/stubs/libcuda.so \
+            /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+    echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
+    ldconfig
 # TENSORFLOW ENDS
 
 COPY ./docker/entrypoint.sh ./

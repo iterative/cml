@@ -18,7 +18,7 @@ jobs:
     - name: "tests"
       run: npm run test
 
-    - name: Publish to dockerhub
+    - name: Publish dvc-cml docker image
       # only publish if push to master (dvcorg/dvc-cml:latest) 
       # or create a tag in the repo (dvcorg/dvc-cml:tag)
       if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
@@ -32,7 +32,31 @@ jobs:
         cache: true
         tag_names: true
 
-    - name: Publish image with GPU support to dockerhub
+    - name: Publish dvc-cml-py3 docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/dvc-cml-py3
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-py3
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish dvc-cml-dev docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/dvc-cml-dev
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-dev
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish dvc-cml-gpu docker image
       if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
