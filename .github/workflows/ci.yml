@@ -1,4 +1,4 @@
-name: ci
+name: "Publush CML dockers"
 
 on: [push, pull_request]
 
