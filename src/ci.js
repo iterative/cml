@@ -49,7 +49,10 @@ const run_dvc_repro_push = async opts => {
   await exec(`git add --all`);
   await exec(`git commit -a -m "DVC-CML: generated report ${CI_SKIP_MESSAGE}"`);
 
-  if (skip_push) return ref;
+  if (skip_push) {
+    console.log(`push skipped...`);
+    return ref;
+  }
 
   const sha = (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
   const tag = sha_tag(sha);
