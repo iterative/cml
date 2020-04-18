@@ -1,14 +1,6 @@
-FROM dvcorg/dvc-cml:latest
+FROM dvcorg/dvc-cml-py3:latest
 
-LABEL maintainer="Iterative Inc"
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
-            python3 \
-            python3-pip && \
-    pip3 install --upgrade pip && \
-    update-alternatives --install \
-            /usr/bin/python python $(which python3) 10
+LABEL maintainer="dvc.org"
 
 RUN apt-get remove -y dvc && \
     apt-get install -y --no-install-recommends --fix-missing \
@@ -22,5 +14,3 @@ RUN apt-get remove -y dvc && \
     cd .. && \
     rm -rf dvc
 
-COPY ./docker/entrypoint.sh ./
-CMD ["entrypoint.sh"]

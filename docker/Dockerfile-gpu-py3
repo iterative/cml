@@ -1,6 +1,6 @@
 FROM dvcorg/dvc-cml-gpu:latest
 
-LABEL maintainer="Iterative Inc"
+LABEL maintainer="dvc.org"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
@@ -10,5 +10,3 @@ RUN apt-get update && \
     update-alternatives --install \
             /usr/bin/python python $(which python3) 10
 
-COPY ./docker/entrypoint.sh ./
-CMD ["entrypoint.sh"]

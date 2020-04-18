@@ -4,7 +4,7 @@ ARG UBUNTU_VERSION=18.04
 
 FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
 
-LABEL maintainer="Iterative Inc"
+LABEL maintainer="dvc.org"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \

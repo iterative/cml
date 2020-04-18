@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-LABEL maintainer="Iterative Inc"
+LABEL maintainer="dvc.org"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
@@ -29,9 +29,11 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 # Install update pip and nodejs, install dvc and dvc-cml
 ADD "./" "/dvc-cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
-    apt update && apt install dvc && \
+    apt update && \
+    apt install dvc && \
     npm install -g /dvc-cml && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY ./docker/entrypoint.sh ./
 CMD ["entrypoint.sh"]
