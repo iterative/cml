@@ -50,7 +50,7 @@ const run_dvc_repro_push = async opts => {
   await exec(`git commit -a -m "DVC-CML: generated report ${CI_SKIP_MESSAGE}"`);
 
   if (skip_push) {
-    console.log(`push skipped...`);
+    console.log(`DVC push and git push skipped`);
     return ref;
   }
 
