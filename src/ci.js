@@ -21,7 +21,14 @@ const commit_skip_ci = async () => {
 };
 
 const run_dvc_repro_push = async opts => {
-  const { repro_targets, user_email, user_name, remote, ref } = opts;
+  const {
+    repro_targets,
+    push_targets,
+    user_email,
+    user_name,
+    remote,
+    ref
+  } = opts;
 
   if (repro_targets === INPUT_SKIP) {
     console.log(`DVC repro skipped by ${INPUT_SKIP}`);
@@ -63,7 +70,10 @@ const run_dvc_repro_push = async opts => {
     );
 
   await exec(`git push remote HEAD:${ref} --tags`);
-  await exec('dvc push');
+
+  if (push_targets === INPUT_SKIP)
+    console.log(`DVC push skipped by ${INPUT_SKIP}`);
+  else await DVC.push({ targets: push_targets });
 
   return sha;
 };

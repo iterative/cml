@@ -57,6 +57,17 @@ const setup_remote = async opts => {
   }
 };
 
+const push = async opts => {
+  const { targets = [] } = opts;
+  const targets_param = targets.length ? targets.join(' ') : '';
+  opts.command = `dvc push ${targets_param}`.trim();
+
+  console.log(opts.command);
+  const dvc_out = await exec(opts.command);
+
+  return dvc_out;
+};
+
 const pull = async opts => {
   const { force = false, targets = [] } = opts;
   const targets_param = targets.length ? targets.join(' ') : '';
@@ -105,6 +116,7 @@ exports.GOOGLE_APPLICATION_CREDENTIALS_PATH = GOOGLE_APPLICATION_CREDENTIALS_PAT
 exports.setup = setup;
 exports.setup_remote = setup_remote;
 exports.setup_credentials = setup_credentials;
+exports.push = push;
 exports.pull = pull;
 exports.repro = repro;
 exports.diff = diff;

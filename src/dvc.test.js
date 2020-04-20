@@ -48,8 +48,8 @@ describe('Remote', () => {
   });
 });
 
-describe('Dvc pull', () => {
-  test('Empty targets with force', async () => {
+describe('Dvc command test', () => {
+  test('Pull empty targets with force', async () => {
     const opts = { force: true, targets: [] };
     try {
       await dvc.pull(opts);
@@ -58,7 +58,7 @@ describe('Dvc pull', () => {
     expect(opts.command).toBe('dvc pull -f');
   });
 
-  test('Empty targets without force', async () => {
+  test('Pull targets without force', async () => {
     const opts = { targets: ['one', 'two'] };
     try {
       await dvc.pull(opts);
@@ -67,12 +67,30 @@ describe('Dvc pull', () => {
     expect(opts.command).toBe('dvc pull one two');
   });
 
-  test('Empty targets with force', async () => {
+  test('Pull targets with force', async () => {
     const opts = { force: true, targets: ['one', 'two'] };
     try {
       await dvc.pull(opts);
     } catch (err) {}
 
     expect(opts.command).toBe('dvc pull -f one two');
+  });
+
+  test('Push empty targets', async () => {
+    const opts = {};
+    try {
+      await dvc.push(opts);
+    } catch (err) {}
+
+    expect(opts.command).toBe('dvc push');
+  });
+
+  test('Push empty targets', async () => {
+    const opts = { targets: ['one', 'two'] };
+    try {
+      await dvc.push(opts);
+    } catch (err) {}
+
+    expect(opts.command).toBe('dvc push one two');
   });
 });

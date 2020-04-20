@@ -34,6 +34,7 @@ const run = async () => {
 
   const repro_targets = getInputArray('repro_targets', REPRO_TARGETS);
   const metrics_diff_targets = getInputArray('metrics_diff_targets');
+  const push_targets = getInputArray('push_targets');
   const dvc_pull = getInputArray('dvc_pull');
 
   Report.DVC_TAG_PREFIX = metrics_format;
@@ -62,7 +63,8 @@ const run = async () => {
     user_name,
     remote,
     ref,
-    repro_targets
+    repro_targets,
+    push_targets
   });
 
   console.log('Generating DVC Report');
