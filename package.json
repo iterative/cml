@@ -27,7 +27,9 @@
     "lint": "eslint ./",
     "build": "ncc build index.js -o dist -m",
     "test": "jest --passWithNoTests",
-    "do_snapshots": "jest --updateSnapshot"
+    "do_snapshots": "jest --updateSnapshot",
+    "cml-metrics": "./bin/cml-metrics.js",
+    "cml-files": "./bin/cml-files.js"
   },
   "husky": {
     "hooks": {

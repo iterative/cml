@@ -9,7 +9,7 @@ const diff_fixture = `{"added": [], "deleted": [], "modified": [{"path": "metric
 describe('CML e2e ', () => {
   test('cml-metrics', async () => {
     const output = await exec(
-      `echo '${diff_metrics_fixture}' | npx cml-metrics`
+      `echo '${diff_metrics_fixture}' | node ./bin/cml-metrics.js`
     );
 
     expect(output).toMatchInlineSnapshot(`
@@ -22,7 +22,9 @@ describe('CML e2e ', () => {
   }, 50000);
 
   test('cml-files', async () => {
-    const output = await exec(`echo '${diff_fixture}' | npx cml-files`);
+    const output = await exec(
+      `echo '${diff_fixture}' | node ./bin/cml-files.js`
+    );
 
     expect(output).toMatchInlineSnapshot(`
       "<details>
