@@ -7,12 +7,10 @@ const diff_metrics_fixture = `{"metrics/eval.json": {"accuracy": {"old": "0.8784
 const diff_fixture = `{"added": [], "deleted": [], "modified": [{"path": "metrics/eval.json"}, {"path": "metrics/train.json"}, {"path": "models/"}]}`;
 
 describe('CML e2e ', () => {
-  beforeAll(async () => {
-    await exec('npm link');
-  }, 100000);
-
   test('cml-metrics', async () => {
-    const output = await exec(`echo '${diff_metrics_fixture}' | cml-metrics`);
+    const output = await exec(
+      `echo '${diff_metrics_fixture}' | npx cml-metrics`
+    );
 
     expect(output).toMatchInlineSnapshot(`
       "|path|metric|old|new|diff|
@@ -24,7 +22,7 @@ describe('CML e2e ', () => {
   }, 50000);
 
   test('cml-files', async () => {
-    const output = await exec(`echo '${diff_fixture}' | cml-files`);
+    const output = await exec(`echo '${diff_fixture}' | npx cml-files`);
 
     expect(output).toMatchInlineSnapshot(`
       "<details>
