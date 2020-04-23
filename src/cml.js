@@ -5,15 +5,8 @@ const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 
-const {
-  is_pr,
-  ref,
-  head_sha,
-  git_fetch_all,
-  publish_report,
-  check_ran_ref,
-  handle_error
-} = process.env.GITHUB_ACTION
+const { head_sha, git_fetch_all, publish_report, handle_error } = process.env
+  .GITHUB_ACTION
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -81,22 +74,10 @@ module.exports.send_report_run = async opts => {
 };
 
 module.exports.setup = async () => {
-  if (is_pr && (await check_ran_ref({ ref }))) {
-    const error = new Error(
-      'This ref is running or has runned another check. Cancelling...'
-    );
-    error.type = 'check_ran_ref';
-    throw error;
-  }
-
   print('Fetch all history for all tags and branches');
   await git_fetch_all();
 
   await DVC.setup_credentials(process.env);
 };
 
-module.exports.error_handler = err => {
-  if (err.type === 'check_ran_ref') return;
-
-  handle_error(err);
-};
+module.exports.error_handler = handle_error;
