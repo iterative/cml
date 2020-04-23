@@ -14,25 +14,12 @@ machine learning projects. Use it to automate parts of your development workflow
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
+CML uses DVC and Git to provide: 
 
-Major benefits of using DVC-CML in your ML projects includes:
-
-- Reproducibility: DVC is always in charge of maintain your experiment tracking
-  all the dependencies, so you don't have to. Additionally your experiment is
-  always running under the same constrains so you don't have to worry about
-  replicating the same environment again.
-- Observability: DVC offers you metrics to be tracked. In DVC-action we make
-  those metrics more human friendly and we also offer direct access to other
-  experiments run through the DVC Report offered as checks in Github or Releases
-  in Gitlab.
-- Releases: DVC-action tags every experiment that runs with repro generating the
-  report. Aside of that DVC-CML is just a step in your
-  [Github Workflow](https://help.github.com/en/actions/getting-started-with-github-actions/core-concepts-for-github-actions#workflow)
-  or [Gitlab Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) that could
-  generate your model releases or deployment according to your business
-  requirements.
-- Teaming: Give visibility to your experiments or releases to your teammates
-  working together.
+- **Reproducibility.** When you automate your workflow, it becomes reproducible. 
+- **Observability.** CML creates human-readable reports to compare user-defined metrics like model performance across commits. Compare experiments like pull requests. 
+- **Release-readiness.**: With CML, every experiment is a release candidate. 
+- **Team efficacy.** Review your teammate's models and datasets like code. Checkin and checkout each other's workspaces. 
 
 DVC-cml performs in your push or pull requests:
 
