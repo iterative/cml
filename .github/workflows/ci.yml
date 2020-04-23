@@ -2,10 +2,10 @@ name: "Publish CML dockers"
 
 on: [push, pull_request]
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+  
 jobs:
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-    
   test_and_deploy:
     runs-on: ubuntu-latest
 
