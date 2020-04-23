@@ -24,8 +24,7 @@ module.exports.metrics_args = () => {
     .alias('f', 'file')
     .default('maxchars', 20000)
     .alias('c', 'maxchars')
-    .help('h')
-    .demandOption(['metrics']).argv;
+    .help('h').argv;
 
   return argv;
 };
@@ -42,7 +41,8 @@ module.exports.diff_run = async opts => {
 };
 
 module.exports.metrics_run = async opts => {
-  const { metrics, file, maxchars, handler } = opts;
+  const { metrics = '{}', file, maxchars, handler } = opts;
+
   const metrics_parsed = JSON.parse(metrics);
   const output = handler(metrics_parsed, maxchars);
 
