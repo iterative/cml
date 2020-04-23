@@ -29,7 +29,8 @@ To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize 
 
 _EO: Instructions to configure CML in a project repository here? Need to show the workflow being defined._
 _How should we provide GitHub/GitLab details? Should we have separate sections with specific instructions for each?_
-_That seems preferable to jumping back and forth between them as we're currently doing._
+_That seems preferable to jumping back and forth between them as we're currently doing. Perhaps, if we expect one service
+will be dominant/much more popular, we just feature an explanation for that service here and have a link to instructions for the other. "Alternatively, for instructions with GitLab, see our docs..."_
 
 <details>
 <summary>CML for Github</summary>
