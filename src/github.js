@@ -5,7 +5,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 const {
-  GITHUB_REPOSITORY,
+  GITHUB_REPOSITORY = '',
   GITHUB_JOB,
   GITHUB_HEAD_REF,
   GITHUB_REF,

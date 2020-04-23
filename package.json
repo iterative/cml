@@ -16,7 +16,11 @@
   "bin": {
     "dvcreport": "./bin/dvcreport.js",
     "dvc_action_run": "./bin/dvc-cml-run.js",
-    "dvc_cml_run": "./bin/dvc-cml-run.js"
+    "dvc_cml_run": "./bin/dvc-cml-run.js",
+    "cml-metrics": "./bin/cml-metrics.js",
+    "cml-files": "./bin/cml-files.js",
+    "cml-send-report": "./bin/cml-send-report.js",
+    "cml-setup": "./bin/cml-setup.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -46,6 +50,7 @@
     "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
+    "pipe-args": "^1.3.0",
     "showdown": "^1.9.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",

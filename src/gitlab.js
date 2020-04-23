@@ -5,7 +5,7 @@ const { URLSearchParams } = require('url');
 
 const {
   CI_API_V4_URL,
-  CI_PROJECT_PATH,
+  CI_PROJECT_PATH = '',
   CI_PROJECT_URL,
   CI_PROJECT_ID,
   CI_COMMIT_REF_NAME,

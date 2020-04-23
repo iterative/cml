@@ -18,8 +18,6 @@ const setup = async () => {
 };
 
 const setup_credentials = async credentials => {
-  console.log('Setting DVC credentials ...');
-
   const { GOOGLE_APPLICATION_CREDENTIALS } = credentials;
 
   if (GOOGLE_APPLICATION_CREDENTIALS) {

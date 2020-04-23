@@ -183,3 +183,5 @@ exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;
 exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
+exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
+exports.dvc_diff_report_md = dvc_diff_report_md;
