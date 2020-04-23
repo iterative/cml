@@ -1,4 +1,6 @@
-# DVC Github action for continuous delivery for machine learning
+# Continuous Machine Learning
+
+![logo](imgs/Dark.png)
 
 1. [Introduction](#introduction)
 2. [Usage](#usage)
