@@ -1,6 +1,6 @@
 # Continuous Machine Learning
 
-![logo](imgs/Dark.png)
+![logo](imgs/dark_logo.png)
 
 1. [Introduction](#introduction)
 2. [Usage](#usage)
@@ -9,16 +9,11 @@
 5. [Examples](#examples)
 
 ## Introduction
+Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery in 
+machine learning projects. Use it to automate parts of your development workflow, including
+model training and evaluation, comparing ML experiments across your project history, and 
+monitoring changing datasets. 
 
-DVC is a great tool as a data versioning system, but also is great as a build
-tool for ML experimentation. This repo offers the possibility of using DVC to
-establish your ML pipeline to be run by Github Actions runners or Gitlab
-runners.
-
-You can also deploy
-[your own Github runners](https://help.github.com/en/actions/hosting-your-own-runners)
-or [your own Gitlab runners](https://docs.gitlab.com/runner/) with special
-capabilities like GPUs...
 
 Major benefits of using DVC-CML in your ML projects includes:
 
