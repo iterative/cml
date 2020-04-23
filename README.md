@@ -22,13 +22,12 @@ CML uses DVC and Git to provide:
 - **Team efficacy.** Review your teammate's models and datasets like code. Checkin and checkout each other's workspaces. 
 
 ## Usage
-CML is a tool to extend the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to reproduce a user-defined pipeline and return a CML Report to your repository. 
+CML extends the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to reproduce a user-defined pipeline and return a CML Report to your repository. 
 
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
 
-
-
+_Instructions to configure CML in a project repository here? Need to show the workflow being defined._
 
 <details>
 <summary>CML for Github</summary>
@@ -76,11 +75,6 @@ jobs:
 
 <details>
 <summary>CML for Gitlab</summary>
-
-> :eyes: Knowledge of
-> [Gitlab CI/CD Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) and
-> [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
-> fully comprehension.
 
 Example of a simple DVC-CML workflow in Gitlab:
 
