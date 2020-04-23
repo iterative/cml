@@ -9,7 +9,7 @@
 5. [Examples](#examples)
 
 ## Introduction
-Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery in 
+Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
@@ -21,22 +21,14 @@ CML uses DVC and Git to provide:
 - **Release-readiness.**: With CML, every experiment is a release candidate. 
 - **Team efficacy.** Review your teammate's models and datasets like code. Checkin and checkout each other's workspaces. 
 
-DVC-cml performs in your push or pull requests:
-
-1.  DVC [repro](https://dvc.org/doc/command-reference/repro)
-2.  Push changes into DVC remote and Git remote
-3.  - In Github generates a Github check displaying the DVC Report
-    - In Gitlab generates a Tag/Release displaying the DVC Report
-
-![image](https://user-images.githubusercontent.com/414967/75673142-854ad800-5c82-11ea-97f4-256beca83754.png)
-![image](https://user-images.githubusercontent.com/414967/75673087-677d7300-5c82-11ea-8ccb-be6a4f81eb5d.png)
-
 ## Usage
+CML works with GitHub and GitLab to extend the CI/CD workflow to ML projects. Users may wish to familiarize themselves with 
+[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
 
 <details>
-<summary>DVC-CML for Github</summary>
+<summary>CML for Github</summary>
 
-> :eyes: Knowledge of [Github Actions](https://help.github.com/en/actions) and
+> :eyes: Knowledge of  and
 > [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
 > fully comprehension.
 
@@ -78,7 +70,7 @@ jobs:
 </details>
 
 <details>
-<summary>DVC-CML for Gitlab</summary>
+<summary>CML for Gitlab</summary>
 
 > :eyes: Knowledge of
 > [Gitlab CI/CD Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) and
