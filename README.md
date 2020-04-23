@@ -27,7 +27,9 @@ CML extends the CI/CD workflow to ML projects. When a pull or push to your proje
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
 
-_Instructions to configure CML in a project repository here? Need to show the workflow being defined._
+_EO: Instructions to configure CML in a project repository here? Need to show the workflow being defined._
+_How should we provide GitHub/GitLab details? Should we have separate sections with specific instructions for each?_
+_That seems preferable to jumping back and forth between them as we're currently doing._
 
 <details>
 <summary>CML for Github</summary>
