@@ -77,6 +77,3 @@ RUN apt update && \
     echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
     ldconfig
 # TENSORFLOW ENDS
-
-COPY ./docker/entrypoint.sh ./
-CMD ["entrypoint.sh"]
