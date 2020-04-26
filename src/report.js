@@ -3,7 +3,7 @@ const numeral = require('numeral');
 const _ = require('underscore');
 var showdown = require('showdown');
 
-const { METRICS_FORMAT } = require('./settings');
+const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
 
 const metrics_format = () => {

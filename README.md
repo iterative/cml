@@ -63,7 +63,7 @@ Example of a simple DVC-CML workflow:
 ```yaml
 name: your-workflow-name
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   run:

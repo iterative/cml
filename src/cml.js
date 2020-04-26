@@ -12,7 +12,6 @@ const { head_sha: HEAD_SHA, publish_report, handle_error } = process.env
 
 const DVC = require('./dvc');
 const REPORT = require('./report');
-const { METRICS_FORMAT } = require('./settings');
 
 module.exports.print = print;
 module.exports.metrics_args = () => {
@@ -24,7 +23,7 @@ module.exports.metrics_args = () => {
     .default('file')
     .alias('f', 'file')
     .default('maxchars', 20000)
-    .default('metrics_format', METRICS_FORMAT)
+    .default('metrics_format', REPORT.METRICS_FORMAT)
     .help('h').argv;
 
   return argv;

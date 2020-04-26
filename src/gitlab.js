@@ -1,5 +1,3 @@
-const { exec } = require('./utils');
-const CI = require('./ci');
 const fetch = require('node-fetch');
 const { URLSearchParams } = require('url');
 
@@ -12,7 +10,6 @@ const {
   CI_COMMIT_SHA,
   CI_JOB_NAME,
   CI_MERGE_REQUEST_ID,
-  // CI_MERGE_REQUEST_IID,
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
@@ -29,8 +26,7 @@ const USER_NAME = GITLAB_USER_NAME;
 const TOKEN = repo_token || GITLAB_TOKEN;
 const REMOTE = `https://${owner}:${TOKEN}@gitlab.com/${owner}/${repo}.git`;
 
-const ref_parser = async ref => {
-  const tag = CI.sha_tag(ref);
+const ref_parser = async tag => {
   const link = `${CI_PROJECT_URL}/-/tags/${tag}`;
 
   return { label: tag, link };
@@ -53,11 +49,6 @@ const check_ran_ref = async () => {
       return job.commit.id === CI_COMMIT_SHA && job.name === CI_JOB_NAME;
     }).length > 1
   );
-};
-
-const git_fetch_all = async () => {
-  await exec('git checkout -B "$CI_BUILD_REF_NAME" "$CI_BUILD_REF"');
-  await exec('git fetch --prune');
 };
 
 const publish_report = async opts => {
@@ -86,6 +77,5 @@ exports.remote = REMOTE;
 exports.ref_parser = ref_parser;
 exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
-exports.git_fetch_all = git_fetch_all;
 exports.publish_report = publish_report;
 exports.handle_error = handle_error;

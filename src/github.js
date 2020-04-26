@@ -1,6 +1,3 @@
-const { exec } = require('./utils');
-
-const CI = require('./ci');
 const core = require('@actions/core');
 const github = require('@actions/github');
 
@@ -27,6 +24,8 @@ const REMOTE = `https://${owner}:${TOKEN}@github.com/${owner}/${repo}.git`;
 
 const octokit = new github.GitHub(TOKEN);
 
+const DVC_TITLE = 'DVC Report';
+
 const create_check_dvc_report = async opts => {
   const {
     head_sha,
@@ -37,7 +36,7 @@ const create_check_dvc_report = async opts => {
     status = 'completed'
   } = opts;
 
-  const title = CI.DVC_TITLE;
+  const title = DVC_TITLE;
   const name = title;
   const check = await octokit.checks.create({
     owner,
@@ -57,7 +56,7 @@ const create_check_dvc_report = async opts => {
 const ref_parser = async ref => {
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
   const check = checks.data.check_runs.filter(
-    check => check.name === CI.DVC_TITLE
+    check => check.name === DVC_TITLE
   )[0];
 
   if (check) return { label: ref.substr(0, 7), link: check.html_url };
@@ -76,10 +75,6 @@ const check_ran_ref = async opts => {
   );
 };
 
-const git_fetch_all = async () => {
-  await exec('git fetch --prune --unshallow');
-};
-
 const publish_report = async opts => {
   await create_check_dvc_report(opts);
 };
@@ -96,6 +91,5 @@ exports.user_name = USER_NAME;
 exports.remote = REMOTE;
 exports.ref_parser = ref_parser;
 exports.check_ran_ref = check_ran_ref;
-exports.git_fetch_all = git_fetch_all;
 exports.publish_report = publish_report;
 exports.handle_error = handle_error;
