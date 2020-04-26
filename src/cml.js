@@ -1,5 +1,5 @@
 const print = console.log;
-console.log = console.error;
+// console.log = console.error;
 
 const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');

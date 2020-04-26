@@ -12,6 +12,7 @@ const {
   CI_COMMIT_SHA,
   CI_JOB_NAME,
   CI_MERGE_REQUEST_ID,
+  // CI_MERGE_REQUEST_IID,
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
@@ -60,17 +61,12 @@ const git_fetch_all = async () => {
 };
 
 const publish_report = async opts => {
-  const { repro_sha, report } = opts;
+  const { head_sha, report } = opts;
 
-  if (!repro_sha) return;
-
-  const project = encodeURIComponent(CI_PROJECT_PATH);
-  const endpoint = `${CI_API_V4_URL}/projects/${project}/repository/tags/${CI.sha_tag(
-    repro_sha
-  )}/release`;
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
 
   const body = new URLSearchParams();
-  body.append('description', report);
+  body.append('note', report);
 
   const headers = { 'PRIVATE-TOKEN': TOKEN };
   await fetch(endpoint, { method: 'POST', headers, body });
