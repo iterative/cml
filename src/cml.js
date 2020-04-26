@@ -5,7 +5,8 @@ const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 
-const { head_sha, publish_report, handle_error } = process.env.GITHUB_ACTION
+const { head_sha: HEAD_SHA, publish_report, handle_error } = process.env
+  .GITHUB_ACTION
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -57,7 +58,7 @@ module.exports.send_report_args = () => {
     .usage(`Usage: $0 --path <string>`)
     .default('path')
     .alias('p', 'path')
-    .default('head_sha', head_sha)
+    .default('head_sha')
     .help('h')
     .demandOption(['path']).argv;
 
@@ -65,7 +66,7 @@ module.exports.send_report_args = () => {
 };
 
 module.exports.send_report_run = async opts => {
-  const { path, head_sha } = opts;
+  const { path, head_sha = HEAD_SHA } = opts;
   const report = await fs.readFile(path, 'utf-8');
 
   await publish_report({

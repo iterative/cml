@@ -127,26 +127,17 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`""`);
   });
 
-  test('cml-send-report', async () => {
-    let error;
-    try {
-      await exec(`echo none | node ./bin/cml-send-report.js`);
-    } catch (err) {
-      error = err;
-    }
+  test('cml-send-report -h', async () => {
+    const output = await exec(`echo none |node ./bin/cml-send-report.js -h`);
 
-    expect(error.message).toMatchInlineSnapshot(`
-      "Command failed: echo none | node ./bin/cml-send-report.js
-      Usage: cml-send-report.js --path <string>
+    expect(output).toMatchInlineSnapshot(`
+      "Usage: cml-send-report.js --path <string>
 
       Options:
         --version   Show version number                                      [boolean]
         -h          Show help                                                [boolean]
         -p, --path                                                          [required]
-        --head_sha
-
-      Missing required argument: path
-      "
+        --head_sha"
     `);
   });
 });
