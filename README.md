@@ -79,13 +79,20 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        cml-setup
+        # Install your project dependencies.
+        # An example for Python3:
+        apt-get install -y python3 python3-pip
+        pip3 install --upgrade pip
+        update-alternatives --install /usr/bin/python python $(which python3) 10
+        update-alternatives --install /usr/bin/pip pip $(which pip3) 10
+        test -f requirements.txt && pip3 install -r requirements.txt
 
-        apt-get update && apt-get install -y python-pip && pip install --upgrade pip
-        pip install tensorflow wget
+        # needed to be able to do dvc metrics and dvc diff
+        git fetch --prune --unshallow
 
+        # -f is needed
         dvc pull -f
-        dvc repro train.dvc
+        dvc repro
         dvc push
 
         echo "# CML report" >> report.md
@@ -124,13 +131,18 @@ dvc:
   image: dvcorg/dvc-cml:latest
 
   script:
-    # double run check, prepares the repo and dvc remote inputs
-    - cml-setup
+    -  # Install your project dependencies.
+    -  # An example for Python3:
+    - apt-get install -y python3 python3-pip
+    - pip3 install --upgrade pip
+    - update-alternatives --install /usr/bin/python python $(which python3) 10
+    - update-alternatives --install /usr/bin/pip pip $(which pip3) 10
+    - test -f requirements.txt && pip3 install -r requirements.txt
 
-    - apt-get update && apt-get install -y python-pip && pip install --upgrade
-      pip
-    - pip install tensorflow wget
+    -  # needed to be able to do dvc metrics and dvc diff
+    - git fetch --prune --unshallow
 
+    -  # -f is needed
     - dvc pull -f
     - dvc repro train.dvc
     - dvc push

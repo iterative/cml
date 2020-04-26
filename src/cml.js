@@ -1,17 +1,17 @@
 const print = console.log;
-// console.log = console.error;
+console.log = console.error;
 
 const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 
-const { head_sha, git_fetch_all, publish_report, handle_error } = process.env
-  .GITHUB_ACTION
+const { head_sha, publish_report, handle_error } = process.env.GITHUB_ACTION
   ? require('../src/github')
   : require('../src/gitlab');
 
 const DVC = require('./dvc');
 const REPORT = require('./report');
+const { METRICS_FORMAT } = require('./settings');
 
 module.exports.print = print;
 module.exports.metrics_args = () => {
@@ -23,7 +23,7 @@ module.exports.metrics_args = () => {
     .default('file')
     .alias('f', 'file')
     .default('maxchars', 20000)
-    .alias('c', 'maxchars')
+    .default('metrics_format', METRICS_FORMAT)
     .help('h').argv;
 
   return argv;
@@ -41,7 +41,8 @@ module.exports.diff_run = async opts => {
 };
 
 module.exports.metrics_run = async opts => {
-  const { metrics = '{}', file, maxchars, handler } = opts;
+  const { metrics = '{}', file, maxchars, handler, metrics_format } = opts;
+  REPORT.METRICS_FORMAT = metrics_format;
 
   const metrics_parsed = JSON.parse(metrics);
   const output = handler(metrics_parsed, maxchars);
@@ -73,10 +74,7 @@ module.exports.send_report_run = async opts => {
   });
 };
 
-module.exports.setup = async () => {
-  print('Fetch all history for all tags and branches');
-  await git_fetch_all();
-
+module.exports.setup_env_remote = async () => {
   await DVC.setup_credentials(process.env);
 };
 

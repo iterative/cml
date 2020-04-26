@@ -20,7 +20,7 @@
     "cml-metrics": "./bin/cml-metrics.js",
     "cml-files": "./bin/cml-files.js",
     "cml-send-report": "./bin/cml-send-report.js",
-    "cml-setup": "./bin/cml-setup.js"
+    "cml-setup-env-remote": "./bin/cml-setup-env-remote.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
