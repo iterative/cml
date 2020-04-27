@@ -39,28 +39,20 @@ jobs:
 
       - name: dvc_cml_run
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         repro_targets: your_dvc_target.dvc
       run: |
-        # Install your project dependencies.
-        # An example for Python3:
-        apt-get install -y python3 python3-pip
-        pip3 install --upgrade pip
-        update-alternatives --install /usr/bin/python python $(which python3) 10
-        update-alternatives --install /usr/bin/pip pip $(which pip3) 10
-        test -f requirements.txt && pip3 install -r requirements.txt
         # Run report:
         dvc_cml_run
 ```
-
+_LIST OF FUNCTIONS THAT CAN BE RUN INSIDE?_
 
 ### Required input and output arguments
 _ELLE: I don't believe any arguments are strictly required. Need confirmation._
 
 ### Environmental variables
 
+_Here: do we introduce secrets here too???
 
 ### Secrets
 #### Required
