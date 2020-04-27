@@ -95,9 +95,10 @@ jobs:
         dvc repro
         dvc push
 
+        BASELINE=origin/master
         echo "# CML report" >> report.md
-        dvc metrics diff --show-json origin/master HEAD | cml-metrics >> report.md
-        dvc diff --show-json origin/master HEAD | cml-files >> report.md
+        dvc metrics diff --show-json "$BASELINE" HEAD | cml-metrics >> report.md
+        dvc diff --show-json "$BASELINE" HEAD | cml-files >> report.md
 
         cml-send-report -p report.md
 ```
@@ -147,10 +148,10 @@ dvc:
     - dvc repro train.dvc
     - dvc push
 
+    - BASELINE=origin/master
     - echo "# CML report" >> report.md
-    - dvc metrics diff --show-json origin/master HEAD | cml-metrics >> report.md
-    - dvc diff --show-json origin/master HEAD | cml-files >> report.md
-
+    - dvc metrics diff --show-json "$BASELINE" HEAD | cml-metrics >> report.md
+    - dvc diff --show-json "$BASELINE" HEAD | cml-files >> report.md
     - cml-send-report -p report.md
 ```
 

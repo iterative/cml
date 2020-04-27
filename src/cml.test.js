@@ -1,21 +1,9 @@
-jest.mock('./dvc');
 jest.setTimeout(200000);
 
-const dvc = require('./dvc');
-const CML = require('./cml');
 const { exec } = require('./utils');
 
 const diff_metrics_fixture = `{"metrics/eval.json": {"accuracy": {"old": "0.8784", "new": "0.8783"}}, "metrics/train.json": {"took": {"old": 0.0015638272762298585, "new": 0.0014997141361236571, "diff": -6.411314010620135e-05}, "num_steps": {"old": 1400, "new": 1200, "diff": -200}}}`;
 const diff_fixture = `{"added": [], "deleted": [], "modified": [{"path": "metrics/eval.json"}, {"path": "metrics/train.json"}, {"path": "models/"}]}`;
-
-describe('CML', () => {
-  test('cml-setup-env-remote', async () => {
-    dvc.setup_credentials = jest.fn(dvc.setup_credentials);
-    await CML.setup_env_remote();
-
-    expect(dvc.setup_credentials.mock.calls.length).toBe(1);
-  });
-});
 
 describe('CML e2e', () => {
   test('cml-metrics with valid data', async () => {
@@ -61,10 +49,9 @@ describe('CML e2e', () => {
       "Usage: cml-files.js --metrics <json> --file <string>
 
       Options:
-        --version         Show version number                                [boolean]
-        -h                Show help                                          [boolean]
+        --version      Show version number                                   [boolean]
+        -h             Show help                                             [boolean]
         --maxchars                                                    [default: 20000]
-        --metrics_format                                    [default: \\"0[.][0000000]\\"]
         -m, --metrics                                                [default: \\"none\\"]
         -f, --file"
     `);
@@ -112,10 +99,9 @@ describe('CML e2e', () => {
       "Usage: cml-files.js --metrics <json> --file <string>
 
       Options:
-        --version         Show version number                                [boolean]
-        -h                Show help                                          [boolean]
+        --version      Show version number                                   [boolean]
+        -h             Show help                                             [boolean]
         --maxchars                                                    [default: 20000]
-        --metrics_format                                    [default: \\"0[.][0000000]\\"]
         -m, --metrics                                                [default: \\"none\\"]
         -f, --file"
     `);

@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
-const { setup_env_remote, error_handler } = require('../src/cml');
+console.log = console.error;
 
-setup_env_remote().catch(e => error_handler(e));
+const DVC = require('../src/dvc');
+
+const { handle_error } = process.env.GITHUB_ACTION
+  ? require('../src/github')
+  : require('../src/gitlab');
+
+const run = async () => {
+  await DVC.setup_credentials(process.env);
+};
+
+run().catch(e => handle_error(e));
