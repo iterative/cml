@@ -16,7 +16,8 @@
   "bin": {
     "cml-metrics": "./bin/cml-metrics.js",
     "cml-files": "./bin/cml-files.js",
-    "cml-send-report": "./bin/cml-send-report.js",
+    "cml-send-comment": "./bin/cml-send-comment.js",
+    "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js"
   },
   "scripts": {
