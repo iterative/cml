@@ -2,11 +2,6 @@
 
 ![logo](imgs/dark_logo.png)
 
-1. [Introduction](#introduction)
-2. [Usage](#usage)
-3. [How to use GPUs](#how-to-use-gpus)
-4. [Working with DVC remotes](#working-with-dvc-remotes)
-5. [Examples](#examples)
 
 ## Introduction
 Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
