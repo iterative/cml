@@ -101,7 +101,6 @@ jobs:
         dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
         cml-send-comment report.md
-        cml-send-github-check report.md
 ```
 
 </details>
