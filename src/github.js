@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const fetch = require('node-fetch');
+const { request } = require('@octokit/request');
 
 const {
   GITHUB_REPOSITORY = '',
@@ -80,13 +80,14 @@ const publish_report = async opts => {
   await create_check_dvc_report(opts);
 
   const { head_sha, report } = opts;
-  const endpoint = `/repos/${GITHUB_REPOSITORY}/commits/${head_sha}/comments`;
 
-  const body = new URLSearchParams();
-  body.append('body', report);
-
-  const headers = { token: TOKEN };
-  await fetch(endpoint, { method: 'POST', headers, body });
+  await request(
+    `POST /repos/${GITHUB_REPOSITORY}/commits/${head_sha}/comments`,
+    {
+      headers: { authorization: `token ${TOKEN}` },
+      body: report
+    }
+  );
 };
 
 const handle_error = e => {
