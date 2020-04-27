@@ -100,7 +100,8 @@ jobs:
         dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
         dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
-        cml-send-report -p report.md
+        cml-send-comment -p report.md
+        cml-send-github-check -p report.md
 ```
 
 </details>
@@ -152,7 +153,7 @@ dvc:
     - echo "# CML report" >> report.md
     - dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
     - dvc diff --show-json "$BASELINE" | cml-files >> report.md
-    - cml-send-report -p report.md
+    - cml-send-comment -p report.md
 ```
 
 </details>
