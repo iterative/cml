@@ -11,7 +11,7 @@ const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTION
   : require('../src/gitlab');
 
 const run = async opts => {
-  const { path, head_sha = HEAD_SHA } = opts;
+  const { path, 'head-sha': head_sha = HEAD_SHA } = opts;
   const report = await fs.readFile(path, 'utf-8');
 
   await comment({
@@ -22,10 +22,10 @@ const run = async opts => {
 
 pipe_args.load();
 const argv = yargs
-  .usage(`Usage: $0 --path <string>`)
+  .usage(`Usage: $0 --path <string> --head-sha <string>`)
   .default('path')
   .alias('p', 'path')
-  .default('head_sha')
+  .default('head-sha')
   .help('h')
   .demandOption(['path']).argv;
 run(argv).catch(e => handle_error(e));
