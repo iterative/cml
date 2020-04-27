@@ -113,17 +113,31 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`""`);
   });
 
-  test('cml-send-report -h', async () => {
-    const output = await exec(`echo none |node ./bin/cml-send-report.js -h`);
+  test('cml-send-comment -h', async () => {
+    const output = await exec(`echo none | node ./bin/cml-send-comment.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-report.js --path <string>
+      "Usage: cml-send-comment.js <path> --head-sha <string>
 
       Options:
         --version   Show version number                                      [boolean]
-        -h          Show help                                                [boolean]
-        -p, --path                                                          [required]
-        --head_sha"
+        --head-sha  Commit sha
+        -h          Show help                                                [boolean]"
+    `);
+  });
+
+  test('cml-send-github-check -h', async () => {
+    const output = await exec(
+      `echo none | node ./bin/cml-send-github-check.js -h`
+    );
+
+    expect(output).toMatchInlineSnapshot(`
+      "Usage: cml-send-github-check.js <path> --head-sha <string>
+
+      Options:
+        --version   Show version number                                      [boolean]
+        --head-sha  Commit sha
+        -h          Show help                                                [boolean]"
     `);
   });
 });

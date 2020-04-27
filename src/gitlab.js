@@ -51,7 +51,7 @@ const check_ran_ref = async () => {
   );
 };
 
-const publish_report = async opts => {
+const comment = async opts => {
   const { head_sha, report } = opts;
 
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
@@ -77,5 +77,5 @@ exports.remote = REMOTE;
 exports.ref_parser = ref_parser;
 exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
-exports.publish_report = publish_report;
+exports.comment = comment;
 exports.handle_error = handle_error;
