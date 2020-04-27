@@ -64,11 +64,9 @@ _ELLE: I don't believe any arguments are strictly required. Need confirmation._
 
 ### Secrets
 #### Required
+`GITHUB_TOKEN` - _description_
 
 #### Optional
-
-## Working with DVC remotes
-
 DVC support different kinds of remote
 [storage](https://dvc.org/doc/command-reference/remote/add). To setup them
 properly you have to setup credentials (if needed) as Github
