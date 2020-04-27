@@ -100,8 +100,8 @@ jobs:
         dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
         dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
-        cml-send-comment -p report.md
-        cml-send-github-check -p report.md
+        cml-send-comment report.md
+        cml-send-github-check report.md
 ```
 
 </details>
