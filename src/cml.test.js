@@ -117,7 +117,7 @@ describe('CML e2e', () => {
     const output = await exec(`echo none | node ./bin/cml-send-comment.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-report.js --path <string>
+      "Usage: cml-send-comment.js --path <string>
 
       Options:
         --version   Show version number                                      [boolean]
