@@ -97,8 +97,8 @@ jobs:
 
         BASELINE=origin/master
         echo "# CML report" >> report.md
-        dvc metrics diff --show-json "$BASELINE" HEAD | cml-metrics >> report.md
-        dvc diff --show-json "$BASELINE" HEAD | cml-files >> report.md
+        dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
+        dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
         cml-send-report -p report.md
 ```
@@ -150,8 +150,8 @@ dvc:
 
     - BASELINE=origin/master
     - echo "# CML report" >> report.md
-    - dvc metrics diff --show-json "$BASELINE" HEAD | cml-metrics >> report.md
-    - dvc diff --show-json "$BASELINE" HEAD | cml-files >> report.md
+    - dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
+    - dvc diff --show-json "$BASELINE" | cml-files >> report.md
     - cml-send-report -p report.md
 ```
 
