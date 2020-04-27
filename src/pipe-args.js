@@ -1,0 +1,36 @@
+const fs = require('fs');
+
+module.exports.piped = false;
+module.exports.piped_arg = () => {
+  const { argv } = process;
+
+  return this.piped ? argv[argv.length - 1] : undefined;
+};
+
+module.exports.load = () => {
+  const chunks = [];
+  const BUFSIZE = 65536;
+  let buffer;
+  let nbytes = 0;
+
+  while (true) {
+    if (process.stdin.isTTY) break;
+
+    try {
+      buffer = Buffer.alloc(BUFSIZE);
+      nbytes = fs.readSync(0, buffer, 0, BUFSIZE, null);
+
+      if (nbytes === 0) break;
+
+      chunks.push(buffer.slice(0, nbytes));
+    } catch (err) {
+      if (err.code !== 'EAGAIN') throw err;
+    }
+  }
+
+  const stdin = Buffer.concat(chunks).toString();
+  if (stdin.length) {
+    process.argv.push(stdin.trim());
+    this.piped = true;
+  }
+};

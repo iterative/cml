@@ -34,6 +34,3 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     npm install -g /dvc-cml && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-COPY ./docker/entrypoint.sh ./
-CMD ["entrypoint.sh"]

@@ -3,7 +3,7 @@ const numeral = require('numeral');
 const _ = require('underscore');
 var showdown = require('showdown');
 
-const { METRICS_FORMAT } = require('./settings');
+const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
 
 const metrics_format = () => {
@@ -183,3 +183,5 @@ exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;
 exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
+exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
+exports.dvc_diff_report_md = dvc_diff_report_md;
