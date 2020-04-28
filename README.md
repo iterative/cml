@@ -138,8 +138,7 @@ env:
 `GITHUB_TOKEN` - GitHub provides a token that you can use to authenticate on behalf of GitHub Actions. [See here](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for steps to configure.
 
 ### Optional
-DVC support different kinds of remote
-[storage](https://dvc.org/doc/command-reference/remote/add). You may need to set secrets in your repository depending on the formate of remote storage. See supported forms of storage and [required secrets for each](#environmental-variables).
+You may need to set secrets in your repository depending on the format of remote storage. See supported forms of storage and [required secrets for each](#environmental-variables).
 
 
 ## Example use case
