@@ -20,7 +20,7 @@ CML uses DVC and Git to provide:
 CML extends the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to reproduce a user-defined pipeline and return a CML Report to your repository. 
 
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
-[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
+[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
 
 `.github/workflows/cml.yml`
 
@@ -143,7 +143,8 @@ DVC support different kinds of remote
 
 
 ## Example use case
-Below is an example CML workflow that trains a ML model on every push and then generates a CML Report to compare the trained model's performance to the previous commit.
+Below is an example CML workflow. On every push, this action reproduces a DVC pipeline that trains a model, saves the trained model file to remote storage, and then generates a CML Report to comparing a performance metric between the current and previous runs. The environmental variables are configured for AWS remote storage.
+
 ```yaml
 name: your-workflow-name
 
