@@ -139,12 +139,43 @@ env:
 
 ### Optional
 DVC support different kinds of remote
-[storage](https://dvc.org/doc/command-reference/remote/add). To setup them
-properly you have to setup credentials (if needed) as Github
-[secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets).
-
-
+[storage](https://dvc.org/doc/command-reference/remote/add). You may need to set secrets in your repository depending on the formate of remote storage. See supported forms of storage and [required secrets for each](#environmental-variables).
 
 
 ## Example use case
-Here is an example.
+Below is an example CML workflow that trains a ML model on every push and then generates a CML Report to compare the trained model's performance to the previous commit.
+```yaml
+name: your-workflow-name
+
+on: [push]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/dvc-cml:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: dvc_cml_run
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Reproduce training pipeline
+        dvc repro train.dvc
+        
+        # Push the resulting model to remote storage
+        dvc add model.pkl
+        dvc push 
+        
+        # Compare a metric associated with the DVC pipeline between commits
+        BASELINE=origin/master
+        echo "# CML report" >> report.md
+        dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
+        dvc diff --show-json "$BASELINE" | cml-files >> report.md
+
+        # Create a report in CML
+        cml-send-comment report.md
+```
