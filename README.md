@@ -50,7 +50,7 @@ _LIST OF FUNCTIONS THAT CAN BE RUN INSIDE?_
 ### Required input and output arguments
 _ELLE: I don't believe any arguments are strictly required. Need confirmation._
 
-### Environmental variables
+## Environmental variables
 CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
 <details>
@@ -132,13 +132,13 @@ env:
 ```
 </details>
 
-### Secrets
+## Secrets
 Please add the following secrets to your repository.
 
-#### Required
+### Required
 `GITHUB_TOKEN` - GitHub provides a token that you can use to authenticate on behalf of GitHub Actions. [See here](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for steps to configure.
 
-#### Optional
+### Optional
 DVC support different kinds of remote
 [storage](https://dvc.org/doc/command-reference/remote/add). To setup them
 properly you have to setup credentials (if needed) as Github
@@ -148,3 +148,4 @@ properly you have to setup credentials (if needed) as Github
 
 
 ## Example use case
+Here is an example.
