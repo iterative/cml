@@ -143,7 +143,7 @@ DVC support different kinds of remote
 
 
 ## Example use case
-Below is an example CML workflow. On every push, this action reproduces a DVC pipeline that trains a model, saves the trained model file to remote storage, and then generates a CML Report to comparing a performance metric between the current and previous runs. The environmental variables are configured for AWS remote storage.
+Below is an example CML workflow. On every push, this action reproduces a DVC pipeline that trains a model, saves the trained model file to remote storage, and then generates a CML Report comparing a performance metric between the current and previous runs. The environmental variables are configured for AWS remote storage.
 
 ```yaml
 name: your-workflow-name
