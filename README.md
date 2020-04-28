@@ -133,7 +133,6 @@ env:
 </details>
 
 ## Secrets
-Please add the following secrets to your repository.
 
 ### Required
 `GITHUB_TOKEN` - GitHub provides a token that you can use to authenticate on behalf of GitHub Actions. [See here](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for steps to configure.
