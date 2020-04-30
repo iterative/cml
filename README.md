@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: dvc_cml_run
+      - name: cml_run
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -125,10 +125,10 @@ Example of a simple DVC-CML workflow in Gitlab:
 ```yaml
 # .gitlab-ci.yml
 stages:
-  - dvc_cml_run
+  - cml_run
 
-dvc:
-  stage: dvc_cml_run
+cml:
+  stage: cml_run
   image: dvcorg/dvc-cml:latest
 
   script:
@@ -241,7 +241,7 @@ gitlab-runner start
 
 ```yaml
 # Github
-dvc:
+cml:
   runs-on: [self-hosted]
   container:
     image: docker://dvcorg/dvc-cml-gpu:latest
@@ -255,10 +255,10 @@ dvc:
 
 ```yaml
 # Gitlab
-dvc:
+cml:
  tags:
-   - dvc-cml
- stage: dvc_action_run
+   - cml
+ stage: cml_run
  image: dvcorg/dvc-cml-gpu:latest
 
  variables:

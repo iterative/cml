@@ -27,10 +27,10 @@ RUN apt-get update && \
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # Install update pip and nodejs, install dvc and dvc-cml
-ADD "./" "/dvc-cml"
+ADD "./" "/cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && \
     apt install dvc && \
-    npm install -g /dvc-cml && \
+    npm install -g /cml && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
