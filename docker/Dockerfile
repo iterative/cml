@@ -31,6 +31,7 @@ ADD "./" "/dvc-cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && \
     apt install dvc && \
+    chmod 755 /dvc-cml && \
     npm install -g /dvc-cml && \
     npm install -g vega-cli && \
     apt-get clean && \
