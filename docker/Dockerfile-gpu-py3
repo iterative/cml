@@ -1,4 +1,4 @@
-FROM dvcorg/dvc-cml-gpu:latest
+FROM dvcorg/cml-gpu:latest
 
 LABEL maintainer="dvc.org"
 

@@ -11,7 +11,7 @@ const metrics_format = () => {
 };
 
 const setup_env_vars = () => {
-  return 'Please [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly';
+  return 'Please [setup rev environment variable](https://github.com/iterative/cml#env-variables) accordingly';
 };
 
 const no_tag_warning = () => {
