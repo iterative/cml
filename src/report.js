@@ -2,6 +2,10 @@ const json_2_mdtable = require('json-to-markdown-table2');
 const numeral = require('numeral');
 const _ = require('underscore');
 var showdown = require('showdown');
+const vega = require('vega');
+const vegalite = require('vega-lite');
+
+const { upload_image } = require('./utils');
 
 const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
@@ -178,6 +182,26 @@ const md_to_html = markdown => {
 `;
 };
 
+const vega2md = async opts => {
+  const { data } = opts;
+  const is_vega_lite = data.$schema.includes('vega-lite');
+  const spec = is_vega_lite ? vegalite.compile(data).spec : data;
+  const view = new vega.View(vega.parse(spec), { renderer: 'none' });
+
+  const canvas = await view.toCanvas();
+
+  const buffer = canvas.toBuffer();
+  const md = await image2md({ buffer });
+
+  return md;
+};
+
+const image2md = async opts => {
+  const link = await upload_image({ ...opts });
+
+  return `![](${link})\n`;
+};
+
 exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
 exports.md_to_html = md_to_html;
@@ -185,3 +209,5 @@ exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
 exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
 exports.dvc_diff_report_md = dvc_diff_report_md;
+exports.vega2md = vega2md;
+exports.image2md = image2md;

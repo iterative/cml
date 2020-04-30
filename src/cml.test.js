@@ -5,6 +5,73 @@ const { exec } = require('./utils');
 const diff_metrics_fixture = `{"metrics/eval.json": {"accuracy": {"old": "0.8784", "new": "0.8783"}}, "metrics/train.json": {"took": {"old": 0.0015638272762298585, "new": 0.0014997141361236571, "diff": -6.411314010620135e-05}, "num_steps": {"old": 1400, "new": 1200, "diff": -200}}}`;
 const diff_fixture = `{"added": [], "deleted": [], "modified": [{"path": "metrics/eval.json"}, {"path": "metrics/train.json"}, {"path": "models/"}]}`;
 
+const VEGA_LITE_FIXTURE = {
+  $schema: 'https://vega.github.io/schema/vega-lite/v2.0.json',
+  description: 'A simple bar chart with embedded data.',
+  data: {
+    values: [
+      { a: 'A', b: 28 },
+      { a: 'B', b: 55 },
+      { a: 'C', b: 43 },
+      { a: 'D', b: 91 },
+      { a: 'E', b: 81 },
+      { a: 'F', b: 53 },
+      { a: 'G', b: 19 },
+      { a: 'H', b: 87 },
+      { a: 'I', b: 52 }
+    ]
+  },
+  mark: 'bar',
+  encoding: {
+    x: { field: 'a', type: 'ordinal' },
+    y: { field: 'b', type: 'quantitative' }
+  }
+};
+
+describe('Gitlab Vega and image', () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+    delete process.GITHUB_ACTION;
+  });
+
+  afterEach(() => {
+    process.env = OLD_ENV;
+  });
+
+  test('Gitlab upload_image', async () => {
+    process.env = {
+      ...OLD_ENV,
+      GITLAB_TOKEN: 'R8KLzVLbQf9xPdKGpwDQ',
+      CI_API_V4_URL: 'https://gitlab.com/api/v4',
+      CI_PROJECT_ID: '17373479'
+    };
+
+    const Gitlab = require('./gitlab');
+    const path = 'assets/logo.png';
+    const uri = await Gitlab.upload_image({ path });
+
+    expect(typeof uri).toBe('string');
+  });
+
+  test('image2md', async () => {
+    const Report = require('./report');
+    const path = 'assets/logo.png';
+    const uri = await Report.image2md({ path });
+
+    expect(typeof uri).toBe('string');
+  });
+
+  test.skip('vega2md', async () => {
+    const Report = require('./report');
+    const uri = await Report.vega2md({ data: VEGA_LITE_FIXTURE });
+    console.log(uri);
+
+    expect(typeof uri).toBe('string');
+  });
+});
+
 describe('CML e2e', () => {
   test('cml-metrics with valid data', async () => {
     const output = await exec(
@@ -49,11 +116,9 @@ describe('CML e2e', () => {
       "Usage: cml-files.js --metrics <json> --file <string>
 
       Options:
-        --version      Show version number                                   [boolean]
-        -h             Show help                                             [boolean]
-        --maxchars                                                    [default: 20000]
-        -m, --metrics                                                [default: \\"none\\"]
-        -f, --file"
+        --version   Show version number                                      [boolean]
+        -h          Show help                                                [boolean]
+        --maxchars                                                    [default: 20000]"
     `);
   });
 
@@ -99,11 +164,9 @@ describe('CML e2e', () => {
       "Usage: cml-files.js --metrics <json> --file <string>
 
       Options:
-        --version      Show version number                                   [boolean]
-        -h             Show help                                             [boolean]
-        --maxchars                                                    [default: 20000]
-        -m, --metrics                                                [default: \\"none\\"]
-        -f, --file"
+        --version   Show version number                                      [boolean]
+        -h          Show help                                                [boolean]
+        --maxchars                                                    [default: 20000]"
     `);
   });
 
@@ -114,7 +177,7 @@ describe('CML e2e', () => {
   });
 
   test('cml-send-comment -h', async () => {
-    const output = await exec(`echo none | node ./bin/cml-send-comment.js -h`);
+    const output = await exec(`node ./bin/cml-send-comment.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
       "Usage: cml-send-comment.js <path> --head-sha <string>
@@ -139,5 +202,47 @@ describe('CML e2e', () => {
         --head-sha  Commit sha
         -h          Show help                                                [boolean]"
     `);
+  });
+
+  test('cml-send-image -h', async () => {
+    const output = await exec(`node ./bin/cml-send-image.js -h`);
+
+    expect(output).toMatchInlineSnapshot(`
+      "Usage: cml-send-image.js <path> --file <string>
+
+      Options:
+        --version  Show version number                                       [boolean]
+        -h         Show help                                                 [boolean]"
+    `);
+  });
+
+  test('cml-send-image assets/logo.png', async () => {
+    const output = await exec(`node ./bin/cml-send-image.js assets/logo.png`);
+
+    expect(output.startsWith('![](')).toBe(true);
+  });
+
+  test('cml-send-vega-image -h', async () => {
+    const output = await exec(
+      `echo none | node ./bin/cml-send-vega-image.js -h`
+    );
+
+    expect(output).toMatchInlineSnapshot(`
+      "Usage: cml-send-vega-image.js --vega <json> --file <string>
+
+      Options:
+        --version  Show version number                                       [boolean]
+        -h         Show help                                                 [boolean]"
+    `);
+  });
+
+  test('cml-send-vega-image', async () => {
+    const output = await exec(
+      `echo '${JSON.stringify(
+        VEGA_LITE_FIXTURE
+      )}' | node ./bin/cml-send-vega-image.js`
+    );
+
+    expect(output.startsWith('![](')).toBe(true);
   });
 });

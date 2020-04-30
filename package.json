@@ -18,15 +18,15 @@
     "cml-files": "./bin/cml-files.js",
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
-    "cml-setup-env-remote": "./bin/cml-setup-env-remote.js"
+    "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
+    "cml-send-image": "./bin/cml-send-image.js",
+    "cml-send-vega-image": "./bin/cml-send-vega-image.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
     "lint": "eslint ./",
     "test": "jest --passWithNoTests",
-    "do_snapshots": "jest --updateSnapshot",
-    "cml-metrics": "./bin/cml-metrics.js",
-    "cml-files": "./bin/cml-files.js"
+    "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {
@@ -44,6 +44,9 @@
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0",
+    "canvas": "^2.6.1",
+    "form-data": "^3.0.0",
+    "imgur": "^0.3.1",
     "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
@@ -51,6 +54,8 @@
     "showdown": "^1.9.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",
+    "vega": "^5.9.0",
+    "vega-lite": "^4.0.2",
     "yargs": "^15.1.0"
   },
   "devDependencies": {

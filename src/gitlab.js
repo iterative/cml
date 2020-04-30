@@ -1,7 +1,10 @@
 const fetch = require('node-fetch');
 const { URLSearchParams } = require('url');
+const fs = require('fs');
+const FormData = require('form-data');
 
 const {
+  CI_SERVER_URL,
   CI_API_V4_URL,
   CI_PROJECT_PATH = '',
   CI_PROJECT_URL,
@@ -63,6 +66,24 @@ const comment = async opts => {
   await fetch(endpoint, { method: 'POST', headers, body });
 };
 
+const upload_image = async opts => {
+  const { path, buffer } = opts;
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
+
+  const body = new FormData();
+  body.append('file', buffer || fs.createReadStream(path), {
+    filename: 'image.png'
+  });
+
+  const headers = { 'PRIVATE-TOKEN': TOKEN };
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const upload = await response.json();
+
+  if (!upload.full_path) throw new Error('Image was not uploaded successfully');
+
+  return `${CI_SERVER_URL}${upload.full_path}`;
+};
+
 const handle_error = e => {
   console.log(e.message);
   process.exit(1);
@@ -78,4 +99,5 @@ exports.ref_parser = ref_parser;
 exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
 exports.comment = comment;
+exports.upload_image = upload_image;
 exports.handle_error = handle_error;
