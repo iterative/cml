@@ -88,10 +88,6 @@ const comment = async opts => {
   );
 };
 
-const upload_image = async opts => {
-  throw new Error('Not yet implemented');
-};
-
 const handle_error = e => {
   core.setFailed(e.message);
 };
@@ -106,5 +102,4 @@ exports.ref_parser = ref_parser;
 exports.check_ran_ref = check_ran_ref;
 exports.create_check_report = create_check_report;
 exports.comment = comment;
-exports.upload_image = upload_image;
 exports.handle_error = handle_error;

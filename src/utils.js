@@ -1,7 +1,9 @@
 const util = require('util');
 const git = require('simple-git/promise');
-const imgur = require('imgur');
-imgur.setClientId('9ae2688f25fae09');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const FormData = require('form-data');
+const uniqid = require('uniqid');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -20,14 +22,22 @@ const exec = async (command, opts) => {
 
 const upload_image = async opts => {
   const { path, buffer } = opts;
+  const endpoint = 'https://dvc-public.s3.us-east-2.amazonaws.com';
+  const filename = `${uniqid()}.png`;
+  const key = `cml/img/${filename}`;
 
-  let response;
-  if (buffer) response = await imgur.uploadBase64(buffer.toString('base64'));
-  else response = await imgur.uploadFile(path);
+  const body = new FormData();
+  body.append('key', key);
+  body.append('Content-Type', 'image/png');
+  body.append('file', buffer || fs.createReadStream(path), {
+    contentType: 'image/png'
+  });
 
-  if (!response.data.link) throw new Error('Image upload failed');
+  const response = await fetch(endpoint, { method: 'POST', body });
 
-  return response.data.link;
+  if (response.status !== 204) throw new Error('Image upload failed');
+
+  return `https://img.cml.dev/${filename}`;
 };
 
 exports.exec = exec;

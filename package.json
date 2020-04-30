@@ -46,7 +46,6 @@
     "@actions/github": "^2.0.0",
     "canvas": "^2.6.1",
     "form-data": "^3.0.0",
-    "imgur": "^0.3.1",
     "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
@@ -54,6 +53,7 @@
     "showdown": "^1.9.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",
+    "uniqid": "^5.2.0",
     "vega": "^5.9.0",
     "vega-lite": "^4.0.2",
     "yargs": "^15.1.0"
