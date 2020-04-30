@@ -51,7 +51,9 @@ describe('CML e2e', () => {
       Options:
         --version         Show version number                                [boolean]
         -h                Show help                                          [boolean]
-        --metrics-format                                    [default: \\"0[.][0000000]\\"]"
+        --metrics-format                                    [default: \\"0[.][0000000]\\"]
+        -m, --metrics                                                [default: \\"none\\"]
+        -f, --file"
     `);
   });
 
@@ -97,9 +99,11 @@ describe('CML e2e', () => {
       "Usage: cml-files.js --metrics <json> --file <string>
 
       Options:
-        --version   Show version number                                      [boolean]
-        -h          Show help                                                [boolean]
-        --maxchars                                                    [default: 20000]"
+        --version      Show version number                                   [boolean]
+        -h             Show help                                             [boolean]
+        --maxchars                                                    [default: 20000]
+        -m, --metrics                                                [default: \\"none\\"]
+        -f, --file"
     `);
   });
 
