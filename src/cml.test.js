@@ -40,25 +40,10 @@ describe('Gitlab Vega and image', () => {
     process.env = OLD_ENV;
   });
 
-  test('Gitlab upload_image', async () => {
-    process.env = {
-      ...OLD_ENV,
-      GITLAB_TOKEN: 'R8KLzVLbQf9xPdKGpwDQ',
-      CI_API_V4_URL: 'https://gitlab.com/api/v4',
-      CI_PROJECT_ID: '17373479'
-    };
-
-    const Gitlab = require('./gitlab');
-    const path = 'assets/logo.png';
-    const uri = await Gitlab.upload_image({ path });
-
-    expect(typeof uri).toBe('string');
-  });
-
   test('image2md', async () => {
     const Report = require('./report');
     const path = 'assets/logo.png';
-    const uri = await Report.image2md({ path });
+    const uri = await Report.publish_img({ path });
 
     expect(typeof uri).toBe('string');
   });
@@ -204,43 +189,45 @@ describe('CML e2e', () => {
     `);
   });
 
-  test('cml-send-image -h', async () => {
-    const output = await exec(`node ./bin/cml-send-image.js -h`);
+  test('cml-publish-img -h', async () => {
+    const output = await exec(`node ./bin/cml-publish-img.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-image.js <path> --file <string>
+      "Usage: cml-publish-img.js <path> --file <string>
 
       Options:
         --version  Show version number                                       [boolean]
-        -h         Show help                                                 [boolean]"
+        -h         Show help                                                 [boolean]
+        --md"
     `);
   });
 
-  test('cml-send-image assets/logo.png', async () => {
-    const output = await exec(`node ./bin/cml-send-image.js assets/logo.png`);
+  test('cml-publish-img assets/logo.png --md', async () => {
+    const output = await exec(
+      `node ./bin/cml-publish-img.js assets/logo.png --md true`
+    );
 
     expect(output.startsWith('![](')).toBe(true);
   });
 
-  test('cml-send-vega-image -h', async () => {
-    const output = await exec(
-      `echo none | node ./bin/cml-send-vega-image.js -h`
-    );
+  test('cml-publish-vega -h', async () => {
+    const output = await exec(`echo none | node ./bin/cml-publish-vega.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-vega-image.js --vega <json> --file <string>
+      "Usage: cml-publish-vega.js --vega <json> --file <string>
 
       Options:
         --version  Show version number                                       [boolean]
-        -h         Show help                                                 [boolean]"
+        -h         Show help                                                 [boolean]
+        --md                                                          [default: false]"
     `);
   });
 
-  test('cml-send-vega-image', async () => {
+  test('cml-publish-vega -md', async () => {
     const output = await exec(
       `echo '${JSON.stringify(
         VEGA_LITE_FIXTURE
-      )}' | node ./bin/cml-send-vega-image.js`
+      )}' | node ./bin/cml-publish-vega.js --md true`
     );
 
     expect(output.startsWith('![](')).toBe(true);

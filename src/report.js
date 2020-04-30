@@ -182,8 +182,8 @@ const md_to_html = markdown => {
 `;
 };
 
-const vega2md = async opts => {
-  const { data } = opts;
+const publish_vega = async opts => {
+  const { data, md } = opts;
   const is_vega_lite = data.$schema.includes('vega-lite');
   const spec = is_vega_lite ? vegalite.compile(data).spec : data;
   const view = new vega.View(vega.parse(spec), { renderer: 'none' });
@@ -191,15 +191,18 @@ const vega2md = async opts => {
   const canvas = await view.toCanvas();
 
   const buffer = canvas.toBuffer();
-  const md = await image2md({ buffer });
+  const output = await publish_img({ buffer, md });
 
-  return md;
+  return output;
 };
 
-const image2md = async opts => {
+const publish_img = async opts => {
+  const { md = false } = opts;
   const link = await upload_image({ ...opts });
 
-  return `![](${link})\n`;
+  if (md) return `![](${link})\n`;
+
+  return link;
 };
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
@@ -209,5 +212,5 @@ exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
 exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
 exports.dvc_diff_report_md = dvc_diff_report_md;
-exports.vega2md = vega2md;
-exports.image2md = image2md;
+exports.publish_vega = publish_vega;
+exports.publish_img = publish_img;

@@ -19,8 +19,8 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
-    "cml-send-image": "./bin/cml-send-image.js",
-    "cml-send-vega-image": "./bin/cml-send-vega-image.js"
+    "cml-publish-img": "./bin/cml-publish-img.js",
+    "cml-publish-vega": "./bin/cml-publish-vega.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -55,6 +55,7 @@
     "underscore": "^1.9.2",
     "uniqid": "^5.2.0",
     "vega": "^5.9.0",
+    "vega-cli": "^5.11.1",
     "vega-lite": "^4.0.2",
     "yargs": "^15.1.0"
   },

@@ -28,9 +28,16 @@ const upload_image = async opts => {
 
   const body = new FormData();
   body.append('key', key);
+
+  let size;
+  if (path) {
+    const { size: path_size } = await fs.promises.stat(path);
+    size = path_size;
+  } else size = buffer.length;
+
   body.append('Content-Type', 'image/png');
   body.append('file', buffer || fs.createReadStream(path), {
-    contentType: 'image/png'
+    knownLength: size
   });
 
   const response = await fetch(endpoint, { method: 'POST', body });

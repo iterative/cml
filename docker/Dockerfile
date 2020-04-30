@@ -32,5 +32,6 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && \
     apt install dvc && \
     npm install -g /dvc-cml && \
+    npm install -g vega-cli && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
