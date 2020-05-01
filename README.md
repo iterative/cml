@@ -100,9 +100,12 @@ jobs:
         dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
         dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
+        # publish image
+        cml-publish-img my-file.png --md 1 >> report.md
+
+        # publish vega
         VEGA='{"$schema":"https://vega.github.io/schema/vega-lite/v2.0.json","description":"A simple bar chart with embedded data.","data":{"values":[{"a":"A","b":28},{"a":"B","b":55},{"a":"C","b":43},{"a":"D","b":91},{"a":"E","b":81},{"a":"F","b":53},{"a":"G","b":19},{"a":"H","b":87},{"a":"I","b":52}]},"mark":"bar","encoding":{"x":{"field":"a","type":"ordinal"},"y":{"field":"b","type":"quantitative"}}}'
-        cml-send-vega-image --vega VEGA >> report.md
-        VEGA | cml-send-vega-image >> report.md
+        VEGA | cml-publish-vega --md 1 >> report.md
 
         cml-send-comment report.md
 ```
