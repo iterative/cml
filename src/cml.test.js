@@ -22,7 +22,7 @@ describe('CML e2e', () => {
 
   test('cml-metrics with valid data with metrics format 0[.][000]', async () => {
     const output = await exec(
-      `echo '${diff_metrics_fixture}' | node ./bin/cml-metrics.js --metrics_format 0[.][000]`
+      `echo '${diff_metrics_fixture}' | node ./bin/cml-metrics.js --metrics-format 0[.][000]`
     );
 
     expect(output).toMatchInlineSnapshot(`
@@ -43,15 +43,15 @@ describe('CML e2e', () => {
   });
 
   test('cml-metrics -h', async () => {
-    const output = await exec(`echo none | node ./bin/cml-files.js -h`);
+    const output = await exec(`echo none | node ./bin/cml-metrics.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-files.js --metrics <json> --file <string>
+      "Usage: cml-metrics.js --metrics <json> --file <string>
 
       Options:
-        --version      Show version number                                   [boolean]
-        -h             Show help                                             [boolean]
-        --maxchars                                                    [default: 20000]
+        --version         Show version number                                [boolean]
+        -h                Show help                                          [boolean]
+        --metrics-format                                    [default: \\"0[.][0000000]\\"]
         -m, --metrics                                                [default: \\"none\\"]
         -f, --file"
     `);
