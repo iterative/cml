@@ -34,7 +34,8 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ADD "./" "/dvc-cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && apt install dvc && \
-    chmod 755 /dvc-cml && \
+    npm config set user 0 && \
+    npm config set unsafe-perm true && \
     npm install -g /dvc-cml && \
     npm install -g vega-cli && \
     apt-get clean && rm -rf /var/lib/apt/lists/*

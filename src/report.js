@@ -200,7 +200,7 @@ const publish_img = async opts => {
   const { md = false } = opts;
   const link = await upload_image({ ...opts });
 
-  if (md) return `![](${link})\n`;
+  if (md) return `![](${link})`;
 
   return link;
 };

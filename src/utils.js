@@ -44,7 +44,7 @@ const upload_image = async opts => {
 
   if (response.status !== 204) throw new Error('Image upload failed');
 
-  return `https://img.cml.dev/${filename}`;
+  return `${endpoint}/${key}`;
 };
 
 exports.exec = exec;
