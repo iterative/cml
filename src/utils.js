@@ -2,8 +2,6 @@ const util = require('util');
 const git = require('simple-git/promise');
 const fetch = require('node-fetch');
 const fs = require('fs');
-const FormData = require('form-data');
-const crypto = require('crypto');
 const FileType = require('file-type');
 
 const execp = util.promisify(require('child_process').exec);
@@ -23,41 +21,27 @@ const exec = async (command, opts) => {
 
 const upload = async opts => {
   const { path, buffer } = opts;
-  const endpoint = 'https://dvc-public.s3.us-east-2.amazonaws.com';
-  const hasher = crypto.createHash('sha1');
+  const endpoint = 'https://img.cml.dev';
 
-  let file;
+  let body;
   let size;
   let mime;
 
   if (path) {
-    file = fs.createReadStream(path);
+    body = fs.createReadStream(path);
     ({ size } = await fs.promises.stat(path));
     ({ mime } = await FileType.fromFile(path));
-
-    hasher.update(await fs.promises.readFile(path));
   } else {
-    file = buffer;
+    body = buffer;
     size = buffer.length;
     ({ mime } = await FileType.fromBuffer(buffer));
-
-    hasher.update(buffer.toString());
   }
 
-  const filename = hasher.digest('hex');
-  const key = `cml/img/${filename}`;
-  const body = new FormData();
-  body.append('key', key);
-  body.append('Content-Type', mime);
-  body.append('file', file, {
-    knownLength: size
-  });
+  const headers = { 'Content-length': size, 'Content-Type': mime };
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const uri = await response.text();
 
-  const response = await fetch(endpoint, { method: 'POST', body });
-
-  if (response.status !== 204) throw new Error('Upload failed');
-
-  return { mime: mime, size: size, uri: `${endpoint}/${key}` };
+  return { mime: mime, size: size, uri };
 };
 
 exports.exec = exec;
