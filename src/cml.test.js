@@ -181,10 +181,10 @@ describe('CML e2e', () => {
   });
 
   test('cml-publish -h', async () => {
-    const output = await exec(`node ./bin/cml-publish.js -h`);
+    const output = await exec(`echo none | node ./bin/cml-publish.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish.js <path> --file <string>
+      "Usage: cml-publish.js <path>
 
       Options:
         --version  Show version number                                       [boolean]
@@ -195,7 +195,7 @@ describe('CML e2e', () => {
 
   test('cml-publish assets/logo.png --md', async () => {
     const output = await exec(
-      `node ./bin/cml-publish.js assets/logo.png --md true`
+      `echo none | node ./bin/cml-publish.js assets/logo.png --md true`
     );
 
     expect(output.startsWith('![](')).toBe(true);
@@ -203,7 +203,7 @@ describe('CML e2e', () => {
 
   test('cml-publish assets/logo.pdf --md', async () => {
     const output = await exec(
-      `node ./bin/cml-publish.js assets/logo.pdf --md true --title 'this is awesome'`
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf --md true --title 'this is awesome'`
     );
 
     expect(output.startsWith('[this is awesome](')).toBe(true);
