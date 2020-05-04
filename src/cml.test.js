@@ -40,14 +40,6 @@ describe('Gitlab Vega and image', () => {
     process.env = OLD_ENV;
   });
 
-  test('image2md', async () => {
-    const Report = require('./report');
-    const path = 'assets/logo.png';
-    const uri = await Report.publish_img({ path });
-
-    expect(typeof uri).toBe('string');
-  });
-
   test.skip('vega2md', async () => {
     const Report = require('./report');
     const uri = await Report.vega2md({ data: VEGA_LITE_FIXTURE });
@@ -189,11 +181,11 @@ describe('CML e2e', () => {
     `);
   });
 
-  test('cml-publish-img -h', async () => {
-    const output = await exec(`node ./bin/cml-publish-img.js -h`);
+  test('cml-publish -h', async () => {
+    const output = await exec(`node ./bin/cml-publish.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish-img.js <path> --file <string>
+      "Usage: cml-publish.js <path> --file <string>
 
       Options:
         --version  Show version number                                       [boolean]
@@ -202,12 +194,20 @@ describe('CML e2e', () => {
     `);
   });
 
-  test('cml-publish-img assets/logo.png --md', async () => {
+  test('cml-publish assets/logo.png --md', async () => {
     const output = await exec(
-      `node ./bin/cml-publish-img.js assets/logo.png --md true`
+      `node ./bin/cml-publish.js assets/logo.png --md true`
     );
 
     expect(output.startsWith('![](')).toBe(true);
+  });
+
+  test('cml-publish assets/logo.pdf --md', async () => {
+    const output = await exec(
+      `node ./bin/cml-publish.js assets/logo.pdf --md true --title 'this is awesome'`
+    );
+
+    expect(output.startsWith('[this is awesome](')).toBe(true);
   });
 
   test('cml-publish-vega -h', async () => {

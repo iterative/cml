@@ -19,7 +19,7 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
-    "cml-publish-img": "./bin/cml-publish-img.js",
+    "cml-publish": "./bin/cml-publish.js",
     "cml-publish-vega": "./bin/cml-publish-vega.js"
   },
   "scripts": {
@@ -45,6 +45,7 @@
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0",
     "canvas": "^2.6.1",
+    "file-type": "^14.2.0",
     "form-data": "^3.0.0",
     "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
@@ -53,7 +54,6 @@
     "showdown": "^1.9.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",
-    "uniqid": "^5.2.0",
     "vega": "^5.9.0",
     "vega-cli": "^5.11.1",
     "vega-lite": "^4.0.2",

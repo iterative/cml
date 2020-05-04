@@ -5,7 +5,7 @@ var showdown = require('showdown');
 const vega = require('vega');
 const vegalite = require('vega-lite');
 
-const { upload_image } = require('./utils');
+const { upload } = require('./utils');
 
 const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
@@ -183,7 +183,7 @@ const md_to_html = markdown => {
 };
 
 const publish_vega = async opts => {
-  const { data, md } = opts;
+  const { data, md, title } = opts;
   const is_vega_lite = data.$schema.includes('vega-lite');
   const spec = is_vega_lite ? vegalite.compile(data).spec : data;
   const view = new vega.View(vega.parse(spec), { renderer: 'none' });
@@ -191,18 +191,21 @@ const publish_vega = async opts => {
   const canvas = await view.toCanvas();
 
   const buffer = canvas.toBuffer();
-  const output = await publish_img({ buffer, md });
+  const output = await publish_file({ buffer, md, title });
 
   return output;
 };
 
-const publish_img = async opts => {
-  const { md = false } = opts;
-  const link = await upload_image({ ...opts });
+const publish_file = async opts => {
+  const { md = false, title = '' } = opts;
+  const { mime, uri } = await upload({ ...opts });
 
-  if (md) return `![](${link})`;
+  console.error(mime);
+  if (md && mime.startsWith('image/'))
+    return `![](${uri}${title ? ` "${title}"` : ''})`;
+  if (md) return `[${title}](${uri})`;
 
-  return link;
+  return uri;
 };
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
@@ -213,4 +216,4 @@ exports.same_warning = same_warning;
 exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
 exports.dvc_diff_report_md = dvc_diff_report_md;
 exports.publish_vega = publish_vega;
-exports.publish_img = publish_img;
+exports.publish_file = publish_file;

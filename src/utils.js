@@ -3,7 +3,8 @@ const git = require('simple-git/promise');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const FormData = require('form-data');
-const uniqid = require('uniqid');
+const crypto = require('crypto');
+const FileType = require('file-type');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -20,33 +21,45 @@ const exec = async (command, opts) => {
   });
 };
 
-const upload_image = async opts => {
+const upload = async opts => {
   const { path, buffer } = opts;
   const endpoint = 'https://dvc-public.s3.us-east-2.amazonaws.com';
-  const filename = `${uniqid()}.png`;
-  const key = `cml/img/${filename}`;
+  const hasher = crypto.createHash('sha1');
 
+  let file;
+  let size;
+  let mime;
+
+  if (path) {
+    file = fs.createReadStream(path);
+    ({ size } = await fs.promises.stat(path));
+    ({ mime } = await FileType.fromFile(path));
+
+    hasher.update(await fs.promises.readFile(path));
+  } else {
+    file = buffer;
+    size = buffer.length;
+    ({ mime } = await FileType.fromBuffer(buffer));
+
+    hasher.update(buffer.toString());
+  }
+
+  const filename = hasher.digest('hex');
+  const key = `cml/img/${filename}`;
   const body = new FormData();
   body.append('key', key);
-
-  let size;
-  if (path) {
-    const { size: path_size } = await fs.promises.stat(path);
-    size = path_size;
-  } else size = buffer.length;
-
-  body.append('Content-Type', 'image/png');
-  body.append('file', buffer || fs.createReadStream(path), {
+  body.append('Content-Type', mime);
+  body.append('file', file, {
     knownLength: size
   });
 
   const response = await fetch(endpoint, { method: 'POST', body });
 
-  if (response.status !== 204) throw new Error('Image upload failed');
+  if (response.status !== 204) throw new Error('Upload failed');
 
-  return `${endpoint}/${key}`;
+  return { mime: mime, size: size, uri: `${endpoint}/${key}` };
 };
 
 exports.exec = exec;
-exports.upload_image = upload_image;
+exports.upload = upload;
 exports.git = git('./');
