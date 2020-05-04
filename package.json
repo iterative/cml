@@ -19,8 +19,7 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
-    "cml-publish": "./bin/cml-publish.js",
-    "cml-publish-vega": "./bin/cml-publish-vega.js"
+    "cml-publish": "./bin/cml-publish.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",

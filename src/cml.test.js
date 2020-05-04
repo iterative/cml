@@ -43,7 +43,6 @@ describe('Gitlab Vega and image', () => {
   test.skip('vega2md', async () => {
     const Report = require('./report');
     const uri = await Report.vega2md({ data: VEGA_LITE_FIXTURE });
-    console.log(uri);
 
     expect(typeof uri).toBe('string');
   });
@@ -208,28 +207,5 @@ describe('CML e2e', () => {
     );
 
     expect(output.startsWith('[this is awesome](')).toBe(true);
-  });
-
-  test('cml-publish-vega -h', async () => {
-    const output = await exec(`echo none | node ./bin/cml-publish-vega.js -h`);
-
-    expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish-vega.js --vega <json> --file <string>
-
-      Options:
-        --version  Show version number                                       [boolean]
-        -h         Show help                                                 [boolean]
-        --md                                                          [default: false]"
-    `);
-  });
-
-  test('cml-publish-vega -md', async () => {
-    const output = await exec(
-      `echo '${JSON.stringify(
-        VEGA_LITE_FIXTURE
-      )}' | node ./bin/cml-publish-vega.js --md true`
-    );
-
-    expect(output.startsWith('![](')).toBe(true);
   });
 });

@@ -200,7 +200,6 @@ const publish_file = async opts => {
   const { md = false, title = '' } = opts;
   const { mime, uri } = await upload({ ...opts });
 
-  console.error(mime);
   if (md && mime.startsWith('image/'))
     return `![](${uri}${title ? ` "${title}"` : ''})`;
   if (md) return `[${title}](${uri})`;
