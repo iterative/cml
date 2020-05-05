@@ -28,7 +28,7 @@ pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
   .usage(`Usage: $0 <path>`)
-  .default('md')
+  .boolean('md')
   .default('title')
   .alias('t', 'title')
   .help('h')
