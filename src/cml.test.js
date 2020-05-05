@@ -188,14 +188,13 @@ describe('CML e2e', () => {
 
       Options:
         --version  Show version number                                       [boolean]
-        -h         Show help                                                 [boolean]
-        --md"
+        -h         Show help                                                 [boolean]"
     `);
   });
 
   test('cml-publish assets/logo.png --md', async () => {
     const output = await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.png --md true`
+      `echo none | node ./bin/cml-publish.js assets/logo.png --md`
     );
 
     expect(output.startsWith('![](')).toBe(true);
@@ -203,7 +202,7 @@ describe('CML e2e', () => {
 
   test('cml-publish assets/logo.pdf --md', async () => {
     const output = await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.pdf --md true --title 'this is awesome'`
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf --md --title 'this is awesome'`
     );
 
     expect(output.startsWith('[this is awesome](')).toBe(true);
