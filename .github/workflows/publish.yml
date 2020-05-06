@@ -21,6 +21,24 @@ jobs:
     - name: "tests"
       run: npm run test
 
+    - name: Get NPM version
+      id: check
+      uses: EndBug/version-check@v1
+
+    - name: Check if NPM version is updated
+      if: steps.check.outputs.changed != 'true'
+      run: |
+        printf "NPM version already exists! \nPlease update package.json version accordingly."
+        exit 1
+
+    - name: Publish to NPM
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      run: |
+        npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
+        npm publish
+      env:
+        NPM_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
     - name: Publish CML docker image
       # only publish if push to master (dvcorg/cml:latest) 
       # or create a tag in the repo (dvcorg/cml:tag)

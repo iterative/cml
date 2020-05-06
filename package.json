@@ -1,9 +1,9 @@
 {
-  "name": "dvc-action",
+  "name": "cml",
   "version": "0.1.0",
   "author": {
-    "name": "Iterative Inc",
-    "url": "http://iterative.ai"
+    "name": "DVC",
+    "url": "http://dvc.org"
   },
   "license": "Apache-2.0",
   "licenses": [
