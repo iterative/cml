@@ -1,4 +1,4 @@
-FROM dvcorg/dvc-cml:latest
+FROM dvcorg/cml:latest
 
 LABEL maintainer="dvc.org"
 
