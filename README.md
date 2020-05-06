@@ -68,7 +68,7 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/dvc-cml:latest
+    container: docker://dvcorg/cml:latest
 
     steps:
       - uses: actions/checkout@v2
@@ -138,7 +138,7 @@ stages:
 
 dvc:
   stage: dvc_cml_run
-  image: dvcorg/dvc-cml:latest
+  image: dvcorg/cml:latest
 
   script:
     -  # Install your project dependencies.
@@ -203,7 +203,7 @@ releases or even deploy automatically your models.
 ## How to use GPUs
 
 Our DVC-CML GPU docker
-[image](https://hub.docker.com/repository/docker/dvcorg/dvc-cml-gpu) is an
+[image](https://hub.docker.com/repository/docker/dvcorg/cml-gpu) is an
 Ubuntu 18.04 that already supports:
 
 - cuda 10.1
@@ -235,7 +235,7 @@ Repo settings -> Actions -> Add Runner button
 Repo settings -> CI/CD -> Runners -> Specific Runners
 
 ```sh
-# Gitlab self-hosted runner with dvc-cml and GPU
+# Gitlab self-hosted runner with cml and GPU
 gitlab-runner register \
     --non-interactive \
     --run-untagged="true" \
@@ -243,9 +243,9 @@ gitlab-runner register \
     --access-level="not_protected" \
     --executor "docker" \
     --docker-runtime "nvidia" \
-    --docker-image "dvcorg/dvc-cml-gpu:latest" \
+    --docker-image "dvcorg/cml-gpu:latest" \
     --url "https://gitlab.com/" \
-    --tag-list "dvc-cml" \
+    --tag-list "cml" \
     --registration-token "here_goes_your_gitlab_runner_token"
 
 gitlab-runner start
@@ -263,7 +263,7 @@ gitlab-runner start
 dvc:
   runs-on: [self-hosted]
   container:
-    image: docker://dvcorg/dvc-cml-gpu:latest
+    image: docker://dvcorg/cml-gpu:latest
     options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
 ```
 
@@ -276,9 +276,9 @@ dvc:
 # Gitlab
 dvc:
  tags:
-   - dvc-cml
+   - cml
  stage: dvc_action_run
- image: dvcorg/dvc-cml-gpu:latest
+ image: dvcorg/cml-gpu:latest
 
  variables:
    NVIDIA_VISIBLE_DEVICES: all
@@ -428,5 +428,5 @@ env:
 
 ## Examples
 
-- [Tensorflow Mnist for Github Actions](https://github.com/iterative/dvc-cml/wiki/Tensorflow-Mnist-for-Github-Actions)
-- [Tensorflow Mnist for Gitlab CI](https://github.com/iterative/dvc-cml/wiki/Tensorflow-Mnist-for-Gitlab-CI)
+- [Tensorflow Mnist for Github Actions](https://github.com/iterative/cml/wiki/Tensorflow-Mnist-for-Github-Actions)
+- [Tensorflow Mnist for Gitlab CI](https://github.com/iterative/cml/wiki/Tensorflow-Mnist-for-Gitlab-CI)
