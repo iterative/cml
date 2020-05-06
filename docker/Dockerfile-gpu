@@ -34,7 +34,8 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ADD "./" "/cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && \
-    apt install dvc && \
+    apt -y install dvc && \
+    apt -y install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && \
     npm config set user 0 && \
     npm config set unsafe-perm true && \
     npm install -g /cml && \
