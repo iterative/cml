@@ -22,11 +22,12 @@ jobs:
       run: npm run test
 
     - name: Get NPM version
+      if: github.event_name == 'push'
       id: npmcheck
       uses: EndBug/version-check@v1
 
     - name: Check if NPM version is updated
-      if: steps.npmcheck.outputs.version && steps.npmcheck.outputs.changed != 'true'
+      if: steps.npmcheck && steps.npmcheck.outputs.version && steps.npmcheck.outputs.changed != 'true'
       run: |
         printf "NPM version ${{ steps.npmcheck.outputs.version }} already exists! \nPlease update package.json version accordingly."
         exit 1
