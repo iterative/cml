@@ -31,6 +31,11 @@ ADD "./" "/dvc-cml"
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt update && \
     apt install dvc && \
+    npm config set user 0 && \
+    npm config set unsafe-perm true && \
     npm install -g /dvc-cml && \
+    npm install -g vega-cli && \
+    npm install -g vega-lite && \
+    apt-get install -y libfontconfig-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

@@ -3,7 +3,6 @@
 console.log = console.error;
 
 const fs = require('fs').promises;
-const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 
 const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTION
@@ -21,7 +20,6 @@ const run = async opts => {
   });
 };
 
-pipe_args.load();
 const argv = yargs
   .usage(`Usage: $0 <path> --head-sha <string>`)
   .default('head-sha')
