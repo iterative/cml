@@ -10,4 +10,3 @@ RUN apt-get update && \
     pip3 install --upgrade pip && \
     update-alternatives --install \
             /usr/bin/python python $(which python3) 10
-            
