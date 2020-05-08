@@ -41,7 +41,7 @@ const upload = async opts => {
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
 
-  return { mime: mime, size: size, uri };
+  return { mime, size, uri };
 };
 
 exports.exec = exec;
