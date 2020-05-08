@@ -17,7 +17,7 @@ describe('CML e2e', () => {
       md: true,
       title: 'logo'
     });
-    const report = `'##Test Comment Report \n ${img} \n ${pdf}'`;
+    const report = `##Test Comment Report \n ${img} \n ${pdf}`;
 
     await fs.writeFile(path, report);
 
