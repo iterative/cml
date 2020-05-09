@@ -21,7 +21,7 @@ const exec = async (command, opts) => {
 
 const upload = async opts => {
   const { path, buffer } = opts;
-  const endpoint = ' https://asset.cml.dev';
+  const endpoint = 'https://asset.cml.dev';
 
   let body;
   let size;
