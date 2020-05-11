@@ -22,9 +22,9 @@ describe('Remote', () => {
         'https://www.googleapis.com/robot/v1/metadata/x509/dummy-api-project.iam.gserviceaccount.com'
     };
 
-    const GOOGLE_APPLICATION_CREDENTIALS = JSON.stringify(mock_data);
+    const GOOGLE_APPLICATION_CREDENTIALS_DATA = JSON.stringify(mock_data);
 
-    await dvc.setup_credentials({ GOOGLE_APPLICATION_CREDENTIALS });
+    await dvc.setup_credentials({ GOOGLE_APPLICATION_CREDENTIALS_DATA });
 
     const json = await fs.readFile(
       dvc.GOOGLE_APPLICATION_CREDENTIALS_PATH,
