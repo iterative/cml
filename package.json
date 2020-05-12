@@ -49,6 +49,7 @@
     "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
     "simple-git": "^1.131.0",
+    "underscore": "^1.9.2",
     "vega": "^5.9.0",
     "vega-cli": "^5.11.1",
     "vega-lite": "^4.0.2",
