@@ -1,7 +1,6 @@
 const json_2_mdtable = require('json-to-markdown-table2');
 const numeral = require('numeral');
 const _ = require('underscore');
-var showdown = require('showdown');
 const vega = require('vega');
 const vegalite = require('vega-lite');
 
@@ -150,38 +149,6 @@ const dvc_report_md = opts => {
   return summary;
 };
 
-const md_to_html = markdown => {
-  const converter = new showdown.Converter({ tables: true });
-  converter.setFlavor('github');
-  const html = converter.makeHtml(markdown);
-
-  return `
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-		<title>DVC Report</title>
-		<link rel="stylesheet" href="report.css">
-		<style>
-			body {
-				box-sizing: border-box;
-				min-width: 200px;
-				max-width: 980px;
-				margin: 0 auto;
-				padding: 45px;
-			}
-		</style>
-	</head>
-	<body>
-      <div class="markdown-body" id="content">
-        ${html}
-      </div>
-  </body>
-</html>
-`;
-};
-
 const publish_vega = async opts => {
   const { data, md, title } = opts;
   const is_vega_lite = data.$schema.includes('vega-lite');
@@ -209,7 +176,6 @@ const publish_file = async opts => {
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
 exports.dvc_report_md = dvc_report_md;
-exports.md_to_html = md_to_html;
 exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
 exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
