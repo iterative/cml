@@ -100,6 +100,15 @@ jobs:
         dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
         dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
+        # publish image
+        cml-publish my-file.png --md --title 'my-file' >> report.md
+
+        # publish pdf
+        cml-publish my-file.pdf --md --title 'my-file' >> report.md
+
+        # pipe example
+        vl2png vega.json | cml-publish --md --title 'my image' >> report.md
+
         cml-send-comment report.md
 ```
 
@@ -152,6 +161,16 @@ cml:
     - echo "# CML report" >> report.md
     - dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
     - dvc diff --show-json "$BASELINE" | cml-files >> report.md
+
+    -  # publish image
+    - cml-publish my-file.png --md --title 'my-file' >> report.md
+
+    -  # publish pdf
+    - cml-publish my-file.pdf --md --title 'my-file' >> report.md
+
+    -  # pipe example
+    - vl2png vega.json | cml-publish --md --title 'my image' >> report.md
+
     - cml-send-comment report.md
 ```
 

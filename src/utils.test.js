@@ -1,6 +1,6 @@
-const { exec } = require('./utils');
+const { exec, upload } = require('./utils');
 
-describe('Exec', () => {
+describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
     const output = await exec('echo hello');
     expect(output).toMatch('hello');
@@ -15,5 +15,17 @@ describe('Exec', () => {
     }
 
     expect(error).not.toBeNull();
+  });
+});
+
+describe('upload tests', () => {
+  test('image/png', async () => {
+    const { mime } = await upload({ path: 'assets/logo.png' });
+    expect(mime).toBe('image/png');
+  });
+
+  test('application/pdf', async () => {
+    const { mime } = await upload({ path: 'assets/logo.pdf' });
+    expect(mime).toBe('application/pdf');
   });
 });

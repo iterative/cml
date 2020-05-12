@@ -1,5 +1,9 @@
 const util = require('util');
 const git = require('simple-git/promise');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const PATH = require('path');
+const FileType = require('file-type');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -16,5 +20,38 @@ const exec = async (command, opts) => {
   });
 };
 
+const upload = async opts => {
+  const { path, buffer } = opts;
+  const endpoint = 'https://asset.cml.dev';
+
+  let body;
+  let size;
+  let mime;
+  let filename;
+
+  if (path) {
+    body = fs.createReadStream(path);
+    ({ size } = await fs.promises.stat(path));
+    ({ mime } = await FileType.fromFile(path));
+    filename = PATH.basename(path);
+  } else {
+    body = buffer;
+    size = buffer.length;
+    ({ mime } = await FileType.fromBuffer(buffer));
+    filename = `file.${mime.split('/')[1]}`;
+  }
+
+  const headers = {
+    'Content-length': size,
+    'Content-Type': mime,
+    'Content-Disposition': `inline; filename="${filename}"`
+  };
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const uri = await response.text();
+
+  return { mime, size, uri };
+};
+
 exports.exec = exec;
+exports.upload = upload;
 exports.git = git('./');

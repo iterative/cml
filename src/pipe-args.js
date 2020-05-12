@@ -7,7 +7,7 @@ module.exports.piped_arg = () => {
   return this.piped ? argv[argv.length - 1] : undefined;
 };
 
-module.exports.load = () => {
+module.exports.load = format => {
   const chunks = [];
   const BUFSIZE = 65536;
   let buffer;
@@ -28,7 +28,7 @@ module.exports.load = () => {
     }
   }
 
-  const stdin = Buffer.concat(chunks).toString();
+  const stdin = Buffer.concat(chunks).toString(format);
   if (stdin.length) {
     process.argv.push(stdin.trim());
     this.piped = true;
