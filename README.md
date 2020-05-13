@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: dvc_cml_run
+      - name: cml_run
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -134,10 +134,10 @@ Example of a simple DVC-CML workflow in Gitlab:
 ```yaml
 # .gitlab-ci.yml
 stages:
-  - dvc_cml_run
+  - cml_run
 
-dvc:
-  stage: dvc_cml_run
+cml:
+  stage: cml_run
   image: dvcorg/cml:latest
 
   script:
@@ -203,8 +203,8 @@ releases or even deploy automatically your models.
 ## How to use GPUs
 
 Our DVC-CML GPU docker
-[image](https://hub.docker.com/repository/docker/dvcorg/cml-gpu) is an
-Ubuntu 18.04 that already supports:
+[image](https://hub.docker.com/repository/docker/dvcorg/cml-gpu) is an Ubuntu
+18.04 that already supports:
 
 - cuda 10.1
 - libcudnn 7
@@ -260,7 +260,7 @@ gitlab-runner start
 
 ```yaml
 # Github
-dvc:
+cml:
   runs-on: [self-hosted]
   container:
     image: docker://dvcorg/cml-gpu:latest
@@ -274,10 +274,10 @@ dvc:
 
 ```yaml
 # Gitlab
-dvc:
+cml:
  tags:
    - cml
- stage: dvc_action_run
+ stage: cml_run
  image: dvcorg/cml-gpu:latest
 
  variables:
