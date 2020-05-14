@@ -8,6 +8,8 @@ const { upload } = require('./utils');
 
 const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
+const MAX_CHARS_MESSAGE =
+  '\n:warning: Report excedeed the maximun amount of allowed chars';
 
 const metrics_format = () => {
   return this.METRICS_FORMAT;
@@ -41,6 +43,7 @@ const header_md = opts => {
 };
 
 const dvc_diff_report_md = (data, max_chars) => {
+  max_chars = max_chars || MAX_CHARS;
   if (!data || !Object.keys(data).length) return 'No metrics available';
 
   let summary = '';
@@ -52,17 +55,15 @@ const dvc_diff_report_md = (data, max_chars) => {
     { lbl: 'Deleted', files: deleted }
   ];
 
-  const warn =
-    '\n:warning: Report excedeed the maximun amount of allowed chars';
   sections.forEach(section => {
-    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n\n`;
-    summary += `#SECTION${section.lbl}#\n${warn}</details>\n`;
+    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
+    summary += `#SECTION${section.lbl}#${MAX_CHARS_MESSAGE}\n</details>\n`;
   });
 
   let count = summary.length;
 
   sections.forEach(section => {
-    section.summary = '';
+    section.summary = '\n';
 
     section.files.forEach(file => {
       const file_text = ` - ${file.path} \n`;
@@ -72,7 +73,7 @@ const dvc_diff_report_md = (data, max_chars) => {
     });
 
     summary = summary.replace(`#SECTION${section.lbl}#`, section.summary);
-    if (count < max_chars) summary = summary.replace(warn, '');
+    if (count < max_chars) summary = summary.replace(MAX_CHARS_MESSAGE, '');
   });
 
   return summary;
@@ -100,7 +101,7 @@ const dvc_metrics_diff_report_md = data => {
     }
   }
 
-  const summary = `\n${json_2_mdtable(values)}`;
+  const summary = `\n${json_2_mdtable(values)}\n\n`;
 
   return summary;
 };
@@ -175,6 +176,8 @@ const publish_file = async opts => {
 };
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
+exports.MAX_CHARS = MAX_CHARS;
+exports.MAX_CHARS_MESSAGE = MAX_CHARS_MESSAGE;
 exports.dvc_report_md = dvc_report_md;
 exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;

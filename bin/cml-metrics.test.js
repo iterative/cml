@@ -11,12 +11,16 @@ describe('CML e2e', () => {
     );
 
     expect(output).toMatchInlineSnapshot(`
-      "|path|metric|old|new|diff|
+      "
+      |path|metric|old|new|diff|
       |----|----|----|----|----|
       |metrics/eval.json|accuracy|0.8784|0.8783|no available|
       |metrics/train.json|took|0.0015638|0.0014997|-0.0000641|
-      |metrics/train.json|num_steps|1400|1200|-200|"
+      |metrics/train.json|num_steps|1400|1200|-200|
+
+      "
     `);
+    expect(output.endsWith('\n\n')).toBe(true);
   });
 
   test('cml-metrics with valid data with metrics format 0[.][000]', async () => {
@@ -25,12 +29,16 @@ describe('CML e2e', () => {
     );
 
     expect(output).toMatchInlineSnapshot(`
-      "|path|metric|old|new|diff|
+      "
+      |path|metric|old|new|diff|
       |----|----|----|----|----|
       |metrics/eval.json|accuracy|0.878|0.878|no available|
       |metrics/train.json|took|0.002|0.001|0|
-      |metrics/train.json|num_steps|1400|1200|-200|"
+      |metrics/train.json|num_steps|1400|1200|-200|
+
+      "
     `);
+    expect(output.endsWith('\n\n')).toBe(true);
   });
 
   test('cml-metrics without data', async () => {
