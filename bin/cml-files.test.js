@@ -28,7 +28,8 @@ describe('CML e2e', () => {
       <summary>Deleted: 0</summary>
 
 
-      </details>"
+      </details>
+      "
     `);
   });
 

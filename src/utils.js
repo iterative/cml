@@ -15,7 +15,7 @@ const exec = async (command, opts) => {
 
       if (error) reject(error);
 
-      resolve((stdout || stderr).trim());
+      resolve((stdout || stderr).slice(0, -1));
     });
   });
 };
