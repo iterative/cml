@@ -20,11 +20,8 @@ jobs:
 
     - name: "tests"
       run: |
-        sudo pip install --upgrade pip
-        sudo pip install --upgrade setuptools
-        sudo pip install tensorflow
-        pip show tensorboard 
-
+        sudo pip install --upgrade pip setuptools
+        sudo pip install tensorboard
         tensorboard --version
         npm run test
 
