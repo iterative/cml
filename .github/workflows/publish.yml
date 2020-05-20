@@ -20,7 +20,7 @@ jobs:
 
     - name: "tests"
       run: |
-        update-alternatives --install /usr/bin/python python $(which python3) 10
+        sudo update-alternatives --install /usr/bin/python python $(which python3) 10
         sudo apt-get update && sudo apt-get install -y python3-pip
         sudo pip3 install --upgrade pip
         sudo pip3 install --upgrade setuptools
