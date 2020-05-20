@@ -8,9 +8,7 @@ env:
 jobs:
   test_and_deploy:
     runs-on: [ubuntu-latest]
-    container:
-      image: docker://dvcorg/cml:latest
-
+    
     steps:
     - uses: actions/checkout@v2
 
