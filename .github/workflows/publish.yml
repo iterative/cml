@@ -22,7 +22,6 @@ jobs:
       run: |
         sudo apt-get update && sudo apt-get install -y python-pip
         sudo pip install --upgrade pip
-        sudo pip install --upgrade setuptools
         sudo pip install tensorboard
 
         tensorboard dev upload --help
