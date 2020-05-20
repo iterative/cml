@@ -31,6 +31,7 @@ const run = async opts => {
 
   const tb_path = await exec('which tensorboard');
   const command = `python -u ${tb_path} dev upload --logdir ${logdir} --name "${name}" --description "${description}"`;
+  console.error(command);
 
   const proc = spawn(command, {
     detached: true,

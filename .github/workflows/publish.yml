@@ -20,7 +20,9 @@ jobs:
 
     - name: "tests"
       run: |
-        yes | pip install --upgrade pip tensorboard
+        echo 'yes' | pip install --upgrade pip tensorboard
+        which tensorboard
+        tensorboard --version
         npm run test
 
     - name: Publish CML docker image
