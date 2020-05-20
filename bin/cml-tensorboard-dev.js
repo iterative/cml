@@ -30,35 +30,38 @@ const run = async opts => {
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
   const tb_path = await exec('which tensorboard');
-  const extra = `--name "${name}" --description "${description}"`;
-  console.log(extra);
-  const command = `python -u ${tb_path} dev upload --logdir ${logdir} `;
+  const help = await exec('tensorboard dev upload -h');
+  const extra_params_found = help.indexOf('--description') >= 0;
+  const extra_params = extra_params_found
+    ? `--name "${name}" --description "${description}"`
+    : '';
+  const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
 
   const proc = spawn(command, {
     detached: true,
     shell: true
   });
 
-  /*
   proc.stderr.on('data', data => {
     data && console.error(data.toString('utf8'));
   });
-  */
 
+  let output = '';
   proc.stdout.on('data', async data => {
     if (data) {
-      let output = data.toString('utf8');
-      output = output.substring(
-        output.indexOf('https://', 0),
-        output.length - 1
-      );
+      output += data.toString('utf8');
 
-      if (md) output = `[${name}](${output})`;
+      const uri_index = output.indexOf('https://', 0);
+      if (uri_index) {
+        output = output.substring(uri_index, output.length - 1);
 
-      if (!file) print(output);
-      else await fs.writeFile(file, output);
+        if (md) output = `[${name}](${output})`;
 
-      process.exit(0);
+        if (!file) print(output);
+        else await fs.writeFile(file, output);
+
+        process.exit(0);
+      }
     }
   });
   proc.unref();
