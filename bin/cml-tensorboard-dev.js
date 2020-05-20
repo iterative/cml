@@ -31,11 +31,13 @@ const run = async opts => {
 
   const tb_path = await exec('which tensorboard');
   const help = await exec('tensorboard dev upload -h');
-  const extra_params_found = help.indexOf('--description') >= 0;
+  const extra_params_found =
+    (name || description) && help.indexOf('--description') >= 0;
   const extra_params = extra_params_found
     ? `--name "${name}" --description "${description}"`
     : '';
   const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
+  console.log(command);
 
   const proc = spawn(command, {
     detached: true,
