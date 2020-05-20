@@ -21,7 +21,7 @@ jobs:
     - name: "tests"
       run: |
         pip install --upgrade pip
-        pip install tensorboard
+        pip install tensorflow
         which tensorboard
         tensorboard --version
         npm run test
