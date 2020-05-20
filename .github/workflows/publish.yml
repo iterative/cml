@@ -19,7 +19,9 @@ jobs:
       run: npm run lint
 
     - name: "tests"
-      run: npm run test
+      run: |
+        yes | pip install --upgrade pip tensorboard
+        npm run test
 
     - name: Publish CML docker image
       # only publish if push to master (dvcorg/cml:latest) 
