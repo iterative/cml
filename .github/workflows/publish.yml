@@ -20,7 +20,7 @@ jobs:
 
     - name: "tests"
       run: |
-        apt-get update && apt-get install -y python-pip && pip install --upgrade pip
+        sudo apt-get update && sudo apt-get install -y python-pip && pip install --upgrade pip
         pip install tensorboard
         which tensorboard
         tensorboard --version
