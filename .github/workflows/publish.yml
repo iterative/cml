@@ -20,10 +20,8 @@ jobs:
 
     - name: "tests"
       run: |
-        sudo pip install --upgrade pip
         sudo pip install tensorboard
-        which tensorboard
-        tensorboard --version
+        cml-tensorboard-dev --logdir logs
         npm run test
 
     - name: Publish CML docker image
