@@ -22,7 +22,7 @@ jobs:
       run: |
         sudo pip install --upgrade pip
         sudo pip install --upgrade setuptools
-        sudo pip install tensorflow
+        sudo pip install tensorboard
         tensorboard --version
         tensorboard dev --help
         tensorboard dev upload --help
