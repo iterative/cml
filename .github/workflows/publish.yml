@@ -24,7 +24,6 @@ jobs:
         sudo pip install --upgrade setuptools
         sudo pip install tensorflow
         pip show tensorflow 
-        sudo npm link
 
         tensorboard --version
         npm run test
