@@ -36,7 +36,7 @@ const run = async opts => {
   const extra_params = extra_params_found
     ? `--name "${name}" --description "${description}"`
     : '';
-  const command = `python3 -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
+  const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
   console.log(command);
 
   const proc = spawn(command, {
