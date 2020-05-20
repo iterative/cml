@@ -23,7 +23,15 @@ jobs:
         sudo apt-get update && sudo apt-get install -y python3-pip && pip3 install --upgrade pip
         sudo pip3 install --upgrade setuptools
         sudo pip3 install tensorflow
+
+        echo "\n"
+        echo "\n"
+        echo "\n"
+        tensorboard dev upload --help
         tensorboard --version
+        echo "\n"
+        echo "\n"
+        echo "\n"
 
         sudo npm link
         export TB_CREDENTIALS='{"refresh_token": "1//03IJCTMThPsYECgYIARAAGAMSNwF-L9Iru6PoxuqEtGTcnvbXeGwi5j4cXBrFQpXdcmBhZyvZggR1WqKeIjhs1V57g1NvpCsUFnw", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}'
