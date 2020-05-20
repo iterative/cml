@@ -16,24 +16,34 @@ const { handle_error } = process.env.GITHUB_ACTION
 const { TB_CREDENTIALS } = process.env;
 
 const run = async opts => {
-  const { md, file, credentials = TB_CREDENTIALS, logdir, name } = opts;
+  const {
+    md,
+    file,
+    credentials = TB_CREDENTIALS,
+    logdir,
+    name,
+    description
+  } = opts;
 
   const path = `${homedir()}/.config/tensorboard/credentials`;
   await fs.mkdir(path, { recursive: true });
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
   const tb_path = await exec('which tensorboard');
-  const command = `python -u ${tb_path} dev upload --logdir ${logdir}`;
-  console.error(command);
+  const extra = `--name "${name}" --description "${description}"`;
+  console.log(extra);
+  const command = `python -u ${tb_path} dev upload --logdir ${logdir} `;
 
   const proc = spawn(command, {
     detached: true,
     shell: true
   });
 
+  /*
   proc.stderr.on('data', data => {
     data && console.error(data.toString('utf8'));
   });
+  */
 
   proc.stdout.on('data', async data => {
     if (data) {
