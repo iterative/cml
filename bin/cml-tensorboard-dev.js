@@ -25,10 +25,12 @@ const run = async opts => {
     description
   } = opts;
 
+  // set credentials
   const path = `${homedir()}/.config/tensorboard/credentials`;
   await fs.mkdir(path, { recursive: true });
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
+  // launch  tensorboard on background
   const tb_path = await exec('which tensorboard');
   const help = await exec('tensorboard dev upload -h');
   const extra_params_found =
