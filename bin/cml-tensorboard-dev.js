@@ -53,6 +53,8 @@ const run = async opts => {
   let output = '';
   proc.stdout.on('data', async data => {
     if (data) {
+      console.error(data.toString('utf8'));
+
       output += data.toString('utf8');
 
       const uri_index = output.indexOf('https://', 0);
