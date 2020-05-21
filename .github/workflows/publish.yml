@@ -20,11 +20,12 @@ jobs:
 
     - name: "tests"
       run: |
-        sudo update-alternatives --install /usr/bin/python python $(which python3) 10
         sudo apt-get update && sudo apt-get install -y python3-pip
-        sudo pip3 install --upgrade pip
-        sudo pip3 install --upgrade setuptools
-        sudo pip3 install tensorboard
+        sudo update-alternatives --install /usr/bin/python python $(which python3) 10
+        sudo pip install --upgrade pip
+        sudo pip install --upgrade setuptools
+        sudo pip install tensorboard
+        pip --version
 
         npm run test
 
