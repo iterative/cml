@@ -1,3 +1,5 @@
+jest.setTimeout(200000);
+
 const { exec } = require('../src/utils');
 
 describe('CML e2e', () => {

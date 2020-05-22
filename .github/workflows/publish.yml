@@ -7,8 +7,8 @@ env:
   
 jobs:
   test_and_deploy:
-    runs-on: ubuntu-latest
-
+    runs-on: [ubuntu-latest]
+    
     steps:
     - uses: actions/checkout@v2
 
@@ -19,7 +19,15 @@ jobs:
       run: npm run lint
 
     - name: "tests"
-      run: npm run test
+      run: |
+        sudo apt-get update && sudo apt-get install -y python3-pip
+        sudo update-alternatives --install /usr/bin/python python $(which python3) 10
+        sudo pip install --upgrade pip
+        sudo pip install --upgrade setuptools
+        sudo pip install tensorboard
+        pip --version
+
+        npm run test
 
     - name: Publish CML docker image
       # only publish if push to master (dvcorg/cml:latest) 
