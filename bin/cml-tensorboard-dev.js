@@ -22,7 +22,8 @@ const run = async opts => {
     credentials = TB_CREDENTIALS,
     logdir,
     name,
-    description
+    description,
+    title
   } = opts;
 
   // set credentials
@@ -61,7 +62,7 @@ const run = async opts => {
       if (uri_index) {
         output = output.substring(uri_index, output.length - 1);
 
-        if (md) output = `[${name}](${output})`;
+        if (md) output = `[${title || name}](${output})`;
 
         if (!file) print(output);
         else await fs.writeFile(file, output);
@@ -86,7 +87,7 @@ const argv = yargs
   )
   .default('plugins')
   .boolean('md')
-  .alias('name', 'title')
+  .default('title')
   .alias('t', 'title')
   .help('h').argv;
 run(argv).catch(e => handle_error(e));
