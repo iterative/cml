@@ -9,7 +9,7 @@ machine learning projects. Use it to automate parts of your development workflow
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
-CML uses DVC and Git to provide: 
+Potential benefits include:
 
 - **Reproducibility.** When you automate your workflow, it becomes reproducible. 
 - **Observability.** CML creates human-readable reports to compare user-defined metrics like model performance across commits. Compare experiments like pull requests. 
@@ -17,7 +17,7 @@ CML uses DVC and Git to provide:
 - **Team efficacy.** Review your teammate's models and datasets like code. Checkin and checkout each other's workspaces. 
 
 ## Usage
-CML extends the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to reproduce a user-defined pipeline and return a CML Report to your repository. 
+CML extends the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
 
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
@@ -32,20 +32,29 @@ on: [push, pull_request]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/dvc-cml:latest
-
+    container: docker://dvcorg/cml:latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: dvc_cml_run
+      - name: cml_run
       env:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        repro_targets: your_dvc_target.dvc
       run: |
-        # Run report:
-        dvc_cml_run
+        cml_run
 ```
-_LIST OF FUNCTIONS THAT CAN BE RUN INSIDE?_
+
+### CML Functions
+Your workflow can include any programs you like, plus supported CML functions:
+`cml-send-comment`: 
+
+|  Function | Description  | Inputs  | Example  | 
+|---|---|---|---|
+| `cml-send-comment`  | Return CML report as a comment in the Git workflow  | `<path to report> --head-sha <sha>`   |  `cml-send-comment report.md` | 
+| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` 
+| `cml-send-github-check report.md` |
+| `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
+
+
+
 
 ### Required input and output arguments
 _ELLE: I don't believe any arguments are strictly required. Need confirmation._
