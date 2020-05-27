@@ -142,5 +142,8 @@ env:
 ```
 </details>
 
+### Using DVC metrics to compare commits
+Another benefit of DVC is the ability to compare performance metrics across commits within a CML report [SCREENSHOT GOES HERE]. 
+
 ## Using CML with self-hosted runners
 Here are instructions for using GPUs
