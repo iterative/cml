@@ -49,8 +49,7 @@ Your workflow can include any programs you like, plus supported CML functions:
 |  Function | Description  | Inputs  | Example  | 
 |---|---|---|---|
 | `cml-send-comment`  | Return CML report as a comment in the Git workflow  | `<path to report> --head-sha <sha>`   |  `cml-send-comment report.md` | 
-| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` 
-| `cml-send-github-check report.md` |
+| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` | `cml-send-github-check report.md`|
 | `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
 
 
