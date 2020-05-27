@@ -136,6 +136,7 @@ env:
 env:
   GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
 ```
+</details>
 
 ## Using CML with self-hosted runners
-GPU instructions go here.
+Here are instructions for using GPUs
