@@ -47,7 +47,7 @@ jobs:
 ```
 
 ### CML Functions
-Your workflow can include any programs you like, plus supported CML functions:
+CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. 
 
 |  Function | Description  | Inputs  | Example  | 
 |---|---|---|---|
@@ -55,9 +55,13 @@ Your workflow can include any programs you like, plus supported CML functions:
 | `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` | `cml-send-github-check report.md`|
 | `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
 
+### Customizing your CML report
+CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Write to your `.md` report file using whatever method you prefer. 
+
+_Note for images._ If an image is an output of your ML workflow, you must use the `cml-publish` function to include it a CML report. 
 
 ## Using CML with DVC
-CML lets you pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
+CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
 <details>
   <summary>
