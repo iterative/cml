@@ -39,7 +39,11 @@ jobs:
       env:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        cml_run
+        < your ML workflow goes here>
+        
+        cat results.txt >> report.md
+        cml-publish graph.png --md >> report.md
+        cml-send-github-check report.md
 ```
 
 ### CML Functions
