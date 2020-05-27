@@ -48,7 +48,6 @@ jobs:
 
 ### CML Functions
 Your workflow can include any programs you like, plus supported CML functions:
-`cml-send-comment`: 
 
 |  Function | Description  | Inputs  | Example  | 
 |---|---|---|---|
@@ -57,13 +56,8 @@ Your workflow can include any programs you like, plus supported CML functions:
 | `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
 
 
-
-
-### Required input and output arguments
-_ELLE: I don't believe any arguments are strictly required. Need confirmation._
-
-## Environmental variables
-CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
+## Using CML with DVC
+CML lets you pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
 <details>
   <summary>
@@ -142,52 +136,6 @@ env:
 env:
   GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
 ```
-</details>
 
-## Secrets
-
-### Required
-`GITHUB_TOKEN` - GitHub provides a token that you can use to authenticate on behalf of GitHub Actions. [See here](https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token) for steps to configure.
-
-### Optional
-You may need to set secrets in your repository depending on the format of remote storage. See supported forms of storage and [required secrets for each](#environmental-variables).
-
-
-## Example use case
-Below is an example CML workflow. On every push, this action reproduces a DVC pipeline that trains a model, saves the trained model file to remote storage, and then generates a CML Report comparing a performance metric between the current and previous runs. The environmental variables are configured for AWS remote storage.
-
-```yaml
-name: your-workflow-name
-
-on: [push]
-
-jobs:
-  run:
-    runs-on: [ubuntu-latest]
-    container: docker://dvcorg/dvc-cml:latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: dvc_cml_run
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Reproduce training pipeline
-        dvc repro train.dvc
-        
-        # Push the resulting model to remote storage
-        dvc add model.pkl
-        dvc push 
-        
-        # Compare a metric associated with the DVC pipeline between commits
-        BASELINE=origin/master
-        echo "# CML report" >> report.md
-        dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
-        dvc diff --show-json "$BASELINE" | cml-files >> report.md
-
-        # Create a report in CML
-        cml-send-comment report.md
-```
+## Using CML with self-hosted runners
+GPU instructions go here.
