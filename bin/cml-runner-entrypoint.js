@@ -5,7 +5,7 @@ const { exec, randid } = require('../src/utils');
 
 const {
   DOCKER_MACHINE,
-  RUNNER_IDLE_TIMEOUT = 5 * 60 * 1000,
+  RUNNER_IDLE_TIMEOUT = 5 * 60,
 
   RUNNER_REPO,
 
@@ -129,6 +129,7 @@ const run = async () => {
   setInterval(() => {
     IS_GITHUB && TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT && shutdown();
     TIMEOUT_TIMER++;
+    console.log(TIMEOUT_TIMER);
   }, 1000);
 };
 
