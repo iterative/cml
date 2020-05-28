@@ -88,6 +88,17 @@ const comment = async opts => {
   );
 };
 
+const get_runner_token = async () => {
+  const {
+    data: { token }
+  } = await octokit.actions.createRegistrationToken({
+    owner,
+    repo
+  });
+
+  return token;
+};
+
 const handle_error = e => {
   core.setFailed(e.message);
 };
@@ -102,4 +113,5 @@ exports.ref_parser = ref_parser;
 exports.check_ran_ref = check_ran_ref;
 exports.create_check_report = create_check_report;
 exports.comment = comment;
+exports.get_runner_token = get_runner_token;
 exports.handle_error = handle_error;

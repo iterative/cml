@@ -63,6 +63,10 @@ const comment = async opts => {
   await fetch(endpoint, { method: 'POST', headers, body });
 };
 
+const get_runner_token = async opts => {
+  throw new Error('Not yet implemented');
+};
+
 const handle_error = e => {
   console.log(e.message);
   process.exit(1);
@@ -78,4 +82,5 @@ exports.ref_parser = ref_parser;
 exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
 exports.comment = comment;
+exports.get_runner_token = get_runner_token;
 exports.handle_error = handle_error;

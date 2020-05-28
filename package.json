@@ -20,7 +20,8 @@
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
     "cml-publish": "./bin/cml-publish.js",
-    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js"
+    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
+    "cml-runner-entrypoint": "./bin/cml-runner-entrypoint.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -43,7 +44,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.2.0",
-    "@actions/github": "^2.0.0",
+    "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
     "json-to-markdown-table2": "^1.0.1",
