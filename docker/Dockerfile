@@ -63,4 +63,4 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     ./bin/installdependencies.sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["dvc_cml_docker_entrypoint"]
+CMD ["cml-runner-entrypoint"]

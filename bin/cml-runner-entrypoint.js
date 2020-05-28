@@ -123,9 +123,7 @@ const run = async () => {
   proc.stdout.on('data', async data => {
     data && console.log(data.toString('utf8'));
 
-    if (data && IS_GITHUB) {
-      if (data.includes('Running job')) TIMEOUT_TIMER = 0;
-    }
+    if (data && IS_GITHUB && data.includes('Running job')) TIMEOUT_TIMER = 0;
   });
 
   setTimeout(() => {
