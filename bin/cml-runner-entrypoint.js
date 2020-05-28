@@ -126,7 +126,7 @@ const run = async () => {
     if (data && IS_GITHUB && data.includes('Running job')) TIMEOUT_TIMER = 0;
   });
 
-  setTimeout(() => {
+  setInterval(() => {
     IS_GITHUB && TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT && shutdown();
     TIMEOUT_TIMER++;
   }, 1000);
