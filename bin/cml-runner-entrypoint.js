@@ -124,7 +124,7 @@ const run = async () => {
     data && console.log(data.toString('utf8'));
 
     if (data && IS_GITHUB) {
-      if (data.includes('Running job')) RUNNER_TOKEN = 0;
+      if (data.includes('Running job')) TIMEOUT_TIMER = 0;
     }
   });
 
