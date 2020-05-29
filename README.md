@@ -56,9 +56,18 @@ CML provides a number of helper functions to help package outputs from ML workfl
 | `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
 
 ### Customizing your CML report
-CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Write to your `.md` report file using whatever method you prefer. 
+CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
 
-_Note for images._ If an image is an output of your ML workflow, you must use the `cml-publish` function to include it a CML report. 
+- **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
+```
+cat results.txt >> report.md 
+```
+- **Add images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+
+```
+cml-publish graph.png --md >> report.md
+```
+
 
 ## Using CML with DVC
 CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
@@ -143,7 +152,24 @@ env:
 </details>
 
 ### Using DVC metrics to compare commits
-Another benefit of DVC is the ability to compare performance metrics across commits within a CML report [SCREENSHOT GOES HERE]. 
+Another benefit of DVC is the ability to compare performance metrics across project versions within a CML report. For example, to compare the current project state on a feature branch with master: 
+
+```
+git fetch --prune --unshallow
+BASELINE=origin/master
+
+dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
+dvc diff --show-json "$BASELINE" | cml-files >> report.md
+```
+
+Similarly, `dvc plots diff` can be used to generate metrics vizualizations comparing the current version with another:
+
+```
+git fetch --prune --unshallow
+dvc plots diff --target loss.csv --show-vega master | cml-publish --md >> report.md
+```
+
+
 
 ## Using CML with self-hosted runners
 Here are instructions for using GPUs
