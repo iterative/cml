@@ -1,6 +1,6 @@
 # Continuous Machine Learning
 
-![logo](imgs/dark_logo.png)
+![logo](imgs/logo_v2.png)
 
 
 ## Introduction
