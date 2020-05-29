@@ -39,7 +39,10 @@ jobs:
       env:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        < your ML workflow goes here>
+        
+        # Your workflow goes here. It could be anything! 
+        # But let's say it's this:
+        python train.py
         
         cat results.txt >> report.md
         cml-publish graph.png --md >> report.md
@@ -49,11 +52,11 @@ jobs:
 ### CML Functions
 CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. 
 
-|  Function | Description  | Inputs  | Example  | 
-|---|---|---|---|
-| `cml-send-comment`  | Return CML report as a comment in the Git workflow  | `<path to report> --head-sha <sha>`   |  `cml-send-comment report.md` | 
-| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` | `cml-send-github-check report.md`|
-| `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` | `cml-publish graph.png --md`|
+|  Function | Description  | Inputs  | 
+|---|---|---|
+| `cml-send-comment`  | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`   | 
+| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` |
+| `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` |
 
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
@@ -199,8 +202,78 @@ runs-on: [self-hosted]
 
 The image runs Ubutnu 18.04 and supports cuda 10.1, libcudnn 7, cublas 10, and libinfer 10. Please also be sure to have nvidia drivers and nvidia-docker installed on your self-hosted runner:
 
-```
+```bash
 sudo ubuntu-drivers autoinstall
 sudo apt-get install nvidia-docker2
 sudo systemctl restart docker
 ```
+
+## Getting started
+
+1. In a new project directory, create a training script:
+
+```bash
+mkdir mycml && cd mycml
+git init
+touch train.py
+```
+
+2. Copy the following code into `train.py`.
+
+>> CODE GOES HERE
+
+3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
+
+```bash
+git add . & git commit -m "first commit"
+git push origin master
+```
+
+4. Now it's time to create your CML workflow: copy the following script into a new file, `.github/workflows/cml.yaml`:
+
+```yaml
+name: model-training
+
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cml_run
+      env:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+
+        python train.py
+        
+        cat results.txt >> report.md
+        cml-publish graph.png --md >> report.md
+        cml-send-github-check report.md
+```
+
+5. Now it's time to run the workflow for the first time. All you have to do is commit and push!
+
+```bash
+git add . & git commit -m "workflow created"
+git push origin master
+```
+
+
+6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
+
+```bash
+git checkout -b experiment
+```
+
+7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
+
+```bash
+git add . & git commit -m "update learning rate"
+```
+
+8. Make a PR in Github [SCREENSHOT]
+
+No wait and watch- voila! Here's your report. 
