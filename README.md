@@ -58,11 +58,11 @@ CML provides a number of helper functions to help package outputs from ML workfl
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
 
-- **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
+📝 **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
 ```
 cat results.txt >> report.md 
 ```
-- **Add images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+🖼️ **Images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
 
 ```
 cml-publish graph.png --md >> report.md
@@ -169,7 +169,19 @@ git fetch --prune --unshallow
 dvc plots diff --target loss.csv --show-vega master | cml-publish --md >> report.md
 ```
 
+### The DVC run-cache
+DVC 1.0 uses a run-cache to avoid duplicating computations if a pipeline stage has already been run. In CI/CD, run-cache also removes the need to commit to save the results of a workflow (such as a trained model file).
 
+Run-cache is accessed locally, so to take advantage of this feature in CML, you'll need to `dvc push` the cache from your workspace,`dvc pull` to the runner before reproducing your pipeline, and then `dvc push` the cache after. 
+
+```
+dvc pull --run-cache
+dvc repro
+dvc push --run-cache
+          
+   ```
 
 ## Using CML with self-hosted runners
-Here are instructions for using GPUs
+GitHub provides a certain amount of time on hosted runners for free to every user. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to [one more reason goes here].
+
+☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
