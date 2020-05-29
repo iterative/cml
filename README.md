@@ -185,3 +185,22 @@ dvc push --run-cache
 GitHub provides a certain amount of time on hosted runners for free to every user. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to [one more reason goes here].
 
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
+
+### CML with GPUs
+We've provided a docker image that supports most modern GPUs. To use it, modify your `.yaml` file, modify the `runs-on` field as follows:
+
+```yaml
+runs-on: [self-hosted]
+  container:
+    image: docker://dvcorg/cml-gpu:latest
+    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+
+```
+
+The image runs Ubutnu 18.04 and supports cuda 10.1, libcudnn 7, cublas 10, and libinfer 10. Please also be sure to have nvidia drivers and nvidia-docker installed on your self-hosted runner:
+
+```
+sudo ubuntu-drivers autoinstall
+sudo apt-get install nvidia-docker2
+sudo systemctl restart docker
+```
