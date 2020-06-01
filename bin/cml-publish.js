@@ -27,10 +27,12 @@ const run = async opts => {
 pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
-  .usage(`Usage: $0 <path>`)
+  .usage(`Usage: $0 <path> --file <string>`)
   .boolean('md')
   .default('title')
   .alias('t', 'title')
+  .default('file')
+  .alias('f', 'file')
   .help('h')
   .demand(data ? 0 : 1).argv;
 run({ ...argv, data }).catch(e => handle_error(e));

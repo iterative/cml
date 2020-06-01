@@ -75,7 +75,7 @@ const run = async opts => {
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path>`)
+  .usage(`Usage: $0 <path> --file <string>`)
   .default('credentials')
   .alias('c', 'credentials')
   .default('logdir', '', 'Directory containing the logs to process')
@@ -89,5 +89,8 @@ const argv = yargs
   .boolean('md')
   .default('title')
   .alias('t', 'title')
+  .default('file')
+  .alias('f', 'file')
   .help('h').argv;
+
 run(argv).catch(e => handle_error(e));
