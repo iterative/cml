@@ -160,9 +160,13 @@ Another benefit of DVC is the ability to compare performance metrics across proj
 git fetch --prune --unshallow
 BASELINE=origin/master
 
-dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
+dvc metrics diff --show-md "$BASELINE" >> report.md
 dvc diff --show-json "$BASELINE" | cml-files >> report.md
 ```
+
+Below is an example of a `dvc metrics diff` table in a CML report showing three metrics: precision, recall, and accuracy on a classification problem.
+
+![](imgs/dvc_metrics.png)
 
 Similarly, `dvc plots diff` can be used to generate metrics vizualizations comparing the current version with another:
 
