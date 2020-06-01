@@ -1,5 +1,6 @@
 jest.setTimeout(200000);
 
+const fs = require('fs');
 const { exec } = require('../src/utils');
 
 const diff_metrics_fixture = `{"metrics/eval.json": {"accuracy": {"old": "0.8784", "new": "0.8783"}}, "metrics/train.json": {"took": {"old": 0.0015638272762298585, "new": 0.0014997141361236571, "diff": -6.411314010620135e-05}, "num_steps": {"old": 1400, "new": 1200, "diff": -200}}}`;
@@ -39,6 +40,16 @@ describe('CML e2e', () => {
       "
     `);
     expect(output.endsWith('\n\n')).toBe(true);
+  });
+
+  test('cml-metrics with valid data to file', async () => {
+    const file = `cml-metrics-test.md`;
+    await exec(
+      `echo '${diff_metrics_fixture}' | node ./bin/cml-metrics.js --file ${file}`
+    );
+
+    expect(fs.existsSync(file)).toBe(true);
+    await fs.promises.unlink(file);
   });
 
   test('cml-metrics without data', async () => {

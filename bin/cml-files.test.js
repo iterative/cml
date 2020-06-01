@@ -1,5 +1,6 @@
 jest.setTimeout(200000);
 
+const fs = require('fs');
 const { exec } = require('../src/utils');
 
 const diff_fixture = `{"added": [], "deleted": [], "modified": [{"path": "metrics/eval.json"}, {"path": "metrics/train.json"}, {"path": "models/"}]}`;
@@ -31,6 +32,16 @@ describe('CML e2e', () => {
       </details>
       "
     `);
+  });
+
+  test('cml-files with valid data to file', async () => {
+    const file = `cml-files-test.md`;
+    await exec(
+      `echo '${diff_fixture}' | node ./bin/cml-files.js --file ${file}`
+    );
+
+    expect(fs.existsSync(file)).toBe(true);
+    await fs.promises.unlink(file);
   });
 
   test('cml-files without data', async () => {
