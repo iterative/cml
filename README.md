@@ -9,15 +9,14 @@ machine learning projects. Use it to automate parts of your development workflow
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
-Potential benefits include:
+The core values of CML are:
 
-- **Reproducibility.** When you automate your workflow, it becomes reproducible. 
-- **Observability.** CML creates human-readable reports to compare user-defined metrics like model performance across commits. Compare experiments like pull requests. 
-- **Release-readiness.**: With CML, every experiment is a release candidate. 
-- **Team efficacy.** Review your teammate's models and datasets like code. Checkin and checkout each other's workspaces. 
+- **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with DVC instead of pushing to a Git repo.
+- **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
+- **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
 ## Usage
-CML extends the CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
+CML extends the Git CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
 
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
