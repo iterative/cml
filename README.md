@@ -166,7 +166,7 @@ dvc diff --show-json "$BASELINE" | cml-files >> report.md
 
 Below is an example of a `dvc metrics diff` table in a CML report showing three metrics: precision, recall, and accuracy on a classification problem.
 
-![](imgs/dvc_metrics.png)
+![](imgs/dvc_metric.png)
 
 Similarly, `dvc plots diff` can be used to generate metrics vizualizations comparing the current version with another:
 
