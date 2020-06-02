@@ -2,6 +2,14 @@
   <img src="imgs/title_strip_trim.png" width=400>
 </p>
 
+1. [Overview](#overview)
+2. [Usage](#usage)
+3. [Using CML with DVC](#using-cml-with-dvc)
+4. [Using self-hosted runners](#using-self-hosted-runners)
+4. [Getting started](#getting-started)
+6. [Examples](#a-library-of-cml-projects)
+
+
 ## Overview
 Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
@@ -13,13 +21,6 @@ We built CML with these principles in mind:
 - **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with DVC instead of pushing to a Git repo.
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
-
-
-1. [Usage](#usage)
-2. [Using CML with DVC](#using-cml-with-dvc)
-3. [Using self-hosted runners](#using-self-hosted-runners)
-4. [Getting started](#getting-started)
-5. [Examples](#a-library-of-cml-projects)
 
 
 ## Usage
