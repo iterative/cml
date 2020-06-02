@@ -4,9 +4,9 @@
 
 1. [Overview](#overview)
 2. [Usage](#usage)
-3. [Using CML with DVC](#using-cml-with-dvc)
-4. [Using self-hosted runners](#using-self-hosted-runners)
-4. [Getting started](#getting-started)
+3. [Getting started](#getting-started)
+4. [Using CML with DVC](#using-cml-with-dvc)
+5. [Using self-hosted runners](#using-self-hosted-runners)
 6. [Examples](#a-library-of-cml-projects)
 
 
@@ -77,6 +77,75 @@ cat results.txt >> report.md
 cml-publish graph.png --md >> report.md
 ```
 
+## Getting started
+
+1. In a new project directory, create a training script:
+
+```bash
+mkdir mycml && cd mycml
+git init
+touch train.py
+```
+
+2. Copy the following code into `train.py`.
+
+>> CODE GOES HERE
+
+3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
+
+```bash
+git add . & git commit -m "first commit"
+git push origin master
+```
+
+4. Now it's time to create your CML workflow: copy the following script into a new file, `.github/workflows/cml.yaml`:
+
+```yaml
+name: model-training
+
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cml_run
+      env:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+
+        python train.py
+        
+        cat results.txt >> report.md
+        cml-publish graph.png --md >> report.md
+        cml-send-github-check report.md
+```
+
+5. Now it's time to run the workflow for the first time. All you have to do is commit and push!
+
+```bash
+git add . & git commit -m "workflow created"
+git push origin master
+```
+
+
+6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
+
+```bash
+git checkout -b experiment
+```
+
+7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
+
+```bash
+git add . & git commit -m "update learning rate"
+```
+
+8. Make a PR in Github [SCREENSHOT]
+
+No wait and watch- voila! Here's your report. 
 
 ## Using CML with DVC
 CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
@@ -223,75 +292,7 @@ sudo apt-get install nvidia-docker2
 sudo systemctl restart docker
 ```
 
-## Getting started
 
-1. In a new project directory, create a training script:
-
-```bash
-mkdir mycml && cd mycml
-git init
-touch train.py
-```
-
-2. Copy the following code into `train.py`.
-
->> CODE GOES HERE
-
-3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
-
-```bash
-git add . & git commit -m "first commit"
-git push origin master
-```
-
-4. Now it's time to create your CML workflow: copy the following script into a new file, `.github/workflows/cml.yaml`:
-
-```yaml
-name: model-training
-
-on: [push, pull_request]
-
-jobs:
-  run:
-    runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: cml_run
-      env:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-
-        python train.py
-        
-        cat results.txt >> report.md
-        cml-publish graph.png --md >> report.md
-        cml-send-github-check report.md
-```
-
-5. Now it's time to run the workflow for the first time. All you have to do is commit and push!
-
-```bash
-git add . & git commit -m "workflow created"
-git push origin master
-```
-
-
-6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
-
-```bash
-git checkout -b experiment
-```
-
-7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
-
-```bash
-git add . & git commit -m "update learning rate"
-```
-
-8. Make a PR in Github [SCREENSHOT]
-
-No wait and watch- voila! Here's your report. 
 
 ## A library of CML projects
 Here are some example projects using CML.
