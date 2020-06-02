@@ -113,15 +113,15 @@ const run = async () => {
 
     GITLAB_CI_TOKEN = runner.token;
 
-    command = `gitlab-runner --log-format="json" run-single 
-      --url "https://gitlab.com/" 
-      --token "${runner.token}" 
-      --executor "${RUNNER_EXECUTOR}" 
-      --docker-runtime "${RUNNER_RUNTIME}" 
-      --docker-image "${RUNNER_IMAGE}" 
-      --wait-timeout ${RUNNER_IDLE_TIMEOUT} 
-      --name "${RUNNER_NAME}" 
-      --request-concurrency 1 
+    command = `gitlab-runner --log-format="json" run-single \
+      --url "https://gitlab.com/" \
+      --token "${runner.token}" \
+      --executor "${RUNNER_EXECUTOR}" \
+      --docker-runtime "${RUNNER_RUNTIME}" \
+      --docker-image "${RUNNER_IMAGE}" \
+      --wait-timeout ${RUNNER_IDLE_TIMEOUT} \
+      --name "${RUNNER_NAME}" \
+      --request-concurrency 1 \
       --limit 1`;
   }
 
