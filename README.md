@@ -1,5 +1,6 @@
-<img src="imgs/title_strip_trim.png" width=400>
-
+<p align="center">
+  <img src="imgs/title_strip_trim.png" width=400>
+</p>
 
 ## Introduction
 Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
