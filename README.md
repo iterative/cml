@@ -60,11 +60,11 @@ CML provides a number of helper functions to help package outputs from ML workfl
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
 
-📝 **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
+📝  **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
 ```
 cat results.txt >> report.md 
 ```
-🖼️ **Images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+🖼️  **Images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
 
 ```
 cml-publish graph.png --md >> report.md
@@ -175,10 +175,15 @@ git fetch --prune --unshallow
 dvc plots diff --target loss.csv --show-vega master | cml-publish --md >> report.md
 ```
 
+Here's how a sample `dvc plots diff` would appear in a CML report:
+
+<img src="imgs/dvc_diff.png" width="300">
+
+
 ### The DVC run-cache
 DVC 1.0 uses a run-cache to avoid duplicating computations if a pipeline stage has already been run. In CI/CD, run-cache also removes the need to commit to save the results of a workflow (such as a trained model file).
 
-Run-cache is accessed locally, so to take advantage of this feature in CML, you'll need to `dvc push` the cache from your workspace,`dvc pull` to the runner before reproducing your pipeline, and then `dvc push` the cache after. 
+Run-cache is accessed and written to locally, so to take advantage of it in CML, you'll need to `dvc push` the cache from your workspace,`dvc pull` to the runner before reproducing your pipeline, and then `dvc push` the cache after. 
 
 ```
 dvc pull --run-cache
