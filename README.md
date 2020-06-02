@@ -129,24 +129,44 @@ When the dot turns into a green check, the Action has completed. Click on the wo
 
 ![](imgs/first_cml_report.png)
 
-4. Now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
+4. Cool, that's your first report! Now it's time to modify your code and see what happens.  Let's make a new branch for experimenting. In your local workspace:
 
 ```bash
 git checkout -b experiment
 ```
 
-7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
+5. In your text editor of choice, edit line X of `train.py` to `depth = 5`. We're also going to add final line to our `cml.yaml` file. The last two lines should read: 
 
-```bash
-git add . & git commit -m "update learning rate"
+```yaml
+          cml-send-github-check report.md
+          cml-send-comment report.md
 ```
 
-8. Make a PR in Github [SCREENSHOT]
+6. Commit and push the changes:
 
-No wait and watch- voila! Here's your report. 
+```bash
+git add . && git commit -m "modify forest depth"
+git push origin experiment
+```
+
+7. In GitHub, open up a Pull Request to compare the `experiment` branch to `master`. You'll first see some checks appear- this is the result of the function `cml-send-github-check` in your workflow. 
+
+![](imgs/make_pr.png)
+
+Shortly, you should see a comment from `github-actions` appear in the Pull Request with your CML report. This is a result of the function `cml-send-comment` in your workflow.
+
+![](imgs/pr_comment.png)
+
+
+This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/*.yaml` file gets run. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. Now, every Pull Request in your project is accompanied with a report, visible to you and any collaborators. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
+
 
 ## Using CML with DVC
-CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
+CML works without DVC, but some DVC features are well-suited for CML. For example, DVC helps you push and pull large files, like models and datasets, from cloud storage to your runner and back. DVC also lets you visualize how metrics differ between commits to make reports like this:
+
+![](imgs/dvc_cml_long_report)
+
+If you're using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
 <details>
   <summary>
