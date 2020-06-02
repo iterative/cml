@@ -62,7 +62,7 @@ CML reports are written in [GitHub Flavored Markdown](https://github.github.com/
 ```
 cat results.txt >> report.md 
 ```
-🖼️  **Images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+🖼️  **Images** Display images using the markdown or HTML. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
 
 ```
 cml-publish graph.png --md >> report.md
