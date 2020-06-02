@@ -2,7 +2,7 @@
   <img src="imgs/title_strip_trim.png" width=400>
 </p>
 
-## Introduction
+## Overview
 Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
@@ -283,3 +283,9 @@ git add . & git commit -m "update learning rate"
 8. Make a PR in Github [SCREENSHOT]
 
 No wait and watch- voila! Here's your report. 
+
+## A library of CML projects
+Here are some example projects using CML.
+- [CML in a classification problem](https://github.com/andronovhopf/1_base_case)
+- [Using CML with DVC](https://github.com/andronovhopf/prettypretty)
+- [Making a tensorboard CML report](https://github.com/andronovhopf/3_tensorboard)
