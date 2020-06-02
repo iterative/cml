@@ -63,8 +63,32 @@ const comment = async opts => {
   await fetch(endpoint, { method: 'POST', headers, body });
 };
 
-const get_runner_token = async opts => {
-  throw new Error('Not yet implemented');
+const get_runner_token = async () => {
+  const endpoint = `${CI_API_V4_URL}/projects/${owner}%2F${repo}`;
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(endpoint, { method: 'GET', headers });
+  const project = await response.json();
+
+  return project.runners_token;
+};
+
+const register_runner = async opts => {
+  const endpoint = `${CI_API_V4_URL}/runners`;
+
+  console.log(endpoint);
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+
+  const body = new URLSearchParams();
+  body.append('token', opts.token);
+  body.append('locked', 'true');
+  body.append('run_untagged', 'true');
+  body.append('access_level', 'not_protected');
+  body.append('tag_list', opts.tags);
+
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const runner = await response.json();
+
+  return runner;
 };
 
 const handle_error = e => {
@@ -83,4 +107,5 @@ exports.project_jobs = project_jobs;
 exports.check_ran_ref = check_ran_ref;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
+exports.register_runner = register_runner;
 exports.handle_error = handle_error;
