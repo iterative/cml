@@ -87,25 +87,3 @@ RUN apt update && \
     echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
     ldconfig
 # TENSORFLOW ENDS
-
-# DOCKER, DOCKER MACHINE, GITLAB RUNNER AND GITHUB RUNNER 
-ENV RUNNER_PATH=/home/runner
-ENV RUNNER_ALLOW_RUNASROOT=1
-
-RUN mkdir ${RUNNER_PATH}
-WORKDIR ${RUNNER_PATH}
-
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
-    curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose && \
-    curl -L https://github.com/docker/machine/releases/download/v0.16.2/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
-    chmod +x /tmp/docker-machine && mv /tmp/docker-machine /usr/local/bin/docker-machine && \
-    wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
-    chmod +x /usr/local/bin/gitlab-runner && \
-    gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
-    wget https://github.com/actions/runner/releases/download/v2.263.0/actions-runner-linux-x64-2.263.0.tar.gz && \
-    tar xzf actions-runner-linux-x64-2.263.0.tar.gz && \
-    ./bin/installdependencies.sh && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-CMD ["cml-runner-entrypoint"]
