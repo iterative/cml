@@ -95,7 +95,7 @@ jobs:
     - name: Publish CML runner docker image
       # only publish if push to master (dvcorg/cml:latest) 
       # or create a tag in the repo (dvcorg/cml:tag)
-      # if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
         DOCKER_FROM: cml
