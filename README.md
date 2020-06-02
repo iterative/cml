@@ -79,33 +79,11 @@ cml-publish graph.png --md >> report.md
 
 ## Getting started
 
-1. In a new project directory, create a training script:
+1. Fork our [example project repository](https://github.com/iterative/example_cml). For the following steps, you can work in the GitHub browser interface or work on a local clone of your fork.
 
-```bash
-mkdir mycml && cd mycml
-git init
-touch train.py
-```
+![](imgs/fork_project.png)
 
-2. Copy the following code into `train.py`.
-
-<details>
-<summary>
-train.py
-</summary>
-  ```
-  help help help
-  ```
-</details>
-
-3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
-
-```bash
-git add . & git commit -m "first commit"
-git push origin master
-```
-
-4. Now it's time to create your CML workflow: copy the following script into a new file, `.github/workflows/cml.yaml`:
+2. To create a CML workflow, copy the following into a new file, `.github/workflows/cml.yaml`:
 
 ```yaml
 name: model-training
@@ -126,16 +104,17 @@ jobs:
         python train.py
         
         cat results.txt >> report.md
-        cml-publish graph.png --md >> report.md
+        cml-publish confusion_matrix.png --md >> report.md
         cml-send-github-check report.md
 ```
 
-5. Now it's time to run the workflow for the first time. All you have to do is commit and push!
+3. As soon as this file is pushed to your GitHub repository, you'll trigger your first GitHub Action. If you're working in a local clone, you'll run: 
 
 ```bash
 git add . & git commit -m "workflow created"
 git push origin master
 ```
+
 
 
 6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
