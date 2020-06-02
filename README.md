@@ -164,7 +164,7 @@ This is the gist of the CML workflow: when you push changes to your GitHub repos
 ## Using CML with DVC
 CML works without DVC, but some DVC features are well-suited for CML. For example, DVC helps you push and pull large files, like models and datasets, from cloud storage to your runner and back. DVC also lets you visualize how metrics differ between commits to make reports like this:
 
-![](imgs/dvc_cml_long_report)
+![](imgs/dvc_cml_long_report.png)
 
 If you're using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
@@ -314,6 +314,5 @@ sudo systemctl restart docker
 
 ## A library of CML projects
 Here are some example projects using CML.
-- [CML in a classification problem](https://github.com/andronovhopf/1_base_case)
 - [Using CML with DVC](https://github.com/andronovhopf/prettypretty)
 - [Making a tensorboard CML report](https://github.com/andronovhopf/3_tensorboard)
