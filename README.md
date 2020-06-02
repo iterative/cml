@@ -1,6 +1,4 @@
-# Continuous Machine Learning
-
-![logo](imgs/logo_v2.png)
+<img src="imgs/title_strip.png" width="500">
 
 
 ## Introduction
