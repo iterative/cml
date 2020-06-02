@@ -29,7 +29,7 @@ CML extends the Git CI/CD workflow to ML projects. When a pull or push to your p
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
 
-`.github/workflows/cml.yml`
+The key file in any CML project is a `.yaml` configuring your GitHub Action. This file is always stored in `.github/workflows`.
 
 ```yaml
 name: your-workflow-name
@@ -89,7 +89,14 @@ touch train.py
 
 2. Copy the following code into `train.py`.
 
->> CODE GOES HERE
+<details>
+<summary>
+train.py
+</summary>
+  ```
+  help help help
+  ```
+</details>
 
 3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
 
