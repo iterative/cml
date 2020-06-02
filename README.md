@@ -79,9 +79,15 @@ cml-publish graph.png --md >> report.md
 
 ## Getting started
 
-1. Fork our [example project repository](https://github.com/iterative/example_cml). For the following steps, you can work in the GitHub browser interface or work on a local clone of your fork.
+1. Fork our [example project repository](https://github.com/iterative/example_cml). 
 
 ![](imgs/fork_project.png)
+
+The following steps can all be done in the GitHub browser interface. However, to follow along the commands, we recommend cloning your fork to your local workstation:
+
+```bash
+git clone https://github.com/<your-username>/example_cml
+```
 
 2. To create a CML workflow, copy the following into a new file, `.github/workflows/cml.yaml`:
 
@@ -93,31 +99,37 @@ on: [push, pull_request]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:latest
+    container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
       - name: cml_run
-      env:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-
-        python train.py
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install -r requirements.txt
+          python train.py
         
-        cat results.txt >> report.md
-        cml-publish confusion_matrix.png --md >> report.md
-        cml-send-github-check report.md
+          cat metrics.txt >> report.md
+          cml-publish confusion_matrix.png --md >> report.md
+          cml-send-github-check report.md
 ```
 
-3. As soon as this file is pushed to your GitHub repository, you'll trigger your first GitHub Action. If you're working in a local clone, you'll run: 
+3. As soon as this file is pushed to your GitHub repository, you'll trigger your first GitHub Action. 
 
 ```bash
-git add . & git commit -m "workflow created"
+git add . && git commit -m "create workflow"
 git push origin master
 ```
 
+Now you can look in your GitHub Actions dashboard. You'll see a workflow, named according to your last commit message, hopefully with a yellow dot beside it. The dot means your Action is running. 
 
+![](imgs/action_in_progress.png)
 
-6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
+When the dot turns into a green check, the Action has completed. Click on the workflow, then in the lefthand pane under "model-training", click on "CML Report" to view your report. 
+
+![](imgs/first_cml_report.png)
+
+4. Now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
 
 ```bash
 git checkout -b experiment
