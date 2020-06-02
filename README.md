@@ -165,7 +165,7 @@ This is the gist of the CML workflow: when you push changes to your GitHub repos
 CML works without DVC, but some DVC features are well-suited for CML. For example, DVC helps you push and pull large files, like models and datasets, from cloud storage to your runner and back. DVC also lets you visualize how metrics differ between commits to make reports like this:
 
 <p align="center">
-  <img src="imgs/dvc_cml_long_report.png" width=400>
+  <img src="imgs/dvc_cml_long_report.png" width=600>
 </p>
 
 
