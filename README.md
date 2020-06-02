@@ -162,7 +162,11 @@ This is the gist of the CML workflow: when you push changes to your GitHub repos
 
 
 ## Using CML with DVC
-CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
+CML works without DVC, but some DVC features are well-suited for CML. For example, DVC helps you push and pull large files, like models and datasets, from cloud storage to your runner and back. DVC also lets you visualize how metrics differ between commits to make reports like this:
+
+![](imgs/dvc_cml_long_report)
+
+If you're using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
 
 <details>
   <summary>
