@@ -1,17 +1,27 @@
-<img src="imgs/title_strip.png" width="500">
+<p align="center">
+  <img src="imgs/title_strip_trim.png" width=400>
+</p>
+
+1. [Overview](#overview)
+2. [Usage](#usage)
+3. [Getting started](#getting-started)
+4. [Using CML with DVC](#using-cml-with-dvc)
+5. [Using self-hosted runners](#using-self-hosted-runners)
+6. [Examples](#a-library-of-cml-projects)
 
 
-## Introduction
+## Overview
 Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
-The core values of CML are:
+We built CML with these principles in mind: 
 
 - **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with DVC instead of pushing to a Git repo.
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
+
 
 ## Usage
 CML extends the Git CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
@@ -19,7 +29,7 @@ CML extends the Git CI/CD workflow to ML projects. When a pull or push to your p
 To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
 
-`.github/workflows/cml.yml`
+The key file in any CML project is a `.yaml` configuring your GitHub Action. This file is always stored in `.github/workflows`.
 
 ```yaml
 name: your-workflow-name
@@ -37,13 +47,12 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         
-        # Your workflow goes here. It could be anything! 
-        # But let's say it's this:
+        # Your ML workflow goes here
         python train.py
         
+        # Write your CML report
         cat results.txt >> report.md
-        cml-publish graph.png --md >> report.md
-        cml-send-github-check report.md
+        cml-send-comment report.md
 ```
 
 ### CML Functions
@@ -62,12 +71,67 @@ CML reports are written in [GitHub Flavored Markdown](https://github.github.com/
 ```
 cat results.txt >> report.md 
 ```
-🖼️  **Images** Display images using the syntax `![image title](image address)`. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+🖼️  **Images** Display images using the markdown or HTML. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
 
 ```
 cml-publish graph.png --md >> report.md
 ```
 
+## Getting started
+
+1. Fork our [example project repository](https://github.com/iterative/example_cml). For the following steps, you can work in the GitHub browser interface or work on a local clone of your fork.
+
+![](imgs/fork_project.png)
+
+2. To create a CML workflow, copy the following into a new file, `.github/workflows/cml.yaml`:
+
+```yaml
+name: model-training
+
+on: [push, pull_request]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cml_run
+      env:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+
+        python train.py
+        
+        cat results.txt >> report.md
+        cml-publish confusion_matrix.png --md >> report.md
+        cml-send-github-check report.md
+```
+
+3. As soon as this file is pushed to your GitHub repository, you'll trigger your first GitHub Action. If you're working in a local clone, you'll run: 
+
+```bash
+git add . & git commit -m "workflow created"
+git push origin master
+```
+
+
+
+6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
+
+```bash
+git checkout -b experiment
+```
+
+7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
+
+```bash
+git add . & git commit -m "update learning rate"
+```
+
+8. Make a PR in Github [SCREENSHOT]
+
+No wait and watch- voila! Here's your report. 
 
 ## Using CML with DVC
 CML facilitates pushing and pulling large files, such as models and datasets, to remote storage with DVC. If you are using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
@@ -190,7 +254,7 @@ dvc push --run-cache
           
    ```
 
-## Using CML with self-hosted runners
+## Using self-hosted runners
 GitHub provides a certain amount of time on hosted runners for free to every user. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to [one more reason goes here].
 
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
@@ -214,72 +278,10 @@ sudo apt-get install nvidia-docker2
 sudo systemctl restart docker
 ```
 
-## Getting started
-
-1. In a new project directory, create a training script:
-
-```bash
-mkdir mycml && cd mycml
-git init
-touch train.py
-```
-
-2. Copy the following code into `train.py`.
-
->> CODE GOES HERE
-
-3. Create a new GitHub repository, make your first commit, and push to sync your local workspace and repo.
-
-```bash
-git add . & git commit -m "first commit"
-git push origin master
-```
-
-4. Now it's time to create your CML workflow: copy the following script into a new file, `.github/workflows/cml.yaml`:
-
-```yaml
-name: model-training
-
-on: [push, pull_request]
-
-jobs:
-  run:
-    runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: cml_run
-      env:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-
-        python train.py
-        
-        cat results.txt >> report.md
-        cml-publish graph.png --md >> report.md
-        cml-send-github-check report.md
-```
-
-5. Now it's time to run the workflow for the first time. All you have to do is commit and push!
-
-```bash
-git add . & git commit -m "workflow created"
-git push origin master
-```
 
 
-6. OK, now it's time to modify your code and see what happens. Let's make a new branch for experimenting. In your local workspace:
-
-```bash
-git checkout -b experiment
-```
-
-7. In your text editor of choice, edit line X of `train.py` to ______. Then, commit and push the change:
-
-```bash
-git add . & git commit -m "update learning rate"
-```
-
-8. Make a PR in Github [SCREENSHOT]
-
-No wait and watch- voila! Here's your report. 
+## A library of CML projects
+Here are some example projects using CML.
+- [CML in a classification problem](https://github.com/andronovhopf/1_base_case)
+- [Using CML with DVC](https://github.com/andronovhopf/prettypretty)
+- [Making a tensorboard CML report](https://github.com/andronovhopf/3_tensorboard)
