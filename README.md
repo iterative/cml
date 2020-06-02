@@ -1,4 +1,4 @@
-<img src="imgs/title_strip.png" width="500">
+<img src="imgs/title_strip_trim.png" width=400>
 
 
 ## Introduction
