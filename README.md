@@ -8,7 +8,7 @@ machine learning projects. Use it to automate parts of your development workflow
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
-The core values of CML are:
+We built CML with these principles in mind: 
 
 - **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with DVC instead of pushing to a Git repo.
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
@@ -38,13 +38,12 @@ jobs:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
         
-        # Your workflow goes here. It could be anything! 
-        # But let's say it's this:
+        # Your ML workflow goes here
         python train.py
         
+        # Write your CML report
         cat results.txt >> report.md
-        cml-publish graph.png --md >> report.md
-        cml-send-github-check report.md
+        cml-send-comment report.md
 ```
 
 ### CML Functions
