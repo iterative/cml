@@ -14,6 +14,14 @@ We built CML with these principles in mind:
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
+
+1. [Usage](#usage)
+2. [Using CML with DVC](#using-cml-with-dvc)
+3. [Using self-hosted runners](#using-self-hosted-runners)
+4. [Getting started](#getting-started)
+5. [Examples](#a-library-of-cml-projects)
+
+
 ## Usage
 CML extends the Git CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
 
@@ -190,7 +198,7 @@ dvc push --run-cache
           
    ```
 
-## Using CML with self-hosted runners
+## Using self-hosted runners
 GitHub provides a certain amount of time on hosted runners for free to every user. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to [one more reason goes here].
 
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
