@@ -34,7 +34,7 @@ describe('CML e2e', () => {
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTION &&
       (await exec(
-        `node ./bin/cml-send-github-check.js ${path} --title "${title} --conclusion ${conclusion}"`
+        `node ./bin/cml-send-github-check.js ${path} --title "${title}" --conclusion "${conclusion}"`
       ));
     await fs.unlink(path);
   });
