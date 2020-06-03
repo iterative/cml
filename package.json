@@ -21,7 +21,7 @@
     "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
     "cml-publish": "./bin/cml-publish.js",
     "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
-    "cml-runner-entrypoint": "./bin/cml-runner-entrypoint.js"
+    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
