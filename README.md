@@ -18,18 +18,16 @@ monitoring changing datasets.
 
 We built CML with these principles in mind: 
 
-- **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with DVC instead of pushing to a Git repo.
+- **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with [DVC](https://dvc.org) instead of pushing to a Git repo.
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
 
 ## Usage
-CML extends the Git CI/CD workflow to ML projects. When a pull or push to your project repository is detected, CML coordinates cloud resources to run a user-defined script and return a CML Report to your repository. 
-
-To begin, you'll need a GitHub or GitLab account. Users may wish to familiarize themselves with 
+You'll need a GitHub or GitLab account to begin. Users may wish to familiarize themselves with 
 [Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
 
-The key file in any CML project is a `.yaml` configuring your GitHub Action. This file is always stored in `.github/workflows`.
+The key file in any CML project is `.github/workflows/cml.yaml`.
 
 ```yaml
 name: your-workflow-name
@@ -169,7 +167,7 @@ CML works without DVC, but some DVC features are well-suited for CML. For exampl
 </p>
 
 
-If you're using a DVC remote, take note of the environmental variables that must be set according to your remote storage format. 
+If you're using DVC with cloud storage, take note of environmental variables for your storage format. 
 
 <details>
   <summary>
@@ -255,7 +253,7 @@ Another benefit of DVC is the ability to compare performance metrics across proj
 
 ```
 git fetch --prune --unshallow
-BASELINE=origin/master
+BASELINE=master
 
 dvc metrics diff --show-md "$BASELINE" >> report.md
 dvc diff --show-json "$BASELINE" | cml-files >> report.md
@@ -290,7 +288,7 @@ dvc push --run-cache
    ```
 
 ## Using self-hosted runners
-GitHub provides a certain amount of time on hosted runners for free to every user. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to [one more reason goes here].
+GitHub Actions are run on GitHub-hosted runners by default. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to train in the cloud.
 
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
 
