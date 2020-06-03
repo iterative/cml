@@ -2,8 +2,6 @@ FROM ubuntu:18.04
 
 LABEL maintainer="dvc.org"
 
-ENV GOOGLE_APPLICATION_CREDENTIALS=".dvc/tmp/GOOGLE_APPLICATION_CREDENTIALS.json"
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
         build-essential \
