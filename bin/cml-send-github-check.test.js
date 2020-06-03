@@ -25,11 +25,11 @@ describe('CML e2e', () => {
     await fs.unlink(path);
   });
 
-  test('cml-send-github-check failure with tile "CML failing test"', async () => {
+  test('cml-send-github-check failure with tile "CML neutral test"', async () => {
     const path = 'check.md';
-    const report = `## Hi this check should fail`;
-    const title = 'CML failing test';
-    const conclusion = 'failure';
+    const report = `## Hi this check should be neutral`;
+    const title = 'CML neutral test';
+    const conclusion = 'neutral';
 
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTION &&
