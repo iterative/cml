@@ -60,7 +60,7 @@ CML provides a number of helper functions to help package outputs from ML workfl
 |---|---|---|
 | `cml-send-comment`  | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`   | 
 | `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` |
-| `cml-publish` | Publish an image for writing to CML report. Returns `.md` string to embed image in CML report when `--md` flag is present. | `<path to image> --title <image title> --md` |
+| `cml-publish` | Publish an image for writing to CML report. | `<path to image> --title <image title> --md` |
 
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
@@ -92,7 +92,7 @@ git clone https://github.com/<your-username>/example_cml
 ```yaml
 name: model-training
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   run:
@@ -109,45 +109,25 @@ jobs:
         
           cat metrics.txt >> report.md
           cml-publish confusion_matrix.png --md >> report.md
-          cml-send-github-check report.md
+          cml-send-comment report.md
 ```
 
-3. As soon as this file is pushed to your GitHub repository, you'll trigger your first GitHub Action. 
-
-```bash
-git add . && git commit -m "create workflow"
-git push origin master
-```
-
-Now you can look in your GitHub Actions dashboard. You'll see a workflow, named according to your last commit message, hopefully with a yellow dot beside it. The dot means your Action is running. 
-
-![](imgs/action_in_progress.png)
-
-When the dot turns into a green check, the Action has completed. Click on the workflow, then in the lefthand pane under "model-training", click on "CML Report" to view your report. 
-
-![](imgs/first_cml_report.png)
-
-4. Cool, that's your first report! Now it's time to modify your code and see what happens.  Let's make a new branch for experimenting. In your local workspace:
+3. Now we're going to modify the model training code.  Let's make a new branch for experimenting. In your local workspace:
 
 ```bash
 git checkout -b experiment
 ```
 
-5. In your text editor of choice, edit line X of `train.py` to `depth = 5`. We're also going to add final line to our `cml.yaml` file. The last two lines should read: 
+4. In your text editor of choice, edit line X of `train.py` to `depth = 5`. 
 
-```yaml
-          cml-send-github-check report.md
-          cml-send-comment report.md
-```
-
-6. Commit and push the changes:
+5. Commit and push the changes:
 
 ```bash
 git add . && git commit -m "modify forest depth"
 git push origin experiment
 ```
 
-7. In GitHub, open up a Pull Request to compare the `experiment` branch to `master`. You'll first see some checks appear- this is the result of the function `cml-send-github-check` in your workflow. 
+6. In GitHub, open up a Pull Request to compare the `experiment` branch to `master`.
 
 ![](imgs/make_pr.png)
 
@@ -156,11 +136,11 @@ Shortly, you should see a comment from `github-actions` appear in the Pull Reque
 ![](imgs/pr_comment.png)
 
 
-This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/*.yaml` file gets run. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. Now, every Pull Request in your project is accompanied with a report, visible to you and any collaborators. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
+This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/cml.yaml` file gets run and a report generated. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
 
 
 ## Using CML with DVC
-CML works without DVC, but some DVC features are well-suited for CML. For example, DVC helps you push and pull large files, like models and datasets, from cloud storage to your runner and back. DVC also lets you visualize how metrics differ between commits to make reports like this:
+In many ML projects, data isn't stored in a Git repository and needs to be downloaded from external sources. DVC is a common way to bring data to your CML runner. DVC also lets you visualize how metrics differ between commits to make reports like this:
 
 <p align="center">
   <img src="imgs/dvc_cml_long_report.png" width=600>
