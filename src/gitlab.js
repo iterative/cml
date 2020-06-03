@@ -68,6 +68,7 @@ const handle_error = e => {
   process.exit(1);
 };
 
+exports.CHECK_TITLE = 'CML Report';
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha = HEAD_SHA;
