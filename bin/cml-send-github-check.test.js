@@ -49,7 +49,8 @@ describe('CML e2e', () => {
         --version     Show version number                                    [boolean]
         --head-sha    Commit sha
         -h            Show help                                              [boolean]
-        --conclusion                                              [default: \\"success\\"]
+        --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
+                                                     \\"timed_out\\"] [default: \\"success\\"]
         --title                                                [default: \\"CML Report\\"]"
     `);
   });

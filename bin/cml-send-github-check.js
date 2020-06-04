@@ -31,6 +31,14 @@ const argv = yargs
   .usage(`Usage: $0 <path> --head-sha <string>`)
   .default('head-sha')
   .default('conclusion', 'success')
+  .choices('conclusion', [
+    'success',
+    'failure',
+    'neutral',
+    'cancelled',
+    'skipped',
+    'timed_out'
+  ])
   .default('title', CHECK_TITLE)
   .describe('head-sha', 'Commit sha')
   .help('h')
