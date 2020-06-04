@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "author": {
     "name": "DVC",
     "url": "http://dvc.org"
@@ -19,7 +19,8 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-publish": "./bin/cml-publish.js",
-    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js"
+    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
+    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -42,7 +43,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.2.0",
-    "@actions/github": "^2.0.0",
+    "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
     "json-to-markdown-table2": "^1.0.1",
