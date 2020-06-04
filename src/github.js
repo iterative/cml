@@ -107,6 +107,7 @@ const handle_error = e => {
   core.setFailed(e.message);
 };
 
+exports.CHECK_TITLE = CHECK_TITLE;
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha = HEAD_SHA;
