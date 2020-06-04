@@ -18,7 +18,6 @@
     "cml-files": "./bin/cml-files.js",
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
-    "cml-setup-env-remote": "./bin/cml-setup-env-remote.js",
     "cml-publish": "./bin/cml-publish.js",
     "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js"
   },
