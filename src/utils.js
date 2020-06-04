@@ -52,18 +52,6 @@ const upload = async opts => {
   return { mime, size, uri };
 };
 
-const randid = () => {
-  return (
-    Math.random()
-      .toString(36)
-      .substring(2, 7) +
-    Math.random()
-      .toString(36)
-      .substring(2, 7)
-  );
-};
-
 exports.exec = exec;
 exports.upload = upload;
-exports.randid = randid;
 exports.git = git('./');
