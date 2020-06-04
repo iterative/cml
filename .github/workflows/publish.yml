@@ -98,13 +98,13 @@ jobs:
       env:
         DOCKER_FROM: cml
       with:
-        name: dvcorg/cml
+        name: dvcorg/cml-cloud-runner
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-cloud-runner
         context: ./
         cache: true
-        tags: "runner"
+        tag_names: true
         buildargs: DOCKER_FROM
 
     - name: Publish cml-py3 cloud runner docker image
@@ -113,13 +113,13 @@ jobs:
       env:
         DOCKER_FROM: cml-py3
       with:
-        name: dvcorg/cml-py3
+        name: dvcorg/cml-py3-cloud-runner
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-cloud-runner
         context: ./
         cache: true
-        tags: "runner"
+        tag_names: true
         buildargs: DOCKER_FROM
 
     - name: Publish cml-gpu cloud runner docker image
@@ -128,13 +128,13 @@ jobs:
       env:
         DOCKER_FROM: cml-gpu
       with:
-        name: dvcorg/cml-gpu
+        name: dvcorg/cml-gpu-cloud-runner
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-cloud-runner
         context: ./
         cache: true
-        tags: "runner"
+        tag_names: true
         buildargs: DOCKER_FROM
 
     - name: Publish cml-gpu-py3 cloud runner docker image
@@ -143,13 +143,13 @@ jobs:
       env:
         DOCKER_FROM: cml-gpu-py3
       with:
-        name: dvcorg/cml-gpu-py3
+        name: dvcorg/cml-gpu-py3-cloud-runner
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-cloud-runner
         context: ./
         cache: true
-        tags: "runner"
+        tag_names: true
         buildargs: DOCKER_FROM
 
     - name: Publish to NPM
