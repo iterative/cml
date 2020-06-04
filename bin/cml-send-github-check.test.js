@@ -25,6 +25,20 @@ describe('CML e2e', () => {
     await fs.unlink(path);
   });
 
+  test('cml-send-github-check failure with tile "CML neutral test"', async () => {
+    const path = 'check.md';
+    const report = `## Hi this check should be neutral`;
+    const title = 'CML neutral test';
+    const conclusion = 'neutral';
+
+    await fs.writeFile(path, report);
+    process.env.GITHUB_ACTION &&
+      (await exec(
+        `node ./bin/cml-send-github-check.js ${path} --title "${title}" --conclusion "${conclusion}"`
+      ));
+    await fs.unlink(path);
+  });
+
   test('cml-send-github-check -h', async () => {
     const output = await exec(`node ./bin/cml-send-github-check.js -h`);
 
@@ -32,9 +46,12 @@ describe('CML e2e', () => {
       "Usage: cml-send-github-check.js <path> --head-sha <string>
 
       Options:
-        --version   Show version number                                      [boolean]
-        --head-sha  Commit sha
-        -h          Show help                                                [boolean]"
+        --version     Show version number                                    [boolean]
+        --head-sha    Commit sha
+        -h            Show help                                              [boolean]
+        --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
+                                                     \\"timed_out\\"] [default: \\"success\\"]
+        --title                                                [default: \\"CML Report\\"]"
     `);
   });
 });
