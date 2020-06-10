@@ -1,64 +1,33 @@
-# DVC Github action for continuous delivery for machine learning
+<p align="center">
+  <img src="imgs/title_strip_trim.png" width=400>
+</p>
 
-1. [Introduction](#introduction)
+1. [Overview](#overview)
 2. [Usage](#usage)
-3. [How to use GPUs](#how-to-use-gpus)
-4. [Working with DVC remotes](#working-with-dvc-remotes)
-5. [Examples](#examples)
+3. [Getting started](#getting-started)
+4. [Using CML with DVC](#using-cml-with-dvc)
+5. [Using self-hosted runners](#using-self-hosted-runners)
+6. [Examples](#a-library-of-cml-projects)
 
-## Introduction
 
-DVC is a great tool as a data versioning system, but also is great as a build
-tool for ML experimentation. This repo offers the possibility of using DVC to
-establish your ML pipeline to be run by Github Actions runners or Gitlab
-runners.
+## Overview
+Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
+machine learning projects. Use it to automate parts of your development workflow, including
+model training and evaluation, comparing ML experiments across your project history, and 
+monitoring changing datasets. 
 
-You can also deploy
-[your own Github runners](https://help.github.com/en/actions/hosting-your-own-runners)
-or [your own Gitlab runners](https://docs.gitlab.com/runner/) with special
-capabilities like GPUs...
+We built CML with these principles in mind: 
 
-Major benefits of using DVC-CML in your ML projects includes:
+- **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with [DVC](https://dvc.org) instead of pushing to a Git repo.
+- **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
+- **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
-- Reproducibility: DVC is always in charge of maintain your experiment tracking
-  all the dependencies, so you don't have to. Additionally your experiment is
-  always running under the same constrains so you don't have to worry about
-  replicating the same environment again.
-- Observability: DVC offers you metrics to be tracked. In DVC-action we make
-  those metrics more human friendly and we also offer direct access to other
-  experiments run through the DVC Report offered as checks in Github or Releases
-  in Gitlab.
-- Releases: DVC-action tags every experiment that runs with repro generating the
-  report. Aside of that DVC-CML is just a step in your
-  [Github Workflow](https://help.github.com/en/actions/getting-started-with-github-actions/core-concepts-for-github-actions#workflow)
-  or [Gitlab Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) that could
-  generate your model releases or deployment according to your business
-  requirements.
-- Teaming: Give visibility to your experiments or releases to your teammates
-  working together.
-
-DVC-cml performs in your push or pull requests:
-
-1.  DVC [repro](https://dvc.org/doc/command-reference/repro)
-2.  Push changes into DVC remote and Git remote
-3.  - In Github generates a Github check displaying the DVC Report
-    - In Gitlab generates a Tag/Release displaying the DVC Report
-
-![image](https://user-images.githubusercontent.com/414967/75673142-854ad800-5c82-11ea-97f4-256beca83754.png)
-![image](https://user-images.githubusercontent.com/414967/75673087-677d7300-5c82-11ea-8ccb-be6a4f81eb5d.png)
 
 ## Usage
+You'll need a GitHub or GitLab account to begin. Users may wish to familiarize themselves with 
+[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
 
-<details>
-<summary>DVC-CML for Github</summary>
-
-> :eyes: Knowledge of [Github Actions](https://help.github.com/en/actions) and
-> [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
-> fully comprehension.
-
-Example of a simple DVC-CML workflow:
-
-> :eyes: Note the use of the container
+The key file in any CML project is `.github/workflows/cml.yaml`.
 
 ```yaml
 name: your-workflow-name
@@ -69,255 +38,168 @@ jobs:
   run:
     runs-on: [ubuntu-latest]
     container: docker://dvcorg/cml:latest
-
     steps:
       - uses: actions/checkout@v2
 
       - name: cml_run
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Install your project dependencies.
-        # An example for Python3:
-        apt-get install -y python3 python3-pip
-        pip3 install --upgrade pip
-        update-alternatives --install /usr/bin/python python $(which python3) 10
-        update-alternatives --install /usr/bin/pip pip $(which pip3) 10
-        test -f requirements.txt && pip3 install -r requirements.txt
 
-        # needed to be able to do dvc metrics and dvc diff
-        git fetch --prune --unshallow
-
-        # -f is needed
-        dvc pull -f
-        dvc repro
-        dvc push
-
-        BASELINE=origin/master
-        echo "# CML report" >> report.md
-        dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
-        dvc diff --show-json "$BASELINE" | cml-files >> report.md
-
-        # publish image
-        cml-publish my-file.png --md --title 'my-file' >> report.md
-
-        # publish pdf
-        cml-publish my-file.pdf --md --title 'my-file' >> report.md
-
-        # pipe example
-        vl2png vega.json | cml-publish --md --title 'my image' >> report.md
-
+        
+        # Your ML workflow goes here
+        python train.py
+        
+        # Write your CML report
+        cat results.txt >> report.md
         cml-send-comment report.md
 ```
 
-</details>
+### CML Functions
+CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. 
 
-<details>
-<summary>DVC-CML for Gitlab</summary>
+|  Function | Description  | Inputs  | 
+|---|---|---|
+| `cml-send-comment`  | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`   | 
+| `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` |
+| `cml-publish` | Publish an image for writing to CML report. | `<path to image> --title <image title> --md` |
 
-> :eyes: Knowledge of
-> [Gitlab CI/CD Pipeline](https://docs.gitlab.com/ee/ci/quick_start/) and
-> [DVC pipeline](https://dvc.org/doc/get-started/pipeline) is very useful for a
-> fully comprehension.
+### Customizing your CML report
+CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
 
-Example of a simple DVC-CML workflow in Gitlab:
 
-> :eyes: Some required environment variables like remote credentials and
-> GITLAB_TOKEN are set as CI/CD environment variables in Gitlab's UI
+📝  **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
+```
+cat results.txt >> report.md 
 
-> :warning: `tag_prefix` should be set in order to have DVC Reports, i.e. dvc\_
-> . This will generate tags in your repo with the report as release notes
-> ![image](https://user-images.githubusercontent.com/414967/77463321-b93e9680-6e05-11ea-99bc-bf44f7bdf8d9.png)
+```
+🖼️  **Images** Display images using the markdown or HTML. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
+
+```
+cml-publish graph.png --md >> report.md
+```
+
+## Getting started
+
+1. Fork our [example project repository](https://github.com/iterative/example_cml). 
+
+![](imgs/fork_project.png)
+
+
+The following steps can all be done in the GitHub browser interface. However, to follow along the commands, we recommend cloning your fork to your local workstation:
+
+```bash
+git clone https://github.com/<your-username>/example_cml
+```
+
+2. To create a CML workflow, copy the following into a new file, `.github/workflows/cml.yaml`:
+
 
 ```yaml
-# .gitlab-ci.yml
-stages:
-  - cml_run
+name: model-training
 
-cml:
-  stage: cml_run
-  image: dvcorg/cml:latest
+on: [push]
 
-  script:
-    -  # Install your project dependencies.
-    -  # An example for Python3:
-    - apt-get install -y python3 python3-pip
-    - pip3 install --upgrade pip
-    - update-alternatives --install /usr/bin/python python $(which python3) 10
-    - update-alternatives --install /usr/bin/pip pip $(which pip3) 10
-    - test -f requirements.txt && pip3 install -r requirements.txt
-
-    -  # needed to be able to do dvc metrics and dvc diff
-    - git fetch --prune --unshallow
-
-    -  # -f is needed
-    - dvc pull -f
-    - dvc repro train.dvc
-    - dvc push
-
-    - BASELINE=origin/master
-    - echo "# CML report" >> report.md
-    - dvc metrics diff --show-json "$BASELINE" | cml-metrics >> report.md
-    - dvc diff --show-json "$BASELINE" | cml-files >> report.md
-
-    -  # publish image
-    - cml-publish my-file.png --md --title 'my-file' >> report.md
-
-    -  # publish pdf
-    - cml-publish my-file.pdf --md --title 'my-file' >> report.md
-
-    -  # pipe example
-    - vl2png vega.json | cml-publish --md --title 'my image' >> report.md
-
-    - cml-send-comment report.md
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-py3:latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: cml_run
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install -r requirements.txt
+          python train.py
+        
+          cat metrics.txt >> report.md
+          cml-publish confusion_matrix.png --md >> report.md
+          cml-send-comment report.md
 ```
 
-</details>
 
-This workflow will run every time that you push code or do a Pull/Merge Request.
-When triggered DVC-CML will setup the runner and DVC will run the pipelines
-specified by `repro_targets`. Two scenarios may happen:
 
-1. DVC repro is up to date and there is nothing to do. This means that the
-   commit that you have done in your code is not related to your DVC pipelines
-   and there is nothing to do.
-2. DVC pipeline has changed and DVC will run repro, updating the output that may
-   generate (models, data...) in your DVC remote storage and then committing,
-   tagging and pushing the changes in git remote.
-
-Additionally, you may extend your CI/CD Pipeline/Workflow to generate your
-releases or even deploy automatically your models.
-
-### Variables
-
-> :warning: In Github Actions they are set via `env:` not `inputs:`
-
-> :eyes: In Gitlab pipeline they are set via `variables:`
-
-| Variable     | Type   | Required | Default | Info                                                                                                                                                                                                |
-| ------------ | ------ | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `repo_token` | string | yes      |         | In Github you can set the default autogenerated GITHUB_TOKEN. In Gitlab we scan for GITLAB_TOKEN. See [Tensorflow Mnist in Gitlab](#tensorflow-mnist-in-gitlab) example for a complete walkthrough. |
-
-## How to use GPUs
-
-Our DVC-CML GPU docker
-[image](https://hub.docker.com/repository/docker/dvcorg/cml-gpu) is an Ubuntu
-18.04 that already supports:
-
-- cuda 10.1
-- libcudnn 7
-- cublas 10
-- libinfer 10
-
-#### Setup
-
-1. You need to setup properly your nvidia drivers and nvidia-docker in your host
-   machine.
-   ```sh
-    sudo ubuntu-drivers autoinstall
-    sudo apt-get install nvidia-docker2
-    sudo systemctl restart docker
-   ```
-2. Launch your own runner following your CI vendor instructions.
-
-<details>
-<summary>Github</summary>
-
-Repo settings -> Actions -> Add Runner button
-
-</details>
-
-<details>
-<summary>Gitlab</summary>
-
-Repo settings -> CI/CD -> Runners -> Specific Runners
-
-```sh
-# Gitlab self-hosted runner with cml and GPU
-gitlab-runner register \
-    --non-interactive \
-    --run-untagged="true" \
-    --locked="false" \
-    --access-level="not_protected" \
-    --executor "docker" \
-    --docker-runtime "nvidia" \
-    --docker-image "dvcorg/cml-gpu:latest" \
-    --url "https://gitlab.com/" \
-    --tag-list "cml" \
-    --registration-token "here_goes_your_gitlab_runner_token"
-
-gitlab-runner start
+```bash
+git checkout -b experiment
 ```
 
-</details>
+4. In your text editor of choice, edit line X of `train.py` to `depth = 5`. 
 
-3. Modify your CI pipeline / Workflow to setup your GPU in your DVC job.
+5. Commit and push the changes:
 
-<details>
-<summary>Github</summary>
+```bash
+git add . && git commit -m "modify forest depth"
+git push origin experiment
+```
+
+6. In GitHub, open up a Pull Request to compare the `experiment` branch to `master`.
+
+![](imgs/make_pr.png)
+
+Shortly, you should see a comment from `github-actions` appear in the Pull Request with your CML report. This is a result of the function `cml-send-comment` in your workflow.
+
+![](imgs/cml_first_report.png)
+
+This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/cml.yaml` file gets run and a report generated. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
+
+
+## Using CML with DVC
+In many ML projects, data isn't stored in a Git repository and needs to be downloaded from external sources. DVC is a common way to bring data to your CML runner. DVC also lets you visualize how metrics differ between commits to make reports like this:
+
+![](imgs/dvc_cml_long_report.png)
+
+The `.github/workflows/cml.yaml` file to create this report is:
 
 ```yaml
-# Github
-cml:
-  runs-on: [self-hosted]
-  container:
-    image: docker://dvcorg/cml-gpu:latest
-    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+name: train-test
+
+
+on: [push]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-py3:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cml_run
+        shell: bash
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Install requirements
+          pip install -r requirements.txt
+          
+          # Pull data & run-cache from S3 and reproduce pipeline
+          dvc pull data --run-cache
+          dvc repro
+          
+          # Report metrics
+          echo "## Metrics" >> report.md 
+          git fetch --prune --unshallow
+          dvc metrics diff master --show-md >> report.md
+          
+          # Publish confusion matrix diff
+          echo "## Plots<br />### Class confusions" >> report.md
+          dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
+          vl2png vega.json -s 1.5 | cml-publish --md --title 'my image' >> report.md
+          
+          # Publish regularization function diff
+          echo "### Effects of regularization\n" >> report.md
+          dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
+          vl2png vega.json -s 1.5 | cml-publish --md --title 'my 2nd image' >> report.md
+        
+          
+          cml-send-comment report.md 
+
 ```
 
-</details>
-   
-<details>
-<summary>Gitlab</summary>
-
-```yaml
-# Gitlab
-cml:
- tags:
-   - cml
- stage: cml_run
- image: dvcorg/cml-gpu:latest
-
- variables:
-   NVIDIA_VISIBLE_DEVICES: all
-   ...
-```
-
-</details>
-
-#### Pitfalls
-
-- "My runner says: Got permission denied while trying to connect to the Docker
-  daemon socket". You need to add your user to the docker group. Check your OS
-  configuration for further details. Recipe for ubuntu:
-
-```sh
-sudo groupadd docker
-sudo usermod -aG docker ${USER}
-su -s ${USER}
-```
-
-- "With Github runners I can't specify custom tags to reach different runners".
-  We know, It's a
-  [Github limitation](https://github.com/actions/runner/issues/262).
-
-- "I have followed all the steps and I could not make it work". Try to run
-  nvidia-smi in the `run` section in your workflow and see if gpu is available
-  to your docker container.
-  ![image](https://user-images.githubusercontent.com/414967/77680444-dac98a80-6f8b-11ea-89bf-66e653503934.png)
-
-## Working with DVC remotes
-
-DVC support different kinds of remote
-[storage](https://dvc.org/doc/command-reference/remote/add). To setup them
-properly you have to setup credentials (if needed) as Github
-[secrets](https://help.github.com/es/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)
-or Gitlab masked
-[enviroment variables](https://docs.gitlab.com/ee/ci/variables/README.html) to
-keep them secure. Additionally in Github you need to add them as env variables
-in the workflow file.
+If you're using DVC with cloud storage, take note of environmental variables for your storage format. 
 
 <details>
   <summary>
@@ -396,37 +278,87 @@ env:
 env:
   GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_CREDENTIALS_DATA }}
 ```
-
 </details>
 
-<details>
-  <summary>
-  SSH
-  </summary>
 
-> :warning: Not supported yet
+## Using self-hosted runners
+GitHub Actions are run on GitHub-hosted runners by default. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to train in the cloud.
 
-</details>
+☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
 
-<details>
-  <summary>
-  HDFS
-  </summary>
+### Allocating cloud resources with CML
+When a workflow requires computational resources, such as GPUs, CML can automatically allocate cloud instances. In the following example, we use [Docker Machine](https://docs.docker.com/machine/concepts/) to provision instances. We also prepared a docker GPU image that self-terminates when the job is done. 
 
-> :warning: Not supported yet
 
-</details>
+```yaml
+name: train-my-model
 
-<details>
-  <summary>
-  HTTP
-  </summary>
+on: [push]
 
-> :warning: Not supported yet
+jobs:
+  deploy-cloud-runner:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-cloud-runner
 
-</details>
+    steps:
+      - name: deploy
+        env:
+          repo_token: ${{ secrets.REPO_TOKEN }} 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "Deploying..."
 
-## Examples
+          MACHINE="CML-$(openssl rand -hex 12)"
+          docker-machine create \
+              --driver amazonec2 \
+              --amazonec2-instance-type t2.micro \
+              --amazonec2-region us-east-1 \
+              --amazonec2-zone f \
+              --amazonec2-vpc-id vpc-06bc773d85a0a04f7 \
+              --amazonec2-ssh-user ubuntu \
+              $MACHINE
 
-- [Tensorflow Mnist for Github Actions](https://github.com/iterative/cml/wiki/Tensorflow-Mnist-for-Github-Actions)
-- [Tensorflow Mnist for Gitlab CI](https://github.com/iterative/cml/wiki/Tensorflow-Mnist-for-Gitlab-CI)
+          eval "$(docker-machine env --shell sh $MACHINE)"
+
+          ( 
+          docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
+          docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
+
+          docker run --name runner -d \
+            -v /docker_machine/machine:/root/.docker/machine \
+            -e RUNNER_IDLE_TIMEOUT=120 \
+            -e DOCKER_MACHINE=${MACHINE} \
+            -e RUNNER_LABELS=cml \
+            -e repo_token=$repo_token \
+            -e RUNNER_REPO=https://github.com/iterative/cml_base_case \
+           dvcorg/cml-cloud-runner && \
+
+          sleep 20 && echo "Deployed $MACHINE"
+          ) || (echo y | docker-machine rm $MACHINE && exit 1)
+
+  train:
+    needs: deploy
+    runs-on: [self-hosted,cml]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cml_run
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }} 
+        run: |
+          pip install -r requirements.txt
+          python train.py
+        
+          cat metrics.txt >> report.md
+          cml-publish confusion_matrix.png --md >> report.md
+          cml-send-comment report.md
+
+```
+
+## A library of CML projects
+Here are some example projects using CML.
+- [Basic CML project](https://github.com/iterative/cml_base_case)
+- [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
+- [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
