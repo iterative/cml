@@ -1,6 +1,9 @@
 const util = require('util');
 const git = require('simple-git/promise');
-const { INPUT_SKIP } = require('./settings');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const PATH = require('path');
+const FileType = require('file-type');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -12,9 +15,41 @@ const exec = async (command, opts) => {
 
       if (error) reject(error);
 
-      resolve((stdout || stderr).trim());
+      resolve((stdout || stderr).slice(0, -1));
     });
   });
+};
+
+const upload = async opts => {
+  const { path, buffer } = opts;
+  const endpoint = 'https://asset.cml.dev';
+
+  let body;
+  let size;
+  let mime;
+  let filename;
+
+  if (path) {
+    body = fs.createReadStream(path);
+    ({ size } = await fs.promises.stat(path));
+    ({ mime } = await FileType.fromFile(path));
+    filename = PATH.basename(path);
+  } else {
+    body = buffer;
+    size = buffer.length;
+    ({ mime } = await FileType.fromBuffer(buffer));
+    filename = `file.${mime.split('/')[1]}`;
+  }
+
+  const headers = {
+    'Content-length': size,
+    'Content-Type': mime,
+    'Content-Disposition': `inline; filename="${filename}"`
+  };
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const uri = await response.text();
+
+  return { mime, size, uri };
 };
 
 const randid = () => {
@@ -28,15 +63,7 @@ const randid = () => {
   );
 };
 
-const getInputArray = (key, default_value) => {
-  if (process.env[key] === INPUT_SKIP) return process.env[key];
-
-  return process.env[key]
-    ? process.env[key].split(/[ ,]+/)
-    : default_value || [];
-};
-
 exports.exec = exec;
+exports.upload = upload;
 exports.randid = randid;
-exports.getInputArray = getInputArray;
 exports.git = git('./');

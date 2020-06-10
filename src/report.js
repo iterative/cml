@@ -1,17 +1,22 @@
 const json_2_mdtable = require('json-to-markdown-table2');
 const numeral = require('numeral');
 const _ = require('underscore');
-var showdown = require('showdown');
+const vega = require('vega');
+const vegalite = require('vega-lite');
 
-const { METRICS_FORMAT } = require('./settings');
+const { upload } = require('./utils');
+
+const METRICS_FORMAT = '0[.][0000000]';
 const MAX_CHARS = 65000;
+const MAX_CHARS_MESSAGE =
+  '\n:warning: Report excedeed the maximun amount of allowed chars';
 
 const metrics_format = () => {
   return this.METRICS_FORMAT;
 };
 
 const setup_env_vars = () => {
-  return 'Please [setup rev environment variable](https://github.com/iterative/dvc-cml#env-variables) accordingly';
+  return 'Please [setup rev environment variable](https://github.com/iterative/cml#env-variables) accordingly';
 };
 
 const no_tag_warning = () => {
@@ -38,6 +43,7 @@ const header_md = opts => {
 };
 
 const dvc_diff_report_md = (data, max_chars) => {
+  max_chars = max_chars || MAX_CHARS;
   if (!data || !Object.keys(data).length) return 'No metrics available';
 
   let summary = '';
@@ -49,17 +55,15 @@ const dvc_diff_report_md = (data, max_chars) => {
     { lbl: 'Deleted', files: deleted }
   ];
 
-  const warn =
-    '\n:warning: Report excedeed the maximun amount of allowed chars';
   sections.forEach(section => {
-    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n\n`;
-    summary += `#SECTION${section.lbl}#\n${warn}</details>\n`;
+    summary += `<details>\n<summary>${section.lbl}: ${section.files.length}</summary>\n`;
+    summary += `#SECTION${section.lbl}#${MAX_CHARS_MESSAGE}\n</details>\n`;
   });
 
   let count = summary.length;
 
   sections.forEach(section => {
-    section.summary = '';
+    section.summary = '\n';
 
     section.files.forEach(file => {
       const file_text = ` - ${file.path} \n`;
@@ -69,7 +73,7 @@ const dvc_diff_report_md = (data, max_chars) => {
     });
 
     summary = summary.replace(`#SECTION${section.lbl}#`, section.summary);
-    if (count < max_chars) summary = summary.replace(warn, '');
+    if (count < max_chars) summary = summary.replace(MAX_CHARS_MESSAGE, '');
   });
 
   return summary;
@@ -97,7 +101,7 @@ const dvc_metrics_diff_report_md = data => {
     }
   }
 
-  const summary = `\n${json_2_mdtable(values)}`;
+  const summary = `\n${json_2_mdtable(values)}\n\n`;
 
   return summary;
 };
@@ -146,40 +150,38 @@ const dvc_report_md = opts => {
   return summary;
 };
 
-const md_to_html = markdown => {
-  const converter = new showdown.Converter({ tables: true });
-  converter.setFlavor('github');
-  const html = converter.makeHtml(markdown);
+const publish_vega = async opts => {
+  const { data, md, title } = opts;
+  const is_vega_lite = data.$schema.includes('vega-lite');
+  const spec = is_vega_lite ? vegalite.compile(data).spec : data;
+  const view = new vega.View(vega.parse(spec), { renderer: 'none' });
 
-  return `
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
-		<title>DVC Report</title>
-		<link rel="stylesheet" href="report.css">
-		<style>
-			body {
-				box-sizing: border-box;
-				min-width: 200px;
-				max-width: 980px;
-				margin: 0 auto;
-				padding: 45px;
-			}
-		</style>
-	</head>
-	<body>
-      <div class="markdown-body" id="content">
-        ${html}
-      </div>
-  </body>
-</html>
-`;
+  const canvas = await view.toCanvas();
+
+  const buffer = canvas.toBuffer();
+  const output = await publish_file({ buffer, md, title });
+
+  return output;
+};
+
+const publish_file = async opts => {
+  const { md = false, title = '' } = opts;
+  const { mime, uri } = await upload({ ...opts });
+
+  if (md && mime.startsWith('image/'))
+    return `![](${uri}${title ? ` "${title}"` : ''})`;
+  if (md) return `[${title}](${uri})`;
+
+  return uri;
 };
 
 exports.METRICS_FORMAT = METRICS_FORMAT;
+exports.MAX_CHARS = MAX_CHARS;
+exports.MAX_CHARS_MESSAGE = MAX_CHARS_MESSAGE;
 exports.dvc_report_md = dvc_report_md;
-exports.md_to_html = md_to_html;
 exports.no_tag_warning = no_tag_warning;
 exports.same_warning = same_warning;
+exports.dvc_metrics_diff_report_md = dvc_metrics_diff_report_md;
+exports.dvc_diff_report_md = dvc_diff_report_md;
+exports.publish_vega = publish_vega;
+exports.publish_file = publish_file;

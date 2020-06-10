@@ -1,9 +1,9 @@
 {
-  "name": "dvc-action",
-  "version": "0.1.0",
+  "name": "@dvcorg/cml",
+  "version": "0.1.9",
   "author": {
-    "name": "Iterative Inc",
-    "url": "http://iterative.ai"
+    "name": "DVC",
+    "url": "http://dvc.org"
   },
   "license": "Apache-2.0",
   "licenses": [
@@ -14,45 +14,49 @@
   ],
   "main": "index.js",
   "bin": {
-    "dvcreport": "./bin/dvcreport.js",
-    "dvc_action_run": "./bin/dvc-cml-run.js",
-    "dvc_cml_run": "./bin/dvc-cml-run.js"
+    "cml-metrics": "./bin/cml-metrics.js",
+    "cml-files": "./bin/cml-files.js",
+    "cml-send-comment": "./bin/cml-send-comment.js",
+    "cml-send-github-check": "./bin/cml-send-github-check.js",
+    "cml-publish": "./bin/cml-publish.js",
+    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
+    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
     "lint": "eslint ./",
-    "build": "ncc build index.js -o dist -m",
     "test": "jest --passWithNoTests",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run build && git add dist/index.js"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
     "*.js": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ],
     "*.md": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "dependencies": {
     "@actions/core": "^1.2.0",
-    "@actions/github": "^2.0.0",
+    "@actions/github": "^2.2.0",
+    "canvas": "^2.6.1",
+    "file-type": "^14.2.0",
     "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
     "numeral": "^2.0.6",
-    "showdown": "^1.9.1",
     "simple-git": "^1.131.0",
     "underscore": "^1.9.2",
+    "vega": "^5.9.0",
+    "vega-cli": "^5.11.1",
+    "vega-lite": "^4.0.2",
     "yargs": "^15.1.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "^0.20.5",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-standard": "^14.1.0",

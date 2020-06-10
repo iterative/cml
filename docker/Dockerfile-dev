@@ -1,4 +1,4 @@
-FROM dvcorg/dvc-cml-py3:latest
+FROM dvcorg/cml-py3:latest
 
 LABEL maintainer="dvc.org"
 

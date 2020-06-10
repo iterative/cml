@@ -1,11 +1,9 @@
-const { exec } = require('./utils');
-
-const CI = require('./ci');
 const core = require('@actions/core');
 const github = require('@actions/github');
+const { request } = require('@octokit/request');
 
 const {
-  GITHUB_REPOSITORY,
+  GITHUB_REPOSITORY = '',
   GITHUB_JOB,
   GITHUB_HEAD_REF,
   GITHUB_REF,
@@ -27,37 +25,12 @@ const REMOTE = `https://${owner}:${TOKEN}@github.com/${owner}/${repo}.git`;
 
 const octokit = new github.GitHub(TOKEN);
 
-const create_check_dvc_report = async opts => {
-  const {
-    head_sha,
-    report,
-    started_at = new Date(),
-    completed_at = new Date(),
-    conclusion = 'success',
-    status = 'completed'
-  } = opts;
-
-  const title = CI.DVC_TITLE;
-  const name = title;
-  const check = await octokit.checks.create({
-    owner,
-    repo,
-    head_sha,
-    name,
-    started_at,
-    completed_at,
-    conclusion,
-    status,
-    output: { title, summary: report }
-  });
-
-  return check;
-};
+const CHECK_TITLE = 'CML Report';
 
 const ref_parser = async ref => {
   const checks = await octokit.checks.listForRef({ owner, repo, ref });
   const check = checks.data.check_runs.filter(
-    check => check.name === CI.DVC_TITLE
+    check => check.name === CHECK_TITLE
   )[0];
 
   if (check) return { label: ref.substr(0, 7), link: check.html_url };
@@ -76,18 +49,65 @@ const check_ran_ref = async opts => {
   );
 };
 
-const git_fetch_all = async () => {
-  await exec('git fetch --prune --unshallow');
+const create_check_report = async opts => {
+  const {
+    head_sha,
+    report,
+    title = CHECK_TITLE,
+    started_at = new Date(),
+    completed_at = new Date(),
+    conclusion = 'success',
+    status = 'completed'
+  } = opts;
+
+  const name = title;
+  const check = await octokit.checks.create({
+    owner,
+    repo,
+    head_sha,
+    name,
+    started_at,
+    completed_at,
+    conclusion,
+    status,
+    output: { title, summary: report }
+  });
+
+  return check;
 };
 
-const publish_report = async opts => {
-  await create_check_dvc_report(opts);
+const comment = async opts => {
+  const { head_sha, report } = opts;
+
+  await request(
+    `POST /repos/${GITHUB_REPOSITORY}/commits/${head_sha}/comments`,
+    {
+      headers: { authorization: `token ${TOKEN}` },
+      body: report
+    }
+  );
+};
+
+const get_runner_token = async () => {
+  const {
+    data: { token }
+  } = await octokit.actions.createRegistrationToken({
+    owner,
+    repo
+  });
+
+  return token;
+};
+
+const register_runner = async opts => {
+  throw new Error('not yet implemented');
 };
 
 const handle_error = e => {
   core.setFailed(e.message);
 };
 
+exports.CHECK_TITLE = CHECK_TITLE;
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha = HEAD_SHA;
@@ -96,6 +116,8 @@ exports.user_name = USER_NAME;
 exports.remote = REMOTE;
 exports.ref_parser = ref_parser;
 exports.check_ran_ref = check_ran_ref;
-exports.git_fetch_all = git_fetch_all;
-exports.publish_report = publish_report;
+exports.create_check_report = create_check_report;
+exports.comment = comment;
+exports.get_runner_token = get_runner_token;
+exports.register_runner = register_runner;
 exports.handle_error = handle_error;

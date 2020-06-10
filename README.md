@@ -32,7 +32,7 @@ The key file in any CML project is `.github/workflows/cml.yaml`.
 ```yaml
 name: your-workflow-name
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   run:
@@ -40,10 +40,12 @@ jobs:
     container: docker://dvcorg/cml:latest
     steps:
       - uses: actions/checkout@v2
+
       - name: cml_run
       env:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
       run: |
+
         
         # Your ML workflow goes here
         python train.py
@@ -65,9 +67,11 @@ CML provides a number of helper functions to help package outputs from ML workfl
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
 
+
 📝  **Text**. Write to your report using whatever method you prefer. For example, copy the contents of a text file containing the results of ML model training:
 ```
 cat results.txt >> report.md 
+
 ```
 🖼️  **Images** Display images using the markdown or HTML. Note that if an image is an output of your ML workflow (i.e., it is produced by your workflow), you will need to use the `cml-publish` function to include it a CML report. For example, if `graph.png` is the output of my workflow `python train.py`, run:
 
@@ -81,6 +85,7 @@ cml-publish graph.png --md >> report.md
 
 ![](imgs/fork_project.png)
 
+
 The following steps can all be done in the GitHub browser interface. However, to follow along the commands, we recommend cloning your fork to your local workstation:
 
 ```bash
@@ -88,6 +93,7 @@ git clone https://github.com/<your-username>/example_cml
 ```
 
 2. To create a CML workflow, copy the following into a new file, `.github/workflows/cml.yaml`:
+
 
 ```yaml
 name: model-training
@@ -112,7 +118,7 @@ jobs:
           cml-send-comment report.md
 ```
 
-3. Now we're going to modify the model training code.  Let's make a new branch for experimenting. In your local workspace:
+
 
 ```bash
 git checkout -b experiment
@@ -135,7 +141,6 @@ Shortly, you should see a comment from `github-actions` appear in the Pull Reque
 
 ![](imgs/cml_first_report.png)
 
-
 This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/cml.yaml` file gets run and a report generated. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
 
 
@@ -148,6 +153,7 @@ The `.github/workflows/cml.yaml` file to create this report is:
 
 ```yaml
 name: train-test
+
 
 on: [push]
 
@@ -350,7 +356,6 @@ jobs:
           cml-send-comment report.md
 
 ```
-
 
 ## A library of CML projects
 Here are some example projects using CML.

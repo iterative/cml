@@ -1,0 +1,161 @@
+name: "Publish CML dockers"
+
+on: [push, pull_request]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+  
+jobs:
+  test_and_deploy:
+    runs-on: [ubuntu-latest]
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: "npm ci"
+      run: npm ci
+
+    - name: "lint"
+      run: npm run lint
+
+    - name: "tests"
+      run: |
+        sudo apt-get update && sudo apt-get install -y python3-pip
+        sudo update-alternatives --install /usr/bin/python python $(which python3) 10
+        sudo pip install --upgrade pip
+        sudo pip install --upgrade setuptools
+        sudo pip install tensorboard
+        pip --version
+
+        npm run test
+
+    - name: Publish CML docker image
+      # only publish if push to master (dvcorg/cml:latest) 
+      # or create a tag in the repo (dvcorg/cml:tag)
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/cml
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish cml-py3 docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/cml-py3
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-py3
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish cml-dev docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/cml-dev
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-dev
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish cml-gpu docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/cml-gpu
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-gpu
+        context: ./
+        cache: true
+        tag_names: true
+
+    - name: Publish cml-gpu-py3 docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dvcorg/cml-gpu-py3
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-gpu-py3
+        context: ./
+        cache: true
+        tag_names: true
+
+
+    - name: Publish CML cloud runner docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        DOCKER_FROM: cml
+      with:
+        name: dvcorg/cml-cloud-runner
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-cloud-runner
+        context: ./
+        cache: true
+        tag_names: true
+        buildargs: DOCKER_FROM
+
+    - name: Publish cml-py3 cloud runner docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        DOCKER_FROM: cml-py3
+      with:
+        name: dvcorg/cml-py3-cloud-runner
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-cloud-runner
+        context: ./
+        cache: true
+        tag_names: true
+        buildargs: DOCKER_FROM
+
+    - name: Publish cml-gpu cloud runner docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        DOCKER_FROM: cml-gpu
+      with:
+        name: dvcorg/cml-gpu-cloud-runner
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-cloud-runner
+        context: ./
+        cache: true
+        tag_names: true
+        buildargs: DOCKER_FROM
+
+    - name: Publish cml-gpu-py3 cloud runner docker image
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        DOCKER_FROM: cml-gpu-py3
+      with:
+        name: dvcorg/cml-gpu-py3-cloud-runner
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        dockerfile: ./docker/Dockerfile-cloud-runner
+        context: ./
+        cache: true
+        tag_names: true
+        buildargs: DOCKER_FROM
+
+    - name: Publish to NPM
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      run: |
+        npm config set //registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN
+        npm publish
+      env:
+        NPM_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
