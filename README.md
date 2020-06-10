@@ -133,7 +133,7 @@ git push origin experiment
 
 Shortly, you should see a comment from `github-actions` appear in the Pull Request with your CML report. This is a result of the function `cml-send-comment` in your workflow.
 
-![](imgs/pr_comment.png)
+![](imgs/cml_first_report.png)
 
 
 This is the gist of the CML workflow: when you push changes to your GitHub repository, the workflow in your `.github/workflows/cml.yaml` file gets run and a report generated. CML functions let you display relevant results from the workflow, like model performance metrics and vizualizations, in GitHub checks and comments. What kind of workflow you want to run, and want to put in your CML report, is up to you. 
@@ -142,10 +142,7 @@ This is the gist of the CML workflow: when you push changes to your GitHub repos
 ## Using CML with DVC
 In many ML projects, data isn't stored in a Git repository and needs to be downloaded from external sources. DVC is a common way to bring data to your CML runner. DVC also lets you visualize how metrics differ between commits to make reports like this:
 
-<p align="center">
-  <img src="imgs/dvc_cml_long_report.png" width=600>
-</p>
-
+![](imgs/dvc_cml_long_report.png)
 
 If you're using DVC with cloud storage, take note of environmental variables for your storage format. 
 
