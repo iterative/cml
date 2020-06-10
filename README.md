@@ -144,6 +144,55 @@ In many ML projects, data isn't stored in a Git repository and needs to be downl
 
 ![](imgs/dvc_cml_long_report.png)
 
+The `.github/workflows/cml.yaml` file to create this report is:
+
+```yaml
+name: train-test
+
+on: [push]
+
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-py3:latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cml_run
+        shell: bash
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          # Install requirements
+          pip install -r requirements.txt
+          
+          # Pull data & run-cache from S3 and reproduce pipeline
+          dvc pull data --run-cache
+          dvc repro
+          
+          # Report metrics
+          echo "## Metrics" >> report.md 
+          git fetch --prune --unshallow
+          dvc metrics diff master --show-md >> report.md
+          
+          # Publish confusion matrix diff
+          echo "## Plots<br />### Class confusions" >> report.md
+          dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
+          vl2png vega.json -s 1.5 | cml-publish --md --title 'my image' >> report.md
+          
+          # Publish regularization function diff
+          echo "### Effects of regularization\n" >> report.md
+          dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
+          vl2png vega.json -s 1.5 | cml-publish --md --title 'my 2nd image' >> report.md
+        
+          
+          cml-send-comment report.md 
+
+```
+
 If you're using DVC with cloud storage, take note of environmental variables for your storage format. 
 
 <details>
@@ -225,72 +274,86 @@ env:
 ```
 </details>
 
-### Using DVC metrics to compare commits
-Another benefit of DVC is the ability to compare performance metrics across project versions within a CML report. For example, to compare the current project state on a feature branch with master: 
-
-```
-git fetch --prune --unshallow
-BASELINE=master
-
-dvc metrics diff --show-md "$BASELINE" >> report.md
-dvc diff --show-json "$BASELINE" | cml-files >> report.md
-```
-
-Below is an example of a `dvc metrics diff` table in a CML report showing three metrics: precision, recall, and accuracy on a classification problem.
-
-![](imgs/dvc_metric.png)
-
-Similarly, `dvc plots diff` can be used to generate metrics vizualizations comparing the current version with another:
-
-```
-git fetch --prune --unshallow
-dvc plots diff --target loss.csv --show-vega master | cml-publish --md >> report.md
-```
-
-Here's how a sample `dvc plots diff` would appear in a CML report:
-
-<img src="imgs/dvc_diff.png" width="300">
-
-
-### The DVC run-cache
-DVC 1.0 uses a run-cache to avoid duplicating computations if a pipeline stage has already been run. In CI/CD, run-cache also removes the need to commit to save the results of a workflow (such as a trained model file).
-
-Run-cache is accessed and written to locally, so to take advantage of it in CML, you'll need to `dvc push` the cache from your workspace,`dvc pull` to the runner before reproducing your pipeline, and then `dvc push` the cache after. 
-
-```
-dvc pull --run-cache
-dvc repro
-dvc push --run-cache
-          
-   ```
 
 ## Using self-hosted runners
 GitHub Actions are run on GitHub-hosted runners by default. However, there are many great reasons to use your own runners- to take advantage of GPUs, to orchestrate your team's shared computing resources, or to train in the cloud.
 
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
 
-### CML with GPUs
-We've provided a docker image that supports most modern GPUs. To use it, modify your `.yaml` file, modify the `runs-on` field as follows:
+### Allocating cloud resources with CML
+When a workflow requires computational resources, such as GPUs, CML can automatically allocate cloud instances. In the following example, we use [Docker Machine](https://docs.docker.com/machine/concepts/) to provision instances. We also prepared a docker GPU image that self-terminates when the job is done. 
+
 
 ```yaml
-runs-on: [self-hosted]
-  container:
-    image: docker://dvcorg/cml-gpu:latest
-    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+name: train-my-model
+
+on: [push]
+
+jobs:
+  deploy-cloud-runner:
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml-cloud-runner
+
+    steps:
+      - name: deploy
+        env:
+          repo_token: ${{ secrets.REPO_TOKEN }} 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "Deploying..."
+
+          MACHINE="CML-$(openssl rand -hex 12)"
+          docker-machine create \
+              --driver amazonec2 \
+              --amazonec2-instance-type t2.micro \
+              --amazonec2-region us-east-1 \
+              --amazonec2-zone f \
+              --amazonec2-vpc-id vpc-06bc773d85a0a04f7 \
+              --amazonec2-ssh-user ubuntu \
+              $MACHINE
+
+          eval "$(docker-machine env --shell sh $MACHINE)"
+
+          ( 
+          docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
+          docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
+
+          docker run --name runner -d \
+            -v /docker_machine/machine:/root/.docker/machine \
+            -e RUNNER_IDLE_TIMEOUT=120 \
+            -e DOCKER_MACHINE=${MACHINE} \
+            -e RUNNER_LABELS=cml \
+            -e repo_token=$repo_token \
+            -e RUNNER_REPO=https://github.com/iterative/cml_base_case \
+           dvcorg/cml-cloud-runner && \
+
+          sleep 20 && echo "Deployed $MACHINE"
+          ) || (echo y | docker-machine rm $MACHINE && exit 1)
+
+  train:
+    needs: deploy
+    runs-on: [self-hosted,cml]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cml_run
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }} 
+        run: |
+          pip install -r requirements.txt
+          python train.py
+        
+          cat metrics.txt >> report.md
+          cml-publish confusion_matrix.png --md >> report.md
+          cml-send-comment report.md
 
 ```
-
-The image runs Ubutnu 18.04 and supports cuda 10.1, libcudnn 7, cublas 10, and libinfer 10. Please also be sure to have nvidia drivers and nvidia-docker installed on your self-hosted runner:
-
-```bash
-sudo ubuntu-drivers autoinstall
-sudo apt-get install nvidia-docker2
-sudo systemctl restart docker
-```
-
 
 
 ## A library of CML projects
 Here are some example projects using CML.
-- [Using CML with DVC](https://github.com/andronovhopf/prettypretty)
-- [Making a tensorboard CML report](https://github.com/andronovhopf/3_tensorboard)
+- [Basic CML project](https://github.com/iterative/cml_base_case)
+- [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
+- [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
