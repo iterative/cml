@@ -287,7 +287,7 @@ GitHub Actions are run on GitHub-hosted runners by default. However, there are m
 ☝️ **Tip!** Check out the [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) to get started setting up your self-hosted runner.
 
 ### Allocating cloud resources with CML
-When a workflow requires computational resources, such as GPUs, CML can automatically allocate cloud instances. In the following example, we use [Docker Machine](https://docs.docker.com/machine/concepts/) to provision instances. We also prepared a docker GPU image that self-terminates when the job is done. 
+When a workflow requires computational resources, such as GPUs, CML can automatically allocate cloud instances. For example, the following workflow deploys a t2.micro instance on AWS EC2 and trains a model on the instance. After the instance is idle for 120 seconds, it automatically shuts down. 
 
 
 ```yaml
@@ -332,7 +332,7 @@ jobs:
             -e RUNNER_LABELS=cml \
             -e repo_token=$repo_token \
             -e RUNNER_REPO=https://github.com/iterative/cml_base_case \
-           dvcorg/cml-cloud-runner && \
+           dvcorg/cml-py3-cloud-runner && \
 
           sleep 20 && echo "Deployed $MACHINE"
           ) || (echo y | docker-machine rm $MACHINE && exit 1)
@@ -356,6 +356,19 @@ jobs:
           cml-send-comment report.md
 
 ```
+## Inputs
+You will need to [create a new personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line), `REPO_TOKEN`, with repository read/write access. `REPO_TOKEN` must be added as a secret in your project repository.
+
+Note that you will also need to provide access credentials for your cloud compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
+
+## Provisioning cloud compute
+In the above example, we use [Docker Machine](https://docs.docker.com/machine/concepts/) to provision instances. Please see their documentation for further details. 
+
+Note several CML-specific arguments to `docker run`:
+- `repo_token` should be set to your repository's personal access token
+- `RUNNER_REPO` should be set to the URL of your project repository
+- The docker container should be given as `dvcorg/cml-cloud-runner`, `dvcorg/cml-py3-cloud-runner`, `dvc/org/cml-gpu-cloud-runner`, or `dvcorg/cml-gpu-pye3-cloud-runner`
+
 
 ## A library of CML projects
 Here are some example projects using CML.
