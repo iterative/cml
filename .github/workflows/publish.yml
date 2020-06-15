@@ -71,12 +71,12 @@ jobs:
         buildargs: DOCKER_FROM
 
     - name: Publish cml-gpu-py3 docker image
-      #if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
+      if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
       env:
         DOCKER_FROM: cml-gpu
       with:
-        name: dvcorg/cml-gpu-py3-dev
+        name: dvcorg/cml-gpu-py3
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-py3
