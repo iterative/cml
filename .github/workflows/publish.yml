@@ -73,9 +73,9 @@ jobs:
     - name: Publish cml-gpu-py3 docker image
       #if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
       uses: elgohr/Publish-Docker-Github-Action@master
+      env:
+        DOCKER_FROM: cml-gput
       with:
-        env:
-          DOCKER_FROM: cml-gput
         name: dvcorg/cml-gpu-py3
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
