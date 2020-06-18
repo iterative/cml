@@ -61,7 +61,7 @@ jobs:
       env:
         DOCKER_FROM: cml
       with:
-        name: dvcorg/cml-py4
+        name: dvcorg/cml-py3
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
         dockerfile: ./docker/Dockerfile-py3
