@@ -92,7 +92,7 @@ const register_runner = async opts => {
 };
 
 const handle_error = e => {
-  console.log(e.message);
+  console.error(e.message);
   process.exit(1);
 };
 

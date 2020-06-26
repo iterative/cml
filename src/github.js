@@ -1,4 +1,3 @@
-const core = require('@actions/core');
 const github = require('@actions/github');
 const { request } = require('@octokit/request');
 
@@ -104,7 +103,8 @@ const register_runner = async opts => {
 };
 
 const handle_error = e => {
-  core.setFailed(e.message);
+  console.error(e.message);
+  process.exit(1);
 };
 
 exports.CHECK_TITLE = CHECK_TITLE;
