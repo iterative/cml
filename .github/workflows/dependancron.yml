@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: "Check dependencies"
       run: |
-        apt update && apt -y install dvc
+        sudo apt update && sudo apt -y install dvc
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
         if [ CML_VER == DVC_VER ]
