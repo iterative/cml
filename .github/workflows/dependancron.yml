@@ -20,7 +20,7 @@ jobs:
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
         UPDATE=false
-        if [ $CML_VER == $DVC_VER ]; then
+        if [ $CML_VER != $DVC_VER ]; then
           UPDATE=true
         fi
 
@@ -28,8 +28,9 @@ jobs:
         #echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
     - name: depe
+      if: steps.check.outputs.update == 'false'
       run: |
-        echo ${{ steps.check.outputs.update }}
+        echo steps.check.outputs.comment
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
