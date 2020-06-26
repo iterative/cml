@@ -22,11 +22,11 @@ jobs:
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
         UPDATE=false
-        MESSAGE=Updating DVC from $CML_VER to $DVC_VER
+        MESSAGE="Updating DVC from $CML_VER to $DVC_VER"
         if [ $CML_VER != $DVC_VER ]; then
           UPDATE=true
 
-          echo $DVC_VER > .dependancron
+          echo "$DVC_VER" > .dependancron
         fi
 
         echo "::set-output name=update::${UPDATE}"
