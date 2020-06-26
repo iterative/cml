@@ -18,12 +18,15 @@ jobs:
         sudo apt update && sudo apt -y install dvc
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
-        if [ $CML_VER == $DVC_VER ]
-          then exit 1
-        fi
 
-        echo "##[set-output name=message;]Updating DVC from $(CML_VER) to $(DVC_VER)"
+        echo "::set-output name=update::$([ $CML_VER == $DVC_VER ])"
+        echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
+    - name: depe
+      if: ${{ github.event_name == 'pull_request' && github.event.action == 'unassigned' }}
+      run: |
+        printenv
+        
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
     #   with:
