@@ -25,7 +25,7 @@ jobs:
         fi
 
         echo "::set-output name=update::${UPDATE}"
-        #echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
+        echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
     - name: depe
       if: steps.check.outputs.update == 'false'
