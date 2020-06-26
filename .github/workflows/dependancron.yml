@@ -20,12 +20,14 @@ jobs:
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
 
+        echo "::set-output name=step::one"
         echo "::set-output name=run::$([ $CML_VER == $DVC_VER ])"
         #echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
     - name: depe
       run: |
-        echo ${{steps.check.outputs.run}}
+        echo ${{ steps.check.outputs.one }}
+        echo ${{ steps.check.outputs.run }}
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
