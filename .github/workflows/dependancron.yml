@@ -30,6 +30,7 @@ jobs:
     - name: depe
       if: steps.check.outputs.update == 'false'
       run: |
+        echo ${{ steps.check.outputs.update }}
         echo ${{ steps.check.outputs.comment }}
 
     # - name: Create Pull Request
