@@ -27,16 +27,11 @@ jobs:
         echo "::set-output name=update::${UPDATE}"
         echo "::set-output name=comment::Updating DVC from $CML_VER to $DVC_VER"
 
-    - name: depe
+    - name: Create Pull Request
       if: steps.check.outputs.update == 'false'
-      run: |
-        echo ${{ steps.check.outputs.update }}
-        echo ${{ steps.check.outputs.comment }}
-
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@v2
-    #   with:
-    #     title: 'chore: dependancron update dependencies'
-    #     body: ''
+      uses: peter-evans/create-pull-request@v2
+      with:
+        title: 'chore: dependancron update dependencies'
+        body: ${{ steps.check.outputs.comment }}
 
     
