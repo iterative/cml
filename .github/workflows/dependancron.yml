@@ -12,6 +12,8 @@ jobs:
     runs-on: [ubuntu-latest]
     
     steps:
+    - uses: actions/checkout@v2
+    
     - name: "Check dependencies"
       id: check
       run: |
@@ -20,12 +22,15 @@ jobs:
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
         UPDATE=false
+        MESSAGE=Updating DVC from $CML_VER to $DVC_VER
         if [ $CML_VER != $DVC_VER ]; then
           UPDATE=true
+
+          echo $DVC_VER > .dependancron
         fi
 
         echo "::set-output name=update::${UPDATE}"
-        echo "::set-output name=comment::Updating DVC from $CML_VER to $DVC_VER"
+        echo "::set-output name=comment::${MESSAGE}"
 
     - name: Create Pull Request
       if: steps.check.outputs.update == 'false'
