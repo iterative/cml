@@ -13,19 +13,19 @@ jobs:
     
     steps:
     - name: "Check dependencies"
+      id: check
       run: |
         sudo wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
         sudo apt update && sudo apt -y install dvc
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
 
-        #echo "::set-output name=update::$([ $CML_VER == $DVC_VER ])"
+        echo "::set-output name=run::$([ $CML_VER == $DVC_VER ])"
         #echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
-        echo "::set-output name=action_fruit::strawberry"
 
     - name: depe
       run: |
-        printenv
+        echo ${{steps.check.outputs.run}}
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
