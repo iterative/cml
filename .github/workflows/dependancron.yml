@@ -14,6 +14,7 @@ jobs:
     steps:
     - name: "Check dependencies"
       run: |
+        wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
         sudo apt update && sudo apt -y install dvc
         CML_VER=$(docker run davidgortega/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
