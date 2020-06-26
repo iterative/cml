@@ -23,10 +23,9 @@ jobs:
         echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
     - name: depe
-      if: ${{ github.event_name == 'pull_request' && github.event.action == 'unassigned' }}
       run: |
         printenv
-        
+
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
     #   with:
