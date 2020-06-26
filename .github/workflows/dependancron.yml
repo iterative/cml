@@ -30,7 +30,7 @@ jobs:
     - name: depe
       if: steps.check.outputs.update == 'false'
       run: |
-        echo steps.check.outputs.comment
+        echo ${{ steps.check.outputs.comment }}
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v2
