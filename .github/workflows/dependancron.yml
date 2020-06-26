@@ -26,7 +26,7 @@ jobs:
 
     - name: depe
       run: |
-        echo ${{ steps.check.outputs.one }}
+        echo ${{ steps.check.outputs.step }}
         echo ${{ steps.check.outputs.run }}
 
     # - name: Create Pull Request
