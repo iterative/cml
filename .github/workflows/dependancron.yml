@@ -20,7 +20,7 @@ jobs:
         DVC_VER=$(dvc --version)
 
         echo "::set-output name=update::$([ $CML_VER == $DVC_VER ])"
-        echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
+        #echo "::set-output name=comment::Updating DVC from $(CML_VER) to $(DVC_VER)"
 
     - name: depe
       run: |
