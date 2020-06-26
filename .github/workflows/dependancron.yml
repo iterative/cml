@@ -8,7 +8,7 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
   
 jobs:
-  test_and_deploy:
+  dependancron:
     runs-on: [ubuntu-latest]
     
     steps:
