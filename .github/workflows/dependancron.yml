@@ -23,9 +23,8 @@ jobs:
         DVC_VER=$(dvc --version)
         UPDATE=false
         MESSAGE="Updating DVC from $CML_VER to $DVC_VER"
-        if [ $CML_VER != $DVC_VER ]; then
+        if [ $CML_VER == $DVC_VER ]; then
           UPDATE=true
-
           echo "$DVC_VER" > .dependancron
         fi
 
@@ -33,10 +32,9 @@ jobs:
         echo "::set-output name=comment::${MESSAGE}"
 
     - name: Create Pull Request
-      if: steps.check.outputs.update == 'false'
+      if: steps.check.outputs.update == 'true'
       uses: peter-evans/create-pull-request@v2
       with:
         title: 'chore: dependancron update dependencies'
         body: ${{ steps.check.outputs.comment }}
-
     
