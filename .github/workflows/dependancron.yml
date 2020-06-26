@@ -1,0 +1,32 @@
+name: "Update dependencies"
+
+on: [push]
+  # schedule:
+  #   - cron: 0 0 * * *
+ 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+  
+jobs:
+  test_and_deploy:
+    runs-on: [ubuntu-latest]
+    
+    steps:
+    - name: "Check dependencies"
+      run: |
+        apt update && apt -y install dvc
+        CML_VER=$(docker run davidgortega/cml:latest dvc --version)
+        DVC_VER=$(dvc --version)
+        if [ CML_VER == DVC_VER ]
+          return 1
+        fi
+
+        echo "##[set-output name=message;]Updating DVC from $(CML_VER) to $(DVC_VER)"
+
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v2
+    #   with:
+    #     title: 'chore: dependancron update dependencies'
+    #     body: ''
+
+    
