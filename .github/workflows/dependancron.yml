@@ -37,4 +37,3 @@ jobs:
       with:
         title: 'chore: dependancron update dependencies'
         body: ${{ steps.check.outputs.comment }}
-    
