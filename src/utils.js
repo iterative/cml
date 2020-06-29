@@ -1,5 +1,4 @@
 const util = require('util');
-const git = require('simple-git/promise');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
@@ -66,4 +65,3 @@ const randid = () => {
 exports.exec = exec;
 exports.upload = upload;
 exports.randid = randid;
-exports.git = git('./');
