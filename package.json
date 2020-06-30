@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "author": {
     "name": "DVC",
     "url": "http://dvc.org"
@@ -14,10 +14,8 @@
   ],
   "main": "index.js",
   "bin": {
-    "cml-metrics": "./bin/cml-metrics.js",
-    "cml-files": "./bin/cml-files.js",
-    "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-send-github-check": "./bin/cml-send-github-check.js",
+    "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-publish": "./bin/cml-publish.js",
     "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
     "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
@@ -45,11 +43,7 @@
     "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
-    "json-to-markdown-table2": "^1.0.1",
     "node-fetch": "^2.6.0",
-    "numeral": "^2.0.6",
-    "simple-git": "^1.131.0",
-    "underscore": "^1.9.2",
     "vega": "^5.9.0",
     "vega-cli": "^5.11.1",
     "vega-lite": "^4.0.2",
