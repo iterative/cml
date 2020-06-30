@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "author": {
     "name": "DVC",
     "url": "http://dvc.org"
@@ -42,7 +42,6 @@
     ]
   },
   "dependencies": {
-    "@actions/core": "^1.2.0",
     "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
