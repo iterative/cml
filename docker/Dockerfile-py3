@@ -1,4 +1,6 @@
-FROM dvcorg/cml:latest
+ARG DOCKER_FROM=cml
+
+FROM dvcorg/${DOCKER_FROM}:latest as base
 
 LABEL maintainer="dvc.org"
 
