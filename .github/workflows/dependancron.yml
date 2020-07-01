@@ -2,7 +2,8 @@ name: "Update dependencies"
 
 on:
   schedule:
-    - cron: 0 0 * * *
+    # runs every six hours 
+    - cron: 0 */6 * * *
  
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
@@ -19,7 +20,7 @@ jobs:
       run: |
         sudo wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
         sudo apt update && sudo apt -y install dvc
-        CML_VER=$(docker run davidgortega/cml:latest dvc --version)
+        CML_VER=$(docker run dvcorg/cml:latest dvc --version)
         DVC_VER=$(dvc --version)
         UPDATE=false
         MESSAGE="Updating DVC from $CML_VER to $DVC_VER"
