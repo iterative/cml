@@ -59,7 +59,7 @@ const run = async opts => {
       output += data.toString('utf8');
 
       const uri_index = output.indexOf('https://', 0);
-      if (uri_index) {
+      if (uri_index > -1) {
         output = output.substring(uri_index, output.length - 1);
 
         if (md) output = `[${title || name}](${output})`;
@@ -72,6 +72,11 @@ const run = async opts => {
     }
   });
   proc.unref();
+
+  setTimeout(() => {
+    // waits 1 min before dies
+    throw new Error('Tensorboard took too long! Canceled.');
+  }, 60000);
 };
 
 const argv = yargs
