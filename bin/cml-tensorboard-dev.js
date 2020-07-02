@@ -40,7 +40,6 @@ const run = async opts => {
     ? `--name "${name}" --description "${description}"`
     : '';
   const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
-  console.log(command);
 
   const proc = spawn(command, {
     detached: true,
@@ -71,12 +70,18 @@ const run = async opts => {
       }
     }
   });
+
+  proc.on('exit', code => {
+    console.error(output);
+    throw new Error(`Tensorboard process exited with code ${code}`);
+  });
+
   proc.unref();
 
   setTimeout(() => {
     // waits 1 min before dies
     throw new Error('Tensorboard took too long! Canceled.');
-  }, 5 * 60 * 1000);
+  }, 1 * 60 * 1000);
 };
 
 const argv = yargs
