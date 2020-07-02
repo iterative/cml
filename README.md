@@ -25,7 +25,9 @@ We built CML with these principles in mind:
 
 ## Usage
 You'll need a GitHub or GitLab account to begin. Users may wish to familiarize themselves with 
-[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. Please see our documentation for details about configuring CML with GitLab [LINK]. 
+[Github Actions](https://help.github.com/en/actions) or [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/). Here, will discuss the GitHub use case. 
+
+⚠️ **GitLab users! Please see our [docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab)**⚠️
 
 The key file in any CML project is `.github/workflows/cml.yaml`.
 
