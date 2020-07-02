@@ -76,7 +76,7 @@ const run = async opts => {
   setTimeout(() => {
     // waits 1 min before dies
     throw new Error('Tensorboard took too long! Canceled.');
-  }, 60000);
+  }, 2 * 60 * 1000);
 };
 
 const argv = yargs
