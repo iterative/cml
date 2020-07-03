@@ -22,6 +22,7 @@ We built CML with these principles in mind:
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
+_⁉️ Need help? Just want to chat about continuous integration for ML? [Visit our Discord channel!](https://discord.gg/bzA6uY7)_
 
 ## Usage
 You'll need a GitHub or GitLab account to begin. Users may wish to familiarize themselves with 
