@@ -84,7 +84,7 @@ cml-publish graph.png --md >> report.md
 
 ## Getting started
 
-1. Fork our [example project repository](https://github.com/iterative/example_cml). 
+1. Fork our [example project repository](https://github.com/iterative/example_cml). ⚠️ Note that if you are using GitLab, [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables) for this example to work. 
 
 ![](imgs/fork_project.png)
 
@@ -184,18 +184,18 @@ jobs:
           
           # Report metrics
           echo "## Metrics" >> report.md 
-          git fetch --prune --unshallow
+          git fetch --prune 
           dvc metrics diff master --show-md >> report.md
           
           # Publish confusion matrix diff
           echo "## Plots<br />### Class confusions" >> report.md
           dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
-          vl2png vega.json -s 1.5 | cml-publish --md --title 'my image' >> report.md
+          vl2png vega.json -s 1.5 | cml-publish --md >> report.md
           
           # Publish regularization function diff
           echo "### Effects of regularization\n" >> report.md
           dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
-          vl2png vega.json -s 1.5 | cml-publish --md --title 'my 2nd image' >> report.md
+          vl2png vega.json -s 1.5 | cml-publish --md >> report.md
         
           
           cml-send-comment report.md 
@@ -378,3 +378,4 @@ Here are some example projects using CML.
 - [Basic CML project](https://github.com/iterative/cml_base_case)
 - [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
 - [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
+- [CML with EC2 GPU](https://github.com/iterative/cml_cloud_case)
