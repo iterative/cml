@@ -5,6 +5,11 @@ const { exec } = require('../src/utils');
 const credentials =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
 
+const rm_tb_dev_experiment = async tb_output => {
+  const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tb_output)[1];
+  await exec(`tensorboard dev delete --experiment_id ${id}`);
+};
+
 describe('CML e2e', () => {
   test('cml-tensorboard-dev.js -h', async () => {
     const output = await exec(`node ./bin/cml-tensorboard-dev.js -h`);
@@ -29,6 +34,8 @@ describe('CML e2e', () => {
       `node ./bin/cml-tensorboard-dev.js --md --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment'`
     );
 
+    await rm_tb_dev_experiment(output);
+
     expect(output.startsWith(`[${name}](https://`)).toBe(true);
   });
 
@@ -37,6 +44,8 @@ describe('CML e2e', () => {
     const output = await exec(
       `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment'`
     );
+
+    await rm_tb_dev_experiment(output);
 
     expect(output.startsWith(`https://`)).toBe(true);
   });
@@ -48,6 +57,8 @@ describe('CML e2e', () => {
       `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --title '${title}' --description 'Test experiment' --md`
     );
 
+    await rm_tb_dev_experiment(output);
+
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
   });
 
@@ -57,6 +68,8 @@ describe('CML e2e', () => {
     await exec(
       `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment' --file ${file}`
     );
+
+    await rm_tb_dev_experiment(fs.readFileSync(file));
 
     expect(fs.existsSync(file)).toBe(true);
     await fs.promises.unlink(file);
