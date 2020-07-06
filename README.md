@@ -19,6 +19,7 @@ We built CML with these principles in mind:
 _⁉️ Need help? Just want to chat about continuous integration for ML? [Visit our Discord channel!](https://discord.gg/bzA6uY7)_
 
 
+## Table of contents
 1. [Usage](#usage)
 2. [Getting started](#getting-started)
 3. [Using CML with DVC](#using-cml-with-dvc)
