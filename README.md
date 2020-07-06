@@ -12,7 +12,9 @@
 
 
 ## Overview
-Continuous Machine Learning (**CML**) is an open-source library for implementing continuous integration & delivery (CI/CD) in 
+![](imgs/github_cloud_case_lessshadow.png) _On every pull request, CML helps you automatically train and evaluate models, then generates a visual report with results and metrics. Above, an example report for a [neural style transfer model](https://github.com/iterative/cml_cloud_case)._
+
+**What is CML?** Continuous Machine Learning (CML) is an open-source library for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
