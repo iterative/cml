@@ -7,11 +7,12 @@
 3. [Getting started](#getting-started)
 4. [Using CML with DVC](#using-cml-with-dvc)
 5. [Using self-hosted runners](#using-self-hosted-runners)
-6. [Examples](#a-library-of-cml-projects)
+6. [Using your own Docker image](#using-your-own-docker-image)
+7. [Examples](#a-library-of-cml-projects)
 
 
 ## Overview
-Continuous Machine Learning (**CML**) is a tool for implementing continuous integration & delivery (CI/CD) in 
+Continuous Machine Learning (**CML**) is an open-source library for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
@@ -359,12 +360,12 @@ jobs:
           cml-send-comment report.md
 
 ```
-## Inputs
+### Inputs
 You will need to [create a new personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line), `REPO_TOKEN`, with repository read/write access. `REPO_TOKEN` must be added as a secret in your project repository.
 
 Note that you will also need to provide access credentials for your cloud compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
 
-## Provisioning cloud compute
+### Provisioning cloud compute
 In the above example, we use [Docker Machine](https://docs.docker.com/machine/concepts/) to provision instances. Please see their documentation for further details. 
 
 Note several CML-specific arguments to `docker run`:
@@ -372,6 +373,13 @@ Note several CML-specific arguments to `docker run`:
 - `RUNNER_REPO` should be set to the URL of your project repository
 - The docker container should be given as `dvcorg/cml-cloud-runner`, `dvcorg/cml-py3-cloud-runner`, `dvc/org/cml-gpu-cloud-runner`, or `dvcorg/cml-gpu-pye3-cloud-runner`
 
+## Using your own Docker image
+In the above examples, CML is pre-installed in a custom Docker image, which is pulled by a CI runner. If you are using your own Docker image, you will need to install CML functions on the image:
+
+```bash
+npm i @dvcorg/cml
+```
+Note that you may need to install additional dependencies to use DVC plots and Vega-Lite CLI commands. See our [base Dockerfile for details](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
 
 ## A library of CML projects
 Here are some example projects using CML.
