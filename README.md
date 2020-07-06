@@ -41,7 +41,7 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:latest
+    container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
 
@@ -60,13 +60,14 @@ jobs:
 ```
 
 ### CML Functions
-CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. 
+CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. The library comes pre-installed on our [custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile). In the above example, note the field `container: docker://dvcorg/cml-py3:latest` specifies the CML Docker image with Python 3 will be pulled by the GitHub Actions runner. 
 
 |  Function | Description  | Inputs  | 
 |---|---|---|
 | `cml-send-comment`  | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`   | 
 | `cml-send-github-check`  | Return CML report as a check in GitHub   | `<path to report> --head-sha <sha>` |
 | `cml-publish` | Publish an image for writing to CML report. | `<path to image> --title <image title> --md` |
+|`cml-tensorboard-dev` | Return a link to a Tensorboard.dev page | `--logdir <path to logs> --title <experiment title> --md` |
 
 ### Customizing your CML report
 CML reports are written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can contain images, tables, formatted text, HTML blocks, code snippets and more- really, what you put in a CML report is up to you. Some examples:
