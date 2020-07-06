@@ -2,30 +2,30 @@
   <img src="imgs/title_strip_trim.png" width=400>
 </p>
 
-1. [Overview](#overview)
-2. [Usage](#usage)
-3. [Getting started](#getting-started)
-4. [Using CML with DVC](#using-cml-with-dvc)
-5. [Using self-hosted runners](#using-self-hosted-runners)
-6. [Using your own Docker image](#using-your-own-docker-image)
-7. [Examples](#a-library-of-cml-projects)
-
-
-## Overview
-![](imgs/github_cloud_case_lessshadow.png) _On every pull request, CML helps you automatically train and evaluate models, then generates a visual report with results and metrics. Above, an example report for a [neural style transfer model](https://github.com/iterative/cml_cloud_case)._
 
 **What is CML?** Continuous Machine Learning (CML) is an open-source library for implementing continuous integration & delivery (CI/CD) in 
 machine learning projects. Use it to automate parts of your development workflow, including
 model training and evaluation, comparing ML experiments across your project history, and 
 monitoring changing datasets. 
 
+![](imgs/github_cloud_case_lessshadow.png) _On every pull request, CML helps you automatically train and evaluate models, then generates a visual report with results and metrics. Above, an example report for a [neural style transfer model](https://github.com/iterative/cml_cloud_case)._
+
 We built CML with these principles in mind: 
 
-- **GitFlow for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with [DVC](https://dvc.org) instead of pushing to a Git repo.
+- **[GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) for data science.** Use GitLab or GitHub to manage ML experiments, track who trained ML models or modified data and when. Codify data and models with [DVC](#using-cml-with-dvc) instead of pushing to a Git repo.
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and plots in each Git Pull Request. Rigorous engineering practices help your team make informed, data-driven decisions. 
 - **No additional services.** Build you own ML platform using just GitHub or GitLab and your favorite cloud services: AWS, Azure, GCP. No databases, services or complex setup needed.
 
 _⁉️ Need help? Just want to chat about continuous integration for ML? [Visit our Discord channel!](https://discord.gg/bzA6uY7)_
+
+
+1. [Usage](#usage)
+2. [Getting started](#getting-started)
+3. [Using CML with DVC](#using-cml-with-dvc)
+4. [Using self-hosted runners](#using-self-hosted-runners)
+5. [Using your own Docker image](#using-your-own-docker-image)
+6. [Examples](#a-library-of-cml-projects)
+
 
 ## Usage
 You'll need a GitHub or GitLab account to begin. Users may wish to familiarize themselves with 
@@ -63,6 +63,8 @@ jobs:
 
 ### CML Functions
 CML provides a number of helper functions to help package outputs from ML workflows, such as numeric data and data vizualizations about model performance, into a CML report. The library comes pre-installed on our [custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile). In the above example, note the field `container: docker://dvcorg/cml-py3:latest` specifies the CML Docker image with Python 3 will be pulled by the GitHub Actions runner. 
+
+Below is a list of CML functions for writing markdown reports and delivering those reports to your CI system (GitHub Actions or GitLab CI). 
 
 |  Function | Description  | Inputs  | 
 |---|---|---|
@@ -131,7 +133,7 @@ jobs:
 git checkout -b experiment
 ```
 
-4. In your text editor of choice, edit line X of `train.py` to `depth = 5`. 
+4. In your text editor of choice, edit line 16 of `train.py` to `depth = 5`. 
 
 5. Commit and push the changes:
 
@@ -152,7 +154,7 @@ This is the gist of the CML workflow: when you push changes to your GitHub repos
 
 
 ## Using CML with DVC
-In many ML projects, data isn't stored in a Git repository and needs to be downloaded from external sources. DVC is a common way to bring data to your CML runner. DVC also lets you visualize how metrics differ between commits to make reports like this:
+In many ML projects, data isn't stored in a Git repository and needs to be downloaded from external sources. [DVC](https://dvc.org) is a common way to bring data to your CML runner. DVC also lets you visualize how metrics differ between commits to make reports like this:
 
 ![](imgs/dvc_cml_long_report.png)
 
