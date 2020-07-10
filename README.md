@@ -341,7 +341,7 @@ jobs:
             -e DOCKER_MACHINE=${MACHINE} \
             -e RUNNER_LABELS=cml \
             -e repo_token=$repo_token \
-            -e RUNNER_REPO=https://github.com/iterative/cml_base_case \
+            -e RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}" \
            dvcorg/cml-py3-cloud-runner && \
 
           sleep 20 && echo "Deployed $MACHINE"
