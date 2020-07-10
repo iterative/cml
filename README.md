@@ -319,7 +319,7 @@ jobs:
         run: |
           echo "Deploying..."
 
-          MACHINE="CML-$(openssl rand -hex 12)"
+          MACHINE="cml$(date +%s)"
           docker-machine create \
               --driver amazonec2 \
               --amazonec2-instance-type t2.micro \
