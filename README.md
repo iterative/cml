@@ -348,7 +348,7 @@ jobs:
           ) || (echo y | docker-machine rm $MACHINE && exit 1)
 
   train:
-    needs: deploy
+    needs: deploy-cloud-runner
     runs-on: [self-hosted,cml]
 
     steps:
