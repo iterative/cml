@@ -235,8 +235,8 @@ jobs:
           dvc repro
 
           # Report metrics
-          echo "## Metrics" >> report.md 
-          git fetch --prune 
+          echo "## Metrics" >> report.md
+          git fetch --prune
           dvc metrics diff master --show-md >> report.md
 
           # Publish confusion matrix diff
@@ -384,7 +384,7 @@ jobs:
 
           eval "$(docker-machine env --shell sh $MACHINE)"
 
-          ( 
+          (
           docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
           docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
 
