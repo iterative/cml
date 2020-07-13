@@ -354,7 +354,7 @@ jobs:
         run: |
           echo "Deploying..."
 
-          MACHINE="CML-$(openssl rand -hex 12)"
+          MACHINE="cml$(date +%s)"
           docker-machine create \
               --driver amazonec2 \
               --amazonec2-instance-type t2.micro \
@@ -376,14 +376,15 @@ jobs:
             -e DOCKER_MACHINE=${MACHINE} \
             -e RUNNER_LABELS=cml \
             -e repo_token=$repo_token \
-            -e RUNNER_REPO=https://github.com/iterative/cml_base_case \
+            -e RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}" \
            dvcorg/cml-py3-cloud-runner && \
 
           sleep 20 && echo "Deployed $MACHINE"
           ) || (echo y | docker-machine rm $MACHINE && exit 1)
   train:
-    needs: deploy
-    runs-on: [self-hosted, cml]
+    needs: deploy-cloud-runner
+    runs-on: [self-hosted,cml]
+
     steps:
       - uses: actions/checkout@v2
       - name: cml_run
