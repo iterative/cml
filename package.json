@@ -1,10 +1,26 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "author": {
     "name": "DVC",
-    "url": "http://dvc.org"
+    "url": "http://cml.dev"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iterative/cml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iterative/cml/issues"
+  },
+  "keywords": [
+    "ci/cd",
+    "ci",
+    "cd",
+    "continuous",
+    "machine learning",
+    "deep learning",
+    "cml"
+  ],
   "license": "Apache-2.0",
   "licenses": [
     {
