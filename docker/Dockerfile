@@ -41,7 +41,7 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER 
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER
 # OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1

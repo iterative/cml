@@ -58,7 +58,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN apt update && apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
-    libcublas${CUBLAS_MAJOR}=${CUBLAS} \ 
+    libcublas${CUBLAS_MAJOR}=${CUBLAS} \
     cuda-nvrtc-${CUDA/./-} \
     cuda-cufft-${CUDA/./-} \
     cuda-curand-${CUDA/./-} \
@@ -67,10 +67,10 @@ RUN apt update && apt-get install -y --no-install-recommends \
     libcudnn${CUDNN_MAJOR}=${CUDNN}+cuda${CUDA} \
     libfreetype6-dev \
     libhdf5-serial-dev \
-    libzmq3-dev && \ 
+    libzmq3-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-        
+
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
@@ -86,7 +86,7 @@ RUN apt update && \
     ldconfig
 # TENSORFLOW ENDS
 
-# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER 
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER
 # OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
