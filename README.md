@@ -444,7 +444,7 @@ deploy-gce:
             -e RUNNER_LABELS=$RUNNER_LABELS \
             -e RUNNER_REPO=$RUNNER_REPO \
             -e RUNNER_IDLE_TIMEOUT=120 \
-            docker://dvcorg/cml-cloud-runner && \
+            dvcorg/cml-cloud-runner && \
           sleep 20 && echo "Deployed $MACHINE"
           ) || (docker-machine rm -f $MACHINE && exit 1)
 ```
