@@ -68,7 +68,7 @@ jobs:
           # Your ML workflow goes here
           pip install -r requirements.txt
           python train.py
-          
+
           # Write your CML report
           cat metrics.txt >> report.md
           cml-publish confusion_matrix.png --md >> report.md
