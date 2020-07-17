@@ -66,6 +66,7 @@ jobs:
         run: |
 
           # Your ML workflow goes here
+          pip install -r requirements.txt
           python train.py
 
           # Write your CML report
