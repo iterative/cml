@@ -1,0 +1,6 @@
+stages:
+  train:
+    cmd: ./train.sh
+    outs:
+    - model.data:
+        persist: true
