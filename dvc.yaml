@@ -2,5 +2,5 @@ stages:
   train:
     cmd: ./train.sh
     outs:
-    - model.data:
-        persist: true
+      - model.data:
+          persist: true
