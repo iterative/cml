@@ -400,54 +400,56 @@ jobs:
           cml-send-comment report.md
 ```
 
-Please note that for GCP's Compute Engine, deploying the cloud runner involves different steps:
+Please note that for GCP's Compute Engine, deploying the cloud runner involves
+different steps:
 
 ```yaml
 deploy-gce:
-    runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml-cloud-runner
+  runs-on: [ubuntu-latest]
+  container: docker://dvcorg/cml-cloud-runner
 
-    steps:
-      - name: deploy
-        shell: bash
-        env:
-          repo_token: ${{ secrets.REPO_TOKEN }} 
-          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
-        run: |
-          echo "Deploying..."
+  steps:
+    - name: deploy
+      shell: bash
+      env:
+        repo_token: ${{ secrets.REPO_TOKEN }}
+        GOOGLE_APPLICATION_CREDENTIALS_DATA:
+          ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+      run: |
+        echo "Deploying..."
 
-          echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}' > gce-credentials.json
-          export GOOGLE_APPLICATION_CREDENTIALS='gce-credentials.json'
+        echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}' > gce-credentials.json
+        export GOOGLE_APPLICATION_CREDENTIALS='gce-credentials.json'
 
-          RUNNER_LABELS="gce"
-          RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}"
-          MACHINE="cml$(date +%s)"
+        RUNNER_LABELS="gce"
+        RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}"
+        MACHINE="cml$(date +%s)"
 
-          docker-machine create --driver google \
-            --google-machine-type "n1-standard-4" \
-            --google-project "cml-project-279709" \
-            $MACHINE
+        docker-machine create --driver google \
+          --google-machine-type "n1-standard-4" \
+          --google-project "cml-project-279709" \
+          $MACHINE
 
-          eval "$(docker-machine env --shell sh $MACHINE)"
+        eval "$(docker-machine env --shell sh $MACHINE)"
 
-          (
-          docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
-          docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
-          docker-machine scp -q gce-credentials.json $MACHINE:/docker_machine/gce-credentials.json && \
-          
-          eval "$(docker-machine env --shell sh $MACHINE)" && \
-          docker run --name runner -d \
-            -v /docker_machine/gce-credentials.json:/gce-credentials.json \
-            -e GOOGLE_APPLICATION_CREDENTIALS='/gce-credentials.json' \
-            -v /docker_machine/machine:/root/.docker/machine \
-            -e DOCKER_MACHINE=$MACHINE \
-            -e repo_token=$repo_token \
-            -e RUNNER_LABELS=$RUNNER_LABELS \
-            -e RUNNER_REPO=$RUNNER_REPO \
-            -e RUNNER_IDLE_TIMEOUT=120 \
-            dvcorg/cml-cloud-runner && \
-          sleep 20 && echo "Deployed $MACHINE"
-          ) || (docker-machine rm -f $MACHINE && exit 1)
+        (
+        docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
+        docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
+        docker-machine scp -q gce-credentials.json $MACHINE:/docker_machine/gce-credentials.json && \
+
+        eval "$(docker-machine env --shell sh $MACHINE)" && \
+        docker run --name runner -d \
+          -v /docker_machine/gce-credentials.json:/gce-credentials.json \
+          -e GOOGLE_APPLICATION_CREDENTIALS='/gce-credentials.json' \
+          -v /docker_machine/machine:/root/.docker/machine \
+          -e DOCKER_MACHINE=$MACHINE \
+          -e repo_token=$repo_token \
+          -e RUNNER_LABELS=$RUNNER_LABELS \
+          -e RUNNER_REPO=$RUNNER_REPO \
+          -e RUNNER_IDLE_TIMEOUT=120 \
+          dvcorg/cml-cloud-runner && \
+        sleep 20 && echo "Deployed $MACHINE"
+        ) || (docker-machine rm -f $MACHINE && exit 1)
 ```
 
 ### Inputs
