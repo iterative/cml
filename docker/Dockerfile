@@ -61,8 +61,8 @@ WORKDIR ${RUNNER_PATH}
 RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
     chmod +x /usr/local/bin/gitlab-runner && \
     gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
-    wget https://github.com/actions/runner/releases/download/v2.263.0/actions-runner-linux-x64-2.263.0.tar.gz && \
-    tar xzf actions-runner-linux-x64-2.263.0.tar.gz && \
+    wget https://github.com/actions/runner/releases/download/v2.267.1/actions-runner-linux-x64-2.267.1.tar.gz && \
+    tar xzf actions-runner-linux-x64-2.267.1.tar.gz && \
     ./bin/installdependencies.sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
