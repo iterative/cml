@@ -390,7 +390,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: cml_run
         env:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          repo_token: ${{ secrets.REPO_TOKEN }}
         run: |
           pip install -r requirements.txt
           python train.py
