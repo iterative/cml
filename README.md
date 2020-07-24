@@ -345,7 +345,7 @@ on: [push]
 jobs:
   deploy-cloud-runner:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml-cloud-runner
+    container: docker://dvcorg/cml
     steps:
       - name: deploy
         env:
@@ -378,7 +378,7 @@ jobs:
             -e RUNNER_LABELS=cml \
             -e repo_token=$repo_token \
             -e RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}" \
-           dvcorg/cml-py3-cloud-runner && \
+           dvcorg/cml-py3 && \
 
           sleep 20 && echo "Deployed $MACHINE"
           ) || (echo y | docker-machine rm $MACHINE && exit 1)
@@ -473,9 +473,8 @@ Note several CML-specific arguments to `docker run`:
 
 - `repo_token` should be set to your repository's personal access token
 - `RUNNER_REPO` should be set to the URL of your project repository
-- The docker container should be given as `dvcorg/cml-cloud-runner`,
-  `dvcorg/cml-py3-cloud-runner`, `dvc/org/cml-gpu-cloud-runner`, or
-  `dvcorg/cml-gpu-pye3-cloud-runner`
+- The docker container should be given as `dvcorg/cml`, `dvcorg/cml-py3`,
+  `dvc/org/cml-gpu`, or `dvcorg/cml-gpu-py3`
 
 ## Using your own Docker image
 

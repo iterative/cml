@@ -58,7 +58,7 @@ SHELL ["/bin/bash", "-c"]
 
 RUN apt update && apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
-    libcublas${CUBLAS_MAJOR}=${CUBLAS} \ 
+    libcublas${CUBLAS_MAJOR}=${CUBLAS} \
     cuda-nvrtc-${CUDA/./-} \
     cuda-cufft-${CUDA/./-} \
     cuda-curand-${CUDA/./-} \
@@ -67,10 +67,10 @@ RUN apt update && apt-get install -y --no-install-recommends \
     libcudnn${CUDNN_MAJOR}=${CUDNN}+cuda${CUDA} \
     libfreetype6-dev \
     libhdf5-serial-dev \
-    libzmq3-dev && \ 
+    libzmq3-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-        
+
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
@@ -85,3 +85,30 @@ RUN apt update && \
     echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
     ldconfig
 # TENSORFLOW ENDS
+
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER
+# OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
+ENV RUNNER_PATH=/home/runner
+ENV RUNNER_ALLOW_RUNASROOT=1
+
+RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
+    curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose && \
+    apt update && apt install -y golang && \
+    go get github.com/iterative/machine && \
+    mv $(go env GOPATH)/src/github.com/iterative $(go env GOPATH)/src/github.com/docker && \
+    cd $(go env GOPATH)/src/github.com/docker/machine && make build && \
+    ln -s $(go env GOPATH)/src/github.com/docker/machine/bin/docker-machine /usr/local/bin/docker-machine
+
+RUN mkdir ${RUNNER_PATH}
+WORKDIR ${RUNNER_PATH}
+
+RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
+    chmod +x /usr/local/bin/gitlab-runner && \
+    gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
+    wget https://github.com/actions/runner/releases/download/v2.267.1/actions-runner-linux-x64-2.267.1.tar.gz && \
+    tar xzf actions-runner-linux-x64-2.267.1.tar.gz && \
+    ./bin/installdependencies.sh && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+CMD ["cml-cloud-runner-entrypoint"]
