@@ -345,7 +345,7 @@ on: [push]
 jobs:
   deploy-cloud-runner:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml
+    container: docker://dvcorg/cml:latest
     steps:
       - name: deploy
         env:
@@ -406,7 +406,7 @@ different steps:
 ```yaml
 deploy-gce:
   runs-on: [ubuntu-latest]
-  container: docker://dvcorg/cml-cloud-runner
+  container: docker://dvcorg/cml:latest
 
   steps:
     - name: deploy
@@ -447,7 +447,7 @@ deploy-gce:
           -e RUNNER_LABELS=$RUNNER_LABELS \
           -e RUNNER_REPO=$RUNNER_REPO \
           -e RUNNER_IDLE_TIMEOUT=120 \
-          dvcorg/cml-cloud-runner && \
+          dvcorg/cml-py3 && \
         sleep 20 && echo "Deployed $MACHINE"
         ) || (docker-machine rm -f $MACHINE && exit 1)
 ```
