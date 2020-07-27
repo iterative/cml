@@ -1,4 +1,8 @@
-FROM ubuntu:18.04
+ARG ARCH=
+ARG CUDA=10.1
+ARG UBUNTU_VERSION=18.04
+
+FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
 
 LABEL maintainer="dvc.org"
 
@@ -40,6 +44,47 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt-get install -y libfontconfig-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# CUDNN
+ARG CUDA
+ARG CUDNN=7.6.4.38-1
+ARG CUDNN_MAJOR=7
+ARG LIBNVINFER=6.0.1-1
+ARG LIBNVINFER_MAJOR=6
+ARG CUBLAS=10.2.1.243-1
+ARG CUBLAS_MAJOR=10
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt update && apt-get install -y --no-install-recommends \
+    cuda-command-line-tools-${CUDA/./-} \
+    libcublas${CUBLAS_MAJOR}=${CUBLAS} \
+    cuda-nvrtc-${CUDA/./-} \
+    cuda-cufft-${CUDA/./-} \
+    cuda-curand-${CUDA/./-} \
+    cuda-cusolver-${CUDA/./-} \
+    cuda-cusparse-${CUDA/./-} \
+    libcudnn${CUDNN_MAJOR}=${CUDNN}+cuda${CUDA} \
+    libfreetype6-dev \
+    libhdf5-serial-dev \
+    libzmq3-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# TENSORFLOW
+RUN apt update && \
+    apt-get install -y --no-install-recommends \
+        libnvinfer${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} \
+        libnvinfer-plugin${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s /usr/local/cuda/lib64/stubs/libcuda.so \
+            /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+    echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
+    ldconfig
+# TENSORFLOW ENDS
 
 # DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER
 # OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
