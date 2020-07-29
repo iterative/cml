@@ -91,7 +91,7 @@ RUN apt update && \
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
 
-# FIXES Python Action
+# FIXES Python setup Action
 RUN mkdir /__t
 RUN ln -s /__t /opt/hostedtoolcache
 ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
