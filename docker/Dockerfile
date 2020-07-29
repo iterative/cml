@@ -90,7 +90,11 @@ RUN apt update && \
 # OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
-ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache/
+
+# FIXES Python setup Action
+RUN mkdir /__t
+RUN ln -s /__t /opt/hostedtoolcache
+ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
