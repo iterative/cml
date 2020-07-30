@@ -12,12 +12,8 @@ describe('CML e2e', () => {
       md: true,
       title: 'logo'
     });
-    const pdf = await publish_file({
-      path: 'assets/logo.pdf',
-      md: true,
-      title: 'logo'
-    });
-    const report = `## Test Comment Report \n ${img} \n ${pdf}`;
+
+    const report = `## Test Comment Report \n ${img}`;
 
     await fs.writeFile(path, report);
 
