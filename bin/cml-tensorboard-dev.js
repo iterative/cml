@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const { exec } = require('../src/utils');
 
-const { handle_error } = process.env.GITHUB_ACTION
+const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -41,10 +41,7 @@ const run = async opts => {
     : '';
   const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
 
-  const proc = spawn(command, {
-    detached: true,
-    shell: true
-  });
+  const proc = spawn(command, { detached: true, shell: true });
 
   proc.stderr.on('data', data => {
     data && console.error(data.toString('utf8'));
