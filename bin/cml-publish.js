@@ -12,7 +12,7 @@ const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
-const run = async (opts) => {
+const run = async opts => {
   const { file, md, title } = opts;
   const path = opts._[0];
 
@@ -35,4 +35,4 @@ const argv = yargs
   .alias('f', 'file')
   .help('h')
   .demand(data ? 0 : 1).argv;
-run({ ...argv, data }).catch((e) => handle_error(e));
+run({ ...argv, data }).catch(e => handle_error(e));

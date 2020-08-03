@@ -9,7 +9,7 @@ const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
-const run = async (opts) => {
+const run = async opts => {
   const { 'head-sha': head_sha = HEAD_SHA } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
@@ -23,4 +23,4 @@ const argv = yargs
   .describe('head-sha', 'Commit sha')
   .help('h')
   .demand(1).argv;
-run(argv).catch((e) => handle_error(e));
+run(argv).catch(e => handle_error(e));
