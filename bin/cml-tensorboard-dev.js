@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const { exec } = require('../src/utils');
 
-const { handle_error } = process.env.GITHUB_ACTION
+const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 

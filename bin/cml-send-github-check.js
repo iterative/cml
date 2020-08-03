@@ -10,7 +10,7 @@ const {
   handle_error,
   create_check_report,
   CHECK_TITLE
-} = process.env.GITHUB_ACTION
+} = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 

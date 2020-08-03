@@ -8,7 +8,7 @@ const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 const { publish_file } = require('../src/report');
 
-const { handle_error } = process.env.GITHUB_ACTION
+const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 

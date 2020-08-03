@@ -5,7 +5,7 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTION
+const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
