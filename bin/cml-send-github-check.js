@@ -10,7 +10,7 @@ const {
   handle_error,
   create_check_report,
   CHECK_TITLE
-} = process.env.GITHUB_ACTION
+} = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -19,12 +19,7 @@ const run = async opts => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
-  await create_check_report({
-    head_sha,
-    report,
-    conclusion,
-    title
-  });
+  await create_check_report({ head_sha, report, conclusion, title });
 };
 
 const argv = yargs

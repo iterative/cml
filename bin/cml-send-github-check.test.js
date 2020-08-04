@@ -20,7 +20,7 @@ describe('CML e2e', () => {
     const report = `## Test Check Report \n ${img} \n ${pdf}`;
 
     await fs.writeFile(path, report);
-    process.env.GITHUB_ACTION &&
+    process.env.GITHUB_ACTIONS &&
       (await exec(`node ./bin/cml-send-github-check.js ${path}`));
     await fs.unlink(path);
   });
@@ -32,7 +32,7 @@ describe('CML e2e', () => {
     const conclusion = 'neutral';
 
     await fs.writeFile(path, report);
-    process.env.GITHUB_ACTION &&
+    process.env.GITHUB_ACTIONS &&
       (await exec(
         `node ./bin/cml-send-github-check.js ${path} --title "${title}" --conclusion "${conclusion}"`
       ));

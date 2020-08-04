@@ -5,7 +5,7 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTION
+const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -14,10 +14,7 @@ const run = async opts => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
-  await comment({
-    head_sha,
-    report
-  });
+  await comment({ head_sha, report });
 };
 
 const argv = yargs
