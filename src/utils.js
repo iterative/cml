@@ -20,15 +20,25 @@ const exec = async (command, opts) => {
   });
 };
 
+const is_svg = async opts => {
+  const { path, buffer } = opts;
+
+  if (path && PATH.extname(path).toLowerCase() === '.svg') return true;
+
+  const svg_candidate = path
+    ? await fs.promises.readFile(path)
+    : buffer.toString('utf-8');
+
+  if (isSvg(svg_candidate)) return true;
+
+  return false;
+};
+
 const mime_type = async opts => {
   const { path, buffer } = opts;
 
   try {
-    const svg_cadidate = path
-      ? await fs.promises.readFile(path)
-      : buffer.toString('utf-8');
-
-    if (isSvg(svg_cadidate)) return 'image/svg+xml';
+    if (await is_svg(opts)) return 'image/svg+xml';
 
     let mime;
     if (path) ({ mime } = await FileType.fromFile(path));
@@ -36,7 +46,6 @@ const mime_type = async opts => {
 
     return mime;
   } catch (err) {
-    console.log(err);
     throw new Error(
       `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
     );
