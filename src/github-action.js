@@ -4,7 +4,9 @@ const { exec } = require('./utils');
 const setup_cml = async () => {
   const version = core.getInput('version');
   core.info(`Intalling CML version ${version}`);
-  await exec(`npm i @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`);
+  await exec(
+    `npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`
+  );
 };
 
 const setup_dvc = async () => {

@@ -1,0 +1,25 @@
+name: "Check CML github action"
+
+on:
+  push:
+    branches:
+      - '*'
+      - '!master'
+
+jobs:
+  check:
+    runs-on: [ubuntu-latest]
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: iterative/cml
+      with:
+        version: latest
+        dvc_install: true
+        dvc_version: latest
+      
+    - name: "CML test"
+      run: |
+        npm view @dvcorg/cml version
+        dvc version
