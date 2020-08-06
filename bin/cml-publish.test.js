@@ -36,13 +36,29 @@ describe('CML e2e', () => {
     const output = await exec(
       `echo none | node ./bin/cml-publish.js assets/logo.pdf --md --title 'this is awesome'`
     );
-
+    
     expect(output.startsWith('[this is awesome](')).toBe(true);
   });
 
   test('cml-publish assets/logo.pdf', async () => {
     const output = await exec(
       `echo none | node ./bin/cml-publish.js assets/logo.pdf --title 'this is awesome'`
+    );
+
+    expect(output.startsWith('https://')).toBe(true);
+  });
+
+  test('cml-publish assets/test.svg --md', async () => {
+    const output = await exec(
+      `echo none | node ./bin/cml-publish.js assets/test.svg --md --title 'this is awesome'`
+    );
+
+    expect(output.startsWith('![](')).toBe(true);
+  });
+
+  test('cml-publish assets/test.svg', async () => {
+    const output = await exec(
+      `echo none | node ./bin/cml-publish.js assets/test.svg`
     );
 
     expect(output.startsWith('https://')).toBe(true);

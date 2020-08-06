@@ -28,4 +28,9 @@ describe('upload tests', () => {
     const { mime } = await upload({ path: 'assets/logo.pdf' });
     expect(mime).toBe('application/pdf');
   });
+
+  test('image/svg+xml', async () => {
+    const { mime } = await upload({ path: 'assets/test.svg' });
+    expect(mime).toBe('image/svg+xml');
+  });
 });

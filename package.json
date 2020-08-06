@@ -59,6 +59,7 @@
     "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
+    "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
     "vega": "^5.9.0",
     "vega-cli": "^5.11.1",
