@@ -36,7 +36,7 @@ describe('CML e2e', () => {
     const output = await exec(
       `echo none | node ./bin/cml-publish.js assets/logo.pdf --md --title 'this is awesome'`
     );
-    
+
     expect(output.startsWith('[this is awesome](')).toBe(true);
   });
 
