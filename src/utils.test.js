@@ -1,4 +1,4 @@
-const {exec, upload} = require('./utils');
+const { exec, upload } = require('./utils');
 
 describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
@@ -20,17 +20,17 @@ describe('exec tests', () => {
 
 describe('upload tests', () => {
   test('image/png', async () => {
-    const {mime} = await upload({path : 'assets/logo.png'});
+    const { mime } = await upload({ path: 'assets/logo.png' });
     expect(mime).toBe('image/png');
   });
 
   test('application/pdf', async () => {
-    const {mime} = await upload({path : 'assets/logo.pdf'});
+    const { mime } = await upload({ path: 'assets/logo.pdf' });
     expect(mime).toBe('application/pdf');
   });
 
   test('image/svg+xml', async () => {
-    const {mime} = await upload({path : 'assets/test.svg'});
+    const { mime } = await upload({ path: 'assets/test.svg' });
     expect(mime).toBe('image/svg+xml');
   });
 });
