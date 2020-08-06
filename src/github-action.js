@@ -11,7 +11,7 @@ const setup_dvc = async () => {
   const install = core.getInput('dvc_install');
   const version = core.getInput('dvc_version');
 
-  if (install) {
+  if (install === 'true') {
     core.info(`Intalling DVC version ${version}`);
     await exec(
       `pip install dvc[all]${version !== 'latest' ? `==${version}` : ''}`
