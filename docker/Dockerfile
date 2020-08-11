@@ -8,6 +8,8 @@ LABEL maintainer="dvc.org"
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
+        sudo\ 
+        tzdata \
         build-essential \
         apt-utils \
         apt-transport-https \
