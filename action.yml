@@ -6,14 +6,6 @@ inputs:
     description: 'The version of CML to install. A value of `latest` will install the latest version of CML. Defaults to `latest`.'
     default: 'latest'
     required: false
-  dvc_install:
-    description: 'Whether or not to install also DVC. Defaults to `true`.'
-    default: 'true'
-    required: false
-  dvc_version:
-    description: 'The version of DVC to install. A value of `latest` will install the latest version of DVC. Defaults to `latest`.'
-    default: 'latest'
-    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

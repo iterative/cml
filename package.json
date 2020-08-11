@@ -28,7 +28,7 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0"
     }
   ],
-  "main": "index.js",
+  "main": "dist/index.js",
   "bin": {
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-send-comment": "./bin/cml-send-comment.js",

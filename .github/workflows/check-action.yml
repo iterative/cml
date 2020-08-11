@@ -13,13 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: iterative/cml
+    - uses: iterative/cml@cml-action
       with:
-        version: latest
-        dvc_install: true
-        dvc_version: latest
-      
+        version: '0.1.31'
+        
     - name: "CML test"
       run: |
-        npm view @dvcorg/cml version
-        dvc version
+        CML_VER=$(npm view @dvcorg/cml version)
+        if [ $CML_VER == '0.1.31' ]; then
+          return 1
+        fi
