@@ -25,7 +25,7 @@ jobs:
       run: |
         CML_VER=$(npm view @dvcorg/cml version)
         if [ $CML_VER == '0.1.31' ]; then
-          return 1
+          exit 1
         fi
 
   check-in-container:
@@ -47,5 +47,5 @@ jobs:
       run: |
         CML_VER=$(npm view @dvcorg/cml version)
         if [ $CML_VER != '0.1.31' ]; then
-          echo here
+          exit 1
         fi
