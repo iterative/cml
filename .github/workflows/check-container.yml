@@ -8,12 +8,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Build test image and publish
         run: | 
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           docker build -t dvcorg/cml-test -f ./docker/Dockerfile .
-          docker publish dvcorg/cml-test
+          docker push dvcorg/cml-test
 
   check-actions:
     needs: build-container
