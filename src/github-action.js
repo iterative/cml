@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const {exec} = require('./utils');
+const { exec } = require('./utils');
 
 const setup_cml = async () => {
   const version = core.getInput('version');
@@ -7,15 +7,14 @@ const setup_cml = async () => {
   try {
     core.info('Unintalling previous CML');
     await exec('npm uninstall -g @dvcorg/cml');
-  } catch (err) {
-  }
+  } catch (err) {}
 
   try {
     core.info(`Intalling CML version ${version}`);
     await exec(
-        `npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`);
-  } catch (err) {
-  }
+      `npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`
+    );
+  } catch (err) {}
 };
 
 (async () => {
