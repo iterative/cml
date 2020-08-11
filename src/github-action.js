@@ -6,13 +6,23 @@ const setup_cml = async () => {
 
   try {
     core.info('Unintalling previous CML');
-    await exec('npm uninstall -g @dvcorg/cml');
-  } catch (err) {}
+    await exec('sudo npm uninstall -g @dvcorg/cml');
+  } catch (err) {
+    try {
+      await exec('npm uninstall -g @dvcorg/cml');
+    } catch (err) {}
+  }
 
-  core.info(`Intalling CML version ${version}`);
-  await exec(
-    `npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`
-  );
+  try {
+    core.info(`Intalling CML version ${version}`);
+    await exec(
+      `sudo npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`
+    );
+  } catch (err) {
+    await exec(
+      `npm i -g @dvcorg/cml${version !== 'latest' ? `@${version}` : ''}`
+    );
+  }
 };
 
 (async () => {
