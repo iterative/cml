@@ -41,6 +41,7 @@ jobs:
         
     - name: "CML test"
       run: |
+        npm view @dvcorg/cml version
         CML_VER=$(npm view @dvcorg/cml version)
         if [ $CML_VER == '0.1.31' ]; then
           return 1
