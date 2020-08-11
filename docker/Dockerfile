@@ -11,7 +11,7 @@ RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --fix-missing \
-        sudo\ 
+        sudo\
         tzdata \
         build-essential \
         apt-utils \
