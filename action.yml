@@ -1,12 +1,9 @@
 name: 'CML (Continuous Machine Learning)'
-description:
-  'Sets up CML (Continuous Machine Learning) in your GitHub Actions workflow.'
+description: 'Sets up CML (Continuous Machine Learning) in your GitHub Actions workflow.'
 author: 'Iterative, Inc.'
 inputs:
   version:
-    description:
-      'The version of CML to install. A value of `latest` will install the
-      latest version of CML. Defaults to `latest`.'
+    description: 'The version of CML to install. A value of `latest` will install the latest version of CML. Defaults to `latest`.'
     default: 'latest'
     required: false
 runs:
