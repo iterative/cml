@@ -6,8 +6,13 @@ FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
 
 LABEL maintainer="dvc.org"
 
+ENV DEBIAN_FRONTEND=noninteractive
+RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
+
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends --fix-missing \
+    apt-get install --no-install-recommends --fix-missing \
+        sudo\ 
+        tzdata \
         build-essential \
         apt-utils \
         apt-transport-https \
@@ -86,16 +91,7 @@ RUN apt update && \
     ldconfig
 # TENSORFLOW ENDS
 
-# DOCKER, OUR CUSTOM DOCKER MACHINE FORK, GITLAB RUNNER AND GITHUB RUNNER
-# OUR DOCKER_MACHINE FORK SUPPORTS GPU ACCELARATOR
-ENV RUNNER_PATH=/home/runner
-ENV RUNNER_ALLOW_RUNASROOT=1
-
-# FIXES Python setup Action
-RUN mkdir /__t
-RUN ln -s /__t /opt/hostedtoolcache
-ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
-
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK THAT SUPPORTS GPU ACCELARATOR
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose && \
@@ -104,6 +100,16 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     mv $(go env GOPATH)/src/github.com/iterative $(go env GOPATH)/src/github.com/docker && \
     cd $(go env GOPATH)/src/github.com/docker/machine && make build && \
     ln -s $(go env GOPATH)/src/github.com/docker/machine/bin/docker-machine /usr/local/bin/docker-machine
+
+
+# GITLAB RUNNER AND GITHUB RUNNER
+ENV RUNNER_PATH=/home/runner
+ENV RUNNER_ALLOW_RUNASROOT=1
+
+# FIXES Python setup Action
+RUN mkdir /__t
+RUN ln -s /__t /opt/hostedtoolcache
+ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 
 RUN mkdir ${RUNNER_PATH}
 WORKDIR ${RUNNER_PATH}
