@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -28,7 +28,7 @@
       "url": "http://www.apache.org/licenses/LICENSE-2.0"
     }
   ],
-  "main": "dist/index.js",
+  "main": "index.js",
   "bin": {
     "cml-send-github-check": "./bin/cml-send-github-check.js",
     "cml-send-comment": "./bin/cml-send-comment.js",
@@ -40,12 +40,11 @@
     "lintfix": "eslint --fix ./",
     "lint": "eslint ./",
     "test": "jest --passWithNoTests",
-    "do_snapshots": "jest --updateSnapshot",
-    "build": "ncc build src/github-action.js -o dist -m"
+    "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run build && git add dist/index.js"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
@@ -57,7 +56,6 @@
     ]
   },
   "dependencies": {
-    "@actions/core": "^1.2.4",
     "@actions/github": "^2.2.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
@@ -69,7 +67,6 @@
     "yargs": "^15.1.0"
   },
   "devDependencies": {
-    "@zeit/ncc": "^0.20.5",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-config-standard": "^14.1.0",
