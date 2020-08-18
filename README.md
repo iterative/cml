@@ -483,7 +483,7 @@ pulled by a CI runner. If you are using your own Docker image, you will need to
 install CML functions on the image:
 
 ```bash
-npm i @dvcorg/cml
+npm i -g @dvcorg/cml
 ```
 
 Note that you may need to install additional dependencies to use DVC plots and
