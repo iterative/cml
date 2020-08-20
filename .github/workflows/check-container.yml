@@ -15,9 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: satackey/action-docker-layer-caching@v0.0.8
+
       - name: Build test image and publish
         run: | 
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+          docker build -t dvcorg/cml -f ./docker/Dockerfile .
+          docker build -t dvcorg/cml-py3 -f ./docker/Dockerfile-py3 .
+
           docker build -t dvcorg/cml-test -f ./docker/Dockerfile .
           docker push dvcorg/cml-test
 
