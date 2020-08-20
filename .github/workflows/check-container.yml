@@ -30,7 +30,7 @@ jobs:
   check-actions:
     needs: build-container
     runs-on: [ubuntu-18.04]
-    container: docker://dvcorg/cml-test
+    container: dvcorg/cml-test
 
     steps:
       - uses: r-lib/actions/setup-r@master
