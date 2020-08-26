@@ -2,12 +2,12 @@
 
 const { spawn } = require('child_process');
 const { exec, randid } = require('../src/utils');
+const fs = require('fs').promises;
 const { URL } = require('url');
 
 const {
   RUNNER_PATH,
-
-  DOCKER_MACHINE,
+  TFSTATE,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = '',
@@ -34,11 +34,21 @@ const { get_runner_token, register_runner } = IS_GITHUB
   ? require('../src/github')
   : require('../src/gitlab');
 
-const shutdown_docker_machine = async () => {
-  console.log('Shutting down docker machine');
+const shutdown_host = async () => {
   try {
-    DOCKER_MACHINE &&
-      console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
+  
+      console.log('Terraform destroy');
+      //await fs.writeFile('terraform.tfstate', JSON.stringify(JSON.parse(TFSTATE), null, 2));
+      console.log(await exec('ls'));
+      await fs.writeFile('terraform.tfstate', await fs.readFile('/terraform.tfstate', 'utf-8'));
+      await fs.writeFile('main.tf', await fs.readFile('/main.tf', 'utf-8'));
+      
+      console.log(await exec('ls'));
+      //console.log(await exec('cat terraform.tfstate'));
+      
+      console.log(await exec('terraform init'));
+      console.log(await exec('terraform destroy -auto-approve'));
+    
   } catch (err) {
     console.log(err.message);
   }
@@ -65,7 +75,7 @@ const shutdown = async error => {
       }
     } catch (err) {}
 
-    await shutdown_docker_machine();
+    await shutdown_host();
 
     if (error) throw error;
 
