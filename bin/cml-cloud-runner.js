@@ -9,45 +9,62 @@ const fss = require('fs');
 const fs = fss.promises;
 const { exec, sleep } = require('../src/utils');
 
-require.extensions['.tf'] = function (module, filename) {
-  module.exports = fss.readFileSync(filename, 'utf8');
-};
-
-const TERRAFORM_TPLS = {
-  aws: require('./../terraform/aws.tf')
-};
-
 const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
+const ssh_connect = async opts => {
+  const { host, username, privateKey } = opts;
+  const ssh = new NodeSSH();
+
+  let ready = false;
+  const maxtrials = 100;
+  let trials = 0;
+  while (!ready) {
+    try {
+      console.log('ssh connect...');
+      await ssh.connect({
+        host,
+        username,
+        privateKey,
+        readyTimeout: 30 * 1000
+      });
+      ready = true;
+    } catch (err) {
+      if (maxtrials === trials) throw err;
+      trials += 1;
+    }
+  }
+
+  return ssh;
+};
+
 const setup_runner = async opts => {
-  const { 
+  const {
     terraform_state,
     username = 'ubuntu',
-    
-    repo_token = process.env.repo_token || '09c47960bd8510e9a7bb983ad7269899e2c838f7',
-    RUNNER_REPO = 'https://github.com/DavidGOrtega/3_tensorboard/',
-    RUNNER_LABELS='cml5',
-    RUNNER_IDLE_TIMEOUT=10,
-    RUNNER_NAME,
-    cml_image='davidgortega/cml:tf'
+
+    repo_token,
+    runner_repo,
+    runner_labels = 'cml',
+    runner_idle_timeout,
+    runner_name,
+    cml_image = 'davidgortega/cml:tf'
   } = opts;
 
-  if(!repo_token) throw new Error('repo_token is not available.');
+  if (!repo_token) throw new Error('repo_token is not available.');
 
-  const { attributes: { public_ip:host } } = terraform_state.resources.find((res) => ['aws_instance'].includes(res.type)).instances[0];
-  const { attributes: { private_key_pem:privateKey }} = terraform_state.resources.find((res) => ['tls_private_key'].includes(res.type)).instances[0];
+  const {
+    attributes: { instance_ip: host, private_key: privateKey }
+  } = terraform_state.resources[0].instances[0];
 
-  console.log({ host, username, privateKey });
-
-  const ssh = new NodeSSH()
-  await ssh.connect({ host, username, privateKey });
+  console.log('These are your machine public ip and private key');
+  console.log(host);
+  console.log(privateKey);
 
   const setup_docker_cmd = `
     curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
-    sudo usermod -aG docker \${USER} && \
-    sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock`;
+    sudo usermod -aG docker \${USER}`;
 
   const setup_nvidia_cmd = `
     curl -s -L https://nvidia.GitHub.io/nvidia-docker/gpgkey | sudo apt-key add - && \
@@ -55,53 +72,82 @@ const setup_runner = async opts => {
     sudo apt update && sudo apt install -y ubuntu-drivers-common  && \
     sudo ubuntu-drivers autoinstall  && \
     sudo apt install -y nvidia-container-toolkit && \
-    sudo systemctl restart docker`;
-  
+    sudo shutdown -r now`;
+
   const start_runner_cmd = `
+    sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
     docker run --name runner --rm -d \
     -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
     -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
     -v $(pwd)/terraform.tfstate:/terraform.tfstate \
     -v $(pwd)/main.tf:/main.tf \
     -e "repo_token=${repo_token}" \
-    -e "RUNNER_REPO=${RUNNER_REPO}" \
-    ${RUNNER_LABELS ? `-e "RUNNER_LABELS=${RUNNER_LABELS}"` : ''} \
-    ${RUNNER_IDLE_TIMEOUT ? `-e "RUNNER_IDLE_TIMEOUT=${RUNNER_IDLE_TIMEOUT}"` : ''} \
-    ${RUNNER_NAME ? `-e "RUNNER_NAME=${RUNNER_NAME}"` : ''} \
+    -e "RUNNER_REPO=${runner_repo}" \
+    ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
+    ${
+      runner_idle_timeout
+        ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
+        : ''
+    } \
+    ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
     ${cml_image}`;
 
-  //console.log(start_runner_cmd);
+  let ssh = await ssh_connect({ host, username, privateKey });
 
   print('Provisioning docker...');
   const setup_docker_out = await ssh.execCommand(setup_docker_cmd);
   print(setup_docker_out);
 
-  //print('Provisioning nvidia drivers and nvidia-gpu...');
-  //const setup_nvidia_out = await ssh.execCommand(setup_nvidia_cmd);
-  //print(setup_nvidia_out);
+  print('Provisioning nvidia drivers and nvidia-gpu...');
+  const setup_nvidia_out = await ssh.execCommand(setup_nvidia_cmd);
+  print(setup_nvidia_out);
+
+  ssh = await ssh_connect({ host, username, privateKey });
 
   print('Starting runner...');
-  //const xx = await ssh.execCommand('docker system prune --all -f');
-  //print(xx);
   await ssh.putFile('terraform.tfstate', 'terraform.tfstate');
   await ssh.putFile('main.tf', 'main.tf');
   const start_runner_out = await ssh.execCommand(start_runner_cmd);
   print(start_runner_out);
 
   await ssh.dispose();
-}
+};
+
+const runner_join_repo = async () => {
+  await sleep(20);
+};
 
 const run_terraform = async opts => {
-  const { tpl = 'aws' } = opts;
+  const { region, instance_ami, instance_type, tf_file } = opts;
 
   print('Initializing terraform...');
-  await fs.writeFile('main.tf', TERRAFORM_TPLS[tpl]);
+
+  if (tf_file) {
+    await fs.writeFile('main.tf', await fs.readFile(tf_file));
+  } else {
+    const tpl = `
+terraform {
+  required_providers {
+    davidgortega = {
+      versions = ["0.2"]
+      source = "github.com/davidgortega/davidgortega"
+    }
+  }
+}
+
+provider "davidgortega" {}
+
+resource "davidgortega_machine" "machine" {
+  ${region ? `region = "${region}"` : ''}
+  ${instance_type ? `instance_ami = "${instance_type}"` : ''}
+  ${instance_ami ? `instance_ami = "${instance_ami}"` : ''}
+}
+`;
+    await fs.writeFile('main.tf', tpl);
+  }
 
   const init_out = await exec('terraform init');
   print(init_out);
-
-  /* const plan_out = await exec('terraform plan');
-  print(plan_out); */
 
   const apply_out = await exec('terraform apply -auto-approve');
   print(apply_out);
@@ -110,30 +156,38 @@ const run_terraform = async opts => {
   const terraform_state = JSON.parse(terraform_state_json);
 
   return terraform_state;
-}
+};
 
-const cleanup_terraform = async (opts) => {
+const cleanup_terraform = async opts => {
   print('Cleaning up terraform...');
-  try { await fs.rmdir('.terraform', { recursive: true }); } catch(err){}
-  try { await fs.unlink('terraform.tfstate'); } catch(err){}
-  try { await fs.unlink('terraform.tfstate.backup'); } catch(err){}
-  try { await fs.unlink('main.tf'); } catch(err){}
-  try { await fs.unlink('key.pem'); } catch(err){}
-}
+  try {
+    await fs.rmdir('.terraform', { recursive: true });
+  } catch (err) {}
+  try {
+    await fs.unlink('terraform.tfstate');
+  } catch (err) {}
+  try {
+    await fs.unlink('terraform.tfstate.backup');
+  } catch (err) {}
+  try {
+    await fs.unlink('main.tf');
+  } catch (err) {}
+  try {
+    await fs.unlink('key.pem');
+  } catch (err) {}
+};
 
-const destroy_terraform = async (opts) => {
+const destroy_terraform = async opts => {
   print('Performing terraform destroy...');
   console.log(await exec('terraform destroy -auto-approve'));
-}
+};
 
 const run = async opts => {
   try {
     const terraform_state = await run_terraform(opts);
 
-    await sleep(10);
-    await setup_runner({ terraform_state });
-    await sleep(10);
-
+    await setup_runner({ terraform_state, ...opts });
+    await runner_join_repo();
   } catch (err) {
     await destroy_terraform({});
     await cleanup_terraform({});
@@ -145,6 +199,16 @@ const run = async opts => {
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path> --file <string>`)
-  .help('h');
+  .usage(`Usage: $0`)
+  .required('repo_token')
+  .required('runner_repo')
+  .required('runner_labels')
+  .default('runner_name')
+  .default('runner_idle_timeout')
+  .default('cml_image')
+  .default('region')
+  .default('instance_ami')
+  .default('instance_type')
+  .default('tf_file')
+  .help('h').argv;
 run(argv).catch(e => handle_error(e));

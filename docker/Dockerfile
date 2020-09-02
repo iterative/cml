@@ -35,11 +35,6 @@ RUN apt-get update && \
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-# TERRAFORM
-RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
-    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt update && apt-get install terraform
-
 # GITLAB RUNNER AND GITHUB RUNNER
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
@@ -66,15 +61,27 @@ RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt -y install dvc && \
     apt -y install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-ADD "./" "/cml"
 RUN npm config set user 0 && \
     npm config set unsafe-perm true && \
-    npm install -g /cml && \
     npm install -g vega-cli && \
     npm install -g vega-lite && \
     apt-get install -y libfontconfig-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+ADD "./" "/cml"
+RUN npm config set user 0 && \
+    npm config set unsafe-perm true && \
+    npm install -g /cml
+
+# TERRAFORM
+RUN wget https://github.com/DavidGOrtega/terraform-provider-davidgortega/archive/v0.0.5.tar.gz && \
+    tar xzf v0.0.5.tar.gz && \
+    wget -q https://storage.googleapis.com/golang/getgo/installer_linux && \
+    export SHELL=/bin/bash && chmod +x installer_linux && ./installer_linux && /bin/bash -c "source /root/.bash_profile; cd terraform-provider-davidgortega-0.0.5; go mod vendor; make install" && \
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
+    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    apt update && apt-get install -y terraform
 
 # # CUDNN
 # ARG CUDA
