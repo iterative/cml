@@ -14,7 +14,6 @@ const {
   repo_token
 } = process.env;
 
-const [owner, repo] = CI_PROJECT_PATH.split('/');
 const IS_PR = CI_MERGE_REQUEST_ID;
 const REF = CI_COMMIT_REF_NAME;
 const HEAD_SHA = CI_COMMIT_SHA;
@@ -36,7 +35,9 @@ const comment = async opts => {
 };
 
 const get_runner_token = async () => {
-  const endpoint = `${CI_API_V4_URL}/projects/${owner}%2F${repo}`;
+  const endpoint = `${CI_API_V4_URL}/projects/${encodeURIComponent(
+    CI_PROJECT_PATH
+  )}`;
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'GET', headers });
   const project = await response.json();
