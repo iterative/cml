@@ -45,7 +45,7 @@ const shutdown_docker_machine = async () => {
   }
 };
 
-const shutdown = async error => {
+const shutdown = async (error) => {
   try {
     console.log('Unregistering runner');
 
@@ -128,7 +128,7 @@ const run = async () => {
 
   const proc = spawn(command, { shell: true });
 
-  proc.stderr.on('data', data => {
+  proc.stderr.on('data', (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && !IS_GITHUB) {
@@ -139,7 +139,7 @@ const run = async () => {
     }
   });
 
-  proc.stdout.on('data', async data => {
+  proc.stdout.on('data', async (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && IS_GITHUB && data.includes('Running job')) {
@@ -166,6 +166,6 @@ const run = async () => {
   }, 1000);
 };
 
-run().catch(err => {
+run().catch((err) => {
   shutdown(err);
 });

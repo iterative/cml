@@ -7,7 +7,7 @@ module.exports.piped_arg = () => {
   return this.piped ? argv[argv.length - 1] : undefined;
 };
 
-module.exports.load = format => {
+module.exports.load = (format) => {
   const chunks = [];
   const BUFSIZE = 65536;
   let buffer;
