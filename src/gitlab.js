@@ -23,7 +23,7 @@ const USER_NAME = GITLAB_USER_NAME;
 
 const TOKEN = repo_token || GITLAB_TOKEN;
 
-const comment = async opts => {
+const comment = async (opts) => {
   const { head_sha, report } = opts;
 
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
@@ -44,7 +44,7 @@ const get_runner_token = async () => {
   return project.runners_token;
 };
 
-const register_runner = async opts => {
+const register_runner = async (opts) => {
   const endpoint = `${CI_API_V4_URL}/runners`;
 
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
@@ -62,7 +62,7 @@ const register_runner = async opts => {
   return runner;
 };
 
-const handle_error = e => {
+const handle_error = (e) => {
   console.error(e.message);
   process.exit(1);
 };
