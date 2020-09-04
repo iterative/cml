@@ -24,9 +24,9 @@ const USER_NAME = GITLAB_USER_NAME;
 const TOKEN = repo_token || GITLAB_TOKEN;
 
 const comment = async opts => {
-  const { head_sha, report } = opts;
+  const { commit_sha, report } = opts;
 
-  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);

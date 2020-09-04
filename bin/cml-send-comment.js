@@ -14,13 +14,13 @@ const run = async opts => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
-  await comment({ head_sha, report });
+  await comment({ commit_sha: head_sha, report });
 };
 
 const argv = yargs
   .usage(`Usage: $0 <path> --head-sha <string>`)
-  .default('head-sha')
-  .describe('head-sha', 'Commit sha')
+  .default('commit-sha')
+  .describe('commit-sha', 'Commit sha')
   .help('h')
   .demand(1).argv;
 run(argv).catch(e => handle_error(e));
