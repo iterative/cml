@@ -85,7 +85,10 @@ const handle_error = e => {
 
 exports.is_pr = IS_PR;
 exports.ref = REF;
-exports.head_sha = HEAD_SHA;
+exports.head_sha =
+  GITHUB_EVENT_NAME === 'pull_request'
+    ? github.event.pull_request.head.sha
+    : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.comment = comment;
