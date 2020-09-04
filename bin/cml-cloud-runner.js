@@ -13,7 +13,7 @@ const { handle_error } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
-const ssh_connect = async opts => {
+const ssh_connect = async (opts) => {
   const { host, username, privateKey } = opts;
   const ssh = new NodeSSH();
 
@@ -39,7 +39,7 @@ const ssh_connect = async opts => {
   return ssh;
 };
 
-const setup_runner = async opts => {
+const setup_runner = async (opts) => {
   const {
     terraform_state,
     username = 'ubuntu',
@@ -117,7 +117,7 @@ const runner_join_repo = async () => {
   await sleep(20);
 };
 
-const run_terraform = async opts => {
+const run_terraform = async (opts) => {
   const { region, instance_ami, instance_type, tf_file } = opts;
 
   print('Initializing terraform...');
@@ -158,7 +158,7 @@ resource "davidgortega_machine" "machine" {
   return terraform_state;
 };
 
-const cleanup_terraform = async opts => {
+const cleanup_terraform = async (opts) => {
   print('Cleaning up terraform...');
   try {
     await fs.rmdir('.terraform', { recursive: true });
@@ -177,12 +177,12 @@ const cleanup_terraform = async opts => {
   } catch (err) {}
 };
 
-const destroy_terraform = async opts => {
+const destroy_terraform = async (opts) => {
   print('Performing terraform destroy...');
   console.log(await exec('terraform destroy -auto-approve'));
 };
 
-const run = async opts => {
+const run = async (opts) => {
   try {
     const terraform_state = await run_terraform(opts);
 
@@ -211,4 +211,4 @@ const argv = yargs
   .default('instance_type')
   .default('tf_file')
   .help('h').argv;
-run(argv).catch(e => handle_error(e));
+run(argv).catch((e) => handle_error(e));

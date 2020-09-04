@@ -20,7 +20,7 @@ const exec = async (command, opts) => {
   });
 };
 
-const is_svg = async opts => {
+const is_svg = async (opts) => {
   const { path, buffer } = opts;
 
   if (path && PATH.extname(path).toLowerCase() === '.svg') return true;
@@ -34,7 +34,7 @@ const is_svg = async opts => {
   return false;
 };
 
-const mime_type = async opts => {
+const mime_type = async (opts) => {
   const { path, buffer } = opts;
 
   try {
@@ -52,7 +52,7 @@ const mime_type = async opts => {
   }
 };
 
-const upload = async opts => {
+const upload = async (opts) => {
   const { path, buffer } = opts;
   const endpoint = 'https://asset.cml.dev';
   const mime = await mime_type(opts);
@@ -93,12 +93,11 @@ const randid = () => {
   );
 };
 
-
 const sleep = (secs) => {
   return new Promise((resolve) => {
     setTimeout(resolve, secs * 1000);
   });
-}
+};
 
 exports.exec = exec;
 exports.upload = upload;
