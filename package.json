@@ -56,7 +56,7 @@
     ]
   },
   "dependencies": {
-    "@actions/github": "^2.2.0",
+    "@actions/github": "^4.0.0",
     "canvas": "^2.6.1",
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
