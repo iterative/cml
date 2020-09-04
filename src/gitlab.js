@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const {URLSearchParams} = require('url');
+const { URLSearchParams } = require('url');
 
 const {
   CI_API_V4_URL,
@@ -22,33 +22,33 @@ const USER_NAME = GITLAB_USER_NAME;
 
 const TOKEN = repo_token || GITLAB_TOKEN;
 
-const comment = async opts => {
-  const {head_sha, report} = opts;
+const comment = async (opts) => {
+  const { head_sha, report } = opts;
 
-  const endpoint = `${CI_API_V4_URL}/projects/${
-      CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${head_sha}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);
 
-  const headers = {'PRIVATE-TOKEN' : TOKEN};
-  await fetch(endpoint, {method : 'POST', headers, body});
+  const headers = { 'PRIVATE-TOKEN': TOKEN };
+  await fetch(endpoint, { method: 'POST', headers, body });
 };
 
 const get_runner_token = async () => {
-  const endpoint =
-      `${CI_API_V4_URL}/projects/${encodeURIComponent(CI_PROJECT_PATH)}`;
-  const headers = {'PRIVATE-TOKEN' : TOKEN, Accept : 'application/json'};
-  const response = await fetch(endpoint, {method : 'GET', headers});
+  const endpoint = `${CI_API_V4_URL}/projects/${encodeURIComponent(
+    CI_PROJECT_PATH
+  )}`;
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(endpoint, { method: 'GET', headers });
   const project = await response.json();
 
   return project.runners_token;
 };
 
-const register_runner = async opts => {
+const register_runner = async (opts) => {
   const endpoint = `${CI_API_V4_URL}/runners`;
 
-  const headers = {'PRIVATE-TOKEN' : TOKEN, Accept : 'application/json'};
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
 
   const body = new URLSearchParams();
   body.append('token', opts.token);
@@ -57,13 +57,13 @@ const register_runner = async opts => {
   body.append('access_level', 'not_protected');
   body.append('tag_list', opts.tags);
 
-  const response = await fetch(endpoint, {method : 'POST', headers, body});
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
   const runner = await response.json();
 
   return runner;
 };
 
-const handle_error = e => {
+const handle_error = (e) => {
   console.error(e.message);
   process.exit(1);
 };
