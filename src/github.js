@@ -23,7 +23,7 @@ const octokit = github.getOctokit(TOKEN);
 
 const CHECK_TITLE = 'CML Report';
 
-const create_check_report = async opts => {
+const create_check_report = async (opts) => {
   const {
     head_sha,
     report,
@@ -50,7 +50,7 @@ const create_check_report = async opts => {
   return check;
 };
 
-const comment = async opts => {
+const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
   await octokit.repos.createCommitComment({
@@ -72,11 +72,11 @@ const get_runner_token = async () => {
   return token;
 };
 
-const register_runner = async opts => {
+const register_runner = async (opts) => {
   throw new Error('not yet implemented');
 };
 
-const handle_error = e => {
+const handle_error = (e) => {
   console.error(e.message);
   process.exit(1);
 };

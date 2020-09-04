@@ -3,7 +3,7 @@ const vegalite = require('vega-lite');
 
 const { upload } = require('./utils');
 
-const publish_vega = async opts => {
+const publish_vega = async (opts) => {
   const { data, md, title } = opts;
   const is_vega_lite = data.$schema.includes('vega-lite');
   const spec = is_vega_lite ? vegalite.compile(data).spec : data;
@@ -17,7 +17,7 @@ const publish_vega = async opts => {
   return output;
 };
 
-const publish_file = async opts => {
+const publish_file = async (opts) => {
   const { md = false, title = '' } = opts;
   const { mime, uri } = await upload({ ...opts });
 
