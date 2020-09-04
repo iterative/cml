@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
-const { exec, randid } = require('../src/utils');
-const { URL } = require('url');
+const {spawn} = require('child_process');
+const {exec, randid} = require('../src/utils');
+const {URL} = require('url');
 
 const {
   RUNNER_PATH,
@@ -17,13 +17,11 @@ const {
   RUNNER_IMAGE = 'dvcorg/cml:latest'
 } = process.env;
 
-const { protocol, host, pathname } = new URL(RUNNER_REPO);
+const {protocol, host, pathname} = new URL(RUNNER_REPO);
 const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
 process.env.CI_API_V4_URL = `${RUNNER_REPO_ORIGIN}/api/v4/`;
-process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
-  1,
-  pathname.length - (pathname.endsWith('/') ? 1 : 0)
-);
+process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH =
+    pathname.substring(1, pathname.length - (pathname.endsWith('/') ? 1 : 0));
 
 const IS_GITHUB = RUNNER_REPO_ORIGIN === 'https://github.com';
 let TIMEOUT_TIMER = 0;
@@ -31,15 +29,14 @@ let JOB_RUNNING = false;
 let RUNNER_TOKEN;
 let GITLAB_CI_TOKEN;
 
-const { get_runner_token, register_runner } = IS_GITHUB
-  ? require('../src/github')
-  : require('../src/gitlab');
+const {get_runner_token, register_runner} =
+    IS_GITHUB ? require('../src/github') : require('../src/gitlab');
 
 const shutdown_docker_machine = async () => {
   console.log('Shutting down docker machine');
   try {
     DOCKER_MACHINE &&
-      console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
+        console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
   } catch (err) {
     console.log(err.message);
   }
@@ -51,24 +48,20 @@ const shutdown = async error => {
 
     try {
       if (IS_GITHUB) {
-        console.log(
-          await exec(
-            `${RUNNER_PATH}/config.sh remove --token "${RUNNER_TOKEN}"`
-          )
-        );
+        console.log(await exec(
+            `${RUNNER_PATH}/config.sh remove --token "${RUNNER_TOKEN}"`));
       } else {
         console.log(await exec(`gitlab-runner verify --delete`));
-        console.log(
-          await exec(
-            `gitlab-runner unregister --url "${RUNNER_REPO_ORIGIN}" --token "${GITLAB_CI_TOKEN}" `
-          )
-        );
+        console.log(await exec(`gitlab-runner unregister --url "${
+            RUNNER_REPO_ORIGIN}" --token "${GITLAB_CI_TOKEN}" `));
       }
-    } catch (err) {}
+    } catch (err) {
+    }
 
     await shutdown_docker_machine();
 
-    if (error) throw error;
+    if (error)
+      throw error;
 
     return process.exit(0);
   } catch (err) {
@@ -85,8 +78,7 @@ const run = async () => {
   RUNNER_TOKEN = await get_runner_token();
   if (!RUNNER_TOKEN) {
     throw new Error(
-      'RUNNER_TOKEN is needed to start the runner. Are you setting a runner?'
-    );
+        'RUNNER_TOKEN is needed to start the runner. Are you setting a runner?');
   }
 
   if (IS_GITHUB && RUNNER_EXECUTOR !== 'shell') {
@@ -98,19 +90,15 @@ const run = async () => {
   let command;
   if (IS_GITHUB) {
     console.log('Registering Github runner');
-    console.log(
-      await exec(
-        `${RUNNER_PATH}/config.sh --url "${RUNNER_REPO}" --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --labels "${RUNNER_LABELS}" --work "_work"`
-      )
-    );
+    console.log(await exec(`${RUNNER_PATH}/config.sh --url "${
+        RUNNER_REPO}" --token "${RUNNER_TOKEN}" --name "${
+        RUNNER_NAME}" --labels "${RUNNER_LABELS}" --work "_work"`));
 
     command = `${RUNNER_PATH}/run.sh`;
   } else {
     console.log('Registering Gitlab runner');
-    const runner = await register_runner({
-      tags: RUNNER_LABELS,
-      token: RUNNER_TOKEN
-    });
+    const runner =
+        await register_runner({tags : RUNNER_LABELS, token : RUNNER_TOKEN});
 
     GITLAB_CI_TOKEN = runner.token;
 
@@ -126,16 +114,17 @@ const run = async () => {
       --limit 1`;
   }
 
-  const proc = spawn(command, { shell: true });
+  const proc = spawn(command, {shell : true});
 
   proc.stderr.on('data', data => {
     data && console.log(data.toString('utf8'));
 
     if (data && !IS_GITHUB) {
       try {
-        const { msg } = JSON.parse(data);
+        const {msg} = JSON.parse(data);
         msg.includes('runner has not received a job') && shutdown();
-      } catch (err) {}
+      } catch (err) {
+      }
     }
   });
 
@@ -147,25 +136,18 @@ const run = async () => {
       TIMEOUT_TIMER = 0;
     }
 
-    if (
-      data &&
-      IS_GITHUB &&
-      data.includes('Job') &&
-      data.includes('completed with result')
-    ) {
+    if (data && IS_GITHUB && data.includes('Job') &&
+        data.includes('completed with result')) {
       JOB_RUNNING = false;
     }
   });
 
   const watcher = setInterval(() => {
-    IS_GITHUB &&
-      TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT &&
-      shutdown() &&
-      clearInterval(watcher);
-    if (!JOB_RUNNING) TIMEOUT_TIMER++;
+    IS_GITHUB && TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT && shutdown() &&
+        clearInterval(watcher);
+    if (!JOB_RUNNING)
+      TIMEOUT_TIMER++;
   }, 1000);
 };
 
-run().catch(err => {
-  shutdown(err);
-});
+run().catch(err => { shutdown(err); });
