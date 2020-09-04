@@ -83,6 +83,8 @@ const handle_error = e => {
   process.exit(1);
 };
 
+if (GITHUB_EVENT_NAME === 'pull_request') console.log(JSON.stringify(github));
+
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha =
