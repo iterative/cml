@@ -15,7 +15,7 @@ const { handle_error } = process.env.GITHUB_ACTIONS
 
 const { TB_CREDENTIALS } = process.env;
 
-const run = async opts => {
+const run = async (opts) => {
   const {
     md,
     file,
@@ -43,12 +43,12 @@ const run = async opts => {
 
   const proc = spawn(command, { detached: true, shell: true });
 
-  proc.stderr.on('data', data => {
+  proc.stderr.on('data', (data) => {
     data && console.error(data.toString('utf8'));
   });
 
   let output = '';
-  proc.stdout.on('data', async data => {
+  proc.stdout.on('data', async (data) => {
     if (data) {
       console.error(data.toString('utf8'));
 
@@ -68,7 +68,7 @@ const run = async opts => {
     }
   });
 
-  proc.on('exit', code => {
+  proc.on('exit', (code) => {
     console.error(output);
     throw new Error(`Tensorboard process exited with code ${code}`);
   });
@@ -100,4 +100,4 @@ const argv = yargs
   .alias('f', 'file')
   .help('h').argv;
 
-run(argv).catch(e => handle_error(e));
+run(argv).catch((e) => handle_error(e));
