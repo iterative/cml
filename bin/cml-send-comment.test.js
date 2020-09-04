@@ -30,9 +30,9 @@ describe('CML e2e', () => {
       "Usage: cml-send-comment.js <path> --head-sha <string>
 
       Options:
-        --version   Show version number                                      [boolean]
-        --head-sha  Commit sha
-        -h          Show help                                                [boolean]"
+        --version     Show version number                                    [boolean]
+        --commit-sha  Commit sha
+        -h            Show help                                              [boolean]"
     `);
   });
 });
