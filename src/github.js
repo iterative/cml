@@ -81,13 +81,11 @@ const handle_error = e => {
   process.exit(1);
 };
 
-if (GITHUB_EVENT_NAME === 'pull_request') console.log(JSON.stringify(github));
-
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha =
   GITHUB_EVENT_NAME === 'pull_request'
-    ? github.event.pull_request.head.sha
+    ? github.context.payload.after
     : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
