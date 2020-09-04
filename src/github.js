@@ -23,7 +23,7 @@ const octokit = github.getOctokit(TOKEN);
 
 const CHECK_TITLE = 'CML Report';
 
-const create_check_report = async opts => {
+const create_check_report = async (opts) => {
   const {
     head_sha,
     report,
@@ -44,39 +44,46 @@ const create_check_report = async opts => {
     completed_at,
     conclusion,
     status,
-    output : {title, summary : report}
+    output: { title, summary: report }
   });
 
   return check;
 };
 
-const comment = async opts => {
-  const {commit_sha, report} = opts;
+const comment = async (opts) => {
+  const { commit_sha, report } = opts;
 
-  await octokit.repos.createCommitComment(
-      {owner, repo, commit_sha, body : report});
+  await octokit.repos.createCommitComment({
+    owner,
+    repo,
+    commit_sha,
+    body: report
+  });
 };
 
 const get_runner_token = async () => {
-  const {data : {token}} =
-      await octokit.actions.createRegistrationToken({owner, repo});
+  const {
+    data: { token }
+  } = await octokit.actions.createRegistrationToken({ owner, repo });
 
   return token;
 };
 
-const register_runner =
-    async opts => { throw new Error('not yet implemented'); };
+const register_runner = async (opts) => {
+  throw new Error('not yet implemented');
+};
 
-const handle_error = e => {
+const handle_error = (e) => {
   console.error(e.message);
   process.exit(1);
 };
 
 exports.is_pr = IS_PR;
 exports.ref = REF;
-exports.head_sha = GITHUB_EVENT_NAME === 'pull_request'
-                       ? github.context.payload.after
-                       : HEAD_SHA;
+exports.head_sha =
+  GITHUB_EVENT_NAME === 'pull_request'
+    ? github.context.payload.after
+    : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.comment = comment;

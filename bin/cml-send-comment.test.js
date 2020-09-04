@@ -1,21 +1,24 @@
 jest.setTimeout(200000);
 
-const {exec} = require('../src/utils');
+const { exec } = require('../src/utils');
 const fs = require('fs').promises;
-const {publish_file} = require('../src/report');
+const { publish_file } = require('../src/report');
 
 describe('CML e2e', () => {
   test('cml-send-comment', async () => {
     const path = 'comment.md';
-    const img = await publish_file(
-        {path : 'assets/logo.png', md : true, title : 'logo'});
+    const img = await publish_file({
+      path: 'assets/logo.png',
+      md: true,
+      title: 'logo'
+    });
 
     const report = `## Test Comment Report \n ${img}`;
 
     await fs.writeFile(path, report);
 
     process.env.GITHUB_ACTIONS &&
-        (await exec(`node ./bin/cml-send-comment.js ${path}`));
+      (await exec(`node ./bin/cml-send-comment.js ${path}`));
 
     await fs.unlink(path);
   });
