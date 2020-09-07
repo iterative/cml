@@ -76,7 +76,7 @@ const setup_runner = async (opts) => {
 
   const start_runner_cmd = `
     sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-    docker run --name runner --rm \
+    docker run --name runner --rm -d \
     -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
     -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
     -v $(pwd)/terraform.tfstate:/terraform.tfstate \
@@ -192,7 +192,7 @@ const run = async (opts) => {
     await destroy_terraform({});
     await cleanup_terraform({});
 
-    throw new Error(`An error ooccured deploying the runner: ${err.message}`);
+    throw new Error(`An error occurred deploying the runner: ${err.message}`);
   }
 
   await cleanup_terraform();
