@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     davidgortega = {
-      versions = ["0.2"]
+      versions = ["0.1"]
       source = "github.com/davidgortega/davidgortega"
     }
   }

@@ -76,7 +76,7 @@ const setup_runner = async (opts) => {
 
   const start_runner_cmd = `
     sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-    docker run --name runner --rm -d \
+    docker run --name runner --rm \
     -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
     -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
     -v $(pwd)/terraform.tfstate:/terraform.tfstate \
@@ -129,7 +129,7 @@ const run_terraform = async (opts) => {
 terraform {
   required_providers {
     davidgortega = {
-      versions = ["0.2"]
+      versions = ["0.1"]
       source = "github.com/davidgortega/davidgortega"
     }
   }
@@ -146,7 +146,7 @@ resource "davidgortega_machine" "machine" {
     await fs.writeFile('main.tf', tpl);
   }
 
-  const init_out = await exec('terraform init');
+  const init_out = await exec('terraform init -plugin-dir=/terraform_plugins');
   print(init_out);
 
   const apply_out = await exec('terraform apply -auto-approve');

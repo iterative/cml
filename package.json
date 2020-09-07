@@ -62,6 +62,7 @@
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
+    "node-ssh": "^11.0.0",
     "prettier": "^2.1.1",
     "vega": "^5.9.0",
     "vega-cli": "^5.11.1",
