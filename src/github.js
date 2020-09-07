@@ -1,5 +1,4 @@
 const github = require('@actions/github');
-const { request } = require('@octokit/request');
 
 const {
   GITHUB_REPOSITORY = '',
@@ -20,7 +19,7 @@ const USER_NAME = 'GitHub Action';
 
 const TOKEN = repo_token || GITHUB_TOKEN;
 
-const octokit = new github.GitHub(TOKEN);
+const octokit = github.getOctokit(TOKEN);
 
 const CHECK_TITLE = 'CML Report';
 
@@ -52,15 +51,14 @@ const create_check_report = async (opts) => {
 };
 
 const comment = async (opts) => {
-  const { head_sha, report } = opts;
+  const { commit_sha, report } = opts;
 
-  await request(
-    `POST /repos/${GITHUB_REPOSITORY}/commits/${head_sha}/comments`,
-    {
-      headers: { authorization: `token ${TOKEN}` },
-      body: report
-    }
-  );
+  await octokit.repos.createCommitComment({
+    owner,
+    repo,
+    commit_sha,
+    body: report
+  });
 };
 
 const get_runner_token = async () => {
@@ -85,7 +83,10 @@ const handle_error = (e) => {
 
 exports.is_pr = IS_PR;
 exports.ref = REF;
-exports.head_sha = HEAD_SHA;
+exports.head_sha =
+  GITHUB_EVENT_NAME === 'pull_request'
+    ? github.context.payload.after
+    : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.comment = comment;
