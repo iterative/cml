@@ -19,10 +19,11 @@ const {
 
 const { protocol, host, pathname } = new URL(RUNNER_REPO);
 const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
-process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
-  1
-);
 process.env.CI_API_V4_URL = `${RUNNER_REPO_ORIGIN}/api/v4/`;
+process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
+  1,
+  pathname.length - (pathname.endsWith('/') ? 1 : 0)
+);
 
 const IS_GITHUB = RUNNER_REPO_ORIGIN === 'https://github.com';
 let TIMEOUT_TIMER = 0;

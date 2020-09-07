@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.35",
+  "version": "0.1.37",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -57,14 +57,9 @@
   },
   "dependencies": {
     "@actions/github": "^4.0.0",
-    "canvas": "^2.6.1",
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
-    "prettier": "^2.1.1",
-    "vega": "^5.9.0",
-    "vega-cli": "^5.11.1",
-    "vega-lite": "^4.0.2",
     "yargs": "^15.1.0"
   },
   "devDependencies": {
@@ -78,6 +73,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "husky": "^4.2.3",
     "jest": "^24.9.0",
-    "lint-staged": "^10.0.8"
+    "lint-staged": "^10.0.8",
+    "prettier": "^2.1.1"
   }
 }

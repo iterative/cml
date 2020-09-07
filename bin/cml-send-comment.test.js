@@ -32,6 +32,7 @@ describe('CML e2e', () => {
       Options:
         --version     Show version number                                    [boolean]
         --commit-sha  Commit sha
+        --head-sha    Commit sha                  [deprecated: Use commit-sha instead]
         -h            Show help                                              [boolean]"
     `);
   });
