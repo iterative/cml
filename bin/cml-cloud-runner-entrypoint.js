@@ -6,6 +6,8 @@ const fs = require('fs').promises;
 const { URL } = require('url');
 
 const {
+  DOCKER_MACHINE, // DEPRECATED
+
   RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
@@ -33,6 +35,16 @@ let GITLAB_CI_TOKEN;
 const { get_runner_token, register_runner } = IS_GITHUB
   ? require('../src/github')
   : require('../src/gitlab');
+
+const shutdown_docker_machine = async () => {
+  console.log('Shutting down docker machine');
+  try {
+    DOCKER_MACHINE &&
+      console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
+  } catch (err) {
+    console.log(err.message);
+  }
+};
 
 const shutdown_host = async () => {
   try {
@@ -76,6 +88,7 @@ const shutdown = async (error) => {
       }
     } catch (err) {}
 
+    await shutdown_docker_machine();
     await shutdown_host();
 
     if (error) throw error;
