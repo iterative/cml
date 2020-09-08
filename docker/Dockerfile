@@ -34,10 +34,8 @@ RUN add-apt-repository universe -y && \
     curl -sL https://deb.nodesource.com/setup_12.x | bash && \
     apt-get update && \
     apt-get install -y \
-        git && \
-        dvc && \
-        nodejs && \
-        libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && libfontconfig-dev && \
+        git dvc nodejs \
+        libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libfontconfig-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN npm config set user 0 && \
