@@ -113,7 +113,9 @@ RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amaz
 # TERRAFORM
 RUN wget https://github.com/iterative/terraform-provider-iterative/archive/v0.1.0.tar.gz && \
     tar xzf v0.1.0.tar.gz && \
-    /bin/bash -c "cd terraform-provider-iterative-0.1.0; go mod vendor; make build; mkdir -p /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64; mv terraform-provider-iterative /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64/" && \
+    wget -q https://storage.googleapis.com/golang/getgo/installer_linux && \
+    export SHELL=/bin/bash && chmod +x installer_linux && ./installer_linux && \
+    /bin/bash -c "source /root/.bash_profile; cd terraform-provider-iterative-0.1.0; go mod vendor; make build; mkdir -p /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64; mv terraform-provider-iterative /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64/" && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     apt update && apt-get install -y terraform && \
