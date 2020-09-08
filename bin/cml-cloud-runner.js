@@ -17,12 +17,13 @@ const ssh_connect = async (opts) => {
   const { host, username, privateKey } = opts;
   const ssh = new NodeSSH();
 
+  console.log('Connecting through SSH');
+
   let ready = false;
   const maxtrials = 100;
   let trials = 0;
   while (!ready) {
     try {
-      console.log('ssh connect...');
       await ssh.connect({
         host,
         username,
@@ -52,11 +53,12 @@ const setup_runner = async (opts) => {
     cml_image = 'davidgortega/cml:tf'
   } = opts;
 
-  if (!repo_token) throw new Error('repo_token is not available.');
-
   const {
     attributes: { instance_ip: host, private_key: privateKey }
   } = terraform_state.resources[0].instances[0];
+
+  if (!host)
+    throw new Error('Your machine does not have a public IP to be reached!');
 
   console.log('These are your machine public ip and private key');
   console.log(host);
