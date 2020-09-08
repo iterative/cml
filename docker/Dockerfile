@@ -27,17 +27,16 @@ RUN apt-get update && \
     locale-gen en_US.UTF-8 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# NODE GIT DVC VEGA DEPS
 RUN add-apt-repository universe -y && \
     add-apt-repository ppa:git-core/ppa -y && \
+    wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-    wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
-    
-# NODE GIT DVC VEGA DEPS
-RUN apt-get update && \
-    apt-get install --no-install-recommends --fix-missing \
+    apt-get update && \
+    apt-get install -y \
         git && \
-        nodejs && \
         dvc && \
+        nodejs && \
         libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && libfontconfig-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
