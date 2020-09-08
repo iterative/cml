@@ -111,11 +111,11 @@ RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amaz
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # TERRAFORM
-RUN wget https://github.com/DavidGOrtega/terraform-provider-davidgortega/archive/v0.0.5.tar.gz && \
-    tar xzf v0.0.5.tar.gz && \
+RUN wget https://github.com/iterative/terraform-provider-iterative/archive/v0.1.0.tar.gz && \
+    tar xzf v0.1.0.tar.gz && \
     wget -q https://storage.googleapis.com/golang/getgo/installer_linux && \
     export SHELL=/bin/bash && chmod +x installer_linux && ./installer_linux && \
-    /bin/bash -c "source /root/.bash_profile; cd terraform-provider-davidgortega-0.0.5; go mod vendor; make build; mkdir -p /terraform_plugins/github.com/davidgortega/davidgortega/0.1/linux_amd64; mv terraform-provider-davidgortega /terraform_plugins/github.com/davidgortega/davidgortega/0.1/linux_amd64/" && \
+    /bin/bash -c "source /root/.bash_profile; cd terraform-provider-iterative-0.1.0; go mod vendor; make build; mkdir -p /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64; mv terraform-provider-iterative /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64/" && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     apt update && apt-get install -y terraform && \
