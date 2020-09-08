@@ -107,6 +107,8 @@ const setup_runner = async (opts) => {
   ssh = await ssh_connect({ host, username, privateKey });
 
   print('Starting runner...');
+  console.log(await exec('ls terraform.tfstate'));
+  console.log(await exec('ls main.tf'));
   await ssh.putFile('terraform.tfstate', 'terraform.tfstate');
   await ssh.putFile('main.tf', 'main.tf');
   const start_runner_out = await ssh.execCommand(start_runner_cmd);
