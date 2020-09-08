@@ -130,16 +130,16 @@ const run_terraform = async (opts) => {
     const tpl = `
 terraform {
   required_providers {
-    davidgortega = {
+    iterative = {
       versions = ["0.1"]
-      source = "github.com/davidgortega/davidgortega"
+      source = "github.com/iterative/iterative"
     }
   }
 }
 
-provider "davidgortega" {}
+provider "iterative" {}
 
-resource "davidgortega_machine" "machine" {
+resource "iterative_machine" "machine" {
   ${region ? `region = "${region}"` : ''}
   ${instance_type ? `instance_ami = "${instance_type}"` : ''}
   ${instance_ami ? `instance_ami = "${instance_ami}"` : ''}
