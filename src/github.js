@@ -64,7 +64,7 @@ const comment = async (opts) => {
 const get_runner_token = async () => {
   const {
     data: { token }
-  } = await octokit.actions.createRegistrationToken({
+  } = await octokit.actions.createRegistrationTokenForRepo({
     owner,
     repo
   });
