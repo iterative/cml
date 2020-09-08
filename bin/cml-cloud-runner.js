@@ -45,6 +45,7 @@ const setup_runner = async (opts) => {
     terraform_state,
     username = 'ubuntu',
 
+    gpus,
     repo_token,
     runner_repo,
     runner_labels = 'cml',
@@ -78,7 +79,7 @@ const setup_runner = async (opts) => {
 
   const start_runner_cmd = `
     sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-    docker run --name runner --rm -d \
+    docker run --name runner --rm -d ${gpus ? `--gpus ${gpus}` : ''} \
     -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
     -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
     -v $(pwd)/terraform.tfstate:/terraform.tfstate \
@@ -210,6 +211,11 @@ const argv = yargs
   .default('runner_name')
   .default('runner_idle_timeout')
   .default('cml_image')
+  .default('gpus')
+  .describe(
+    'gpus',
+    'leave empty if no gpu. possible values: all, 1, 2... more information read docker gpus param'
+  )
   .default('region')
   .default('instance_ami')
   .default('instance_type')
