@@ -50,7 +50,7 @@ const setup_runner = async (opts) => {
     runner_labels = 'cml',
     runner_idle_timeout,
     runner_name,
-    cml_image = 'davidgortega/cml:tf'
+    cml_image = 'iterative/cml:latest'
   } = opts;
 
   const {
