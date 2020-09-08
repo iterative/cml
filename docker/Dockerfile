@@ -11,8 +11,6 @@ RUN echo "APT::Get::Assume-Yes \"true\";" > /etc/apt/apt.conf.d/90assumeyes
 
 RUN apt-get update && \
     apt-get install --no-install-recommends --fix-missing \
-        sudo\ 
-        tzdata \
         build-essential \
         apt-utils \
         apt-transport-https \
@@ -23,32 +21,30 @@ RUN apt-get update && \
         wget \
         unzip \
         gpg-agent \
+        sudo \ 
+        tzdata \
         locales && \
-    add-apt-repository universe -y && \
-    add-apt-repository ppa:git-core/ppa -y && \
-    apt-get install -y git && \
-    curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-    apt-get install -y nodejs  && \
     locale-gen en_US.UTF-8 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN add-apt-repository universe -y && \
+    add-apt-repository ppa:git-core/ppa -y && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash && \
+    wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
+    
+# NODE GIT DVC VEGA DEPS
+RUN apt-get update && \
+    apt-get install --no-install-recommends --fix-missing \
+        git && \
+        nodejs && \
+        dvc && \
+        libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && libfontconfig-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN npm config set user 0 && \
+    npm install -g vega-cli vega-lite
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-# Install update pip and nodejs, install dvc and cml
-ADD "./" "/cml"
-RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
-    apt update && \
-    apt -y install dvc && \
-    apt -y install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && \
-    npm config set user 0 && \
-    npm config set unsafe-perm true && \
-    npm install -g /cml && \
-    npm install -g vega-cli && \
-    npm install -g vega-lite && \
-    apt-get install -y libfontconfig-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
 
 # CUDNN
 ARG CUDA
@@ -73,8 +69,7 @@ RUN apt update && apt-get install -y --no-install-recommends \
     libfreetype6-dev \
     libhdf5-serial-dev \
     libzmq3-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
@@ -83,33 +78,28 @@ RUN apt update && \
     apt-get install -y --no-install-recommends \
         libnvinfer${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} \
         libnvinfer-plugin${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/local/cuda/lib64/stubs/libcuda.so \
-            /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
-    echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && \
-    ldconfig
+    ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+    echo /usr/local/cuda/lib64/stubs > /etc/ld.so.conf.d/z-cuda-stubs.conf && ldconfig && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 # TENSORFLOW ENDS
 
-# DOCKER, OUR CUSTOM DOCKER MACHINE FORK THAT SUPPORTS GPU ACCELARATOR
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK THAT SUPPORTS GPU ACCELARATOR (DEPRECATED)
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
-    curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose && \
     apt update && apt install -y golang && \
     go get github.com/iterative/machine && \
     mv $(go env GOPATH)/src/github.com/iterative $(go env GOPATH)/src/github.com/docker && \
     cd $(go env GOPATH)/src/github.com/docker/machine && make build && \
-    ln -s $(go env GOPATH)/src/github.com/docker/machine/bin/docker-machine /usr/local/bin/docker-machine
+    ln -s $(go env GOPATH)/src/github.com/docker/machine/bin/docker-machine /usr/local/bin/docker-machine && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# FIX setup-python Action
+RUN mkdir /__t
+RUN ln -s /__t /opt/hostedtoolcache
+ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 
 # GITLAB RUNNER AND GITHUB RUNNER
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
-
-# FIXES Python setup Action
-RUN mkdir /__t
-RUN ln -s /__t /opt/hostedtoolcache
-ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
 
 RUN mkdir ${RUNNER_PATH}
 WORKDIR ${RUNNER_PATH}
@@ -117,9 +107,14 @@ WORKDIR ${RUNNER_PATH}
 RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
     chmod +x /usr/local/bin/gitlab-runner && \
     gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
-    wget https://github.com/actions/runner/releases/download/v2.267.1/actions-runner-linux-x64-2.267.1.tar.gz && \
-    tar xzf actions-runner-linux-x64-2.267.1.tar.gz && \
+    wget https://github.com/actions/runner/releases/download/v2.273.0/actions-runner-linux-x64-2.273.0.tar.gz && \
+    tar xzf actions-runner-linux-x64-2.273.0.tar.gz && \
     ./bin/installdependencies.sh && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# CML
+ADD "./" "/cml"
+RUN npm config set user 0 && \
+    npm install -g /cml
 
 CMD ["cml-cloud-runner-entrypoint"]
