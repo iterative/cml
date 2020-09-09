@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.39",
+  "version": "0.1.40",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -34,7 +34,8 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-publish": "./bin/cml-publish.js",
     "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
-    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
+    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js",
+    "test-cml-cloud-runner": "./bin/cml-cloud-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -60,6 +61,7 @@
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
+    "node-ssh": "^11.0.0",
     "yargs": "^15.1.0"
   },
   "devDependencies": {

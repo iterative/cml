@@ -2,12 +2,13 @@
 
 const { spawn } = require('child_process');
 const { exec, randid } = require('../src/utils');
+const fs = require('fs').promises;
 const { URL } = require('url');
 
 const {
-  RUNNER_PATH,
+  DOCKER_MACHINE, // DEPRECATED
 
-  DOCKER_MACHINE,
+  RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = '',
@@ -45,6 +46,27 @@ const shutdown_docker_machine = async () => {
   }
 };
 
+const shutdown_host = async () => {
+  try {
+    console.log('Terraform destroy');
+    await fs.writeFile(
+      'terraform.tfstate',
+      await fs.readFile('/terraform.tfstate', 'utf-8')
+    );
+    await fs.writeFile('main.tf', await fs.readFile('/main.tf', 'utf-8'));
+
+    try {
+      console.log(await exec('terraform init -plugin-dir=/terraform_plugins'));
+      console.log(await exec('terraform destroy -auto-approve'));
+    } catch (err) {
+      console.log(err.message);
+      shutdown_host();
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 const shutdown = async (error) => {
   try {
     console.log('Unregistering runner');
@@ -67,6 +89,7 @@ const shutdown = async (error) => {
     } catch (err) {}
 
     await shutdown_docker_machine();
+    await shutdown_host();
 
     if (error) throw error;
 

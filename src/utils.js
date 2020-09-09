@@ -89,6 +89,13 @@ const randid = () => {
   );
 };
 
+const sleep = (secs) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, secs * 1000);
+  });
+};
+
 exports.exec = exec;
 exports.upload = upload;
 exports.randid = randid;
+exports.sleep = sleep;
