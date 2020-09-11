@@ -85,7 +85,7 @@ exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha =
   GITHUB_EVENT_NAME === 'pull_request'
-    ? github.context.payload.after
+    ? github.context.payload.pull_request.head.sha
     : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
