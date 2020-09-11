@@ -60,7 +60,7 @@
     "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-ssh": "^11.0.0",
     "yargs": "^15.1.0"
   },
