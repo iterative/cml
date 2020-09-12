@@ -32,51 +32,52 @@ const run = async (opts) => {
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
   // launch  tensorboard on background
-  const tb_path = await exec('which tensorboard');
   const help = await exec('tensorboard dev upload -h');
   const extra_params_found =
     (name || description) && help.indexOf('--description') >= 0;
   const extra_params = extra_params_found
     ? `--name "${name}" --description "${description}"`
     : '';
-  const command = `python -u ${tb_path} dev upload --logdir ${logdir} ${extra_params}`;
 
-  const proc = spawn(command, { detached: true, shell: true });
-
-  proc.stderr.on('data', (data) => {
-    data && console.error(data.toString('utf8'));
-  });
-
-  let output = '';
-  proc.stdout.on('data', async (data) => {
-    if (data) {
-      console.error(data.toString('utf8'));
-
-      output += data.toString('utf8');
-
-      const uri_index = output.indexOf('https://', 0);
-      if (uri_index > -1) {
-        output = output.substring(uri_index, output.length - 1);
-
-        if (md) output = `[${title || name}](${output})`;
-
-        if (!file) print(output);
-        else await fs.writeFile(file, output);
-
-        process.exit(0);
-      }
-    }
-  });
-
-  proc.on('exit', (code) => {
-    console.error(output);
-    throw new Error(`Tensorboard process exited with code ${code}`);
+  const command = `tensorboard dev upload --logdir ${logdir} ${extra_params}`;
+  const stdout_path = 'stdout.log';
+  const stdout_fh = await fs.open(stdout_path, 'a');
+  const stderr_path = 'stderr.log';
+  const stderr_fh = await fs.open(stderr_path, 'a');
+  const proc = spawn(command, [], {
+    detached: true,
+    shell: true,
+    stdio: ['ignore', stdout_fh, stderr_fh]
   });
 
   proc.unref();
+  proc.on('exit', (code) => {
+    throw new Error(`Tensorboard process exited with code ${code}`);
+  });
 
-  setTimeout(() => {
-    // waits 1 min before dies
+  // reads stdout every 5 secs to find the tb uri
+  setInterval(async () => {
+    const stdout_data = await fs.readFile(stdout_path, 'utf8');
+    const regex = /(https?:\/\/[^\s]+)/;
+    const matches = stdout_data.match(regex);
+
+    if (matches.length) {
+      let output = matches[0];
+
+      if (md) output = `[${title || name}](${output})`;
+
+      if (!file) print(output);
+      else await fs.appendFile(file, output);
+
+      stdout_fh.close() && stderr_fh.close();
+      process.exit(0);
+    }
+  }, 1 * 5 * 1000);
+
+  // waits 1 min before dies
+  setTimeout(async () => {
+    stdout_fh.close() && stderr_fh.close();
+    console.error(await fs.readFile(stderr_path, 'utf8'));
     throw new Error('Tensorboard took too long! Canceled.');
   }, 1 * 60 * 1000);
 };
@@ -85,19 +86,27 @@ const argv = yargs
   .usage(`Usage: $0 <path> --file <string>`)
   .default('credentials')
   .alias('c', 'credentials')
-  .default('logdir', '', 'Directory containing the logs to process')
-  .default('name', '', 'Title of the experiment. Max 100 characters.')
+  .default('logdir', '', 'Directory containing the logs to process.')
+  .default('name', '', 'Tensorboard experiment title. Max 100 characters.')
   .default(
     'description',
     '',
-    'Experiment description. Markdown format. Max 600 characters.'
+    'Tensorboard experiment description. Markdown format. Max 600 characters.'
   )
-  .default('plugins')
+  .default('plugins', null, '')
   .boolean('md')
-  .default('title')
-  .alias('t', 'title')
-  .default('file')
-  .alias('f', 'file')
+  .describe('md', 'Markdown output with the form [title || name](url).')
+  .default(
+    'title',
+    null,
+    'Title of markdown, if not specified, name will be used.'
+  )
+  .default(
+    'file',
+    null,
+    'Append the output to the given file. Create it if does not exists.'
+  )
+  .alias('file', 'f')
   .help('h').argv;
 
 run(argv).catch((e) => handle_error(e));
