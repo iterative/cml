@@ -62,6 +62,7 @@
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
     "node-ssh": "^11.0.0",
+    "tempy": "^0.6.0",
     "yargs": "^15.1.0"
   },
   "devDependencies": {

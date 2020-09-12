@@ -7,6 +7,7 @@ const yargs = require('yargs');
 const fs = require('fs').promises;
 const { spawn } = require('child_process');
 const { homedir } = require('os');
+const tempy = require('tempy');
 const { exec } = require('../src/utils');
 
 const { handle_error } = process.env.GITHUB_ACTIONS
@@ -40,9 +41,9 @@ const run = async (opts) => {
     : '';
 
   const command = `tensorboard dev upload --logdir ${logdir} ${extra_params}`;
-  const stdout_path = 'stdout.log';
+  const stdout_path = tempy.file({ extension: 'log' });
   const stdout_fh = await fs.open(stdout_path, 'a');
-  const stderr_path = 'stderr.log';
+  const stderr_path = tempy.file({ extension: 'log' });
   const stderr_fh = await fs.open(stderr_path, 'a');
   const proc = spawn(command, [], {
     detached: true,
