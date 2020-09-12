@@ -7,7 +7,7 @@ const isSvg = require('is-svg');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     const { debug } = opts || {};
 
     execp(command, (error, stdout, stderr) => {
@@ -20,7 +20,7 @@ const exec = async (command, opts) => {
   });
 };
 
-const is_svg = async opts => {
+const is_svg = async (opts) => {
   const { path, buffer } = opts;
 
   if (path && PATH.extname(path).toLowerCase() === '.svg') return true;
@@ -34,7 +34,7 @@ const is_svg = async opts => {
   return false;
 };
 
-const mime_type = async opts => {
+const mime_type = async (opts) => {
   const { path, buffer } = opts;
 
   try {
@@ -52,7 +52,7 @@ const mime_type = async opts => {
   }
 };
 
-const upload = async opts => {
+const upload = async (opts) => {
   const { path, buffer } = opts;
   const endpoint = 'https://asset.cml.dev';
   const mime = await mime_type(opts);
@@ -84,15 +84,18 @@ const upload = async opts => {
 
 const randid = () => {
   return (
-    Math.random()
-      .toString(36)
-      .substring(2, 7) +
-    Math.random()
-      .toString(36)
-      .substring(2, 7)
+    Math.random().toString(36).substring(2, 7) +
+    Math.random().toString(36).substring(2, 7)
   );
+};
+
+const sleep = (secs) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, secs * 1000);
+  });
 };
 
 exports.exec = exec;
 exports.upload = upload;
 exports.randid = randid;
+exports.sleep = sleep;

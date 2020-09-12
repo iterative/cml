@@ -1,5 +1,4 @@
 const github = require('@actions/github');
-const { request } = require('@octokit/request');
 
 const {
   GITHUB_REPOSITORY = '',
@@ -20,11 +19,11 @@ const USER_NAME = 'GitHub Action';
 
 const TOKEN = repo_token || GITHUB_TOKEN;
 
-const octokit = new github.GitHub(TOKEN);
+const octokit = github.getOctokit(TOKEN);
 
 const CHECK_TITLE = 'CML Report';
 
-const create_check_report = async opts => {
+const create_check_report = async (opts) => {
   const {
     head_sha,
     report,
@@ -51,22 +50,21 @@ const create_check_report = async opts => {
   return check;
 };
 
-const comment = async opts => {
-  const { head_sha, report } = opts;
+const comment = async (opts) => {
+  const { commit_sha, report } = opts;
 
-  await request(
-    `POST /repos/${GITHUB_REPOSITORY}/commits/${head_sha}/comments`,
-    {
-      headers: { authorization: `token ${TOKEN}` },
-      body: report
-    }
-  );
+  await octokit.repos.createCommitComment({
+    owner,
+    repo,
+    commit_sha,
+    body: report
+  });
 };
 
 const get_runner_token = async () => {
   const {
     data: { token }
-  } = await octokit.actions.createRegistrationToken({
+  } = await octokit.actions.createRegistrationTokenForRepo({
     owner,
     repo
   });
@@ -74,18 +72,21 @@ const get_runner_token = async () => {
   return token;
 };
 
-const register_runner = async opts => {
+const register_runner = async (opts) => {
   throw new Error('not yet implemented');
 };
 
-const handle_error = e => {
+const handle_error = (e) => {
   console.error(e.message);
   process.exit(1);
 };
 
 exports.is_pr = IS_PR;
 exports.ref = REF;
-exports.head_sha = HEAD_SHA;
+exports.head_sha =
+  GITHUB_EVENT_NAME === 'pull_request'
+    ? github.context.payload.pull_request.head.sha
+    : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
 exports.comment = comment;

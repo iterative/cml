@@ -2,12 +2,13 @@
 
 const { spawn } = require('child_process');
 const { exec, randid } = require('../src/utils');
+const fs = require('fs').promises;
 const { URL } = require('url');
 
 const {
-  RUNNER_PATH,
+  DOCKER_MACHINE, // DEPRECATED
 
-  DOCKER_MACHINE,
+  RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = '',
@@ -19,10 +20,11 @@ const {
 
 const { protocol, host, pathname } = new URL(RUNNER_REPO);
 const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
-process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
-  1
-);
 process.env.CI_API_V4_URL = `${RUNNER_REPO_ORIGIN}/api/v4/`;
+process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
+  1,
+  pathname.length - (pathname.endsWith('/') ? 1 : 0)
+);
 
 const IS_GITHUB = RUNNER_REPO_ORIGIN === 'https://github.com';
 let TIMEOUT_TIMER = 0;
@@ -44,7 +46,28 @@ const shutdown_docker_machine = async () => {
   }
 };
 
-const shutdown = async error => {
+const shutdown_host = async () => {
+  try {
+    console.log('Terraform destroy');
+    await fs.writeFile(
+      'terraform.tfstate',
+      await fs.readFile('/terraform.tfstate', 'utf-8')
+    );
+    await fs.writeFile('main.tf', await fs.readFile('/main.tf', 'utf-8'));
+
+    try {
+      console.log(await exec('terraform init -plugin-dir=/terraform_plugins'));
+      console.log(await exec('terraform destroy -auto-approve'));
+    } catch (err) {
+      console.log(err.message);
+      shutdown_host();
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
+const shutdown = async (error) => {
   try {
     console.log('Unregistering runner');
 
@@ -66,6 +89,7 @@ const shutdown = async error => {
     } catch (err) {}
 
     await shutdown_docker_machine();
+    await shutdown_host();
 
     if (error) throw error;
 
@@ -127,7 +151,7 @@ const run = async () => {
 
   const proc = spawn(command, { shell: true });
 
-  proc.stderr.on('data', data => {
+  proc.stderr.on('data', (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && !IS_GITHUB) {
@@ -138,7 +162,7 @@ const run = async () => {
     }
   });
 
-  proc.stdout.on('data', async data => {
+  proc.stdout.on('data', async (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && IS_GITHUB && data.includes('Running job')) {
@@ -165,6 +189,6 @@ const run = async () => {
   }, 1000);
 };
 
-run().catch(err => {
+run().catch((err) => {
   shutdown(err);
 });

@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.34",
+  "version": "0.1.41",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -34,7 +34,8 @@
     "cml-send-comment": "./bin/cml-send-comment.js",
     "cml-publish": "./bin/cml-publish.js",
     "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
-    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js"
+    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js",
+    "test-cml-cloud-runner": "./bin/cml-cloud-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -56,14 +57,11 @@
     ]
   },
   "dependencies": {
-    "@actions/github": "^2.2.0",
-    "canvas": "^2.6.1",
+    "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
-    "vega": "^5.9.0",
-    "vega-cli": "^5.11.1",
-    "vega-lite": "^4.0.2",
+    "node-ssh": "^11.0.0",
     "yargs": "^15.1.0"
   },
   "devDependencies": {
@@ -78,6 +76,6 @@
     "husky": "^4.2.3",
     "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
-    "prettier": "^1.19.1"
+    "prettier": "^2.1.1"
   }
 }
