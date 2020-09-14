@@ -29,6 +29,8 @@ We built CML with these principles in mind:
 _⁉️ Need help? Just want to chat about continuous integration for ML?
 [Visit our Discord channel!](https://discord.gg/bzA6uY7)_
 
+🌟🌟🌟 Check out our [YouTube video series](https://www.youtube.com/playlist?list=PL7WG7YrwYcnDBDuCkFbcyjnZQrdskFsBz) for hands-on MLOps tutorials using CML! 🌟🌟🌟 
+
 ## Table of contents
 
 1. [Usage](#usage)
