@@ -43,11 +43,17 @@ const data = pipe_args.piped_arg();
 const argv = yargs
   .usage(`Usage: $0 <path> --file <string>`)
   .boolean('md')
+  .describe('Output in markdown.')
   .default('title')
+  .describe(
+    'If --md sets the title in markdown [title](url) or ![](url title).'
+  )
   .alias('t', 'title')
   .default('file')
+  .describe('Outputs to the given file.')
   .alias('f', 'file')
   .boolean('gitlab-uploads')
+  .describe("Uses Gitlab's uploads api instead of CML's storage.")
   .help('h')
   .demand(data ? 0 : 1).argv;
 run({ ...argv, data }).catch((e) => handle_error(e));
