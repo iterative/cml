@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
-const { URLSearchParams } = require('url');
+const { URLSearchParams, URL } = require('url');
 const fs = require('fs');
 
 const { fetch_upload_data } = require('./utils');
@@ -15,6 +15,7 @@ const {
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
+  CI_REPOSITORY_URL,
   repo_token
 } = process.env;
 
@@ -69,7 +70,6 @@ const register_runner = async (opts) => {
 
 const upload = async (opts) => {
   const { path, buffer } = opts;
-  console.log(path);
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
 
   const { headers: fetch_headers } = await fetch_upload_data({
@@ -83,11 +83,10 @@ const upload = async (opts) => {
 
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'POST', headers, body });
-  const json = await response.json();
+  const { url } = await response.json();
+  const { host } = new URL(CI_REPOSITORY_URL);
 
-  console.log(json);
-
-  return { uri: json.url, mime, size };
+  return { uri: `${host}/${url}`, mime, size };
 };
 
 const handle_error = (e) => {
