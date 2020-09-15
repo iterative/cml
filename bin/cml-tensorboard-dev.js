@@ -16,6 +16,14 @@ const { handle_error } = process.env.GITHUB_ACTIONS
 
 const { TB_CREDENTIALS } = process.env;
 
+const close_fd = (fd) => {
+  try {
+    fd.close();
+  } catch (err) {
+    console.error(err.message);
+  }
+};
+
 const run = async (opts) => {
   const {
     md,
@@ -42,13 +50,13 @@ const run = async (opts) => {
 
   const command = `tensorboard dev upload --logdir ${logdir} ${extra_params}`;
   const stdout_path = tempy.file({ extension: 'log' });
-  const stdout_fh = await fs.open(stdout_path, 'a');
+  const stdout_fd = await fs.open(stdout_path, 'a');
   const stderr_path = tempy.file({ extension: 'log' });
-  const stderr_fh = await fs.open(stderr_path, 'a');
+  const stderr_fd = await fs.open(stderr_path, 'a');
   const proc = spawn(command, [], {
     detached: true,
     shell: true,
-    stdio: ['ignore', stdout_fh, stderr_fh]
+    stdio: ['ignore', stdout_fd, stderr_fd]
   });
 
   proc.unref();
@@ -70,14 +78,14 @@ const run = async (opts) => {
       if (!file) print(output);
       else await fs.appendFile(file, output);
 
-      stdout_fh.close() && stderr_fh.close();
+      close_fd(stdout_fd) && close_fd(stderr_fd);
       process.exit(0);
     }
   }, 1 * 5 * 1000);
 
   // waits 1 min before dies
   setTimeout(async () => {
-    stdout_fh.close() && stderr_fh.close();
+    close_fd(stdout_fd) && close_fd(stderr_fd);
     console.error(await fs.readFile(stderr_path, 'utf8'));
     throw new Error('Tensorboard took too long! Canceled.');
   }, 1 * 60 * 1000);
