@@ -78,11 +78,13 @@ const upload = async (opts) => {
   const { 'Content-Type': mime, 'Content-length': size } = fetch_headers;
 
   const form = new FormData();
-  form.append('file', path ? fs.createReadStream('/foo/bar.jpg') : buffer);
+  form.append('file', path ? fs.createReadStream(path) : buffer);
 
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'POST', headers, form });
   const json = await response.json();
+
+  console.log(json);
 
   return { uri: json.url, mime, size };
 };
