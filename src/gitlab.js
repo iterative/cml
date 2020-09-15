@@ -1,5 +1,7 @@
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 const { URLSearchParams } = require('url');
+const fs = require('fs');
 
 const { fetch_upload_data } = require('./utils');
 
@@ -66,23 +68,23 @@ const register_runner = async (opts) => {
 };
 
 const upload = async (opts) => {
+  const { path, buffer } = opts;
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
 
-  const { headers: fetch_headers, body } = await fetch_upload_data({
+  const { headers: fetch_headers } = await fetch_upload_data({
     ...opts,
     file_var: 'filename'
   });
   const { 'Content-Type': mime, 'Content-length': size } = fetch_headers;
 
-  const headers = {
-    'PRIVATE-TOKEN': TOKEN,
-    Accept: 'application/json',
-    ...fetch_headers
-  };
-  const response = await fetch(endpoint, { method: 'POST', headers, body });
-  const { url: uri } = await response.json();
+  const form = new FormData();
+  form.append('file', path ? fs.createReadStream('/foo/bar.jpg') : buffer);
 
-  return { uri, mime, size };
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(endpoint, { method: 'POST', headers, form });
+  const json = await response.json();
+
+  return { uri: json.url, mime, size };
 };
 
 const handle_error = (e) => {
