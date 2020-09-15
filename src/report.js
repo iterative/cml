@@ -7,12 +7,12 @@ const publish_file = async (opts) => {
   let mime, uri;
 
   if (gitlab_uploads) {
-    ({ mime, uri } = await gl_upload({ opts }));
+    ({ mime, uri } = await gl_upload(opts));
   } else {
-    ({ mime, uri } = await upload({ opts }));
+    ({ mime, uri } = await upload(opts));
   }
 
-  if (md && mime.matches('(image|video)/.*'))
+  if (md && mime.match('(image|video)/.*'))
     return `![](${uri}${title ? ` "${title}"` : ''})`;
   if (md) return `[${title}](${uri})`;
 

@@ -74,4 +74,15 @@ describe('CML e2e', () => {
     expect(fs.existsSync(file)).toBe(true);
     await fs.promises.unlink(file);
   });
+
+  test('cml-publish assets/logo.pdf to gitlab uploads', async () => {
+    const file = `cml-publish-test.md`;
+
+    await exec(
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf --title 'this is awesome' --file ${file} --gitlab-uploads`
+    );
+
+    expect(fs.existsSync(file)).toBe(true);
+    await fs.promises.unlink(file);
+  });
 });

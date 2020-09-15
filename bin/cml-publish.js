@@ -32,7 +32,7 @@ const run = async (opts) => {
     gitlab_uploads = false;
   }
 
-  const output = await publish_file({ buffer, path, ...opts });
+  const output = await publish_file({ buffer, path, gitlab_uploads, ...opts });
 
   if (!file) print(output);
   else await fs.writeFile(file, output);
