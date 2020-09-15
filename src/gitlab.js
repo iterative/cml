@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
-const { URLSearchParams, URL } = require('url');
+const { URLSearchParams } = require('url');
 const fs = require('fs');
 
 const { fetch_upload_data } = require('./utils');
@@ -15,7 +15,7 @@ const {
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
-  CI_REPOSITORY_URL,
+  CI_PROJECT_URL,
   repo_token
 } = process.env;
 
@@ -84,9 +84,8 @@ const upload = async (opts) => {
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const { url } = await response.json();
-  const { host } = new URL(CI_REPOSITORY_URL);
 
-  return { uri: `${host}/${url}`, mime, size };
+  return { uri: `${CI_PROJECT_URL}${url}`, mime, size };
 };
 
 const handle_error = (e) => {
