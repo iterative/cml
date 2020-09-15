@@ -15,7 +15,8 @@ const { handle_error } = GITHUB_ACTIONS
   : require('../src/gitlab');
 
 const run = async (opts) => {
-  const { data, md, title, 'gitlab-uploads': gitlab_uploads, file } = opts;
+  const { data, file } = opts;
+  let { 'gitlab-uploads': gitlab_uploads } = opts;
   const path = opts._[0];
 
   let buffer;
@@ -27,9 +28,11 @@ const run = async (opts) => {
     * gitlab_uploads is only for gitlab!    *
     * ***************************************
     `);
+
+    gitlab_uploads = false;
   }
 
-  const output = await publish_file({ path, buffer, md, title });
+  const output = await publish_file({ buffer, path, ...opts });
 
   if (!file) print(output);
   else await fs.writeFile(file, output);
