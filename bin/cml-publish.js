@@ -8,18 +8,29 @@ const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 const { publish_file } = require('../src/report');
 
-const { handle_error } = process.env.GITHUB_ACTIONS
+const { GITHUB_ACTIONS } = process.env;
+
+const { handle_error } = GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
 const run = async (opts) => {
-  const { file, md, title } = opts;
+  const { data, md, title, 'gitlab-uploads': gitlab_uploads, file } = opts;
   const path = opts._[0];
 
   let buffer;
   if (data) buffer = Buffer.from(data, 'binary');
 
+  if (GITHUB_ACTIONS && gitlab_uploads) {
+    console.error(`
+    *****************************************
+    * gitlab_uploads is only for gitlab!    *
+    * ***************************************
+    `);
+  }
+
   const output = await publish_file({ path, buffer, md, title });
+
   if (!file) print(output);
   else await fs.writeFile(file, output);
 };
@@ -33,6 +44,7 @@ const argv = yargs
   .alias('t', 'title')
   .default('file')
   .alias('f', 'file')
+  .boolean('gitlab-uploads')
   .help('h')
   .demand(data ? 0 : 1).argv;
 run({ ...argv, data }).catch((e) => handle_error(e));

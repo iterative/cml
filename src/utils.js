@@ -52,9 +52,8 @@ const mime_type = async (opts) => {
   }
 };
 
-const upload = async (opts) => {
-  const { path, buffer } = opts;
-  const endpoint = 'https://asset.cml.dev';
+const fetch_upload_data = async (opts) => {
+  const { path, buffer, file_var = 'file' } = opts;
   const mime = await mime_type(opts);
 
   let body;
@@ -74,12 +73,24 @@ const upload = async (opts) => {
   const headers = {
     'Content-length': size,
     'Content-Type': mime,
-    'Content-Disposition': `inline; filename="${filename}"`
+    'Content-Disposition': `inline; ${file_var}="${filename}"`
   };
+
+  return { headers, body };
+};
+
+const upload = async (opts) => {
+  const endpoint = 'https://asset.cml.dev';
+
+  const { headers, body } = await fetch_upload_data({
+    ...opts,
+    file_var: 'filename'
+  });
+  const { 'Content-Type': mime, 'Content-length': size } = headers;
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
 
-  return { mime, size, uri };
+  return { uri, mime, size };
 };
 
 const randid = () => {
@@ -96,6 +107,7 @@ const sleep = (secs) => {
 };
 
 exports.exec = exec;
+exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
