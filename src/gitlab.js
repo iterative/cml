@@ -68,7 +68,7 @@ const register_runner = async (opts) => {
 };
 
 const upload = async (opts) => {
-  const { path, buffer } = opts;
+  const { path } = opts;
   const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
 
   const { headers: fetch_headers } = await fetch_upload_data({
@@ -78,7 +78,7 @@ const upload = async (opts) => {
   const { 'Content-Type': mime, 'Content-length': size } = fetch_headers;
 
   const form = new FormData();
-  form.append('file', path ? fs.createReadStream(path) : buffer);
+  form.append('file', fs.createReadStream(path));
 
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'POST', headers, form });
