@@ -24,9 +24,9 @@ const run = async (opts) => {
 
   if (GITHUB_ACTIONS && gitlab_uploads) {
     console.error(`
-    *****************************************
-    * gitlab_uploads is only for gitlab!    *
-    * ***************************************
+    *********************************************
+    * gitlab-uploads option is only for gitlab! *
+    * *******************************************
     `);
 
     gitlab_uploads = false;
