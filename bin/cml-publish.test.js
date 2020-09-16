@@ -11,14 +11,13 @@ describe('CML e2e', () => {
       "Usage: cml-publish.js <path> --file <string>
 
       Options:
-        --version                                 Show version number        [boolean]
-        --Output in markdown.
-        --If --md sets the title in markdown
-        [title](url) or ![](url title).
-        --Outputs to the given file.
-        --Uses Gitlab's uploads api instead of
-        CML's storage.
-        -h                                        Show help                  [boolean]"
+        --version         Show version number                                [boolean]
+        --md              Output in markdown.                                [boolean]
+        --title, -t       If --md sets the title in markdown [title](url) or ![](url
+                          title).
+        --file, -f        Outputs to the given file.
+        --gitlab-uploads  Uses Gitlab's uploads api instead of CML's storage.[boolean]
+        -h                Show help                                          [boolean]"
     `);
   });
 
