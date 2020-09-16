@@ -60,7 +60,7 @@ describe('CML e2e', () => {
       `echo none | node ./bin/cml-publish.js assets/test.svg --md --title '${title}'`
     );
 
-    expect(output.startsWith('![](') && output.endsWith(`${title})`)).toBe(
+    expect(output.startsWith('![](') && output.endsWith(`${title}")`)).toBe(
       true
     );
   });
