@@ -38,27 +38,31 @@ describe('CML e2e', () => {
   });
 
   test('cml-publish assets/logo.pdf --md', async () => {
+    const title = 'this is awesome';
     const output = await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.pdf --md --title 'this is awesome'`
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf --md --title '${title}'`
     );
 
-    expect(output.startsWith('[this is awesome](')).toBe(true);
+    expect(output.startsWith(`[${title}](`)).toBe(true);
   });
 
   test('cml-publish assets/logo.pdf', async () => {
     const output = await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.pdf --title 'this is awesome'`
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf`
     );
 
     expect(output.startsWith('https://')).toBe(true);
   });
 
   test('cml-publish assets/test.svg --md', async () => {
+    const title = 'this is awesome';
     const output = await exec(
-      `echo none | node ./bin/cml-publish.js assets/test.svg --md --title 'this is awesome'`
+      `echo none | node ./bin/cml-publish.js assets/test.svg --md --title '${title}'`
     );
 
-    expect(output.startsWith('![](')).toBe(true);
+    expect(output.startsWith('![](') && output.endsWith(`${title})`)).toBe(
+      true
+    );
   });
 
   test('cml-publish assets/test.svg', async () => {
@@ -73,18 +77,7 @@ describe('CML e2e', () => {
     const file = `cml-publish-test.md`;
 
     await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.pdf --title 'this is awesome' --file ${file}`
-    );
-
-    expect(fs.existsSync(file)).toBe(true);
-    await fs.promises.unlink(file);
-  });
-
-  test('cml-publish assets/logo.pdf to gitlab uploads', async () => {
-    const file = `cml-publish-test.md`;
-
-    await exec(
-      `echo none | node ./bin/cml-publish.js assets/logo.pdf --title 'this is awesome' --file ${file} --gitlab-uploads`
+      `echo none | node ./bin/cml-publish.js assets/logo.pdf --file ${file}`
     );
 
     expect(fs.existsSync(file)).toBe(true);
