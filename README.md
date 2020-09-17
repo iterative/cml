@@ -29,6 +29,8 @@ We built CML with these principles in mind:
 _⁉️ Need help? Just want to chat about continuous integration for ML?
 [Visit our Discord channel!](https://discord.gg/bzA6uY7)_
 
+🌟🌟🌟 Check out our [YouTube video series](https://www.youtube.com/playlist?list=PL7WG7YrwYcnDBDuCkFbcyjnZQrdskFsBz) for hands-on MLOps tutorials using CML! 🌟🌟🌟 
+
 ## Table of contents
 
 1. [Usage](#usage)
@@ -476,19 +478,46 @@ Note several CML-specific arguments to `docker run`:
 - The docker container should be given as `dvcorg/cml`, `dvcorg/cml-py3`,
   `dvc/org/cml-gpu`, or `dvcorg/cml-gpu-py3`
 
-## Using your own Docker image
+## Install CML as a package
 
 In the above examples, CML is pre-installed in a custom Docker image, which is
-pulled by a CI runner. If you are using your own Docker image, you will need to
-install CML functions on the image:
+pulled by a CI runner. You can also install CML as a package:
 
 ```bash
 npm i -g @dvcorg/cml
 ```
 
-Note that you may need to install additional dependencies to use DVC plots and
-Vega-Lite CLI commands. See our
-[base Dockerfile for details](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
+You may need to install additional dependencies to use DVC plots and Vega-Lite
+CLI commands:
+
+```bash
+sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev \
+          librsvg2-dev libfontconfig-dev
+npm install -g vega-cli vega-lite
+```
+
+CML and Vega-Lite package installation require `npm` command from Node package.
+Below you can find how to install Node.
+
+### Install Node in GitHub
+
+In GitHub there is a special action for NPM installation:
+
+```bash
+uses: actions/setup-node@v1
+  with:
+    node-version: '12'
+```
+
+### Install Node in GitLab
+
+GitLab requires direct installation of the NMP package:
+
+```bash
+curl -sL https://deb.nodesource.com/setup_12.x | bash
+apt-get update
+apt-get install -y nodejs
+```
 
 ## A library of CML projects
 
