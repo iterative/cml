@@ -1,5 +1,8 @@
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 const { URLSearchParams } = require('url');
+
+const { fetch_upload_data } = require('./utils');
 
 const {
   CI_API_V4_URL,
@@ -11,6 +14,7 @@ const {
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
+  CI_PROJECT_URL,
   repo_token
 } = process.env;
 
@@ -38,6 +42,7 @@ const get_runner_token = async () => {
   const endpoint = `${CI_API_V4_URL}/projects/${encodeURIComponent(
     CI_PROJECT_PATH
   )}`;
+
   const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'GET', headers });
   const project = await response.json();
@@ -48,8 +53,6 @@ const get_runner_token = async () => {
 const register_runner = async (opts) => {
   const endpoint = `${CI_API_V4_URL}/runners`;
 
-  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
-
   const body = new URLSearchParams();
   body.append('token', opts.token);
   body.append('locked', 'true');
@@ -57,10 +60,26 @@ const register_runner = async (opts) => {
   body.append('access_level', 'not_protected');
   body.append('tag_list', opts.tags);
 
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const runner = await response.json();
 
   return runner;
+};
+
+const upload = async (opts) => {
+  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
+
+  const { size, mime, data } = await fetch_upload_data(opts);
+
+  const body = new FormData();
+  body.append('file', data);
+
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  const { url } = await response.json();
+
+  return { uri: `${CI_PROJECT_URL}${url}`, mime, size };
 };
 
 const handle_error = (e) => {
@@ -76,6 +95,7 @@ exports.user_name = USER_NAME;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
 exports.register_runner = register_runner;
+exports.upload = upload;
 exports.handle_error = handle_error;
 
 exports.CHECK_TITLE = 'CML Report';

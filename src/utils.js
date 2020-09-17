@@ -52,34 +52,33 @@ const mime_type = async (opts) => {
   }
 };
 
-const upload = async (opts) => {
+const fetch_upload_data = async (opts) => {
   const { path, buffer } = opts;
-  const endpoint = 'https://asset.cml.dev';
+
   const mime = await mime_type(opts);
+  const data = path ? fs.createReadStream(path) : buffer;
+  const size = path ? (await fs.promises.stat(path)).size : buffer.length;
 
-  let body;
-  let size;
-  let filename;
+  return { mime, size, data };
+};
 
-  if (path) {
-    body = fs.createReadStream(path);
-    ({ size } = await fs.promises.stat(path));
-    filename = PATH.basename(path);
-  } else {
-    body = buffer;
-    size = buffer.length;
-    filename = `file.${mime.split('/')[1]}`;
-  }
+const upload = async (opts) => {
+  const { path } = opts;
+  const endpoint = 'https://asset.cml.dev';
+
+  const { mime, size, data: body } = await fetch_upload_data(opts);
+  const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
 
   const headers = {
     'Content-length': size,
     'Content-Type': mime,
     'Content-Disposition': `inline; filename="${filename}"`
   };
+
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
 
-  return { mime, size, uri };
+  return { uri, mime, size };
 };
 
 const randid = () => {
@@ -121,6 +120,7 @@ const is_proc_running = async (opts) => {
 };
 
 exports.exec = exec;
+exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
