@@ -14,13 +14,12 @@ const { handle_error } = process.env.GITHUB_ACTIONS
   : require('../src/gitlab');
 
 const ssh_connect = async (opts) => {
-  const { host, username, privateKey } = opts;
+  const { host, username, private_key: privateKey, max_tries = 100 } = opts;
   const ssh = new NodeSSH();
 
   console.log('Connecting through SSH');
 
   let ready = false;
-  const maxtrials = 100;
   let trials = 0;
   while (!ready) {
     try {
@@ -32,7 +31,7 @@ const ssh_connect = async (opts) => {
       });
       ready = true;
     } catch (err) {
-      if (maxtrials === trials) throw err;
+      if (max_tries === trials) throw err;
       trials += 1;
     }
   }
@@ -54,8 +53,9 @@ const setup_runner = async (opts) => {
     cml_image = 'dvcorg/cml:latest'
   } = opts;
 
+  console.log(terraform_state.resources[0].instances[0]);
   const {
-    attributes: { instance_ip: host, private_key: privateKey }
+    attributes: { instance_ip: host, key_private: private_key }
   } = terraform_state.resources[0].instances[0];
 
   if (!host)
@@ -63,7 +63,7 @@ const setup_runner = async (opts) => {
 
   console.log('These are your machine public ip and private key');
   console.log(host);
-  console.log(privateKey);
+  console.log(private_key);
 
   const setup_docker_cmd = `
     curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
@@ -95,25 +95,21 @@ const setup_runner = async (opts) => {
     ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
     ${cml_image}`;
 
-  let ssh = await ssh_connect({ host, username, privateKey });
+  let ssh = await ssh_connect({ host, username, private_key });
 
   print('Provisioning docker...');
-  const setup_docker_out = await ssh.execCommand(setup_docker_cmd);
-  print(setup_docker_out);
+  print(await ssh.execCommand(setup_docker_cmd));
 
   print('Provisioning nvidia drivers and nvidia-gpu...');
-  const setup_nvidia_out = await ssh.execCommand(setup_nvidia_cmd);
-  print(setup_nvidia_out);
+  print(await ssh.execCommand(setup_nvidia_cmd));
 
-  ssh = await ssh_connect({ host, username, privateKey });
+  ssh = await ssh_connect({ host, username, private_key });
 
   print('Starting runner...');
-  console.log(await exec('ls terraform.tfstate'));
-  console.log(await exec('ls main.tf'));
   await ssh.putFile('terraform.tfstate', 'terraform.tfstate');
   await ssh.putFile('main.tf', 'main.tf');
-  const start_runner_out = await ssh.execCommand(start_runner_cmd);
-  print(start_runner_out);
+
+  print(await ssh.execCommand(start_runner_cmd));
 
   await ssh.dispose();
 };
@@ -151,11 +147,8 @@ resource "iterative_machine" "machine" {
     await fs.writeFile('main.tf', tpl);
   }
 
-  const init_out = await exec('terraform init -plugin-dir=/terraform_plugins');
-  print(init_out);
-
-  const apply_out = await exec('terraform apply -auto-approve');
-  print(apply_out);
+  print(await exec('terraform init'));
+  print(await exec('terraform apply -auto-approve'));
 
   const terraform_state_json = await fs.readFile('terraform.tfstate', 'utf-8');
   const terraform_state = JSON.parse(terraform_state_json);
@@ -166,19 +159,12 @@ resource "iterative_machine" "machine" {
 const cleanup_terraform = async (opts) => {
   print('Cleaning up terraform...');
   try {
-    await fs.rmdir('.terraform', { recursive: true });
-  } catch (err) {}
-  try {
-    await fs.unlink('terraform.tfstate');
-  } catch (err) {}
-  try {
-    await fs.unlink('terraform.tfstate.backup');
-  } catch (err) {}
-  try {
     await fs.unlink('main.tf');
-  } catch (err) {}
-  try {
-    await fs.unlink('key.pem');
+    await fs.rmdir('.terraform', { recursive: true });
+    await fs.unlink('terraform.tfstate');
+    await fs.unlink('terraform.tfstate.backup');
+    // await fs.unlink('key.pem');
+    await fs.unlink('crash.log');
   } catch (err) {}
 };
 
@@ -190,12 +176,11 @@ const destroy_terraform = async (opts) => {
 const run = async (opts) => {
   try {
     const terraform_state = await run_terraform(opts);
-
     await setup_runner({ terraform_state, ...opts });
     await runner_join_repo();
   } catch (err) {
     await destroy_terraform({});
-    await cleanup_terraform({});
+    // await cleanup_terraform({});
 
     throw new Error(`An error occurred deploying the runner: ${err.message}`);
   }
