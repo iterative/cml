@@ -95,7 +95,33 @@ const sleep = (secs) => {
   });
 };
 
+const is_proc_running = async (opts) => {
+  const { name } = opts;
+
+  const cmd = (() => {
+    switch (process.platform) {
+      case 'win32':
+        return `tasklist`;
+      case 'darwin':
+        return `ps -ax`;
+      case 'linux':
+        return `ps -A`;
+      default:
+        return false;
+    }
+  })();
+
+  return new Promise((resolve, reject) => {
+    require('child_process').exec(cmd, (err, stdout) => {
+      if (err) reject(err);
+
+      resolve(stdout.toLowerCase().indexOf(name.toLowerCase()) > -1);
+    });
+  });
+};
+
 exports.exec = exec;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
+exports.is_proc_running = is_proc_running;

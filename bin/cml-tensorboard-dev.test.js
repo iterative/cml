@@ -1,9 +1,15 @@
 jest.setTimeout(200000);
 
-const fs = require('fs');
-const { exec } = require('../src/utils');
-const credentials =
+const { exec, is_proc_running, sleep } = require('../src/utils');
+const CREDENTIALS =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
+
+const is_tb_running = async () => {
+  await sleep(2);
+  const is_running = await is_proc_running({ name: 'tensorboard' });
+
+  return is_running;
+};
 
 const rm_tb_dev_experiment = async (tb_output) => {
   const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tb_output)[1];
@@ -19,59 +25,34 @@ describe('CML e2e', () => {
 
       Options:
         --version      Show version number                                   [boolean]
+        --md           Markdown output with the form [title || name](url).   [boolean]
         -h             Show help                                             [boolean]
-        --logdir                   [default: Directory containing the logs to process]
-        --name                 [default: Title of the experiment. Max 100 characters.]
+        --logdir                  [default: Directory containing the logs to process.]
+        --name            [default: Tensorboard experiment title. Max 100 characters.]
         --description
-               [default: Experiment description. Markdown format. Max 600 characters.]
-        --plugins"
+                [default: Tensorboard experiment description. Markdown format. Max 600
+                                                                          characters.]
+        --plugins                                                      [default: null]
+        --title     [default: Title of markdown, if not specified, name will be used.]
+        --file, -f
+         [default: Append the output to the given file. Create it if does not exists.]"
     `);
   });
 
-  test('cml-tensorboard-dev.js --md', async () => {
+  test('cml-tensorboard-dev.js --md returns md and after command TB is still up', async () => {
     const name = 'My experiment';
+    const desc = 'Test experiment';
+    const title = 'go to the experiment';
     const output = await exec(
-      `node ./bin/cml-tensorboard-dev.js --md --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment'`
+      `node ./bin/cml-tensorboard-dev.js --credentials '${CREDENTIALS}' \
+        --md --title '${title}' \
+        --logdir logs --name '${name}' --description '${desc}'`
     );
 
+    const is_running = await is_tb_running();
     await rm_tb_dev_experiment(output);
 
-    expect(output.startsWith(`[${name}](https://`)).toBe(true);
-  });
-
-  test('cml-tensorboard-dev.js', async () => {
-    const name = 'My experiment';
-    const output = await exec(
-      `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment'`
-    );
-
-    await rm_tb_dev_experiment(output);
-
-    expect(output.startsWith(`https://`)).toBe(true);
-  });
-
-  test('cml-tensorboard-dev.js title is used not name', async () => {
-    const name = 'My experiment';
-    const title = 'go to tensorboard';
-    const output = await exec(
-      `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --title '${title}' --description 'Test experiment' --md`
-    );
-
-    await rm_tb_dev_experiment(output);
-
+    expect(is_running).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
-  });
-
-  test('cml-tensorboard-dev.js to file', async () => {
-    const name = 'My experiment';
-    const file = `cml-tensorboard-dev-test.md`;
-    await exec(
-      `node ./bin/cml-tensorboard-dev.js --credentials '${credentials}' --logdir logs --name '${name}' --description 'Test experiment' --file ${file}`
-    );
-
-    await rm_tb_dev_experiment(fs.readFileSync(file));
-
-    expect(fs.existsSync(file)).toBe(true);
-    await fs.promises.unlink(file);
   });
 });
