@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.44",
+  "version": "0.1.49",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -59,9 +59,11 @@
   "dependencies": {
     "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
+    "form-data": "^3.0.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
     "node-ssh": "^11.0.0",
+    "tempy": "^0.6.0",
     "yargs": "^15.1.0"
   },
   "devDependencies": {
