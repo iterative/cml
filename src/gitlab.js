@@ -15,7 +15,6 @@ const {
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
-  CI_PROJECT_URL,
   repo_token
 } = process.env;
 
