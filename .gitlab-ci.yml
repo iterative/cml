@@ -1,0 +1,7 @@
+default:
+  before_script:
+    - apt-get update
+
+run:
+  script:
+    - echo "Hello GitLab CI"
