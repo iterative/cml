@@ -9,7 +9,7 @@ const fss = require('fs');
 const fs = fss.promises;
 const { exec, sleep } = require('../src/utils');
 
-const { handle_error } = process.env.GITHUB_ACTIONS
+const { handle_error, repo: REPO, token: TOKEN } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -44,19 +44,28 @@ const setup_runner = async (opts) => {
     terraform_state,
     username = 'ubuntu',
 
-    gpus,
-    repo_token,
-    runner_repo,
-    runner_labels = 'cml',
-    runner_idle_timeout,
-    runner_name,
-    cml_image = 'dvcorg/cml:latest'
+    gpu = false,
+    'repo-token': repo_token = TOKEN,
+    repo: runner_repo = REPO,
+    labels: runner_labels,
+    'idle-timeout': runner_idle_timeout,
+    name: runner_name,
+    image = 'dvcorg/cml:latest'
   } = opts;
 
-  console.log(terraform_state.resources[0].instances[0]);
   const {
     attributes: { instance_ip: host, key_private: private_key }
   } = terraform_state.resources[0].instances[0];
+
+  if (!repo_token)
+    throw new Error(
+      'Repository token not set. Your repo_token is not available!'
+    );
+
+  if (!runner_repo)
+    throw new Error(
+      'Repo not set. Your repo must be set to register the runner!'
+    );
 
   if (!host)
     throw new Error('Your machine does not have a public IP to be reached!');
@@ -65,21 +74,9 @@ const setup_runner = async (opts) => {
   console.log(host);
   console.log(private_key);
 
-  const setup_docker_cmd = `
-    curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
-    sudo usermod -aG docker \${USER}`;
-
-  const setup_nvidia_cmd = `
-    curl -s -L https://nvidia.GitHub.io/nvidia-docker/gpgkey | sudo apt-key add - && \
-    curl -s -L https://nvidia.GitHub.io/nvidia-docker/ubuntu18.04/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list && \
-    sudo apt update && sudo apt install -y ubuntu-drivers-common  && \
-    sudo ubuntu-drivers autoinstall  && \
-    sudo apt install -y nvidia-container-toolkit && \
-    sudo shutdown -r now`;
-
   const start_runner_cmd = `
     sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-    docker run --name runner --rm -d ${gpus ? `--gpus ${gpus}` : ''} \
+    docker run --name runner --rm -d ${gpu ? '--gpus all' : ''} \
     -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
     -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
     -v $(pwd)/terraform.tfstate:/terraform.tfstate \
@@ -93,23 +90,17 @@ const setup_runner = async (opts) => {
         : ''
     } \
     ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
-    ${cml_image}`;
+    ${image}`;
 
-  let ssh = await ssh_connect({ host, username, private_key });
+  const ssh = await ssh_connect({ host, username, private_key });
 
-  print('Provisioning docker...');
-  print(await ssh.execCommand(setup_docker_cmd));
-
-  print('Provisioning nvidia drivers and nvidia-gpu...');
-  print(await ssh.execCommand(setup_nvidia_cmd));
-
-  ssh = await ssh_connect({ host, username, private_key });
-
-  print('Starting runner...');
+  console.log('Uploading terraform files...');
   await ssh.putFile('terraform.tfstate', 'terraform.tfstate');
   await ssh.putFile('main.tf', 'main.tf');
 
-  print(await ssh.execCommand(start_runner_cmd));
+  console.log('Starting runner...');
+  console.log(start_runner_cmd);
+  console.log(await ssh.execCommand(start_runner_cmd));
 
   await ssh.dispose();
 };
@@ -119,9 +110,15 @@ const runner_join_repo = async () => {
 };
 
 const run_terraform = async (opts) => {
-  const { region, instance_ami, instance_type, tf_file } = opts;
+  const {
+    region,
+    type: instance_type,
+    'hdd-size': instance_hdd_size,
+    'tf-file': tf_file,
+    'ssh-key': ssh_key
+  } = opts;
 
-  print('Initializing terraform...');
+  console.log('Initializing terraform...');
 
   if (tf_file) {
     await fs.writeFile('main.tf', await fs.readFile(tf_file));
@@ -140,15 +137,18 @@ provider "iterative" {}
 
 resource "iterative_machine" "machine" {
   ${region ? `region = "${region}"` : ''}
-  ${instance_type ? `instance_ami = "${instance_type}"` : ''}
-  ${instance_ami ? `instance_ami = "${instance_ami}"` : ''}
+  ${instance_type ? `instance_type = "${instance_type}"` : ''}
+  ${instance_hdd_size ? `instance_hdd_size = "${instance_hdd_size}"` : ''}
+  ${ssh_key ? `key_public = "${ssh_key}"` : ''}
 }
 `;
     await fs.writeFile('main.tf', tpl);
   }
 
-  print(await exec('terraform init'));
-  print(await exec('terraform apply -auto-approve'));
+  console.log(await exec('terraform init'));
+  print(
+    await exec('terraform apply -auto-approve -plugin-dir=/terraform_plugins')
+  );
 
   const terraform_state_json = await fs.readFile('terraform.tfstate', 'utf-8');
   const terraform_state = JSON.parse(terraform_state_json);
@@ -156,54 +156,84 @@ resource "iterative_machine" "machine" {
   return terraform_state;
 };
 
-const cleanup_terraform = async (opts) => {
-  print('Cleaning up terraform...');
+const cleanup_terraform = async () => {
+  console.log('Cleaning up terraform...');
+
   try {
     await fs.unlink('main.tf');
     await fs.rmdir('.terraform', { recursive: true });
     await fs.unlink('terraform.tfstate');
     await fs.unlink('terraform.tfstate.backup');
-    // await fs.unlink('key.pem');
     await fs.unlink('crash.log');
-  } catch (err) {}
+  } catch (err) {
+    console.error(`Failed clearing up terraform: ${err.message}`);
+  }
 };
 
-const destroy_terraform = async (opts) => {
-  print('Performing terraform destroy...');
+const destroy_terraform = async () => {
+  console.log('Performing terraform destroy...');
   console.log(await exec('terraform destroy -auto-approve'));
 };
 
 const run = async (opts) => {
   try {
+    await cleanup_terraform({});
+
     const terraform_state = await run_terraform(opts);
     await setup_runner({ terraform_state, ...opts });
     await runner_join_repo();
+    await cleanup_terraform();
   } catch (err) {
     await destroy_terraform({});
-    // await cleanup_terraform({});
+    await cleanup_terraform({});
 
     throw new Error(`An error occurred deploying the runner: ${err.message}`);
   }
-
-  await cleanup_terraform();
 };
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .required('repo_token')
-  .required('runner_repo')
-  .required('runner_labels')
-  .default('runner_name')
-  .default('runner_idle_timeout')
-  .default('cml_image')
-  .default('gpus')
+  .default('repo-token')
   .describe(
-    'gpus',
-    'leave empty if no gpu. possible values: all, 1, 2... more information read docker gpus param'
+    'repo-token',
+    'Repository token. Defaults to workflow env variable repo_token.'
   )
+  .default('repo')
+  .describe(
+    'repo',
+    'Repository to register with. Tries to guess from workflow env variables.'
+  )
+  .default('labels')
+  .describe('labels', 'Comma delimited runner labels. Defaults to cml')
+  .default('idle-timeout')
+  .describe(
+    'idle-timeout',
+    'Time in seconds for the runner to be waiting for jobs before shutting down. Defaults to 5 min'
+  )
+  .default('image')
+  .describe('image', 'Docker image. Defaults to dvcorg/cml:latest')
+  .default('name')
+  .describe('name', 'Name displayed in the repo once registered.')
   .default('region')
-  .default('instance_ami')
-  .default('instance_type')
-  .default('tf_file')
+  .describe(
+    'region',
+    'Region where the instance is deployed. Defaults to us-east-1.'
+  )
+  .describe('type', 'Instance type. Defaults to t2.micro.')
+  .default('hdd-size')
+  .describe('hdd-size', 'HDD size in GB. Defaults to 100. Minimum is 100.')
+  .boolean('gpu')
+  .describe('gpu', 'If set uses GPU.')
+  .deprecateOption('gpu', 'Will be infered by the instances type')
+  .default('tf-file')
+  .describe(
+    'tf-file',
+    'Use a tf file configuration ignoring region, type and hdd_size.'
+  )
+  .default('ssh-key')
+  .describe(
+    'ssh-key',
+    'Your public SHH key. If not provided a complete SHH key will be generated automatically.'
+  )
   .help('h').argv;
 run(argv).catch((e) => handle_error(e));

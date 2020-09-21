@@ -11,7 +11,7 @@ const {
   RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_LABELS = '',
+  RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',

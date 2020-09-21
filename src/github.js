@@ -18,6 +18,7 @@ const USER_EMAIL = 'action@github.com';
 const USER_NAME = 'GitHub Action';
 
 const TOKEN = repo_token || GITHUB_TOKEN;
+const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
 
 const octokit = github.getOctokit(TOKEN);
 
@@ -93,6 +94,8 @@ exports.comment = comment;
 exports.get_runner_token = get_runner_token;
 exports.register_runner = register_runner;
 exports.handle_error = handle_error;
+exports.token = TOKEN;
+exports.repo = REPO;
 
 exports.CHECK_TITLE = CHECK_TITLE;
 exports.create_check_report = create_check_report;
