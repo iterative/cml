@@ -15,7 +15,6 @@ const {
   // GITLAB_USER_EMAIL, // doesn't look like email is part of BB env vars
   BITBUCKET_WORKSPACE, //username
   BITBUCKET_GIT_HTTP_ORIGIN, // url to project
-  PIPELINES_JWT_TOKEN, // JWT TOKEN
   repo_token
 } = process.env;
 
@@ -24,7 +23,7 @@ const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const HEAD_SHA = BITBUCKET_COMMIT;
 const USER_NAME = BITBUCKET_WORKSPACE;
 
-const TOKEN = repo_token || $PIPELINES_JWT_TOKEN;
+const TOKEN = repo_token;
 
 console.log(IS_PR)
 console.log(REF)
