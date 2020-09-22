@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-const print = console.log;
-console.log = console.error;
-
 const yargs = require('yargs');
 const NodeSSH = require('node-ssh').NodeSSH;
 const fss = require('fs');
@@ -146,7 +143,7 @@ resource "iterative_machine" "machine" {
   }
 
   console.log(await exec('terraform init'));
-  print(
+  console.log(
     await exec('terraform apply -auto-approve -plugin-dir=/terraform_plugins')
   );
 
