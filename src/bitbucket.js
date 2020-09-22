@@ -24,7 +24,7 @@ const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const HEAD_SHA = BITBUCKET_COMMIT;
 const USER_NAME = BITBUCKET_WORKSPACE;
 
-const TOKEN = repo_token || PIPELINES_JWT_TOKEN;
+const TOKEN = repo_token || $PIPELINES_JWT_TOKEN;
 
 console.log(IS_PR)
 console.log(REF)
