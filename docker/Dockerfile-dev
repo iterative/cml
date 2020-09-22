@@ -3,6 +3,7 @@ FROM dvcorg/cml-py3:latest
 LABEL maintainer="dvc.org"
 
 RUN apt-get remove -y dvc && \
+    apt-get update && \
     apt-get install -y --no-install-recommends --fix-missing \
         git \
         python3-setuptools \
