@@ -1,10 +1,7 @@
 {
   "name": "@dvcorg/cml",
   "version": "0.1.49",
-  "author": {
-    "name": "DVC",
-    "url": "http://cml.dev"
-  },
+  "author": "DVC (http://cml.dev)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iterative/cml.git"
@@ -30,12 +27,12 @@
   ],
   "main": "index.js",
   "bin": {
-    "cml-send-github-check": "./bin/cml-send-github-check.js",
-    "cml-send-comment": "./bin/cml-send-comment.js",
-    "cml-publish": "./bin/cml-publish.js",
-    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
-    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js",
-    "test-cml-cloud-runner": "./bin/cml-cloud-runner.js"
+    "cml-send-github-check": "bin/cml-send-github-check.js",
+    "cml-send-comment": "bin/cml-send-comment.js",
+    "cml-publish": "bin/cml-publish.js",
+    "cml-tensorboard-dev": "bin/cml-tensorboard-dev.js",
+    "cml-cloud-runner-entrypoint": "bin/cml-cloud-runner-entrypoint.js",
+    "test-cml-cloud-runner": "bin/cml-cloud-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -57,6 +54,7 @@
     ]
   },
   "dependencies": {
+    "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
     "form-data": "^3.0.0",
@@ -79,5 +77,7 @@
     "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
     "prettier": "^2.1.1"
-  }
+  },
+  "description": "<p align=\"center\">   <img src=\"imgs/title_strip_trim.png\" width=400> </p>",
+  "homepage": "https://github.com/iterative/cml#readme"
 }
