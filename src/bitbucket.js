@@ -3,15 +3,13 @@ const FormData = require('form-data');
 const { URLSearchParams } = require('url');
 const { fetch_upload_data } = require('./utils');
 
-console.log(process.env);
-
 const {
   BITBUCKET_REPO_FULL_NAME = '', //namespace with project name, i.e. elle/cml
   BITBUCKET_REPO_UUID, // UUID of project- string in {}
   BITBUCKET_BRANCH, // branch, cannot do build against tag
   BITBUCKET_TOKEN, // token, cannot do build against branch
   BITBUCKET_COMMIT, // SHA of commit
-  BITBUCKET_PR_ID, // ID of merge request
+  BITBUCKET_PR_ID, // ID of pull request- only available if build is triggered on PR
   // GITLAB_USER_EMAIL, // doesn't look like email is part of BB env vars
   BITBUCKET_WORKSPACE, //username
   BITBUCKET_GIT_HTTP_ORIGIN, // url to project
@@ -28,5 +26,4 @@ const TOKEN = repo_token;
 console.log(IS_PR)
 console.log(REF)
 console.log(HEAD_SHA)
-console.log(USER_NAME)
 console.log(TOKEN)
