@@ -26,4 +26,5 @@ const TOKEN = repo_token;
 console.log(IS_PR)
 console.log(REF)
 console.log(HEAD_SHA)
+console.log(USER_NAME)
 console.log(TOKEN)
