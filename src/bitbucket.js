@@ -28,3 +28,5 @@ console.log(REF)
 console.log(HEAD_SHA)
 console.log(USER_NAME)
 console.log(TOKEN)
+
+console.log("HELLO HELLO!")
