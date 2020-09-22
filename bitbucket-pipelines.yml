@@ -7,10 +7,10 @@ image: node:10.15.3
 
 pipelines:
   pull-requests:
-  '**': #this runs as default for any branch not elsewhere defined
-    - step:
-        caches:
-          - node
-        script: # Modify the commands below to build your repository.
-          - npm install
-          - node src/bitbucket.js
+    branches: #this runs as default for any branch not elsewhere defined
+      - step:
+          caches:
+            - node
+          script: # Modify the commands below to build your repository.
+            - npm install
+            - node src/bitbucket.js
