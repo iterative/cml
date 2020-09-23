@@ -103,7 +103,6 @@ const shutdown = async (error) => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGQUIT', shutdown);
-
 const run = async () => {
   RUNNER_TOKEN = await get_runner_token();
   if (!RUNNER_TOKEN) {

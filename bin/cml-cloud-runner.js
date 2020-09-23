@@ -4,39 +4,47 @@ const yargs = require('yargs');
 const NodeSSH = require('node-ssh').NodeSSH;
 const fss = require('fs');
 const fs = fss.promises;
-const { exec, sleep } = require('../src/utils');
+const path = require('path');
+const {
+  exec,
+  sleep,
+  ssh_public_from_private_rsa,
+  parse_param_newline
+} = require('../src/utils');
 
 const { handle_error, repo: REPO, token: TOKEN } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
+const TF_FOLDER = '.cml';
+const TF_NO_LOCAL = '.nolocal';
+
 const ssh_connect = async (opts) => {
-  const { host, username, private_key: privateKey, max_tries = 100 } = opts;
+  const { host, username, private_key: privateKey, max_tries = 5 } = opts;
   const ssh = new NodeSSH();
 
   console.log('Connecting through SSH');
 
-  let ready = false;
   let trials = 0;
-  while (!ready) {
+  while (true) {
     try {
       await ssh.connect({
         host,
         username,
-        privateKey,
-        readyTimeout: 30 * 1000
+        privateKey
       });
-      ready = true;
+      break;
     } catch (err) {
       if (max_tries === trials) throw err;
       trials += 1;
+      await sleep(10);
     }
   }
 
   return ssh;
 };
 
-const setup_runner = async (opts) => {
+const setup_runners = async (opts) => {
   const {
     terraform_state,
     username = 'ubuntu',
@@ -47,12 +55,12 @@ const setup_runner = async (opts) => {
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
     name: runner_name,
-    image = 'dvcorg/cml:latest'
+    image = 'dvcorg/cml:latest',
+    'rsa-private-key': rsa_private_key
   } = opts;
 
-  const {
-    attributes: { instance_ip: host, key_private: private_key }
-  } = terraform_state.resources[0].instances[0];
+  const tf_path = path.join(TF_FOLDER, 'main.tf');
+  const tfstate_path = path.join(TF_FOLDER, 'terraform.tfstate');
 
   if (!repo_token)
     throw new Error(
@@ -64,61 +72,77 @@ const setup_runner = async (opts) => {
       'Repo not set. Your repo must be set to register the runner!'
     );
 
-  if (!host)
-    throw new Error('Your machine does not have a public IP to be reached!');
+  for (let i = 0; i < terraform_state.resources.length; i++) {
+    const resource = terraform_state.resources[i];
+    const instance = resource.instances[0];
 
-  console.log('These are your machine public ip and private key');
-  console.log(host);
-  console.log(private_key);
+    const {
+      attributes: { instance_ip: host, key_private }
+    } = instance;
 
-  const start_runner_cmd = `
-    sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-    docker run --name runner --rm -d ${gpu ? '--gpus all' : ''} \
-    -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
-    -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
-    -v $(pwd)/terraform.tfstate:/terraform.tfstate \
-    -v $(pwd)/main.tf:/main.tf \
-    -e "repo_token=${repo_token}" \
-    -e "RUNNER_REPO=${runner_repo}" \
-    ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
-    ${
-      runner_idle_timeout
-        ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
-        : ''
-    } \
-    ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
-    ${image}`;
+    if (!host)
+      throw new Error('Your machine does not have a public IP to be reached!');
 
-  const ssh = await ssh_connect({ host, username, private_key });
+    const start_runner_cmd = `
+      sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
+      docker run --name runner --rm -d ${gpu ? '--gpus all' : ''} \
+      -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
+      -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
+      -v $(pwd)/terraform.tfstate:/terraform.tfstate \
+      -v $(pwd)/main.tf:/main.tf \
+      -e "repo_token=${repo_token}" \
+      -e "RUNNER_REPO=${runner_repo}" \
+      ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
+      ${
+        runner_idle_timeout
+          ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
+          : ''
+      } \
+      ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
+      ${image}`;
 
-  console.log('Uploading terraform files...');
-  await ssh.putFile('terraform.tfstate', 'terraform.tfstate');
-  await ssh.putFile('main.tf', 'main.tf');
+    const private_key =
+      key_private && key_private.length ? key_private : rsa_private_key;
+    const ssh = await ssh_connect({ host, username, private_key });
 
-  console.log('Starting runner...');
-  console.log(start_runner_cmd);
-  console.log(await ssh.execCommand(start_runner_cmd));
+    console.log('Uploading terraform files...');
+    await ssh.putFile(tfstate_path, 'terraform.tfstate');
+    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
 
-  await ssh.dispose();
-};
+    console.log('Starting runner...');
+    console.log(start_runner_cmd);
+    console.log(await ssh.execCommand(start_runner_cmd));
 
-const runner_join_repo = async () => {
-  await sleep(20);
+    await ssh.dispose();
+  }
 };
 
 const run_terraform = async (opts) => {
+  console.log('Initializing terraform...');
+
   const {
     region,
     type: instance_type,
     'hdd-size': instance_hdd_size,
     'tf-file': tf_file,
-    'ssh-key': ssh_key
+    'rsa-private-key': rsa_private_key
   } = opts;
 
-  console.log('Initializing terraform...');
+  const tf_path = path.join(TF_FOLDER, 'main.tf');
+  const tfstate_path = path.join(TF_FOLDER, 'terraform.tfstate');
+  const tf_change_path_command = `terraform {
+    backend "local" { path = "./${tfstate_path}" }
+  }`;
+
+  try {
+    await fs.rmdir(TF_FOLDER, { recursive: true });
+  } catch (err) {}
+
+  await fs.mkdir(TF_FOLDER);
 
   if (tf_file) {
-    await fs.writeFile('main.tf', await fs.readFile(tf_file));
+    await fs.writeFile(tf_path, await fs.readFile(tf_file));
+    await fs.writeFile(tf_path + '2', await fs.readFile(tf_file));
   } else {
     const tpl = `
 terraform {
@@ -136,57 +160,59 @@ resource "iterative_machine" "machine" {
   ${region ? `region = "${region}"` : ''}
   ${instance_type ? `instance_type = "${instance_type}"` : ''}
   ${instance_hdd_size ? `instance_hdd_size = "${instance_hdd_size}"` : ''}
-  ${ssh_key ? `key_public = "${ssh_key}"` : ''}
+  ${
+    rsa_private_key
+      ? `key_public = "${ssh_public_from_private_rsa(rsa_private_key)}"`
+      : ''
+  }
 }
 `;
-    await fs.writeFile('main.tf', tpl);
+    await fs.writeFile(tf_path, tpl);
+    await fs.writeFile(`${tf_path}${TF_NO_LOCAL}`, tpl);
   }
 
-  console.log(await exec('terraform init'));
+  await fs.appendFile(tf_path, tf_change_path_command);
+
+  console.log(await exec(`terraform init ${TF_FOLDER}`));
   console.log(
-    await exec('terraform apply -auto-approve -plugin-dir=/terraform_plugins')
+    // await exec('terraform apply -auto-approve -plugin-dir=/terraform_plugins')
+    await exec(`terraform apply -auto-approve ${TF_FOLDER}`)
   );
 
-  const terraform_state_json = await fs.readFile('terraform.tfstate', 'utf-8');
+  const terraform_state_json = await fs.readFile(
+    path.join(TF_FOLDER, 'terraform.tfstate'),
+    'utf-8'
+  );
   const terraform_state = JSON.parse(terraform_state_json);
 
   return terraform_state;
 };
 
-const cleanup_terraform = async () => {
-  console.log('Cleaning up terraform...');
-
-  try {
-    await fs.unlink('main.tf');
-    await fs.rmdir('.terraform', { recursive: true });
-    await fs.unlink('terraform.tfstate');
-    await fs.unlink('terraform.tfstate.backup');
-    await fs.unlink('crash.log');
-  } catch (err) {
-    console.error(`Failed clearing up terraform: ${err.message}`);
-  }
-};
-
 const destroy_terraform = async () => {
   console.log('Performing terraform destroy...');
-  console.log(await exec('terraform destroy -auto-approve'));
+  console.log(await exec(`terraform destroy -auto-approve ${TF_FOLDER}`));
+};
+
+const shutdown = async () => {
+  await destroy_terraform();
+  process.exit(0);
 };
 
 const run = async (opts) => {
   try {
-    await cleanup_terraform({});
-
     const terraform_state = await run_terraform(opts);
-    await setup_runner({ terraform_state, ...opts });
-    await runner_join_repo();
-    await cleanup_terraform();
+    await setup_runners({ terraform_state, ...opts });
+    await sleep(20);
   } catch (err) {
     await destroy_terraform({});
-    await cleanup_terraform({});
 
     throw new Error(`An error occurred deploying the runner: ${err.message}`);
   }
 };
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+process.on('SIGQUIT', shutdown);
 
 const argv = yargs
   .usage(`Usage: $0`)
@@ -227,10 +253,11 @@ const argv = yargs
     'tf-file',
     'Use a tf file configuration ignoring region, type and hdd_size.'
   )
-  .default('ssh-key')
+  .default('rsa-private-key')
   .describe(
-    'ssh-key',
-    'Your public SHH key. If not provided a complete SHH key will be generated automatically.'
+    'rsa-private-key',
+    'Your private RSA SHH key. If not provided will be generated by the tf provider.'
   )
+  .coerce('rsa-private-key', parse_param_newline)
   .help('h').argv;
 run(argv).catch((e) => handle_error(e));
