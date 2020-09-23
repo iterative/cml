@@ -177,8 +177,9 @@ resource "iterative_machine" "machine" {
 
   console.log(await exec(`terraform init ${TF_FOLDER}`));
   console.log(
-    // await exec('terraform apply -auto-approve -plugin-dir=/terraform_plugins')
-    await exec(`terraform apply -auto-approve ${TF_FOLDER}`)
+    await exec(
+      `terraform apply -auto-approve -plugin-dir=/terraform_plugins ${TF_FOLDER}`
+    )
   );
 
   const terraform_state_json = await fs.readFile(
