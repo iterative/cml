@@ -76,6 +76,8 @@ const setup_runners = async (opts) => {
     const resource = terraform_state.resources[i];
     const instance = resource.instances[0];
 
+    console.log('Instance', instance);
+
     const {
       attributes: { instance_ip: host, key_private }
     } = instance;
