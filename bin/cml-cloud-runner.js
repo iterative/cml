@@ -175,12 +175,10 @@ resource "iterative_machine" "machine" {
 
   await fs.appendFile(tf_path, tf_change_path_command);
 
-  console.log(await exec(`terraform init ${TF_FOLDER}`));
   console.log(
-    await exec(
-      `terraform apply -auto-approve -plugin-dir=/terraform_plugins ${TF_FOLDER}`
-    )
+    await exec(`terraform init -plugin-dir=/terraform_plugins ${TF_FOLDER}`)
   );
+  console.log(await exec(`terraform apply -auto-approve ${TF_FOLDER}`));
 
   const terraform_state_json = await fs.readFile(
     path.join(TF_FOLDER, 'terraform.tfstate'),
