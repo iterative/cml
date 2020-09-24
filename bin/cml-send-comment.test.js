@@ -6,6 +6,7 @@ const { publish_file } = require('../src/report');
 
 describe('CML e2e', () => {
   test('cml-send-comment', async () => {
+    const { GITHUB_ACTIONS, CI_PROJECT_ID } = process.env;
     const path = 'comment.md';
     const img = await publish_file({
       path: 'assets/logo.png',
@@ -17,8 +18,8 @@ describe('CML e2e', () => {
 
     await fs.writeFile(path, report);
 
-    process.env.GITHUB_ACTIONS &&
-      (await exec(`node ./bin/cml-send-comment.js ${path}`));
+    if (GITHUB_ACTIONS || CI_PROJECT_ID)
+      await exec(`node ./bin/cml-send-comment.js ${path}`);
 
     await fs.unlink(path);
   });
