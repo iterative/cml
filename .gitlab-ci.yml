@@ -1,10 +1,6 @@
 run:
-  image: dvcorg/cml:latest
+  image: dvcorg/cml-py3:latest
   script:
-    - curl -sL https://deb.nodesource.com/setup_12.x | bash
-    - sudo apt-get update && sudo apt-get install -y python3-pip nodejs
-    - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
-    - sudo pip install --upgrade pip setuptools
     - sudo pip install tensorboard
 
     - npm ci
