@@ -7,6 +7,8 @@ const { publish_file } = require('../src/report');
 describe('CML e2e', () => {
   test('cml-send-comment', async () => {
     const { GITHUB_ACTIONS, CI_PROJECT_ID } = process.env;
+
+    console.log(process.env);
     const path = 'comment.md';
     const img = await publish_file({
       path: 'assets/logo.png',
