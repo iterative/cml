@@ -1,15 +1,12 @@
-default:
-  before_script:
-    - apt-get update
-
 run:
+  image: dvcorg/cml:latest
   script:
-    - npm ci
-    - npm run lint
-
     - curl -sL https://deb.nodesource.com/setup_12.x | bash
     - sudo apt-get update && sudo apt-get install -y python3-pip nodejs
     - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
     - sudo pip install --upgrade pip setuptools
     - sudo pip install tensorboard
+
+    - npm ci
+    - npm run lint
     - npm run test
