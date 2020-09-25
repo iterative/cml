@@ -1,4 +1,4 @@
-run:
+test:
   image: dvcorg/cml-py3:latest
   script:
     - sudo pip install tensorboard
