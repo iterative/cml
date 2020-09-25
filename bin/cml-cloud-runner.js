@@ -85,6 +85,17 @@ const setup_runners = async (opts) => {
     if (!host)
       throw new Error('Your machine does not have a public IP to be reached!');
 
+    const private_key =
+      key_private && key_private.length ? key_private : rsa_private_key;
+    const ssh = await ssh_connect({ host, username, private_key });
+
+    console.log('Uploading terraform files...');
+    await ssh.putFile(tfstate_path, 'terraform.tfstate');
+    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
+
+    console.log('Starting runner...');
+    console.log(await ssh.execCommand('nvidia-smi'));
+
     const start_runner_cmd = `
       sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
       docker run --name runner --rm -d ${gpu ? '--gpus all' : ''} \
@@ -103,15 +114,6 @@ const setup_runners = async (opts) => {
       ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
       ${image}`;
 
-    const private_key =
-      key_private && key_private.length ? key_private : rsa_private_key;
-    const ssh = await ssh_connect({ host, username, private_key });
-
-    console.log('Uploading terraform files...');
-    await ssh.putFile(tfstate_path, 'terraform.tfstate');
-    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
-
-    console.log('Starting runner...');
     console.log(start_runner_cmd);
     console.log(await ssh.execCommand(start_runner_cmd));
 
