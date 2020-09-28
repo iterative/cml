@@ -11,6 +11,7 @@ const {
 } = process.env;
 
 const [owner, repo] = GITHUB_REPOSITORY.split('/');
+const org = owner;
 const IS_PR = GITHUB_EVENT_NAME === 'pull_request';
 const REF = IS_PR ? GITHUB_HEAD_REF : GITHUB_REF;
 const HEAD_SHA = GITHUB_SHA;
@@ -62,14 +63,26 @@ const comment = async (opts) => {
 };
 
 const get_runner_token = async () => {
-  const {
-    data: { token }
-  } = await octokit.actions.createRegistrationTokenForRepo({
-    owner,
-    repo
-  });
+  if (typeof owner !== 'undefined' && typeof repo !== 'undefined') {
+    const {
+      data: { token }
+    } = await octokit.actions.createRegistrationTokenForRepo({
+      owner,
+      repo
+    });
 
-  return token;
+    return token;
+  }
+
+  if (typeof owner !== 'undefined' && typeof repo === 'undefined') {
+    const {
+      data: { token }
+    } = await octokit.actions.createRegistrationTokenForOrg({
+      org
+    });
+
+    return token;
+  }
 };
 
 const register_runner = async (opts) => {
