@@ -48,8 +48,6 @@ const setup_runners = async (opts) => {
   const {
     terraform_state,
     username = 'ubuntu',
-
-    gpu = false,
     'repo-token': repo_token = TOKEN,
     repo: runner_repo = REPO,
     labels: runner_labels,
@@ -85,6 +83,18 @@ const setup_runners = async (opts) => {
     if (!host)
       throw new Error('Your machine does not have a public IP to be reached!');
 
+    const private_key =
+      key_private && key_private.length ? key_private : rsa_private_key;
+    const ssh = await ssh_connect({ host, username, private_key });
+
+    console.log('Uploading terraform files...');
+    await ssh.putFile(tfstate_path, 'terraform.tfstate');
+    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
+
+    console.log('Starting runner...');
+    const { code: nvidia_code } = await ssh.execCommand('nvidia-smi');
+    const gpu = !nvidia_code;
+
     const start_runner_cmd = `
       sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
       docker run --name runner --rm -d ${gpu ? '--gpus all' : ''} \
@@ -103,17 +113,14 @@ const setup_runners = async (opts) => {
       ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
       ${image}`;
 
-    const private_key =
-      key_private && key_private.length ? key_private : rsa_private_key;
-    const ssh = await ssh_connect({ host, username, private_key });
-
-    console.log('Uploading terraform files...');
-    await ssh.putFile(tfstate_path, 'terraform.tfstate');
-    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
-
-    console.log('Starting runner...');
     console.log(start_runner_cmd);
-    console.log(await ssh.execCommand(start_runner_cmd));
+    const start_runner_cmd_out = await ssh.execCommand(start_runner_cmd);
+    console.log(start_runner_cmd_out);
+
+    if (start_runner_cmd_out.code)
+      throw new Error(
+        `Error starting the runner. $${start_runner_cmd_out.stdout}`
+      );
 
     await ssh.dispose();
   }
@@ -246,9 +253,6 @@ const argv = yargs
   .describe('type', 'Instance type. Defaults to t2.micro.')
   .default('hdd-size')
   .describe('hdd-size', 'HDD size in GB. Defaults to 100. Minimum is 100.')
-  .boolean('gpu')
-  .describe('gpu', 'If set uses GPU.')
-  .deprecateOption('gpu', 'Will be infered by the instances type')
   .default('tf-file')
   .describe(
     'tf-file',
