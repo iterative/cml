@@ -30,29 +30,23 @@ const REPO = CI_PROJECT_URL;
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
-  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
+  const endpoint = `/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);
 
-  const headers = { 'PRIVATE-TOKEN': TOKEN };
-  await fetch(endpoint, { method: 'POST', headers, body });
+  await gitlab_request({ endpoint, method: 'POST', body });
 };
 
 const get_runner_token = async () => {
-  const endpoint = `${CI_API_V4_URL}/projects/${encodeURIComponent(
-    CI_PROJECT_PATH
-  )}`;
+  const endpoint = `/projects/${encodeURIComponent(CI_PROJECT_PATH)}`;
+  const { runners_token } = await gitlab_request({ endpoint });
 
-  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
-  const response = await fetch(endpoint, { method: 'GET', headers });
-  const project = await response.json();
-
-  return project.runners_token;
+  return runners_token;
 };
 
 const register_runner = async (opts) => {
-  const endpoint = `${CI_API_V4_URL}/runners`;
+  const endpoint = `/runners`;
 
   const body = new URLSearchParams();
   body.append('token', opts.token);
@@ -61,26 +55,43 @@ const register_runner = async (opts) => {
   body.append('access_level', 'not_protected');
   body.append('tag_list', opts.tags);
 
-  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
-  const response = await fetch(endpoint, { method: 'POST', headers, body });
-  const runner = await response.json();
+  const data = await gitlab_request({ endpoint, method: 'POST', body });
 
-  return runner;
+  return data;
 };
 
 const upload = async (opts) => {
-  const endpoint = `${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads`;
+  const endpoint = `/projects/${CI_PROJECT_ID}/uploads`;
 
   const { size, mime, data } = await fetch_upload_data(opts);
-
   const body = new FormData();
   body.append('file', data);
 
-  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
-  const response = await fetch(endpoint, { method: 'POST', headers, body });
-  const { url } = await response.json();
+  const { url } = await gitlab_request({ endpoint, method: 'POST', body });
 
   return { uri: `${CI_PROJECT_URL}${url}`, mime, size };
+};
+
+const gitlab_request = async (opts) => {
+  const { endpoint, method = 'GET', body } = opts;
+
+  if (!TOKEN) throw new Error('Gitlab API token not found');
+
+  if (!CI_API_V4_URL) throw new Error('Gitlab API url not found');
+
+  if (!endpoint) throw new Error('Gitlab API endpoint not found');
+
+  const headers = { 'PRIVATE-TOKEN': TOKEN, Accept: 'application/json' };
+  const response = await fetch(`${CI_API_V4_URL}${endpoint}`, {
+    method,
+    headers,
+    body
+  });
+  const json = await response.json();
+
+  console.log(json);
+
+  return json;
 };
 
 const handle_error = (e) => {
