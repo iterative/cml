@@ -56,7 +56,7 @@ const shutdown_host = async () => {
     await fs.writeFile('main.tf', await fs.readFile('/main.tf', 'utf-8'));
 
     try {
-      console.log(await exec('terraform init -plugin-dir=/terraform_plugins'));
+      console.log(await exec('terraform init'));
       console.log(await exec('terraform destroy -auto-approve'));
     } catch (err) {
       console.log(err.message);

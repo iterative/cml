@@ -157,8 +157,8 @@ const run_terraform = async (opts) => {
 terraform {
   required_providers {
     iterative = {
-      versions = ["0.1"]
-      source = "github.com/iterative/iterative"
+      versions = ["0.1.3"]
+      source = "iterative/iterative"
     }
   }
 }
@@ -182,9 +182,7 @@ resource "iterative_machine" "machine" {
 
   await fs.appendFile(tf_path, tf_change_path_command);
 
-  console.log(
-    await exec(`terraform init -plugin-dir=/terraform_plugins ${TF_FOLDER}`)
-  );
+  console.log(await exec(`terraform init ${TF_FOLDER}`));
   console.log(await exec(`terraform apply -auto-approve ${TF_FOLDER}`));
 
   const terraform_state_json = await fs.readFile(
