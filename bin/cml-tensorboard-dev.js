@@ -92,28 +92,35 @@ const run = async (opts) => {
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path> --file <string>`)
+  .usage(`Usage: $0`)
   .default('credentials')
-  .alias('c', 'credentials')
-  .default('logdir', '', 'Directory containing the logs to process.')
-  .default('name', '', 'Tensorboard experiment title. Max 100 characters.')
-  .default(
+  .describe(
+    'credentials',
+    'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+  )
+  .alias('credentials', 'c')
+  .default('logdir')
+  .describe('logdir', 'Directory containing the logs to process.')
+  .default('name')
+  .describe('name', 'Tensorboard experiment title. Max 100 characters.')
+  .default('description')
+  .describe(
     'description',
-    '',
     'Tensorboard experiment description. Markdown format. Max 600 characters.'
   )
-  .default('plugins', null, '')
+  .default('plugins')
   .boolean('md')
-  .describe('md', 'Markdown output with the form [title || name](url).')
-  .default(
+  .describe('md', 'Output as markdown [title || name](url).')
+  .default('title')
+  .describe(
     'title',
-    null,
-    'Title of markdown, if not specified, name will be used.'
+    'Markdown title, if not specified, param name will be used.'
   )
-  .default(
+  .alias('title', 't')
+  .default('file')
+  .describe(
     'file',
-    null,
-    'Append the output to the given file. Create it if does not exists.'
+    'Append the output to the given file. Create it if does not exist.'
   )
   .alias('file', 'f')
   .help('h').argv;

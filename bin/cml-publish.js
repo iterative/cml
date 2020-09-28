@@ -41,23 +41,23 @@ const run = async (opts) => {
 pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
-  .usage(`Usage: $0 <path> --file <string>`)
+  .usage(`Usage: $0 <path to file>`)
   .boolean('md')
-  .describe('md', 'Output in markdown.')
+  .describe('md', 'Output as markdown [title || name](url).')
   .default('title')
-  .describe(
-    'title',
-    'If --md sets the title in markdown [title](url) or ![](url title).'
-  )
+  .describe('title', 'Markdown title [title](url) or ![](url title).')
   .alias('title', 't')
-  .default('file')
-  .describe('file', 'Outputs to the given file.')
-  .alias('file', 'f')
   .boolean('gitlab-uploads')
   .describe(
     'gitlab-uploads',
-    "Uses Gitlab's uploads api instead of CML's storage."
+    "Uses Gitlab's uploads api instead of CML's storage. CML's storage has size limitations, use Gilab's to avoid them. Only works in Gitlab."
   )
+  .default('file')
+  .describe(
+    'file',
+    'Append the output to the given file. Create it if does not exist.'
+  )
+  .alias('file', 'f')
   .help('h')
   .demand(data ? 0 : 1).argv;
 run({ ...argv, data }).catch((e) => handle_error(e));

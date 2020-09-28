@@ -23,9 +23,13 @@ const run = async (opts) => {
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path> --head-sha <string>`)
+  .usage('Usage: $0 <path to markdown file>')
   .default('head-sha')
-  .default('conclusion', 'success')
+  .describe(
+    'head-sha',
+    'Commit sha where the comment will appear. Defaults to HEAD.'
+  )
+  .default('conclusion', 'success', 'Sets the conclusion status of the check.')
   .choices('conclusion', [
     'success',
     'failure',
@@ -35,7 +39,7 @@ const argv = yargs
     'timed_out'
   ])
   .default('title', CHECK_TITLE)
-  .describe('head-sha', 'Commit sha')
+  .describe('title', 'Sets title of the check.')
   .help('h')
   .demand(1).argv;
 run(argv).catch((e) => handle_error(e));

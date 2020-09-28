@@ -8,15 +8,17 @@ describe('CML e2e', () => {
     const output = await exec(`echo none | node ./bin/cml-publish.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish.js <path> --file <string>
+      "Usage: cml-publish.js <path to file>
 
       Options:
         --version         Show version number                                [boolean]
-        --md              Output in markdown.                                [boolean]
-        --title, -t       If --md sets the title in markdown [title](url) or ![](url
-                          title).
-        --file, -f        Outputs to the given file.
-        --gitlab-uploads  Uses Gitlab's uploads api instead of CML's storage.[boolean]
+        --md              Output as markdown [title || name](url).           [boolean]
+        --title, -t       Markdown title [title](url) or ![](url title).
+        --gitlab-uploads  Uses Gitlab's uploads api instead of CML's storage. CML's
+                          storage has size limitations, use Gilab's to avoid them.
+                          Only works in Gitlab.                              [boolean]
+        --file, -f        Append the output to the given file. Create it if does not
+                          exist.
         -h                Show help                                          [boolean]"
     `);
   });

@@ -43,15 +43,15 @@ describe('CML e2e', () => {
     const output = await exec(`node ./bin/cml-send-github-check.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-github-check.js <path> --head-sha <string>
+      "Usage: cml-send-github-check.js <path to markdown file>
 
       Options:
         --version     Show version number                                    [boolean]
-        --head-sha    Commit sha
+        --head-sha    Commit sha where the comment will appear. Defaults to HEAD.
+        --title       Sets title of the check.                 [default: \\"CML Report\\"]
         -h            Show help                                              [boolean]
         --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
-                                                     \\"timed_out\\"] [default: \\"success\\"]
-        --title                                                [default: \\"CML Report\\"]"
+                      \\"timed_out\\"] [default: Sets the conclusion status of the check.]"
     `);
   });
 });

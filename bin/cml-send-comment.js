@@ -18,11 +18,17 @@ const run = async (opts) => {
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path> --head-sha <string>`)
+  .usage('Usage: $0 <path to markdown file>')
   .default('commit-sha')
-  .describe('commit-sha', 'Commit sha')
+  .describe(
+    'commit-sha',
+    'Commit sha where the comment will appear. Defaults to HEAD.'
+  )
   .default('head-sha')
-  .describe('head-sha', 'Commit sha')
+  .describe(
+    'head-sha',
+    "Commit sha where the comment will appear. As it's name suggests defaults to HEAD."
+  )
   .deprecateOption('head-sha', 'Use commit-sha instead')
   .help('h')
   .demand(1).argv;
