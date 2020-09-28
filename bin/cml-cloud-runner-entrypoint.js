@@ -11,7 +11,7 @@ const {
   RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_LABELS = '',
+  RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',
@@ -103,7 +103,6 @@ const shutdown = async (error) => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGQUIT', shutdown);
-
 const run = async () => {
   RUNNER_TOKEN = await get_runner_token();
   if (!RUNNER_TOKEN) {

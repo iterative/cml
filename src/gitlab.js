@@ -11,10 +11,10 @@ const {
   CI_COMMIT_REF_NAME,
   CI_COMMIT_SHA,
   CI_MERGE_REQUEST_ID,
+  CI_PROJECT_URL,
   GITLAB_USER_EMAIL,
   GITLAB_USER_NAME,
   GITLAB_TOKEN,
-  CI_PROJECT_URL,
   repo_token
 } = process.env;
 
@@ -25,6 +25,7 @@ const USER_EMAIL = GITLAB_USER_EMAIL;
 const USER_NAME = GITLAB_USER_NAME;
 
 const TOKEN = repo_token || GITLAB_TOKEN;
+const REPO = CI_PROJECT_URL;
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
@@ -108,5 +109,7 @@ exports.get_runner_token = get_runner_token;
 exports.register_runner = register_runner;
 exports.upload = upload;
 exports.handle_error = handle_error;
+exports.token = TOKEN;
+exports.repo = REPO;
 
 exports.CHECK_TITLE = 'CML Report';
