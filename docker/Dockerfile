@@ -113,7 +113,7 @@ RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amaz
 # TERRAFORM
 RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt update && apt-get install -y terraform && \
+    apt update && apt-get install -y terraform=v0.13.2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # CML
