@@ -97,7 +97,6 @@ const setup_runners = async (opts) => {
     const gpu = !nvidia_code;
 
     const start_runner_cmd = `
-      sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
       docker run --name runner --rm ${attached ? '' : '-d'} ${
       gpu ? '--gpus all' : ''
     } \
