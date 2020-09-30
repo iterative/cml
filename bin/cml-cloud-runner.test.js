@@ -36,7 +36,7 @@ describe('CML e2e', () => {
       --region us-west-1 \
       --idle-timeout=30 \
       --image=davidgortega/cml:cloud`);
-      
+
     const regex = /Destroy complete! Resources: \d destroyed/g;
     const found = output.match(regex);
 
