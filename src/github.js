@@ -74,15 +74,13 @@ const get_runner_token = async () => {
     return token;
   }
 
-  if (typeof repo === 'undefined') {
-    const {
-      data: { token }
-    } = await octokit.actions.createRegistrationTokenForOrg({
-      org
-    });
+  const {
+    data: { token }
+  } = await octokit.actions.createRegistrationTokenForOrg({
+    org
+  });
 
-    return token;
-  }
+  return token;
 };
 
 const register_runner = async (opts) => {
