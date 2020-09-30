@@ -12,11 +12,12 @@ describe('CML e2e', () => {
 
       Options:
         --version         Show version number                                [boolean]
-        --md              Output as markdown [title || name](url).           [boolean]
+        --md              Output in markdown format [title || name](url).    [boolean]
         --title, -t       Markdown title [title](url) or ![](url title).
-        --gitlab-uploads  Uses Gitlab's uploads api instead of CML's storage. CML's
-                          storage has size limitations, use Gilab's to avoid them.
-                          Only works in Gitlab.                              [boolean]
+        --gitlab-uploads  Uses GitLab uploads instead of CML storage. Use GitLab
+                          uploads to get around CML size limitations for hosting
+                          artifacts persistently. Only available for GitLab CI.
+                                                                             [boolean]
         --file, -f        Append the output to the given file. Create it if does not
                           exist.
         -h                Show help                                          [boolean]"

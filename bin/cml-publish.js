@@ -43,14 +43,14 @@ const data = pipe_args.piped_arg();
 const argv = yargs
   .usage(`Usage: $0 <path to file>`)
   .boolean('md')
-  .describe('md', 'Output as markdown [title || name](url).')
+  .describe('md', 'Output in markdown format [title || name](url).')
   .default('title')
   .describe('title', 'Markdown title [title](url) or ![](url title).')
   .alias('title', 't')
   .boolean('gitlab-uploads')
   .describe(
     'gitlab-uploads',
-    "Uses Gitlab's uploads api instead of CML's storage. CML's storage has size limitations, use Gilab's to avoid them. Only works in Gitlab."
+    'Uses GitLab uploads instead of CML storage. Use GitLab uploads to get around CML size limitations for hosting artifacts persistently. Only available for GitLab CI.'
   )
   .default('file')
   .describe(

@@ -22,13 +22,10 @@ const argv = yargs
   .default('commit-sha')
   .describe(
     'commit-sha',
-    'Commit sha where the comment will appear. Defaults to HEAD.'
+    'Commit SHA linked to this comment. Defaults to HEAD.'
   )
   .default('head-sha')
-  .describe(
-    'head-sha',
-    "Commit sha where the comment will appear. As it's name suggests defaults to HEAD."
-  )
+  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD')
   .deprecateOption('head-sha', 'Use commit-sha instead')
   .help('h')
   .demand(1).argv;

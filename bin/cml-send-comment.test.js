@@ -31,9 +31,9 @@ describe('CML e2e', () => {
 
       Options:
         --version     Show version number                                    [boolean]
-        --commit-sha  Commit sha where the comment will appear. Defaults to HEAD.
-        --head-sha    Commit sha where the comment will appear. As it's name suggests
-                      defaults to HEAD.           [deprecated: Use commit-sha instead]
+        --commit-sha  Commit SHA linked to this comment. Defaults to HEAD.
+        --head-sha    Commit SHA linked to this comment. Defaults to HEAD
+                                                  [deprecated: Use commit-sha instead]
         -h            Show help                                              [boolean]"
     `);
   });
