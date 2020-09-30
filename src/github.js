@@ -63,7 +63,7 @@ const comment = async (opts) => {
 };
 
 const get_runner_token = async () => {
-  if (typeof owner !== 'undefined' && typeof repo !== 'undefined') {
+  if (typeof repo !== 'undefined') {
     const {
       data: { token }
     } = await octokit.actions.createRegistrationTokenForRepo({
@@ -74,7 +74,7 @@ const get_runner_token = async () => {
     return token;
   }
 
-  if (typeof owner !== 'undefined' && typeof repo === 'undefined') {
+  if (typeof repo === 'undefined') {
     const {
       data: { token }
     } = await octokit.actions.createRegistrationTokenForOrg({
