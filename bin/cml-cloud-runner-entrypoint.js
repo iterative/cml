@@ -2,7 +2,6 @@
 
 const { spawn } = require('child_process');
 const { exec, randid } = require('../src/utils');
-const fs = require('fs').promises;
 const { URL } = require('url');
 
 const {
@@ -42,25 +41,20 @@ const shutdown_docker_machine = async () => {
     DOCKER_MACHINE &&
       console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
   } catch (err) {
-    console.log(err.message);
+    console.log(`Failed shutting down docker machine: ${err.message}`);
   }
 };
 
 const shutdown_host = async () => {
   try {
-    console.log('Terraform destroy');
-    await fs.writeFile(
-      'terraform.tfstate',
-      await fs.readFile('/terraform.tfstate', 'utf-8')
-    );
-    await fs.writeFile('main.tf', await fs.readFile('/main.tf', 'utf-8'));
-
+    console.log('Terraform destroy...');
     try {
-      console.log(await exec('terraform init'));
-      console.log(await exec('terraform destroy -auto-approve'));
+      console.log(
+        await exec('cd / && terraform init && terraform destroy -auto-approve')
+      );
     } catch (err) {
-      console.log(err.message);
-      shutdown_host();
+      console.log(`Failed destroying terraform: ${err.message}`);
+      // shutdown_host();
     }
   } catch (err) {
     console.log(err.message);
