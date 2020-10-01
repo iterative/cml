@@ -180,14 +180,15 @@ const run = async () => {
     }
   });
 
-  const watcher = setInterval(() => {
-    IS_GITHUB &&
-      RUNNER_IDLE_TIMEOUT !== 0 &&
+  if (IS_GITHUB && parseInt(RUNNER_IDLE_TIMEOUT) !== 0) {
+    const watcher = setInterval(() => {
       TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT &&
-      shutdown() &&
-      clearInterval(watcher);
-    if (!JOB_RUNNING) TIMEOUT_TIMER++;
-  }, 1000);
+        shutdown() &&
+        clearInterval(watcher);
+
+      if (!JOB_RUNNING) TIMEOUT_TIMER++;
+    }, 1000);
+  }
 };
 
 run().catch((err) => {
