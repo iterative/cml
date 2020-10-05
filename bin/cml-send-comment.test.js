@@ -16,10 +16,7 @@ describe('CML e2e', () => {
     const report = `## Test Comment Report \n ${img}`;
 
     await fs.writeFile(path, report);
-
-    process.env.GITHUB_ACTIONS &&
-      (await exec(`node ./bin/cml-send-comment.js ${path}`));
-
+    await exec(`node ./bin/cml-send-comment.js ${path}`);
     await fs.unlink(path);
   });
 

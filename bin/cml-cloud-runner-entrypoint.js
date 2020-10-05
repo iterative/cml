@@ -11,7 +11,7 @@ const {
   RUNNER_PATH,
   RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_LABELS = '',
+  RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',
@@ -103,9 +103,9 @@ const shutdown = async (error) => {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGQUIT', shutdown);
-
 const run = async () => {
   RUNNER_TOKEN = await get_runner_token();
+
   if (!RUNNER_TOKEN) {
     throw new Error(
       'RUNNER_TOKEN is needed to start the runner. Are you setting a runner?'
@@ -180,13 +180,15 @@ const run = async () => {
     }
   });
 
-  const watcher = setInterval(() => {
-    IS_GITHUB &&
+  if (IS_GITHUB && parseInt(RUNNER_IDLE_TIMEOUT) !== 0) {
+    const watcher = setInterval(() => {
       TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT &&
-      shutdown() &&
-      clearInterval(watcher);
-    if (!JOB_RUNNING) TIMEOUT_TIMER++;
-  }, 1000);
+        shutdown() &&
+        clearInterval(watcher);
+
+      if (!JOB_RUNNING) TIMEOUT_TIMER++;
+    }, 1000);
+  }
 };
 
 run().catch((err) => {
