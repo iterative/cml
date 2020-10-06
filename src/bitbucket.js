@@ -44,11 +44,11 @@ const get_runner_token = async () => {
 const bitbucket_request = async (opts) => {
   const { endpoint, method = 'GET', body } = opts;
 
-  if (!TOKEN) throw new Error('BitBucket password not found');
+  if (!PASSWORD) throw new Error('BitBucket password not found');
 
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${TOKEN}`) }`, 
+  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
