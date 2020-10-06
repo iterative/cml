@@ -18,9 +18,8 @@ const {
   repo_token
 } = process.env;
 
-console.log(BITBUCKET_COMMIT)
 
-const USERNAME = BITBUCKET_WORKSPACE
+const USERNAME = BITBUCKET_WORKSPACE;
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
@@ -53,6 +52,7 @@ const bitbucket_request = async (opts) => {
 
   const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
+  console.log(headers);
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers,
