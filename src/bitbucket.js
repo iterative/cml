@@ -34,7 +34,7 @@ const comment = async (opts) => {
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
-  body.append('content', {"raw": "One more thing!"});
+  body.append('content', '{"raw": "One more thing!"}');
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
