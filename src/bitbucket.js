@@ -74,7 +74,7 @@ exports.user_name = USERNAME;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
 exports.handle_error = handle_error;
-exports.token = TOKEN;
+exports.token = PASSWORD;
 exports.repo = BITBUCKET_REPO_SLUG;
 
 exports.CHECK_TITLE = 'CML Report';
