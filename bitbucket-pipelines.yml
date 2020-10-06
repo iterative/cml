@@ -13,5 +13,5 @@ pipelines:
             - node
           script: # Modify the commands below to build your repository.
             - npm install
-            - echo "#CIAO" > report.md
+            - echo "CIAO" > report.md
             - node bin/cml-send-comment report.md
