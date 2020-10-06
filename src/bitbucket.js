@@ -49,7 +49,7 @@ const bitbucket_request = async (opts) => {
 
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = {'Authorization': `Basic ${ base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
+  const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
