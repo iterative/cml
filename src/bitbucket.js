@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URLSearchParams } = require('url');
 const { fetch_upload_data } = require('./utils');
+const {Base64} = require('js-base64');
 
 const {
   BITBUCKET_REPO_FULL_NAME = '', //namespace with project name, i.e. elle/cml
@@ -48,7 +49,7 @@ const bitbucket_request = async (opts) => {
 
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${PASSWORD}`) }`, 
+  const headers = {'Authorization': `Basic ${ base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
