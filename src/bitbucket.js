@@ -30,7 +30,6 @@ const comment = async (opts) => {
 
   const body = new URLSearchParams();
   body.append('raw', report);
-  console.log(body)
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
