@@ -13,20 +13,68 @@ const {
   // GITLAB_USER_EMAIL, // doesn't look like email is part of BB env vars
   BITBUCKET_WORKSPACE, //username
   BITBUCKET_GIT_HTTP_ORIGIN, // url to project
+  BITBUCKET_REPO_SLUG, // repo slug
   repo_token
 } = process.env;
 
+const USERNAME = BITBUCKET_WORKSPACE
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
-const HEAD_SHA = BITBUCKET_COMMIT;
-const USER_NAME = BITBUCKET_WORKSPACE;
+const PASSWORD = repo_token;
+const API_URL = `https://https://api.bitbucket.org/2.0/`;
 
-const TOKEN = repo_token;
+const comment = async (opts) => {
+  const { commit_sha, report } = opts;
 
-console.log(IS_PR)
-console.log(REF)
-console.log(HEAD_SHA)
-console.log(USER_NAME)
-console.log(TOKEN)
+  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
 
-console.log("HELLO HELLO!")
+  const body = new URLSearchParams();
+  body.append('note', report);
+
+  await bitbucket_request({ endpoint, method: 'POST', body });
+};
+
+const get_runner_token = async () => {
+  const endpoint = `/projects/${encodeURIComponent(BITBUCKET_REPO_FULL_NAME)}`;
+  const { runners_token } = await bitbucket_request({ endpoint });
+
+  return runners_token;
+};
+
+const bitbucket_request = async (opts) => {
+  const { endpoint, method = 'GET', body } = opts;
+
+  if (!TOKEN) throw new Error('BitBucket password not found');
+
+  if (!endpoint) throw new Error('BitBucket API endpoint not found');
+
+  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${TOKEN}`) }`, 
+                    Accept: 'application/json' };
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method,
+    headers,
+    body
+  });
+  const json = await response.json();
+
+  console.log(json);
+
+  return json;
+};
+
+const handle_error = (e) => {
+  console.error(e.message);
+  process.exit(1);
+};
+
+exports.is_pr = IS_PR;
+exports.ref = REF;
+exports.head_sha = BITBUCKET_COMMIT;
+exports.user_name = USERNAME;
+exports.comment = comment;
+exports.get_runner_token = get_runner_token;
+exports.handle_error = handle_error;
+exports.token = PASSWORD;
+exports.repo = BITBUCKET_REPO_SLUG;
+
+exports.CHECK_TITLE = 'CML Report';

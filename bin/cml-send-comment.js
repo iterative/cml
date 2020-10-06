@@ -7,7 +7,7 @@ const yargs = require('yargs');
 
 const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
-  : require('../src/gitlab');
+  : require('../src/bitbucket');
 
 const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
