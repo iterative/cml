@@ -25,6 +25,9 @@ const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
 const API_URL = `https://api.bitbucket.org/2.0`;
 
+console.log(USERNAME)
+console.log(PASSWORD)
+
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
@@ -52,7 +55,6 @@ const bitbucket_request = async (opts) => {
 
   const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
-  console.log(headers);
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers,
