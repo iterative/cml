@@ -18,6 +18,8 @@ const {
   repo_token
 } = process.env;
 
+console.log(BITBUCKET_COMMIT)
+
 const USERNAME = BITBUCKET_WORKSPACE
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
@@ -27,7 +29,7 @@ const API_URL = `https://api.bitbucket.org/2.0`;
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
-  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
+  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);
