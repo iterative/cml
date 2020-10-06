@@ -29,7 +29,8 @@ const comment = async (opts) => {
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
-  body.append('note', report);
+  body.append('raw', report);
+  console.log(body)
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
