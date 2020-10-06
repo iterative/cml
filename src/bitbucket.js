@@ -17,17 +17,16 @@ const {
   repo_token
 } = process.env;
 
+const USERNAME = BITBUCKET_WORKSPACE
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
-const TOKEN = repo_token;
-const API = `https://https://api.bitbucket.org/2.0/`;
-
-console.log(API)
+const PASSWORD = repo_token;
+const API_URL = `https://https://api.bitbucket.org/2.0/`;
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
-  const endpoint = `/repositories/${BITBUCKET_WORKSPACE}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
+  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);
@@ -42,30 +41,16 @@ const get_runner_token = async () => {
   return runners_token;
 };
 
-const register_runner = async (opts) => {
-  const endpoint = `/runners`;
-
-  const body = new URLSearchParams();
-  body.append('token', opts.token);
-  body.append('locked', 'true');
-  body.append('run_untagged', 'true');
-  body.append('access_level', 'not_protected');
-  body.append('tag_list', opts.tags);
-
-  const data = await bitbucket_request({ endpoint, method: 'POST', body });
-
-  return data;
-};
-
 const bitbucket_request = async (opts) => {
   const { endpoint, method = 'GET', body } = opts;
 
-  if (!TOKEN) throw new Error('Gitlab API token not found');
+  if (!TOKEN) throw new Error('BitBucket password not found');
 
-  if (!endpoint) throw new Error('Gitlab API endpoint not found');
+  if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = { BITBUCKET_WORKSPACE : TOKEN, Accept: 'application/json' };
-  const response = await fetch(`${API}${endpoint}`, {
+  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${TOKEN}`) }`, 
+                    Accept: 'application/json' };
+  const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers,
     body
@@ -85,10 +70,9 @@ const handle_error = (e) => {
 exports.is_pr = IS_PR;
 exports.ref = REF;
 exports.head_sha = BITBUCKET_COMMIT;
-exports.user_name = BITBUCKET_WORKSPACE;
+exports.user_name = USERNAME;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
-exports.register_runner = register_runner;
 exports.handle_error = handle_error;
 exports.token = TOKEN;
 exports.repo = BITBUCKET_REPO_SLUG;
