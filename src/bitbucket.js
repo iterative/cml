@@ -22,7 +22,7 @@ const USERNAME = BITBUCKET_WORKSPACE
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
-const API_URL = `https://https://api.bitbucket.org/2.0/`;
+const API_URL = `https://https://api.bitbucket.org/2.0`;
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
