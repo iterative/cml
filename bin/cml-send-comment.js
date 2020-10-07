@@ -12,9 +12,8 @@ const {
   head_sha: HEAD_SHA,
   handle_error,
   comment,
-  commit_comments
-  // pull_request_comments,
-  // is_pr
+  commit_comments,
+  pull_request_comments
 } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
@@ -36,14 +35,12 @@ const run = async (opts) => {
   `;
   const commit_sha = sha || head_sha || HEAD_SHA;
 
-  /*   const comments =
-    (await (is_pr
-      ? pull_request_comments({})
-      : commit_comments({ commit_sha }))) || []; */
+  const pr_comments = (await pull_request_comments({ commit_sha })) || [];
   const comments = (await commit_comments({ commit_sha })) || [];
-  const do_comment = comments.filter(
-    (comment) => hash(comment.body) === hash(report)
-  );
+  const do_comment =
+    !comments.filter((comment) => hash(comment.body) === hash(report)).length &&
+    !pr_comments.filter((comment) => hash(comment.body) === hash(report))
+      .length;
 
   if (do_comment) await comment({ commit_sha, report });
   else print('Comment was skipped. Already exists in the context.');

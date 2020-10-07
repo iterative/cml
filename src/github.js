@@ -57,25 +57,11 @@ const commit_comments = async (opts) => {
   if (IS_PR) await sleep(60);
 
   const { commit_sha } = opts;
-
-  const result = await octokit.repos.listPullRequestsAssociatedWithCommit({
-    owner,
-    repo,
-    commit_sha
-  });
-
-  console.log(result);
-
   const { data: comments } = await octokit.repos.listCommentsForCommit({
     owner,
     repo,
     commit_sha
   });
-
-  console.log('commit_comments ' + commit_sha);
-  console.log(comments);
-  const flag = 2;
-  if (flag === 1 + 1) throw new Error('halt!');
 
   return comments.map((comment) => {
     const {
@@ -91,23 +77,33 @@ const commit_comments = async (opts) => {
 };
 
 const pull_request_comments = async (opts) => {
-  console.log(github.context);
-  const { pr: pull_number } = opts;
+  const { commit_sha } = opts;
   const comments = [];
 
-  const { data: commits } = await octokit.pulls.listCommits({
+  const {
+    data: prs
+  } = await octokit.repos.listPullRequestsAssociatedWithCommit({
     owner,
     repo,
-    pull_number
+    commit_sha
   });
 
-  for (let i = 0; i < commits.length; i++) {
-    const { sha: commit_sha } = commits[i];
-    const c_comments = await commit_comments({
-      commit_sha
+  for (let pr_idx = 0; pr_idx < prs.length; pr_idx++) {
+    const { number: pull_number } = prs[pr_idx];
+    const { data: commits } = await octokit.pulls.listCommits({
+      owner,
+      repo,
+      pull_number
     });
 
-    comments.concat(c_comments);
+    for (let i = 0; i < commits.length; i++) {
+      const { sha: commit_sha } = commits[i];
+      const c_comments = await commit_comments({
+        commit_sha
+      });
+
+      comments.concat(c_comments);
+    }
   }
 
   return comments;
