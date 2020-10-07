@@ -42,6 +42,11 @@ const run = async (opts) => {
     !pr_comments.filter((comment) => hash(comment.body) === hash(report))
       .length;
 
+  console.log('commit_comments ' + commit_sha);
+  console.log(pr_comments);
+  const flag = 2;
+  if (flag === 1 + 1) throw new Error('halt!');
+
   if (do_comment) await comment({ commit_sha, report });
   else print('Comment was skipped. Already exists in the context.');
 };

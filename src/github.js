@@ -89,6 +89,7 @@ const pull_request_comments = async (opts) => {
   });
 
   for (let pr_idx = 0; pr_idx < prs.length; pr_idx++) {
+    console.log(prs[pr_idx]);
     const { number: pull_number } = prs[pr_idx];
     const { data: commits } = await octokit.pulls.listCommits({
       owner,
