@@ -33,11 +33,6 @@ const commit_comments = async (opts) => {
   const endpoint = `/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
   const comments = await gitlab_request({ endpoint });
 
-  console.log('commit_comments ' + commit_sha);
-  console.log(comments);
-  const flag = 2;
-  if (flag === 1 + 1) throw new Error('halt!');
-
   return comments.map((comment) => {
     const {
       id,

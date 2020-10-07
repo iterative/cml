@@ -1,4 +1,5 @@
 const github = require('@actions/github');
+const { sleep } = require('./utils');
 
 const {
   GITHUB_REPOSITORY = '',
@@ -53,7 +54,10 @@ const create_check_report = async (opts) => {
 };
 
 const commit_comments = async (opts) => {
+  if (IS_PR) await sleep(20);
+
   const { commit_sha } = opts;
+
   const { data: comments } = await octokit.repos.listCommentsForCommit({
     owner,
     repo,
