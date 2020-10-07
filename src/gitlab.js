@@ -30,7 +30,7 @@ const REPO = CI_PROJECT_URL;
 const commit_comments = async (opts) => {
   const { commit_sha } = opts;
 
-  const endpoint = `/projects/:${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
+  const endpoint = `/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
   const comments = await gitlab_request({ endpoint, method: 'POST' });
 
   return comments.map((comment) => {
