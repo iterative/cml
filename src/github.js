@@ -55,13 +55,11 @@ const create_check_report = async (opts) => {
 const commit_comments = async (opts) => {
   const { commit_sha } = opts;
 
-  const comments = await octokit.repos.listCommentsForCommit({
+  const { data: comments } = await octokit.repos.listCommentsForCommit({
     owner,
     repo,
     commit_sha
   });
-
-  console.log(comments);
 
   return comments.map((comment) => {
     const {
@@ -80,7 +78,7 @@ const pull_request_comments = async (opts) => {
   const { pr: pull_number } = opts;
   const comments = [];
 
-  const commits = await octokit.pulls.listCommits({
+  const { data: commits } = await octokit.pulls.listCommits({
     owner,
     repo,
     pull_number
