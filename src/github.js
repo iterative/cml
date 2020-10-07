@@ -58,11 +58,24 @@ const commit_comments = async (opts) => {
 
   const { commit_sha } = opts;
 
+  const result = await octokit.repos.listPullRequestsAssociatedWithCommit({
+    owner,
+    repo,
+    commit_sha
+  });
+
+  console.log(result);
+
   const { data: comments } = await octokit.repos.listCommentsForCommit({
     owner,
     repo,
     commit_sha
   });
+
+  console.log('commit_comments ' + commit_sha);
+  console.log(comments);
+  const flag = 2;
+  if (flag === 1 + 1) throw new Error('halt!');
 
   return comments.map((comment) => {
     const {
@@ -79,7 +92,7 @@ const commit_comments = async (opts) => {
 
 const pull_request_comments = async (opts) => {
   console.log(github.context);
-  const { pr: pull_number = github.event.number } = opts;
+  const { pr: pull_number } = opts;
   const comments = [];
 
   const { data: commits } = await octokit.pulls.listCommits({
