@@ -5,9 +5,14 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/bitbucket');
+if (process.env.GITHUB_ACTIONS) {
+  const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/github');
+} else if (process.env.CI) {
+  const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/bitbucket');
+} else {
+  const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/gitlab');
+}  
+
 
 const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
