@@ -56,7 +56,7 @@ ARG CUBLAS_MAJOR=10
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
     libcublas${CUBLAS_MAJOR}=${CUBLAS} \
     cuda-nvrtc-${CUDA/./-} \
@@ -73,7 +73,7 @@ RUN apt update && apt-get install -y --no-install-recommends \
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
-RUN apt update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libnvinfer${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} \
         libnvinfer-plugin${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} && \
@@ -116,7 +116,7 @@ RUN wget https://github.com/iterative/terraform-provider-iterative/archive/v0.1.
     /bin/bash -c "cd terraform-provider-iterative-0.1.1; go mod vendor; make build; mkdir -p /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64; mv terraform-provider-iterative /terraform_plugins/github.com/iterative/iterative/0.1/linux_amd64/" && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt update && apt-get install -y terraform && \
+    apt-get update && apt-get install -y terraform && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # CML
