@@ -31,7 +31,7 @@ const commit_comments = async (opts) => {
   const { commit_sha } = opts;
 
   const endpoint = `/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
-  const comments = await gitlab_request({ endpoint, method: 'POST' });
+  const comments = await gitlab_request({ endpoint });
 
   console.log('commit_comments ' + commit_sha);
   console.log(comments);
@@ -55,7 +55,7 @@ const pull_request_comments = async (opts) => {
   const comments = [];
 
   const endpoint = `/projects/${CI_PROJECT_ID}/merge_requests/${pr}/context_commits`;
-  const commits = await gitlab_request({ endpoint, method: 'POST' });
+  const commits = await gitlab_request({ endpoint });
 
   for (let i = 0; i < commits.length; i++) {
     const { sha: commit_sha } = commits[i];
