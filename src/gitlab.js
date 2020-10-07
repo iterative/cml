@@ -33,6 +33,11 @@ const commit_comments = async (opts) => {
   const endpoint = `/projects/${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
   const comments = await gitlab_request({ endpoint, method: 'POST' });
 
+  console.log('commit_comments ' + commit_sha);
+  console.log(comments);
+  const flag = 2;
+  if (flag === 1 + 1) throw new Error('halt!');
+
   return comments.map((comment) => {
     const {
       id,
@@ -50,7 +55,7 @@ const pull_request_comments = async (opts) => {
   const comments = [];
 
   const endpoint = `/projects/${CI_PROJECT_ID}/merge_requests/${pr}/context_commits`;
-  const { commits } = await gitlab_request({ endpoint, method: 'POST' });
+  const commits = await gitlab_request({ endpoint, method: 'POST' });
 
   for (let i = 0; i < commits.length; i++) {
     const { sha: commit_sha } = commits[i];
@@ -125,8 +130,6 @@ const gitlab_request = async (opts) => {
     body
   });
   const json = await response.json();
-
-  console.log(json);
 
   return json;
 };
