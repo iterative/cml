@@ -61,6 +61,8 @@ const commit_comments = async (opts) => {
     commit_sha
   });
 
+  console.log(comments);
+
   return comments.map((comment) => {
     const {
       id,
