@@ -25,16 +25,13 @@ const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
 const API_URL = `https://api.bitbucket.org/2.0`;
 
-console.log(USERNAME)
-console.log(PASSWORD)
-
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
-  body.append('content', '{"raw": "One more thing!"}');
+  body.append('note', report);
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
