@@ -55,6 +55,7 @@ const create_check_report = async (opts) => {
 
 const commit_comments = async (opts) => {
   if (IS_PR) await sleep(20);
+  if (IS_PR) throw new Error('ISPR!!!');
 
   const { commit_sha } = opts;
 
