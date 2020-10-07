@@ -78,7 +78,7 @@ const commit_comments = async (opts) => {
 };
 
 const pull_request_comments = async (opts) => {
-  console.log(github.event);
+  console.log(github.context);
   const { pr: pull_number = github.event.number } = opts;
   const comments = [];
 
