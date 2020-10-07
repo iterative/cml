@@ -63,6 +63,8 @@ const commit_comments = async (opts) => {
   });
 
   console.log(comments);
+  const flag = 2;
+  if (flag === 1 + 1) throw new Error('halt!');
 
   return comments.map((comment) => {
     const {
