@@ -54,7 +54,7 @@ const create_check_report = async (opts) => {
 };
 
 const commit_comments = async (opts) => {
-  if (IS_PR) await sleep(30);
+  if (IS_PR) await sleep(60);
 
   const { commit_sha } = opts;
 
@@ -78,7 +78,7 @@ const commit_comments = async (opts) => {
 };
 
 const pull_request_comments = async (opts) => {
-  const { pr: pull_number } = opts;
+  const { pr: pull_number = github.event.number } = opts;
   const comments = [];
 
   const { data: commits } = await octokit.pulls.listCommits({
