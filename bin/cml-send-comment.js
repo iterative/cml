@@ -13,6 +13,7 @@ if (process.env.GITHUB_ACTIONS) {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/gitlab');
 }  
 
+console.log(process.env.BITBUCKET_COMMIT);
 
 const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
