@@ -9,9 +9,7 @@ if (process.env.GITHUB_ACTIONS) {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/github');
 } else if (process.env.CI) {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/bitbucket');
-  console.log(process.env.CI);
-  console.log("Statement evaluated.");
-  consol.log(head_sha);
+  console.log("BitBucket detected!")
 } else {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/gitlab');
 }  
