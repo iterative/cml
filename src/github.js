@@ -52,6 +52,50 @@ const create_check_report = async (opts) => {
   return check;
 };
 
+const commit_comments = async (opts) => {
+  const { commit_sha } = opts;
+
+  const comments = await octokit.repos.listCommentsForCommit({
+    owner,
+    repo,
+    commit_sha
+  });
+
+  return comments.map((comment) => {
+    const {
+      id,
+      user: { login: user_name },
+      body,
+      created_at,
+      updated_at
+    } = comment;
+
+    return { id, user_name, body, created_at, updated_at };
+  });
+};
+
+const pull_request_comments = async (opts) => {
+  const { pr: pull_number } = opts;
+  const comments = [];
+
+  const commits = await octokit.pulls.listCommits({
+    owner,
+    repo,
+    pull_number
+  });
+
+  for (let i = 0; i < commits.length; i++) {
+    const { sha: commit_sha } = commits[i];
+    const c_comments = await commit_comments({
+      commit_sha
+    });
+
+    comments.concat(c_comments);
+  }
+
+  return comments;
+};
+
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
@@ -101,12 +145,15 @@ exports.head_sha =
     : HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
+exports.token = TOKEN;
+exports.repo = REPO;
+
+exports.commit_comments = commit_comments;
+exports.pull_request_comments = pull_request_comments;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
 exports.register_runner = register_runner;
 exports.handle_error = handle_error;
-exports.token = TOKEN;
-exports.repo = REPO;
 
 exports.CHECK_TITLE = CHECK_TITLE;
 exports.create_check_report = create_check_report;

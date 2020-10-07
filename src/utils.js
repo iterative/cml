@@ -5,6 +5,7 @@ const PATH = require('path');
 const FileType = require('file-type');
 const isSvg = require('is-svg');
 const forge = require('node-forge');
+const crypto = require('crypto');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -135,6 +136,10 @@ const parse_param_newline = (param) => {
   return param.replace(/\\n/g, '\n');
 };
 
+const hash = (txt) => {
+  return crypto.createHash('md5').update(txt).digest('hex');
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -143,3 +148,4 @@ exports.sleep = sleep;
 exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
+exports.hash = hash;

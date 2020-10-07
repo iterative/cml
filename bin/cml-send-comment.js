@@ -1,11 +1,19 @@
 #!/usr/bin/env node
 
+const print = console.log;
 console.log = console.error;
 
 const fs = require('fs').promises;
 const yargs = require('yargs');
+const { hash } = require('../src/utils');
 
-const { head_sha: HEAD_SHA, handle_error, comment } = process.env.GITHUB_ACTIONS
+const {
+  head_sha: HEAD_SHA,
+  handle_error,
+  comment,
+  commit_comments
+  // is_pr,
+} = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
 
@@ -13,8 +21,16 @@ const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
+  const commit_sha = sha || head_sha || HEAD_SHA;
 
-  await comment({ commit_sha: sha || head_sha || HEAD_SHA, report });
+  // const comments = await (is_pr ? pull_request_comments() : commit_comments({ commit_sha }));
+  const comments = (await commit_comments({ commit_sha })) || [];
+  const do_comment = comments.filter(
+    (comment) => hash(comment.body) === hash(report)
+  );
+
+  if (do_comment) await comment({ commit_sha, report });
+  else print('Comment was skipped. Already exists in the context.');
 };
 
 const argv = yargs

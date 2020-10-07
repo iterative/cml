@@ -27,6 +27,43 @@ const USER_NAME = GITLAB_USER_NAME;
 const TOKEN = repo_token || GITLAB_TOKEN;
 const REPO = CI_PROJECT_URL;
 
+const commit_comments = async (opts) => {
+  const { commit_sha } = opts;
+
+  const endpoint = `/projects/:${CI_PROJECT_ID}/repository/commits/${commit_sha}/comments`;
+  const comments = await gitlab_request({ endpoint, method: 'POST' });
+
+  return comments.map((comment) => {
+    const {
+      id,
+      author: { username: user_name },
+      note: body,
+      created_at
+    } = comment;
+
+    return { id, user_name, body, created_at, updated_at: created_at };
+  });
+};
+
+const pull_request_comments = async (opts) => {
+  const { pr } = opts;
+  const comments = [];
+
+  const endpoint = `/projects/${CI_PROJECT_ID}/merge_requests/${pr}/context_commits`;
+  const { commits } = await gitlab_request({ endpoint, method: 'POST' });
+
+  for (let i = 0; i < commits.length; i++) {
+    const { sha: commit_sha } = commits[i];
+    const c_comments = await commit_comments({
+      commit_sha
+    });
+
+    comments.concat(c_comments);
+  }
+
+  return comments;
+};
+
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
@@ -104,12 +141,15 @@ exports.ref = REF;
 exports.head_sha = HEAD_SHA;
 exports.user_email = USER_EMAIL;
 exports.user_name = USER_NAME;
+exports.token = TOKEN;
+exports.repo = REPO;
+
+exports.commit_comments = commit_comments;
+exports.pull_request_comments = pull_request_comments;
 exports.comment = comment;
 exports.get_runner_token = get_runner_token;
 exports.register_runner = register_runner;
 exports.upload = upload;
 exports.handle_error = handle_error;
-exports.token = TOKEN;
-exports.repo = REPO;
 
 exports.CHECK_TITLE = 'CML Report';
