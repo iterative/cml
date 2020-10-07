@@ -12,8 +12,9 @@ const {
   head_sha: HEAD_SHA,
   handle_error,
   comment,
-  commit_comments
-  // is_pr,
+  commit_comments,
+  pull_request_comments,
+  is_pr
 } = process.env.GITHUB_ACTIONS
   ? require('../src/github')
   : require('../src/gitlab');
@@ -35,8 +36,10 @@ const run = async (opts) => {
   `;
   const commit_sha = sha || head_sha || HEAD_SHA;
 
-  // const comments = await (is_pr ? pull_request_comments() : commit_comments({ commit_sha }));
-  const comments = (await commit_comments({ commit_sha })) || [];
+  const comments =
+    (await (is_pr
+      ? pull_request_comments()
+      : commit_comments({ commit_sha }))) || [];
   const do_comment = comments.filter(
     (comment) => hash(comment.body) === hash(report)
   );
