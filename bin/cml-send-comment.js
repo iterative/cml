@@ -6,6 +6,7 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 const { hash } = require('../src/utils');
+const { publish_file } = require('../src/report');
 
 const {
   head_sha: HEAD_SHA,
@@ -20,7 +21,13 @@ const {
 const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
   const path = opts._[0];
-  const watermark = '![CML watermark]()';
+  const watermark = await publish_file({
+    buffer:
+      '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#ffffff"/></svg>',
+    title: 'CML watermark',
+    md: true
+  });
+
   const file_content = await fs.readFile(path, 'utf-8');
   const report = `${file_content}
   
