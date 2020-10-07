@@ -7,7 +7,7 @@ const yargs = require('yargs');
 
 if (process.env.GITHUB_ACTIONS) {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/github');
-} else if (process.env.CI) {
+} else if (process.env.BITBUCKET_COMMIT) {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/bitbucket');
 } else {
   const { head_sha: HEAD_SHA, handle_error, comment } = require('../src/gitlab');
