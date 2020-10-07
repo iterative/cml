@@ -20,7 +20,12 @@ const {
 const run = async (opts) => {
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
   const path = opts._[0];
-  const report = await fs.readFile(path, 'utf-8');
+  const watermark = '![CML watermark]()';
+  const file_content = await fs.readFile(path, 'utf-8');
+  const report = `${file_content}
+  
+  ${watermark}
+  `;
   const commit_sha = sha || head_sha || HEAD_SHA;
 
   // const comments = await (is_pr ? pull_request_comments() : commit_comments({ commit_sha }));
