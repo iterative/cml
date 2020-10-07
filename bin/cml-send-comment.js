@@ -23,7 +23,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const watermark = await publish_file({
     buffer:
-      '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1" fill="#ffffff" /></svg>',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" fill="#ffffff"></svg>',
     title: 'CML watermark',
     md: true
   });
