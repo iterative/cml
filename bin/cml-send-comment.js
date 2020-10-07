@@ -38,7 +38,7 @@ const run = async (opts) => {
 
   const comments =
     (await (is_pr
-      ? pull_request_comments()
+      ? pull_request_comments({})
       : commit_comments({ commit_sha }))) || [];
   const do_comment = comments.filter(
     (comment) => hash(comment.body) === hash(report)
