@@ -31,6 +31,9 @@ const comment = async (opts) => {
   
   const body= JSON.stringify({"content": {"raw": "Cheddar cheese."}});
   
+  console.log(body)
+  console.log(endpoint)
+  
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
