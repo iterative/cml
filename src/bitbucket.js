@@ -22,7 +22,7 @@ const USERNAME = BITBUCKET_WORKSPACE;
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
-const API_URL = `https://api.bitbucket.org/2.0`;
+const API_URL = "https://api.bitbucket.org/2.0";
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
@@ -30,10 +30,7 @@ const comment = async (opts) => {
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments/`;
   
   const body= JSON.stringify({"content": {"raw": "Cheddar cheese."}});
-  
-  console.log(body)
-  console.log(endpoint)
-  
+
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
@@ -56,6 +53,8 @@ const bitbucket_request = async (opts) => {
                     Accept: 'application/json' };
                     
   
+  console.log(`${API_URL}${endpoint}`)
+  
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers,
@@ -64,6 +63,7 @@ const bitbucket_request = async (opts) => {
   const json = await response.json();
 
   console.log(json);
+  
 
   return json;
 };
