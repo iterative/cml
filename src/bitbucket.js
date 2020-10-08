@@ -58,9 +58,9 @@ const bitbucket_request = async (opts) => {
   console.log(`${API_URL}${endpoint}`)
   
   const response = await fetch(`${API_URL}${endpoint}`, {
-        method: method,
-        headers: headers,
-        body: body
+        method,
+        headers,
+        body
   });
   const json = await response.json();
 
