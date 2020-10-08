@@ -49,18 +49,17 @@ const bitbucket_request = async (opts) => {
 
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
-                    Accept: 'application/json' };
+  const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${PASSWORD}`)
+        };
                     
   
   console.log(`${API_URL}${endpoint}`)
   
   const response = await fetch(`${API_URL}${endpoint}`, {
         method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${PASSWORD}`)
-        },
+        headers: headers,
         body: JSON.stringify({"content": {"raw": "MILK!."}})
   });
   const json = await response.json();
