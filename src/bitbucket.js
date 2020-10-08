@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { fetch_upload_data } = require('./utils');
-const {Base64} = require('js-base64');
+const { Base64 } = require('js-base64');
 
 const {
   BITBUCKET_REPO_FULL_NAME = '', //namespace with project name, i.e. elle/cml
@@ -17,20 +17,18 @@ const {
   repo_token
 } = process.env;
 
-
 const USERNAME = BITBUCKET_WORKSPACE;
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
-const API_URL = "https://api.bitbucket.org/2.0";
+const API_URL = 'https://api.bitbucket.org/2.0';
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments/`;
-  
-  const body= JSON.stringify({"content": {"raw": report}});
 
+  const body = JSON.stringify({ content: { raw: report } });
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
@@ -50,22 +48,20 @@ const bitbucket_request = async (opts) => {
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
   const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${PASSWORD}`)
-        };
-                    
-  
-  console.log(`${API_URL}${endpoint}`)
-  
+    'Content-Type': 'application/json',
+    Authorization: 'Basic ' + Base64.encode(`${USERNAME}:${PASSWORD}`)
+  };
+
+  console.log(`${API_URL}${endpoint}`);
+
   const response = await fetch(`${API_URL}${endpoint}`, {
-        method,
-        headers,
-        body
+    method,
+    headers,
+    body
   });
   const json = await response.json();
 
   console.log(json);
-  
 
   return json;
 };
