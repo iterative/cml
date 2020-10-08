@@ -37,8 +37,7 @@ _⁉️ Need help? Just want to chat about continuous integration for ML?
 2. [Getting started](#getting-started)
 3. [Using CML with DVC](#using-cml-with-dvc)
 4. [Using self-hosted runners](#using-self-hosted-runners)
-5. [Using your own Docker image](#using-your-own-docker-image)
-6. [Examples](#a-library-of-cml-projects)
+5. [Install CML as a package](#install-cml-as-a-package)
 
 ## Usage
 
