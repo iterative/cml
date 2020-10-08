@@ -27,7 +27,7 @@ const API_URL = `https://api.bitbucket.org/2.0`;
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
-  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
+  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments/`;
   
   const body= JSON.stringify({"content": {"raw": "Cheddar cheese."}});
   
