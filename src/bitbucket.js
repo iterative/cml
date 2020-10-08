@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URLSearchParams } = require('url');
 const { fetch_upload_data } = require('./utils');
+const {Base64} = require('js-base64');
 
 const {
   BITBUCKET_REPO_FULL_NAME = '', //namespace with project name, i.e. elle/cml
@@ -17,16 +18,17 @@ const {
   repo_token
 } = process.env;
 
-const USERNAME = BITBUCKET_WORKSPACE
+
+const USERNAME = BITBUCKET_WORKSPACE;
 const IS_PR = BITBUCKET_PR_ID;
 const REF = BITBUCKET_BRANCH || BITBUCKET_TOKEN;
 const PASSWORD = repo_token;
-const API_URL = `https://https://api.bitbucket.org/2.0/`;
+const API_URL = `https://api.bitbucket.org/2.0`;
 
 const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
-  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commits/${BITBUCKET_COMMIT}/comments`;
+  const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
 
   const body = new URLSearchParams();
   body.append('note', report);
@@ -44,12 +46,18 @@ const get_runner_token = async () => {
 const bitbucket_request = async (opts) => {
   const { endpoint, method = 'GET', body } = opts;
 
-  if (!TOKEN) throw new Error('BitBucket password not found');
+  if (!PASSWORD) throw new Error('BitBucket password not found');
 
   if (!endpoint) throw new Error('BitBucket API endpoint not found');
 
-  const headers = {'Authorization': `Basic ${ encode(`${USERNAME}:${TOKEN}`) }`, 
+  const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
+                    
+  console.log(headers);
+  console.log(method);
+  console.log(`${API_URL}${endpoint}`);
+  console.log(body)
+  
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers,
