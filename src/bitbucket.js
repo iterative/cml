@@ -56,9 +56,12 @@ const bitbucket_request = async (opts) => {
   console.log(`${API_URL}${endpoint}`)
   
   const response = await fetch(`${API_URL}${endpoint}`, {
-    method: method,
-    headers : headers,
-    body: JSON.stringify({"content": {"raw": "MILK!."}})
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${PASSWORD}`)
+        },
+        body: JSON.stringify({"content": {"raw": "MILK!."}})
   });
   const json = await response.json();
 
