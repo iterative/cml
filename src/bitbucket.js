@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
-const { URLSearchParams } = require('url');
 const { fetch_upload_data } = require('./utils');
 const {Base64} = require('js-base64');
 
@@ -29,9 +28,9 @@ const comment = async (opts) => {
   const { commit_sha, report } = opts;
 
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments`;
-
-  const body = new URLSearchParams();
-  body.append('note', report);
+  
+  const body= JSON.stringify({"content": {"raw": "Cheddar cheese."}}
+  
 
   await bitbucket_request({ endpoint, method: 'POST', body });
 };
@@ -53,10 +52,6 @@ const bitbucket_request = async (opts) => {
   const headers = {'Authorization': `Basic ${ Base64.encode(`${USERNAME}:${PASSWORD}`) }`, 
                     Accept: 'application/json' };
                     
-  console.log(headers);
-  console.log(method);
-  console.log(`${API_URL}${endpoint}`);
-  console.log(body)
   
   const response = await fetch(`${API_URL}${endpoint}`, {
     method,
