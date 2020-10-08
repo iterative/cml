@@ -29,7 +29,7 @@ const comment = async (opts) => {
 
   const endpoint = `/repositories/${USERNAME}/${BITBUCKET_REPO_SLUG}/commit/${BITBUCKET_COMMIT}/comments/`;
   
-  const body= JSON.stringify({"content": {"raw": "Cheddar cheese."}});
+  const body= JSON.stringify({"content": {"raw": report}});
 
 
   await bitbucket_request({ endpoint, method: 'POST', body });
