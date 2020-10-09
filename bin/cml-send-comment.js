@@ -15,7 +15,7 @@ const run = async (opts) => {
 
   const file_content = await fs.readFile(path, 'utf-8');
   const watermark =
-    '[CML](https://github.com/iterative/viewer/ "🖐 there! CML needs this watermark to distinguish reports from other comments to be displayed in the viewer. Please don\'t remove it 🙏")';
+    '![CML watermark](https://raw.githubusercontent.com/iterative/cml/watermark-comment/assets/watermark.svg)';
   const report = `${file_content}
   
   ${watermark}
