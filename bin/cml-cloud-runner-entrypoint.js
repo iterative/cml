@@ -138,7 +138,7 @@ const run = async () => {
     GITLAB_CI_TOKEN = runner.token;
 
     command = `gitlab-runner --log-format="json" run-single \
-      --url "https://gitlab.com/" \
+      --url "${RUNNER_REPO_ORIGIN}" \
       --token "${runner.token}" \
       --executor "${RUNNER_EXECUTOR}" \
       --docker-runtime "${RUNNER_RUNTIME}" \
