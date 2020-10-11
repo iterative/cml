@@ -26,20 +26,29 @@ describe('CML e2e', () => {
                            hdd_size.
         --rsa-private-key  Your private RSA SHH key. If not provided will be generated
                            by the tf provider.                           [default: \\"\\"]
+        --attached         Runs the runner in the foreground.                [boolean]
         -h                 Show help                                         [boolean]"
     `);
   });
 
   test('cml-cloud-runner starts a machine', async () => {
-    const output = await exec(`node ./bin/cml-cloud-runner.js \
-      --labels=tf \
-      --region us-west-1 \
-      --idle-timeout=30 \
-      --image=davidgortega/cml:cloud`);
+    const { AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID } = process.env;
 
-    const regex = /Destroy complete! Resources: \d destroyed/g;
-    const found = output.match(regex);
+    if (AWS_SECRET_ACCESS_KEY && AWS_ACCESS_KEY_ID) {
+      const output = await exec(`node ./bin/cml-cloud-runner.js \
+        --labels=tf \
+        --region us-west-1 \
+        --idle-timeout=30 \
+        --image=davidgortega/cml:cloud`);
 
-    expect(found === null).not.toBe(true);
+      const regex = /Destroy complete! Resources: \d destroyed/g;
+      const found = output.match(regex);
+
+      try {
+        await exec(`terraform destroy --auto-approve`);
+      } catch (err) {}
+
+      expect(found !== null).not.toBeUndefined();
+    }
   });
 });
