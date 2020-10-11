@@ -1,3 +1,5 @@
+// this test might be long
+jest.setTimeout(300000);
 const { exec } = require('../src/utils');
 
 describe('CML e2e', () => {
@@ -35,7 +37,7 @@ describe('CML e2e', () => {
     const { AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID } = process.env;
 
     if (AWS_SECRET_ACCESS_KEY && AWS_ACCESS_KEY_ID) {
-      const output = await exec(`node ./bin/cml-cloud-runner.js \
+      const output = await exec(`node ./bin/cml-cloud-runner.js --attached \
         --labels=tf \
         --region us-west-1 \
         --idle-timeout=30 \
