@@ -32,25 +32,4 @@ describe('CML e2e', () => {
         -h                 Show help                                         [boolean]"
     `);
   });
-
-  test('cml-cloud-runner starts a machine', async () => {
-    const { AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID } = process.env;
-
-    if (AWS_SECRET_ACCESS_KEY && AWS_ACCESS_KEY_ID) {
-      const output = await exec(`node ./bin/cml-cloud-runner.js --attached \
-        --labels=tf \
-        --region us-west-1 \
-        --idle-timeout=30 \
-        --image=davidgortega/cml:cloud`);
-
-      const regex = /Destroy complete! Resources: \d destroyed/g;
-      const found = output.match(regex);
-
-      try {
-        await exec(`terraform destroy --auto-approve`);
-      } catch (err) {}
-
-      expect(found !== null).not.toBeUndefined();
-    }
-  });
 });
