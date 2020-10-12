@@ -160,7 +160,7 @@ terraform {
   required_providers {
     iterative = {
       source = "DavidGOrtega/iterative"
-      version = "0.3.0"
+      version = "0.4.0"
     }
   }
 }
