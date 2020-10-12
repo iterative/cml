@@ -56,7 +56,7 @@ ARG CUBLAS_MAJOR=10
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     cuda-command-line-tools-${CUDA/./-} \
     libcublas${CUBLAS_MAJOR}=${CUBLAS} \
     cuda-nvrtc-${CUDA/./-} \
@@ -73,7 +73,7 @@ RUN apt update && apt-get install -y --no-install-recommends \
 ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # TENSORFLOW
-RUN apt update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libnvinfer${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} \
         libnvinfer-plugin${LIBNVINFER_MAJOR}=${LIBNVINFER}+cuda${CUDA} && \

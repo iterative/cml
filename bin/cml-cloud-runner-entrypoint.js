@@ -99,6 +99,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGQUIT', shutdown);
 const run = async () => {
   RUNNER_TOKEN = await get_runner_token();
+
   if (!RUNNER_TOKEN) {
     throw new Error(
       'RUNNER_TOKEN is needed to start the runner. Are you setting a runner?'
@@ -131,7 +132,7 @@ const run = async () => {
     GITLAB_CI_TOKEN = runner.token;
 
     command = `gitlab-runner --log-format="json" run-single \
-      --url "https://gitlab.com/" \
+      --url "${RUNNER_REPO_ORIGIN}" \
       --token "${runner.token}" \
       --executor "${RUNNER_EXECUTOR}" \
       --docker-runtime "${RUNNER_RUNTIME}" \
@@ -173,13 +174,15 @@ const run = async () => {
     }
   });
 
-  const watcher = setInterval(() => {
-    IS_GITHUB &&
+  if (IS_GITHUB && parseInt(RUNNER_IDLE_TIMEOUT) !== 0) {
+    const watcher = setInterval(() => {
       TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT &&
-      shutdown() &&
-      clearInterval(watcher);
-    if (!JOB_RUNNING) TIMEOUT_TIMER++;
-  }, 1000);
+        shutdown() &&
+        clearInterval(watcher);
+
+      if (!JOB_RUNNING) TIMEOUT_TIMER++;
+    }, 1000);
+  }
 };
 
 run().catch((err) => {

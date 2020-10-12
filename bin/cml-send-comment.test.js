@@ -24,12 +24,13 @@ describe('CML e2e', () => {
     const output = await exec(`node ./bin/cml-send-comment.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-comment.js <path> --head-sha <string>
+      "Usage: cml-send-comment.js <path to markdown file>
 
       Options:
         --version     Show version number                                    [boolean]
-        --commit-sha  Commit sha
-        --head-sha    Commit sha                  [deprecated: Use commit-sha instead]
+        --commit-sha  Commit SHA linked to this comment. Defaults to HEAD.
+        --head-sha    Commit SHA linked to this comment. Defaults to HEAD
+                                                  [deprecated: Use commit-sha instead]
         -h            Show help                                              [boolean]"
     `);
   });
