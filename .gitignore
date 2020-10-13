@@ -1,7 +1,8 @@
 node_modules/
+.terraform/
+.cml/
 .DS_Store
 
 main.tf
 terraform.*
-.terraform/
-.cml/
+crash.log
