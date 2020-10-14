@@ -8,11 +8,8 @@ const fs = require('fs').promises;
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
-const { exec } = require('../src/utils');
 
-const { handle_error } = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const { exec } = require('../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
 
@@ -125,4 +122,7 @@ const argv = yargs
   .alias('file', 'f')
   .help('h').argv;
 
-run(argv).catch((e) => handle_error(e));
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

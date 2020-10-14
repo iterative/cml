@@ -135,6 +135,11 @@ const parse_param_newline = (param) => {
   return param.replace(/\\n/g, '\n');
 };
 
+const strip_last_chars = (opts) => {
+  const { str, size = 0 } = opts;
+  return str.substr(0, str.length - size);
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -143,3 +148,4 @@ exports.sleep = sleep;
 exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
+exports.strip_last_chars = strip_last_chars;

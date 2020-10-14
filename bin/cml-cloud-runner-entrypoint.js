@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 const { spawn } = require('child_process');
+
 const { exec, randid } = require('../src/utils');
-const { URL } = require('url');
+const CML = require('../src/cml');
 
 const {
   DOCKER_MACHINE, // DEPRECATED
@@ -14,26 +15,20 @@ const {
   RUNNER_NAME = randid(),
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',
-  RUNNER_IMAGE = 'dvcorg/cml:latest'
+  RUNNER_IMAGE = 'dvcorg/cml:latest',
+
+  repo_token
 } = process.env;
 
-const { protocol, host, pathname } = new URL(RUNNER_REPO);
+const { protocol, host } = new URL(RUNNER_REPO);
 const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
-process.env.CI_API_V4_URL = `${RUNNER_REPO_ORIGIN}/api/v4/`;
-process.env.GITHUB_REPOSITORY = process.env.CI_PROJECT_PATH = pathname.substring(
-  1,
-  pathname.length - (pathname.endsWith('/') ? 1 : 0)
-);
+const IS_GITHUB = RUNNER_REPO.startsWith('https://github.com');
+const cml = new CML({ driver: 'github', repo: RUNNER_REPO, token: repo_token });
 
-const IS_GITHUB = RUNNER_REPO_ORIGIN === 'https://github.com';
 let TIMEOUT_TIMER = 0;
 let JOB_RUNNING = false;
 let RUNNER_TOKEN;
 let GITLAB_CI_TOKEN;
-
-const { get_runner_token, register_runner } = IS_GITHUB
-  ? require('../src/github')
-  : require('../src/gitlab');
 
 const shutdown_docker_machine = async () => {
   console.log('Shutting down docker machine');
@@ -98,7 +93,7 @@ process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 process.on('SIGQUIT', shutdown);
 const run = async () => {
-  RUNNER_TOKEN = await get_runner_token();
+  RUNNER_TOKEN = await cml.runner_token();
 
   if (!RUNNER_TOKEN) {
     throw new Error(
@@ -124,7 +119,7 @@ const run = async () => {
     command = `${RUNNER_PATH}/run.sh`;
   } else {
     console.log('Registering Gitlab runner');
-    const runner = await register_runner({
+    const runner = await cml.client.register_runner({
       tags: RUNNER_LABELS,
       token: RUNNER_TOKEN
     });
@@ -132,8 +127,8 @@ const run = async () => {
     GITLAB_CI_TOKEN = runner.token;
 
     command = `gitlab-runner --log-format="json" run-single \
-      --url "${RUNNER_REPO_ORIGIN}" \
       --token "${runner.token}" \
+      --url "${RUNNER_REPO_ORIGIN}" \
       --executor "${RUNNER_EXECUTOR}" \
       --docker-runtime "${RUNNER_RUNTIME}" \
       --docker-image "${RUNNER_IMAGE}" \

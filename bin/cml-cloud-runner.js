@@ -5,6 +5,7 @@ const NodeSSH = require('node-ssh').NodeSSH;
 const fss = require('fs');
 const fs = fss.promises;
 const path = require('path');
+
 const {
   exec,
   sleep,
@@ -12,9 +13,10 @@ const {
   parse_param_newline
 } = require('../src/utils');
 
-const { handle_error, repo: REPO, token: TOKEN } = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
+
+let REPO;
+let TOKEN;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
@@ -208,6 +210,10 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
+  const cml = new CML();
+  REPO = cml.client.env_repo();
+  TOKEN = cml.client.env_token();
+
   try {
     const terraform_state = await run_terraform(opts);
     await setup_runners({ terraform_state, ...opts });
@@ -268,4 +274,7 @@ const argv = yargs
   .describe('attached', 'Runs the runner in the foreground.')
   .coerce('rsa-private-key', parse_param_newline)
   .help('h').argv;
-run(argv).catch((e) => handle_error(e));
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
