@@ -27,11 +27,14 @@ describe('CML e2e', () => {
       "Usage: cml-send-comment.js <path to markdown file>
 
       Options:
-        --version     Show version number                                    [boolean]
-        --commit-sha  Commit SHA linked to this comment. Defaults to HEAD.
-        --head-sha    Commit SHA linked to this comment. Defaults to HEAD
+        --version       Show version number                                  [boolean]
+        --commit-sha    Commit SHA linked to this comment. Defaults to HEAD.
+        --head-sha      Commit SHA linked to this comment. Defaults to HEAD
                                                   [deprecated: Use commit-sha instead]
-        -h            Show help                                              [boolean]"
+        --no-watermark  Avoid watermark. CML needs a watermark to be able to
+                        distinguish CML reports from other comments in order to
+                        provide extra functionality.
+        -h              Show help                                            [boolean]"
     `);
   });
 });
