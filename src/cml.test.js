@@ -66,7 +66,7 @@ describe('Github tests', () => {
     await new CML().comment_create({ report, commit_sha });
   });
 
-  test('Comment should fail with a unvalid sha', async () => {
+  test('Comment should fail with a invalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';
