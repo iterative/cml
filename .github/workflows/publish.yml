@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+  TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }} 
+  TEST_GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
 
 jobs:
   test_and_deploy:
