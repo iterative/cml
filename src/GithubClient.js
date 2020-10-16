@@ -92,6 +92,17 @@ class GithubClient {
     } = opts;
 
     const name = title;
+    console.log({
+      ...owner_repo({ uri: this.repo }),
+      head_sha,
+      started_at,
+      completed_at,
+      conclusion,
+      status,
+      name,
+      output: { title, summary: report }
+    });
+
     return await octokit(this.token).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
