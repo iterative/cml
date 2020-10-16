@@ -49,7 +49,6 @@ describe('Non Enviromental tests', () => {
   });
 });
 
-/*
 describe('Enviromental tests', () => {
   const OLD_ENV = process.env;
 
@@ -113,4 +112,3 @@ describe('Enviromental tests', () => {
     expect(output.length).toBe(29);
   });
 });
-*/
