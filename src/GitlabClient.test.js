@@ -48,8 +48,7 @@ describe('Enviromental tests', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
-
+    process.env = {};
     process.env.repo_token = TOKEN;
     process.env.CI_PROJECT_URL = REPO;
     process.env.CI_COMMIT_SHA = SHA;

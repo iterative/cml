@@ -54,8 +54,7 @@ describe('Enviromental tests', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
-
+    process.env = {};
     process.env.repo_token = TOKEN;
     process.env.GITHUB_REPOSITORY = GITHUB_REPOSITORY;
     process.env.GITHUB_SHA = SHA;

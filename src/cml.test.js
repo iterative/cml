@@ -11,7 +11,7 @@ describe('Github tests', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
+    process.env = {};
     process.env.GITHUB_REPOSITORY = GITHUB_REPOSITORY;
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
@@ -97,7 +97,7 @@ describe('Gitlab tests', () => {
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
+    process.env = {};
     process.env.CI_PROJECT_URL = REPO;
     process.env.repo_token = TOKEN;
   });
