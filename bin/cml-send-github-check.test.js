@@ -13,20 +13,16 @@ describe('CML e2e', () => {
   });
 
   test('cml-send-github-check', async () => {
-    const report = `## Test Check Report failure`;
-    const title = 'CML failure test';
-    const conclusion = 'failure';
+    const report = `## Test Check Report`;
 
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTIONS &&
-      (await exec(
-        `node ./bin/cml-send-github-check.js ${path} --title "${title}" --conclusion "${conclusion}"`
-      ));
+      (await exec(`node ./bin/cml-send-github-check.js ${path}`));
   });
 
   test('cml-send-github-check failure with tile "CML neutral test"', async () => {
-    const report = `## Hi this check should be neutral ksjdkjsksdjksdjskdjs`;
-    const title = 'CML neutral test neutral';
+    const report = `## Hi this check should be neutral`;
+    const title = 'CML neutral test';
     const conclusion = 'neutral';
 
     await fs.writeFile(path, report);

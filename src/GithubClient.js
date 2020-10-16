@@ -69,11 +69,6 @@ class GithubClient {
   async comment_create(opts = {}) {
     const { report: body, commit_sha = this.env_head_sha() } = opts;
 
-    console.log({
-      ...owner_repo({ uri: this.repo }),
-      body,
-      commit_sha
-    });
     const { url: commit_url } = await octokit(
       this.token
     ).repos.createCommitComment({
@@ -90,13 +85,13 @@ class GithubClient {
       report,
       commit_sha: head_sha = this.env_head_sha(),
       title = CHECK_TITLE,
-      name = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
       conclusion = 'success',
       status = 'completed'
     } = opts;
 
+    const name = title;
     return await octokit(this.token).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
