@@ -2,7 +2,7 @@ jest.setTimeout(20000);
 
 const GithubClient = require('./GithubClient');
 
-const TOKEN = process.env.GITHUB_TOKEN || process.env.repo_token;
+const TOKEN = process.env.TEST_GITHUB_TOKEN || process.env.repo_token;
 const GITHUB_REPOSITORY = 'DavidGOrtega/3_tensorboard';
 const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
 const SHA = 'ee672b3b35c21b440c6fe6890de2fe769fbdbcee';
