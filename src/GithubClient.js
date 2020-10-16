@@ -36,12 +36,6 @@ class GithubClient {
 
     this.repo = repo.endsWith('/') ? strip_last_chars(repo, 1) : repo;
     this.token = token;
-
-    console.log('**********');
-    console.log(opts);
-    console.log(this.repo);
-    console.log(this.token);
-    console.log('**********');
   }
 
   env_repo() {
