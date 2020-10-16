@@ -15,8 +15,9 @@ describe('Non Enviromental tests', () => {
     expect(gh_client.token).toBe(TOKEN);
 
     const { owner, repo } = gh_client.owner_repo();
-    expect(owner).toBe('DavidGOrtega');
-    expect(repo).toBe('3_tensorboard');
+    const parts = GITHUB_REPOSITORY.split('/');
+    expect(owner).toBe(parts[0]);
+    expect(repo).toBe(parts[1]);
   });
 
   test('Comment', async () => {
@@ -76,8 +77,9 @@ describe('Enviromental tests', () => {
     expect(gh_client.token).toBe(TOKEN);
 
     const { owner, repo } = gh_client.owner_repo();
-    expect(owner).toBe('DavidGOrtega');
-    expect(repo).toBe('3_tensorboard');
+    const parts = GITHUB_REPOSITORY.split('/');
+    expect(owner).toBe(parts[0]);
+    expect(repo).toBe(parts[1]);
   });
 
   test('Comment', async () => {

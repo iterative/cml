@@ -7,7 +7,6 @@ const get_client = (opts) => {
   if (!driver) throw new Error('driver not set');
 
   if (driver === 'github') return new GithubClient({ repo, token });
-
   if (driver === 'gitlab') return new GitlabClient({ repo, token });
 
   throw new Error('driver unknown!');
