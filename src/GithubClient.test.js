@@ -8,7 +8,6 @@ const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
 const SHA = 'ee672b3b35c21b440c6fe6890de2fe769fbdbcee';
 
 describe('Non Enviromental tests', () => {
-  console.log({ repo: REPO, token: TOKEN });
   const client = new GithubClient({ repo: REPO, token: TOKEN });
 
   test('test repo and token', async () => {

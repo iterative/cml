@@ -160,8 +160,7 @@ describe('Gitlab tests', () => {
       const report = '## Test comment';
       const commit_sha = 'invalid_sha';
 
-      const response = await new CML().comment_create({ report, commit_sha });
-      console.log(response);
+      await new CML().comment_create({ report, commit_sha });
     } catch (err) {
       catched_err = err.message;
     }
