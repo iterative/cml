@@ -13,9 +13,9 @@ describe('CML e2e', () => {
   });
 
   test('cml-send-github-check', async () => {
-    const report = `## Test Check Report`;
-    const title = 'CML success test';
-    const conclusion = 'success';
+    const report = `## Test Check Report failure`;
+    const title = 'CML failure test';
+    const conclusion = 'failure';
 
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTIONS &&
