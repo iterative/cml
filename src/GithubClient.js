@@ -8,14 +8,12 @@ const CHECK_TITLE = 'CML Report';
 const owner_repo = (opts) => {
   let owner, repo;
   const { uri } = opts;
+  const { GITHUB_REPOSITORY } = process.env;
 
   if (uri) {
     const { pathname } = new URL(uri);
     [owner, repo] = pathname.substr(1).split('/');
-  }
-
-  const { GITHUB_REPOSITORY } = process.env;
-  if (GITHUB_REPOSITORY) {
+  } else if (GITHUB_REPOSITORY) {
     [owner, repo] = GITHUB_REPOSITORY.split('/');
   }
 
@@ -71,6 +69,11 @@ class GithubClient {
   async comment_create(opts = {}) {
     const { report: body, commit_sha = this.env_head_sha() } = opts;
 
+    console.log({
+      ...owner_repo({ uri: this.repo }),
+      body,
+      commit_sha
+    });
     const { url: commit_url } = await octokit(
       this.token
     ).repos.createCommitComment({

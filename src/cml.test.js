@@ -154,7 +154,7 @@ describe('Gitlab tests', () => {
     expect(output.endsWith(')')).toBe(true);
   });
 
-  test('Comment should fail with a unvalid sha', async () => {
+  test.skip('Comment should fail with a unvalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';
