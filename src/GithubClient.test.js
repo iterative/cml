@@ -27,15 +27,6 @@ describe('Non Enviromental tests', () => {
     await client.comment_create({ report, commit_sha });
   });
 
-  test('Check', async () => {
-    const report = '## Hi this check should be neutral';
-    const title = 'CML neutral test';
-    const conclusion = `neutral`;
-
-    const output = await client.check_create({ report, title, conclusion });
-    expect(output.startsWith('https://')).toBe(true);
-  });
-
   test('Publish', async () => {
     await expect(client.publish()).rejects.toThrow(
       'Github does not support publish!'
@@ -86,16 +77,6 @@ describe('Enviromental tests', () => {
     const report = '## Test comment';
 
     await client.comment_create({ report });
-  });
-
-  test('Check', async () => {
-    const client = new GithubClient({});
-    const report = '## Hi this check should be neutral';
-    const title = 'CML neutral test';
-    const conclusion = `neutral`;
-
-    const output = await client.check_create({ report, title, conclusion });
-    expect(output.startsWith('https://')).toBe(true);
   });
 
   test('Publish', async () => {

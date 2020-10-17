@@ -79,13 +79,6 @@ describe('Github tests', () => {
 
     expect(catched_err).toBe('No commit found for SHA: invalid_sha');
   });
-
-  test('Check should succeed with a valid sha', async () => {
-    const report = '## Test comment';
-    const commit_sha = SHA;
-
-    await new CML().check_create({ report, commit_sha });
-  });
 });
 
 describe('Gitlab tests', () => {
