@@ -8,6 +8,7 @@ const yargs = require('yargs');
 const CML = require('../src/cml');
 
 const run = async (opts) => {
+  console.error(process.env);
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
@@ -24,8 +25,18 @@ const argv = yargs
     'Commit SHA linked to this comment. Defaults to HEAD.'
   )
   .default('head-sha')
-  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD')
+  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD.')
   .deprecateOption('head-sha', 'Use commit-sha instead')
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+  )
   .help('h')
   .demand(1).argv;
 

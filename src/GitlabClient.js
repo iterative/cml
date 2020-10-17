@@ -104,6 +104,8 @@ class GitlabClient {
     const url = `${api_v4}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
 
+    if (response.status > 300) throw new Error(response.statusText);
+
     return await response.json();
   }
 }

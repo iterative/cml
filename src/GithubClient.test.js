@@ -2,10 +2,11 @@ jest.setTimeout(20000);
 
 const GithubClient = require('./GithubClient');
 
-const TOKEN = process.env.TEST_GITHUB_TOKEN || process.env.repo_token;
-const GITHUB_REPOSITORY = 'DavidGOrtega/3_tensorboard';
-const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
-const SHA = 'ee672b3b35c21b440c6fe6890de2fe769fbdbcee';
+const {
+  TEST_GITHUB_TOKEN: TOKEN,
+  TEST_GITHUB_REPO: REPO,
+  TEST_GITHUB_SHA: SHA
+} = process.env;
 
 describe('Non Enviromental tests', () => {
   const client = new GithubClient({ repo: REPO, token: TOKEN });
@@ -15,9 +16,9 @@ describe('Non Enviromental tests', () => {
     expect(client.token).toBe(TOKEN);
 
     const { owner, repo } = client.owner_repo();
-    const parts = GITHUB_REPOSITORY.split('/');
-    expect(owner).toBe(parts[0]);
-    expect(repo).toBe(parts[1]);
+    const parts = REPO.split('/');
+    expect(owner).toBe(parts[parts.length - 2]);
+    expect(repo).toBe(parts[parts.length - 1]);
   });
 
   test('Comment', async () => {
@@ -47,8 +48,8 @@ describe('Enviromental tests', () => {
 
     process.env = {};
     process.env.repo_token = TOKEN;
-    process.env.GITHUB_REPOSITORY = GITHUB_REPOSITORY;
     process.env.GITHUB_SHA = SHA;
+    process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
   });
 
   afterAll(() => {
@@ -67,7 +68,7 @@ describe('Enviromental tests', () => {
     expect(client.token).toBe(TOKEN);
 
     const { owner, repo } = client.owner_repo();
-    const parts = GITHUB_REPOSITORY.split('/');
+    const parts = process.env.GITHUB_REPOSITORY.split('/');
     expect(owner).toBe(parts[0]);
     expect(repo).toBe(parts[1]);
   });

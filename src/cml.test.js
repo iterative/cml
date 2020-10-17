@@ -3,18 +3,19 @@ const CML = require('./cml');
 describe('Github tests', () => {
   const OLD_ENV = process.env;
 
-  const TOKEN = process.env.TEST_GITHUB_TOKEN || process.env.repo_token;
-  const GITHUB_REPOSITORY = 'DavidGOrtega/3_tensorboard';
-  const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
-  const SHA = 'ee672b3b35c21b440c6fe6890de2fe769fbdbcee';
+  const {
+    TEST_GITHUB_TOKEN: TOKEN,
+    TEST_GITHUB_REPO: REPO,
+    TEST_GITHUB_SHA: SHA
+  } = process.env;
 
   beforeEach(() => {
     jest.resetModules();
 
     process.env = {};
-    process.env.GITHUB_REPOSITORY = GITHUB_REPOSITORY;
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
+    process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
   });
 
   afterAll(() => {
@@ -84,8 +85,11 @@ describe('Github tests', () => {
 describe('Gitlab tests', () => {
   const OLD_ENV = process.env;
 
-  const TOKEN = process.env.GITLAB_TOKEN || process.env.repo_token;
-  const REPO = 'https://gitlab.com/DavidGOrtega/3_tensorboard';
+  const {
+    TEST_GITLAB_TOKEN: TOKEN,
+    TEST_GITLAB_REPO: REPO,
+    TEST_GITLAB_SHA: SHA
+  } = process.env;
 
   beforeEach(() => {
     jest.resetModules();
@@ -93,6 +97,7 @@ describe('Gitlab tests', () => {
     process.env = {};
     process.env.CI_PROJECT_URL = REPO;
     process.env.repo_token = TOKEN;
+    process.env.CI_COMMIT_SHA = SHA;
   });
 
   afterAll(() => {
@@ -147,7 +152,12 @@ describe('Gitlab tests', () => {
     expect(output.endsWith(')')).toBe(true);
   });
 
-  test.skip('Comment should fail with a unvalid sha', async () => {
+  test('Comment should succeed with a valid env sha', async () => {
+    const report = '## Test comment';
+    await new CML().comment_create({ report });
+  });
+
+  test('Comment should fail with a unvalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';
@@ -158,6 +168,6 @@ describe('Gitlab tests', () => {
       catched_err = err.message;
     }
 
-    expect(catched_err).toBe('HttpError: No commit found for SHA: invalid_sha');
+    expect(catched_err).toBe('Not Found');
   });
 });

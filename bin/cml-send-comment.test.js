@@ -21,16 +21,28 @@ describe('Comment integration tests', () => {
       Options:
         --version     Show version number                                    [boolean]
         --commit-sha  Commit SHA linked to this comment. Defaults to HEAD.
-        --head-sha    Commit SHA linked to this comment. Defaults to HEAD
+        --head-sha    Commit SHA linked to this comment. Defaults to HEAD.
                                                   [deprecated: Use commit-sha instead]
+        --repo        Specifies the repo to be used. If not specified is extracted
+                      from the CI ENV.
+        --token       Personal access token to be used. If not specified in extracted
+                      from ENV repo_token.
         -h            Show help                                              [boolean]"
     `);
   });
 
-  test('cml-send-comment', async () => {
-    const report = `## Test Comment Report`;
+  test('cml-send-comment to specific repo', async () => {
+    const {
+      TEST_GITHUB_REPO: repo,
+      TEST_GITHUB_TOKEN: token,
+      TEST_GITHUB_SHA: sha
+    } = process.env;
+
+    const report = `## Test Comment Report specific`;
 
     await fs.writeFile(path, report);
-    await exec(`node ./bin/cml-send-comment.js ${path}`);
+    await exec(
+      `node ./bin/cml-send-comment.js --repo=${repo} --token=${token} --commit-sha=${sha} ${path}`
+    );
   });
 });

@@ -2,9 +2,11 @@ jest.setTimeout(20000);
 
 const GitlabClient = require('./GitlabClient');
 
-const TOKEN = process.env.GITLAB_TOKEN || process.env.repo_token;
-const REPO = 'https://gitlab.com/DavidGOrtega/3_tensorboard';
-const SHA = '2dc250a9449728356913e1f0e30758a44da65a12';
+const {
+  TEST_GITLAB_TOKEN: TOKEN,
+  TEST_GITLAB_REPO: REPO,
+  TEST_GITLAB_SHA: SHA
+} = process.env;
 
 describe('Non Enviromental tests', () => {
   const client = new GitlabClient({ repo: REPO, token: TOKEN });
