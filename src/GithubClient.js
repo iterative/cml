@@ -92,7 +92,7 @@ class GithubClient {
     } = opts;
 
     const name = title;
-    console.log({
+    console.error({
       ...owner_repo({ uri: this.repo }),
       head_sha,
       started_at,
@@ -102,6 +102,8 @@ class GithubClient {
       name,
       output: { title, summary: report }
     });
+
+    throw new Error('check');
 
     return await octokit(this.token).checks.create({
       ...owner_repo({ uri: this.repo }),
