@@ -7,25 +7,7 @@ describe('CML e2e', () => {
   test('cml-publish -h', async () => {
     const output = await exec(`echo none | node ./bin/cml-publish.js -h`);
 
-    expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish.js <path to file>
-
-      Options:
-        --version         Show version number                                [boolean]
-        --md              Output in markdown format [title || name](url).    [boolean]
-        --title, -t       Markdown title [title](url) or ![](url title).
-        --gitlab-uploads  Uses GitLab uploads instead of CML storage. Use GitLab
-                          uploads to get around CML size limitations for hosting
-                          artifacts persistently. Only available for GitLab CI.
-                                                                             [boolean]
-        --file, -f        Append the output to the given file. Create it if does not
-                          exist.
-        --repo            Specifies the repo to be used. If not specified is extracted
-                          from the CI ENV.
-        --token           Personal access token to be used. If not specified in
-                          extracted from ENV repo_token or GITLAB_TOKEN.
-        -h                Show help                                          [boolean]"
-    `);
+    expect(output).toMatchInlineSnapshot();
   });
 
   test('cml-publish assets/logo.png --md', async () => {

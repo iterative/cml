@@ -3,6 +3,7 @@ name: "Publish CML dockers"
 on: [push, pull_request]
 
 env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
   TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }} 
   TEST_GITHUB_REPO: ${{ secrets.TEST_GITHUB_REPO }} 
   TEST_GITHUB_SHA: ${{ secrets.TEST_GITHUB_SHA }} 

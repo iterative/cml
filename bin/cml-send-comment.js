@@ -37,6 +37,9 @@ const argv = yargs
     'token',
     'Personal access token to be used. If not specified in extracted from ENV repo_token.'
   )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;
 

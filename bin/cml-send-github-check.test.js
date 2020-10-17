@@ -35,20 +35,6 @@ describe('CML e2e', () => {
   test('cml-send-github-check -h', async () => {
     const output = await exec(`node ./bin/cml-send-github-check.js -h`);
 
-    expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-send-github-check.js <path to markdown file>
-
-      Options:
-        --version     Show version number                                    [boolean]
-        --head-sha    Commit sha where the comment will appear. Defaults to HEAD.
-        --title       Sets title of the check.                 [default: \\"CML Report\\"]
-        --repo        Specifies the repo to be used. If not specified is extracted
-                      from the CI ENV.
-        --token       Personal access token to be used. If not specified in extracted
-                      from ENV repo_token.
-        -h            Show help                                              [boolean]
-        --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
-                      \\"timed_out\\"] [default: Sets the conclusion status of the check.]"
-    `);
+    expect(output).toMatchInlineSnapshot();
   });
 });
