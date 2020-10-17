@@ -27,6 +27,8 @@ describe('Comment integration tests', () => {
                       from the CI ENV.
         --token       Personal access token to be used. If not specified in extracted
                       from ENV repo_token.
+        --driver      If not specify it infers it from the ENV.
+                                                         [choices: \\"github\\", \\"gitlab\\"]
         -h            Show help                                              [boolean]"
     `);
   });
