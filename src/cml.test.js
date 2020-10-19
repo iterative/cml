@@ -3,18 +3,19 @@ const CML = require('./cml');
 describe('Github tests', () => {
   const OLD_ENV = process.env;
 
-  const TOKEN = process.env.GITHUB_TOKEN || process.env.repo_token;
-  const GITHUB_REPOSITORY = 'DavidGOrtega/3_tensorboard';
-  const REPO = `https://github.com/${GITHUB_REPOSITORY}`;
-  const SHA = 'ee672b3b35c21b440c6fe6890de2fe769fbdbcee';
+  const {
+    TEST_GITHUB_TOKEN: TOKEN,
+    TEST_GITHUB_REPO: REPO,
+    TEST_GITHUB_SHA: SHA
+  } = process.env;
 
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
-    process.env.GITHUB_REPOSITORY = GITHUB_REPOSITORY;
+    process.env = {};
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
+    process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
   });
 
   afterAll(() => {
@@ -66,7 +67,7 @@ describe('Github tests', () => {
     await new CML().comment_create({ report, commit_sha });
   });
 
-  test('Comment should fail with a unvalid sha', async () => {
+  test('Comment should fail with a invalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';
@@ -79,27 +80,24 @@ describe('Github tests', () => {
 
     expect(catched_err).toBe('No commit found for SHA: invalid_sha');
   });
-
-  test('Check should succeed with a valid sha', async () => {
-    const report = '## Test comment';
-    const commit_sha = SHA;
-
-    await new CML().check_create({ report, commit_sha });
-  });
 });
 
 describe('Gitlab tests', () => {
   const OLD_ENV = process.env;
 
-  const TOKEN = process.env.GITLAB_TOKEN || process.env.repo_token;
-  const REPO = 'https://gitlab.com/DavidGOrtega/3_tensorboard';
+  const {
+    TEST_GITLAB_TOKEN: TOKEN,
+    TEST_GITLAB_REPO: REPO,
+    TEST_GITLAB_SHA: SHA
+  } = process.env;
 
   beforeEach(() => {
     jest.resetModules();
 
-    process.env = { ...OLD_ENV };
+    process.env = {};
     process.env.CI_PROJECT_URL = REPO;
     process.env.repo_token = TOKEN;
+    process.env.CI_COMMIT_SHA = SHA;
   });
 
   afterAll(() => {
@@ -154,18 +152,22 @@ describe('Gitlab tests', () => {
     expect(output.endsWith(')')).toBe(true);
   });
 
+  test('Comment should succeed with a valid env sha', async () => {
+    const report = '## Test comment';
+    await new CML().comment_create({ report });
+  });
+
   test('Comment should fail with a unvalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';
       const commit_sha = 'invalid_sha';
 
-      const response = await new CML().comment_create({ report, commit_sha });
-      console.log(response);
+      await new CML().comment_create({ report, commit_sha });
     } catch (err) {
       catched_err = err.message;
     }
 
-    expect(catched_err).toBe('HttpError: No commit found for SHA: invalid_sha');
+    expect(catched_err).toBe('Not Found');
   });
 });

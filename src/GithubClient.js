@@ -8,18 +8,22 @@ const CHECK_TITLE = 'CML Report';
 const owner_repo = (opts) => {
   let owner, repo;
   const { uri } = opts;
+  const { GITHUB_REPOSITORY } = process.env;
 
   if (uri) {
     const { pathname } = new URL(uri);
     [owner, repo] = pathname.substr(1).split('/');
-  }
-
-  const { GITHUB_REPOSITORY } = process.env;
-  if (GITHUB_REPOSITORY) {
+  } else if (GITHUB_REPOSITORY) {
     [owner, repo] = GITHUB_REPOSITORY.split('/');
   }
 
   return { owner, repo };
+};
+
+const octokit = (token) => {
+  if (!token) throw new Error('token not found');
+
+  return github.getOctokit(token);
 };
 
 class GithubClient {
@@ -27,11 +31,9 @@ class GithubClient {
     const { repo = this.env_repo(), token = this.env_token() } = opts;
 
     if (!repo) throw new Error('repo not found');
-    if (!token) throw new Error('token not found');
 
     this.repo = repo.endsWith('/') ? strip_last_chars(repo, 1) : repo;
     this.token = token;
-    this.octokit = github.getOctokit(token);
   }
 
   env_repo() {
@@ -67,7 +69,9 @@ class GithubClient {
   async comment_create(opts = {}) {
     const { report: body, commit_sha = this.env_head_sha() } = opts;
 
-    const { url: commit_url } = await this.octokit.repos.createCommitComment({
+    const { url: commit_url } = await octokit(
+      this.token
+    ).repos.createCommitComment({
       ...owner_repo({ uri: this.repo }),
       body,
       commit_sha
@@ -81,14 +85,14 @@ class GithubClient {
       report,
       commit_sha: head_sha = this.env_head_sha(),
       title = CHECK_TITLE,
-      name = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
       conclusion = 'success',
       status = 'completed'
     } = opts;
 
-    return await this.octokit.checks.create({
+    const name = title;
+    return await octokit(this.token).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
       started_at,
@@ -106,11 +110,12 @@ class GithubClient {
 
   async runner_token() {
     const { owner, repo } = owner_repo({ uri: this.repo });
+    const { actions } = octokit(this.token);
 
     if (typeof repo !== 'undefined') {
       const {
         data: { token }
-      } = await this.octokit.actions.createRegistrationTokenForRepo({
+      } = await actions.createRegistrationTokenForRepo({
         owner,
         repo
       });
@@ -120,7 +125,7 @@ class GithubClient {
 
     const {
       data: { token }
-    } = await this.octokit.actions.createRegistrationTokenForOrg({
+    } = await actions.createRegistrationTokenForOrg({
       org: owner
     });
 

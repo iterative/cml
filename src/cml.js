@@ -7,7 +7,6 @@ const get_client = (opts) => {
   if (!driver) throw new Error('driver not set');
 
   if (driver === 'github') return new GithubClient({ repo, token });
-
   if (driver === 'gitlab') return new GitlabClient({ repo, token });
 
   throw new Error('driver unknown!');
@@ -19,10 +18,11 @@ class CML {
       const { repo } = opts;
       const { GITHUB_REPOSITORY, CI_PROJECT_URL } = process.env;
 
-      if (GITHUB_REPOSITORY || (repo && repo.startsWith('https://github.com')))
-        return 'github';
-      if (CI_PROJECT_URL || (repo && repo.startsWith('https://gitlab.com')))
-        return 'gitlab';
+      if (repo && repo.startsWith('https://github.com')) return 'github';
+      if (repo && repo.startsWith('https://gitlab.com')) return 'gitlab';
+
+      if (GITHUB_REPOSITORY) return 'github';
+      if (CI_PROJECT_URL) return 'gitlab';
     };
 
     const { driver = env_driver(), repo, token } = opts;
@@ -47,7 +47,7 @@ class CML {
     let mime, uri;
 
     if (gitlab_uploads) {
-      const client = get_client(this);
+      const client = get_client({ ...this, driver: 'gitlab' });
       ({ mime, uri } = await client.publish(opts));
     } else {
       ({ mime, uri } = await upload(opts));
