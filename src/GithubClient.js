@@ -131,6 +131,10 @@ class GithubClient {
 
     return token;
   }
+
+  async register_runner(opts = {}) {
+    throw new Error('Github does not support register_runner!');
+  }
 }
 
 module.exports = GithubClient;

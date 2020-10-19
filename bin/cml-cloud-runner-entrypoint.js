@@ -123,9 +123,9 @@ const run = async () => {
     command = `${RUNNER_PATH}/run.sh`;
   } else {
     console.log('Registering Gitlab runner');
-    const runner = await cml.client.register_runner({
+    const runner = await cml.register_runner({
       tags: RUNNER_LABELS,
-      token: RUNNER_TOKEN
+      runner_token: RUNNER_TOKEN
     });
 
     GITLAB_CI_TOKEN = runner.token;

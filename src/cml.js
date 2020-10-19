@@ -66,6 +66,11 @@ class CML {
     return await client.runner_token();
   }
 
+  async register_runner(opts = {}) {
+    const client = get_client(this);
+    return await client.register_runner(opts);
+  }
+
   log_error(e) {
     console.error(e.message);
   }
