@@ -31,6 +31,22 @@ class CML {
     this.token = token;
   }
 
+  env_repo() {
+    return get_client(this).env_repo();
+  }
+
+  env_token() {
+    return get_client(this).env_token();
+  }
+
+  env_is_pr() {
+    return get_client(this).env_is_pr();
+  }
+
+  env_head_sha() {
+    return get_client(this).env_head_sha();
+  }
+
   async comment_create(opts = {}) {
     const client = get_client(this);
     return await client.comment_create(opts);
