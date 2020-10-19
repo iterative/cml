@@ -44,6 +44,19 @@ const argv = yargs
     'Append the output to the given file. Create it if does not exist.'
   )
   .alias('file', 'f')
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(data ? 0 : 1).argv;
 

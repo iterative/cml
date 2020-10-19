@@ -8,14 +8,12 @@ const CHECK_TITLE = 'CML Report';
 const owner_repo = (opts) => {
   let owner, repo;
   const { uri } = opts;
+  const { GITHUB_REPOSITORY } = process.env;
 
   if (uri) {
     const { pathname } = new URL(uri);
     [owner, repo] = pathname.substr(1).split('/');
-  }
-
-  const { GITHUB_REPOSITORY } = process.env;
-  if (GITHUB_REPOSITORY) {
+  } else if (GITHUB_REPOSITORY) {
     [owner, repo] = GITHUB_REPOSITORY.split('/');
   }
 
@@ -87,13 +85,13 @@ class GithubClient {
       report,
       commit_sha: head_sha = this.env_head_sha(),
       title = CHECK_TITLE,
-      name = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
       conclusion = 'success',
       status = 'completed'
     } = opts;
 
+    const name = title;
     return await octokit(this.token).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,

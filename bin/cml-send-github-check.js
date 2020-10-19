@@ -35,6 +35,19 @@ const argv = yargs
   ])
   .default('title', CHECK_TITLE)
   .describe('title', 'Sets title of the check.')
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;
 

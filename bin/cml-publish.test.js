@@ -20,6 +20,12 @@ describe('CML e2e', () => {
                                                                              [boolean]
         --file, -f        Append the output to the given file. Create it if does not
                           exist.
+        --repo            Specifies the repo to be used. If not specified is extracted
+                          from the CI ENV.
+        --token           Personal access token to be used. If not specified in
+                          extracted from ENV repo_token or GITLAB_TOKEN.
+        --driver          If not specify it infers it from the ENV.
+                                                         [choices: \\"github\\", \\"gitlab\\"]
         -h                Show help                                          [boolean]"
     `);
   });
@@ -85,5 +91,15 @@ describe('CML e2e', () => {
 
     expect(fs.existsSync(file)).toBe(true);
     await fs.promises.unlink(file);
+  });
+
+  test('cml-publish assets/test.svg in Gitlab storage', async () => {
+    const { TEST_GITLAB_REPO: repo, TEST_GITLAB_TOKEN: token } = process.env;
+
+    const output = await exec(
+      `echo none | node ./bin/cml-publish.js --repo=${repo} --token=${token} --gitlab-uploads assets/test.svg`
+    );
+
+    expect(output.startsWith('https://')).toBe(true);
   });
 });
