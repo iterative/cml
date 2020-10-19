@@ -57,7 +57,8 @@ const setup_runners = async (opts) => {
     name: runner_name,
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
-    attached
+    attached,
+    driver
   } = opts;
 
   const tf_path = path.join(TF_FOLDER, 'main.tf');
@@ -109,6 +110,7 @@ const setup_runners = async (opts) => {
       -v $(pwd)/main.tf:/main.tf \
       -e "repo_token=${repo_token}" \
       -e "RUNNER_REPO=${runner_repo}" \
+      -e "RUNNER_DRIVER=${driver}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
@@ -216,7 +218,7 @@ const run = async (opts) => {
 
   try {
     const terraform_state = await run_terraform(opts);
-    await setup_runners({ terraform_state, ...opts });
+    await setup_runners({ terraform_state, ...opts, driver: cml.driver });
     await sleep(20);
   } catch (err) {
     await destroy_terraform({});
