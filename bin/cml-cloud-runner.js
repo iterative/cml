@@ -211,8 +211,8 @@ const shutdown = async () => {
 
 const run = async (opts) => {
   const cml = new CML(opts);
-  REPO = cml.client.env_repo();
-  TOKEN = cml.client.env_token();
+  REPO = cml.env_repo();
+  TOKEN = cml.env_token();
 
   try {
     const terraform_state = await run_terraform(opts);
