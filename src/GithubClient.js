@@ -146,7 +146,8 @@ class GithubClient {
         data: { runners }
       } = await actions.listSelfHostedRunnersForRepo({
         owner,
-        repo
+        repo,
+        per_page: 100
       });
 
       console.log(runners);
@@ -155,7 +156,6 @@ class GithubClient {
         (runner) => runner.name === name
       );
 
-      console.log('ksjdskdjskjdskjdsk');
       console.log(name);
       console.log(runner_id);
 
@@ -164,7 +164,8 @@ class GithubClient {
       } = await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runner_id
+        runner_id,
+        per_page: 100
       });
 
       return token;
