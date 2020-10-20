@@ -147,6 +147,8 @@ class GithubClient {
         repo
       });
 
+      console.log(runners);
+
       const { id: runner_id } = runners.filter(
         (runner) => runner.name === name
       );
