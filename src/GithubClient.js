@@ -159,15 +159,11 @@ class GithubClient {
       console.log(name);
       console.log(runner_id);
 
-      const {
-        data: { token }
-      } = await actions.deleteSelfHostedRunnerFromRepo({
+      await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
         runner_id
       });
-
-      return token;
     }
 
     const {
@@ -181,14 +177,10 @@ class GithubClient {
       (runner) => runner.name === name
     )[0];
 
-    const {
-      data: { token }
-    } = await actions.deleteSelfHostedRunnerFromOrg({
+    await actions.deleteSelfHostedRunnerFromOrg({
       org: owner,
       runner_id
     });
-
-    return token;
   }
 }
 
