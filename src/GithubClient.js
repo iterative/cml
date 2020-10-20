@@ -154,7 +154,7 @@ class GithubClient {
 
       const { id: runner_id } = runners.filter(
         (runner) => runner.name === name
-      );
+      )[0];
 
       console.log(name);
       console.log(runner_id);
@@ -177,7 +177,9 @@ class GithubClient {
       org: owner
     });
 
-    const { id: runner_id } = runners.filter((runner) => runner.name === name);
+    const { id: runner_id } = runners.filter(
+      (runner) => runner.name === name
+    )[0];
 
     const {
       data: { token }
