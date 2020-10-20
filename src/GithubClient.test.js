@@ -50,8 +50,6 @@ describe('Enviromental tests', () => {
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
     process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
-
-    console.log(process.env);
   });
 
   afterAll(() => {
@@ -75,6 +73,7 @@ describe('Enviromental tests', () => {
   });
 
   test('Comment', async () => {
+    console.log(process.env);
     const client = new GithubClient({});
     const report = '## Test comment';
 
