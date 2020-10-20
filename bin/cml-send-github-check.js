@@ -13,7 +13,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
-  const cml = new CML(opts);
+  const cml = new CML({ ...opts, driver: 'github' });
   await cml.check_create({ head_sha, report, conclusion, title });
 };
 
@@ -45,9 +45,6 @@ const argv = yargs
     'token',
     'Personal access token to be used. If not specified in extracted from ENV repo_token.'
   )
-  .default('driver')
-  .choices('driver', ['github', 'gitlab'])
-  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;
 

@@ -80,12 +80,11 @@ class GitlabClient {
   }
 
   async register_runner(opts = {}) {
-    const { token } = this;
-    const { tags } = opts;
+    const { tags, runner_token } = opts;
 
     const endpoint = `/runners`;
     const body = new URLSearchParams();
-    body.append('token', token);
+    body.append('token', runner_token);
     body.append('tag_list', tags);
     body.append('locked', 'true');
     body.append('run_untagged', 'true');

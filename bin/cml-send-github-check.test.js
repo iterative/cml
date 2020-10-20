@@ -46,8 +46,6 @@ describe('CML e2e', () => {
                       from the CI ENV.
         --token       Personal access token to be used. If not specified in extracted
                       from ENV repo_token.
-        --driver      If not specify it infers it from the ENV.
-                                                         [choices: \\"github\\", \\"gitlab\\"]
         -h            Show help                                              [boolean]
         --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                       \\"timed_out\\"] [default: Sets the conclusion status of the check.]"

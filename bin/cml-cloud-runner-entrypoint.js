@@ -9,7 +9,6 @@ const {
   DOCKER_MACHINE, // DEPRECATED
 
   RUNNER_PATH,
-  RUNNER_REPO,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
@@ -17,13 +16,19 @@ const {
   RUNNER_RUNTIME = '',
   RUNNER_IMAGE = 'dvcorg/cml:latest',
 
+  RUNNER_DRIVER,
+  RUNNER_REPO,
   repo_token
 } = process.env;
 
+const cml = new CML({
+  driver: RUNNER_DRIVER,
+  repo: RUNNER_REPO,
+  token: repo_token
+});
+const IS_GITHUB = cml.driver === 'github';
 const { protocol, host } = new URL(RUNNER_REPO);
 const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
-const IS_GITHUB = RUNNER_REPO.startsWith('https://github.com');
-const cml = new CML({ driver: 'github', repo: RUNNER_REPO, token: repo_token });
 
 let TIMEOUT_TIMER = 0;
 let JOB_RUNNING = false;
@@ -49,7 +54,6 @@ const shutdown_host = async () => {
       );
     } catch (err) {
       console.log(`Failed destroying terraform: ${err.message}`);
-      // shutdown_host();
     }
   } catch (err) {
     console.log(err.message);
@@ -119,9 +123,9 @@ const run = async () => {
     command = `${RUNNER_PATH}/run.sh`;
   } else {
     console.log('Registering Gitlab runner');
-    const runner = await cml.client.register_runner({
+    const runner = await cml.register_runner({
       tags: RUNNER_LABELS,
-      token: RUNNER_TOKEN
+      runner_token: RUNNER_TOKEN
     });
 
     GITLAB_CI_TOKEN = runner.token;
