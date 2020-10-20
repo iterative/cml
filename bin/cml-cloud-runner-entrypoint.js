@@ -15,6 +15,7 @@ const {
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',
   RUNNER_IMAGE = 'dvcorg/cml:latest',
+  RUNNER_TF_NAME,
 
   RUNNER_DRIVER,
   RUNNER_REPO,
@@ -49,8 +50,11 @@ const shutdown_host = async () => {
   try {
     console.log('Terraform destroy...');
     try {
+      const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
       console.log(
-        await exec('cd / && terraform init && terraform destroy -auto-approve')
+        await exec(
+          `cd / && terraform init && terraform destroy -auto-approve ${tf_resource}`
+        )
       );
     } catch (err) {
       console.log(`Failed destroying terraform: ${err.message}`);
