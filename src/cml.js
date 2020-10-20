@@ -87,6 +87,10 @@ class CML {
     return await client.register_runner(opts);
   }
 
+  async unregister_runner(opts = {}) {
+    return await get_client(this).unregister_runner(opts);
+  }
+
   log_error(e) {
     console.error(e.message);
   }

@@ -135,6 +135,48 @@ class GithubClient {
   async register_runner(opts = {}) {
     throw new Error('Github does not support register_runner!');
   }
+
+  async unregister_runner(opts) {
+    const { name } = opts;
+    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { actions } = octokit(this.token);
+
+    if (typeof repo !== 'undefined') {
+      const runners = actions.listSelfHostedRunnersForRepo({
+        owner,
+        repo
+      });
+
+      const { id: runner_id } = runners.filter(
+        (runner) => runner.name === name
+      );
+
+      const {
+        data: { token }
+      } = await actions.deleteSelfHostedRunnerFromRepo({
+        owner,
+        repo,
+        runner_id
+      });
+
+      return token;
+    }
+
+    const runners = actions.listSelfHostedRunnersForOrg({
+      org: owner
+    });
+
+    const { id: runner_id } = runners.filter((runner) => runner.name === name);
+
+    const {
+      data: { token }
+    } = await actions.deleteSelfHostedRunnerFromOrg({
+      org: owner,
+      runner_id
+    });
+
+    return token;
+  }
 }
 
 module.exports = GithubClient;

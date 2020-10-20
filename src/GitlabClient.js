@@ -93,6 +93,10 @@ class GitlabClient {
     return await this.request({ endpoint, method: 'POST', body });
   }
 
+  async unregister_runner(opts = {}) {
+    throw new Error('Gitlab does not support unregister_runner!');
+  }
+
   async request(opts = {}) {
     const { token, api_v4 } = this;
     const { endpoint, method = 'GET', body } = opts;
