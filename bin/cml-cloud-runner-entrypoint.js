@@ -75,7 +75,9 @@ const shutdown = async (error) => {
           )
         );
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
 
     await shutdown_docker_machine();
     await shutdown_host();
