@@ -142,7 +142,9 @@ class GithubClient {
     const { actions } = octokit(this.token);
 
     if (typeof repo !== 'undefined') {
-      const { runners } = await actions.listSelfHostedRunnersForRepo({
+      const {
+        data: { runners }
+      } = await actions.listSelfHostedRunnersForRepo({
         owner,
         repo
       });
@@ -164,7 +166,9 @@ class GithubClient {
       return token;
     }
 
-    const { runners } = await actions.listSelfHostedRunnersForOrg({
+    const {
+      data: { runners }
+    } = await actions.listSelfHostedRunnersForOrg({
       org: owner
     });
 
