@@ -66,7 +66,7 @@ const shutdown = async (error) => {
     console.log('Unregistering runner');
 
     try {
-      PROC.kill('SIGHUP');
+      // PROC.kill('SIGHUP');
 
       if (IS_GITHUB) {
         await cml.unregister_runner({ name: RUNNER_NAME });

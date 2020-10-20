@@ -164,8 +164,7 @@ class GithubClient {
       } = await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runner_id,
-        per_page: 100
+        runner_id
       });
 
       return token;
@@ -174,7 +173,8 @@ class GithubClient {
     const {
       data: { runners }
     } = await actions.listSelfHostedRunnersForOrg({
-      org: owner
+      org: owner,
+      per_page: 100
     });
 
     const { id: runner_id } = runners.filter(
