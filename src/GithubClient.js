@@ -140,44 +140,46 @@ class GithubClient {
     const { name } = opts;
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { actions } = octokit(this.token);
+    const { id: runner_id } = await this.runner_by_name({ name });
 
     if (typeof repo !== 'undefined') {
-      const {
-        data: { runners }
-      } = await actions.listSelfHostedRunnersForRepo({
-        owner,
-        repo,
-        per_page: 100
-      });
-
-      const { id: runner_id } = runners.filter(
-        (runner) => runner.name === name
-      )[0];
-
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
         runner_id
       });
+    } else {
+      await actions.deleteSelfHostedRunnerFromOrg({
+        org: owner,
+        runner_id
+      });
+    }
+  }
 
-      return;
+  async runner_by_name(opts = {}) {
+    const { name } = opts;
+    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { actions } = octokit(this.token);
+    let runners = [];
+
+    if (typeof repo !== 'undefined') {
+      ({
+        data: { runners }
+      } = await actions.listSelfHostedRunnersForRepo({
+        owner,
+        repo,
+        per_page: 100
+      }));
+    } else {
+      ({
+        data: { runners }
+      } = await actions.listSelfHostedRunnersForOrg({
+        org: owner,
+        per_page: 100
+      }));
     }
 
-    const {
-      data: { runners }
-    } = await actions.listSelfHostedRunnersForOrg({
-      org: owner,
-      per_page: 100
-    });
-
-    const { id: runner_id } = runners.filter(
-      (runner) => runner.name === name
-    )[0];
-
-    await actions.deleteSelfHostedRunnerFromOrg({
-      org: owner,
-      runner_id
-    });
+    return runners.filter((runner) => runner.name === name)[0];
   }
 }
 
