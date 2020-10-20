@@ -155,6 +155,7 @@ class GithubClient {
         (runner) => runner.name === name
       );
 
+      console.log('ksjdskdjskjdskjdsk');
       console.log(name);
       console.log(runner_id);
 
