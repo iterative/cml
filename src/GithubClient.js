@@ -150,14 +150,9 @@ class GithubClient {
         per_page: 100
       });
 
-      console.log(runners);
-
       const { id: runner_id } = runners.filter(
         (runner) => runner.name === name
       )[0];
-
-      console.log(name);
-      console.log(runner_id);
 
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,

@@ -34,7 +34,6 @@ let TIMEOUT_TIMER = 0;
 let JOB_RUNNING = false;
 let RUNNER_TOKEN;
 let GITLAB_CI_TOKEN;
-let PROC;
 
 const shutdown_docker_machine = async () => {
   console.log('Shutting down docker machine');
@@ -66,8 +65,6 @@ const shutdown = async (error) => {
     console.log('Unregistering runner');
 
     try {
-      // PROC.kill('SIGHUP');
-
       if (IS_GITHUB) {
         await cml.unregister_runner({ name: RUNNER_NAME });
       } else {
@@ -143,9 +140,9 @@ const run = async () => {
       --limit 1`;
   }
 
-  PROC = spawn(command, { shell: true });
+  const proc = spawn(command, { shell: true });
 
-  PROC.stderr.on('data', (data) => {
+  proc.stderr.on('data', (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && !IS_GITHUB) {
@@ -156,7 +153,7 @@ const run = async () => {
     }
   });
 
-  PROC.stdout.on('data', async (data) => {
+  proc.stdout.on('data', async (data) => {
     data && console.log(data.toString('utf8'));
 
     if (data && IS_GITHUB && data.includes('Running job')) {
