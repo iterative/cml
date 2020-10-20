@@ -50,6 +50,8 @@ describe('Enviromental tests', () => {
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
     process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
+
+    console.log(process.env);
   });
 
   afterAll(() => {
@@ -59,7 +61,6 @@ describe('Enviromental tests', () => {
   test('Env', async () => {
     const client = new GithubClient({});
 
-    expect(client.env_is_pr()).toBe(false);
     expect(client.env_head_sha()).toBe(SHA);
     expect(client.env_repo()).toBe(REPO);
     expect(client.env_token()).toBe(TOKEN);
