@@ -164,6 +164,8 @@ class GithubClient {
         repo,
         runner_id
       });
+
+      return;
     }
 
     const {
