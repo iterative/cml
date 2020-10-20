@@ -155,6 +155,9 @@ class GithubClient {
         (runner) => runner.name === name
       );
 
+      console.log(name);
+      console.log(runner_id);
+
       const {
         data: { token }
       } = await actions.deleteSelfHostedRunnerFromRepo({
