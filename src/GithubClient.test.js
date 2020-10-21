@@ -1,6 +1,7 @@
 jest.setTimeout(20000);
 
 const GithubClient = require('./GithubClient');
+const github = require('@actions/github');
 
 const {
   TEST_GITHUB_TOKEN: TOKEN,
@@ -49,6 +50,11 @@ describe('Enviromental tests', () => {
     process.env = {};
     process.env.repo_token = TOKEN;
     process.env.GITHUB_SHA = SHA;
+
+    try {
+      github.context.payload.pull_request.head.sha = SHA;
+    } catch (err) {}
+
     process.env.GITHUB_REPOSITORY = new URL(REPO).pathname.substring(1);
   });
 
@@ -59,7 +65,6 @@ describe('Enviromental tests', () => {
   test('Env', async () => {
     const client = new GithubClient({});
 
-    expect(client.env_is_pr()).toBe(false);
     expect(client.env_head_sha()).toBe(SHA);
     expect(client.env_repo()).toBe(REPO);
     expect(client.env_token()).toBe(TOKEN);
