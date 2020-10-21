@@ -93,6 +93,16 @@ class GitlabClient {
     return await this.request({ endpoint, method: 'POST', body });
   }
 
+  async runner_by_name(opts = {}) {
+    const { name } = opts;
+
+    const endpoint = `/runners`;
+    const runners = await this.request({ endpoint, method: 'GET' });
+    const runner = runners.filter((runner) => runner.name === name)[0];
+
+    if (runner) return { id: runner.id, name: runner.name };
+  }
+
   async request(opts = {}) {
     const { token, api_v4 } = this;
     const { endpoint, method = 'GET', body } = opts;

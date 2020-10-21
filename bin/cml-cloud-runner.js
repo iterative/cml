@@ -10,11 +10,12 @@ const {
   exec,
   sleep,
   ssh_public_from_private_rsa,
-  parse_param_newline
+  parse_param_newline,
+  randid
 } = require('../src/utils');
 
 const CML = require('../src/cml');
-
+let cml;
 let REPO;
 let TOKEN;
 
@@ -54,7 +55,7 @@ const setup_runners = async (opts) => {
     repo: runner_repo = REPO,
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
-    name: runner_name,
+    name: runner_name = randid(),
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
     attached,
@@ -111,13 +112,13 @@ const setup_runners = async (opts) => {
       -e "repo_token=${repo_token}" \
       -e "RUNNER_REPO=${runner_repo}" \
       -e "RUNNER_DRIVER=${driver}" \
+      -e "RUNNER_NAME=${runner_name}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
           ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
           : ''
       } \
-      ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
       ${image}`;
 
     console.log(start_runner_cmd);
@@ -131,6 +132,8 @@ const setup_runners = async (opts) => {
 
     await ssh.dispose();
   }
+
+  await cml.await_runner({ name: runner_name });
 };
 
 const run_terraform = async (opts) => {
@@ -212,14 +215,13 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
-  const cml = new CML(opts);
+  cml = new CML({ ...opts, token: opts.repoToken });
   REPO = cml.env_repo();
   TOKEN = cml.env_token();
 
   try {
     const terraform_state = await run_terraform(opts);
     await setup_runners({ terraform_state, ...opts, driver: cml.driver });
-    await sleep(20);
   } catch (err) {
     await destroy_terraform({});
 
