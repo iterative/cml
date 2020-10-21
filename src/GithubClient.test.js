@@ -79,7 +79,6 @@ describe('Enviromental tests', () => {
   });
 
   test('Comment', async () => {
-    console.log(process.env);
     const client = new GithubClient({});
     const report = '## Test comment';
 
