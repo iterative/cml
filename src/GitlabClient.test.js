@@ -64,7 +64,6 @@ describe('Enviromental tests', () => {
   test('Env', async () => {
     const client = new GitlabClient();
 
-    expect(client.env_is_pr()).toBe(false);
     expect(client.env_head_sha()).toBe(SHA);
     expect(client.env_repo()).toBe(REPO);
     expect(client.env_token()).toBe(TOKEN);
