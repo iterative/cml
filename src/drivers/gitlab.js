@@ -2,9 +2,9 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
 
-const { fetch_upload_data, strip_last_chars } = require('./utils');
+const { fetch_upload_data, strip_last_chars } = require('../utils');
 
-class GitlabClient {
+class Gitlab {
   constructor(opts = {}) {
     const { repo = this.env_repo(), token = this.env_token() } = opts;
 
@@ -16,7 +16,7 @@ class GitlabClient {
       : repo;
     this.token = token;
 
-    const { protocol, host, pathname } = new URL(repo);
+    const { protocol, host, pathname } = new URL(this.repo);
     this.repo_origin = `${protocol}//${host}`;
     this.api_v4 = `${this.repo_origin}/api/v4`;
     this.project_path = encodeURIComponent(pathname.substring(1));
@@ -111,4 +111,4 @@ class GitlabClient {
   }
 }
 
-module.exports = GitlabClient;
+module.exports = Gitlab;

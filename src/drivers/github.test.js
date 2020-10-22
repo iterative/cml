@@ -1,6 +1,6 @@
 jest.setTimeout(20000);
 
-const GithubClient = require('./GithubClient');
+const GithubClient = require('./github');
 const github = require('@actions/github');
 
 const {

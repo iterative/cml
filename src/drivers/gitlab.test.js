@@ -1,6 +1,6 @@
 jest.setTimeout(20000);
 
-const GitlabClient = require('./GitlabClient');
+const GitlabClient = require('./gitlab');
 
 const {
   TEST_GITLAB_TOKEN: TOKEN,
@@ -32,7 +32,7 @@ describe('Non Enviromental tests', () => {
   });
 
   test('Publish', async () => {
-    const path = `${__dirname}/../assets/logo.png`;
+    const path = `${__dirname}/../../assets/logo.png`;
     const { uri } = await client.publish({ path });
 
     expect(uri).not.toBeUndefined();
@@ -89,7 +89,7 @@ describe('Enviromental tests', () => {
 
   test('Publish', async () => {
     const client = new GitlabClient();
-    const path = `${__dirname}/../assets/logo.png`;
+    const path = `${__dirname}/../../assets/logo.png`;
     const { uri } = await client.publish({ path });
 
     expect(uri).not.toBeUndefined();

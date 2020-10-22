@@ -1,6 +1,6 @@
 const github = require('@actions/github');
 
-const { strip_last_chars } = require('./utils');
+const { strip_last_chars } = require('../utils');
 
 const GITHUB_HOST = 'https://github.com/';
 const CHECK_TITLE = 'CML Report';
@@ -26,7 +26,7 @@ const octokit = (token) => {
   return github.getOctokit(token);
 };
 
-class GithubClient {
+class Github {
   constructor(opts = {}) {
     const { repo = this.env_repo(), token = this.env_token() } = opts;
 
@@ -139,4 +139,4 @@ class GithubClient {
   }
 }
 
-module.exports = GithubClient;
+module.exports = Github;

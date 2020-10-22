@@ -1,5 +1,5 @@
-const GitlabClient = require('./GitlabClient');
-const GithubClient = require('./GithubClient');
+const GitlabClient = require('./drivers/gitlab');
+const GithubClient = require('./drivers/github');
 const { upload } = require('./utils');
 
 const get_client = (opts) => {
