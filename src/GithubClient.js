@@ -32,7 +32,9 @@ class GithubClient {
 
     if (!repo) throw new Error('repo not found');
 
-    this.repo = repo.endsWith('/') ? strip_last_chars(repo, 1) : repo;
+    this.repo = repo.endsWith('/')
+      ? strip_last_chars({ str: repo, size: 1 })
+      : repo;
     this.token = token;
   }
 
