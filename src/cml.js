@@ -53,14 +53,14 @@ class CML {
 
   async comment_create(opts = {}) {
     const sha = await this.head_sha();
-    opts.sha = opts.sha || sha;
+    opts.commit_sha = opts.commit_sha || sha;
 
     return await get_client(this).comment_create(opts);
   }
 
   async check_create(opts = {}) {
     const sha = await this.head_sha();
-    opts.sha = opts.sha || sha;
+    opts.head_sha = opts.head_sha || sha;
 
     return await get_client(this).check_create(opts);
   }

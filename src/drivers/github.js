@@ -85,7 +85,7 @@ class Github {
   async check_create(opts = {}) {
     const {
       report,
-      commit_sha: head_sha = this.env_head_sha(),
+      head_sha = this.env_head_sha(),
       title = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
