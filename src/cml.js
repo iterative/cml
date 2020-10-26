@@ -28,12 +28,15 @@ class CML {
     };
 
     console.log('*****************');
-    console.log(execSync('git config --get remote.origin.url'));
+    console.log(
+      execSync('git config --get remote.origin.url').toString('utf8')
+    );
     console.log('*****************');
 
     const { driver = env_driver(), repo, token } = opts;
     this.driver = driver;
-    this.repo = repo;
+    this.repo =
+      repo || execSync('git config --get remote.origin.url').toString('utf8');
     this.token = token;
   }
 
