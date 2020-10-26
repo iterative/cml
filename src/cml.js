@@ -1,3 +1,5 @@
+const { execSync } = require('child_process');
+
 const GitlabClient = require('./drivers/gitlab');
 const GithubClient = require('./drivers/github');
 const { upload, exec } = require('./utils');
@@ -24,6 +26,10 @@ class CML {
       if (GITHUB_REPOSITORY) return 'github';
       if (CI_PROJECT_URL) return 'gitlab';
     };
+
+    console.log('*****************');
+    console.log(execSync('git config --get remote.origin.url'));
+    console.log('*****************');
 
     const { driver = env_driver(), repo, token } = opts;
     this.driver = driver;
@@ -57,7 +63,6 @@ class CML {
 
     console.log('*****************');
     console.log(sha);
-    console.log(await exec('git config --get remote.origin.url'));
     console.log('*****************');
 
     return await get_client(this).comment_create(opts);
