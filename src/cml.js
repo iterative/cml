@@ -1,6 +1,6 @@
 const GitlabClient = require('./drivers/gitlab');
 const GithubClient = require('./drivers/github');
-const { upload } = require('./utils');
+const { upload, exec } = require('./utils');
 
 const get_client = (opts) => {
   const { driver, repo, token } = opts;
@@ -47,11 +47,21 @@ class CML {
     return get_client(this).env_head_sha();
   }
 
+  async head_sha() {
+    return (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
+  }
+
   async comment_create(opts = {}) {
+    const sha = await this.head_sha();
+    opts.sha = opts.sha || sha;
+
     return await get_client(this).comment_create(opts);
   }
 
   async check_create(opts = {}) {
+    const sha = await this.head_sha();
+    opts.sha = opts.sha || sha;
+
     return await get_client(this).check_create(opts);
   }
 
