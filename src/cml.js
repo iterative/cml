@@ -55,6 +55,11 @@ class CML {
     const sha = await this.head_sha();
     opts.commit_sha = opts.commit_sha || sha;
 
+    console.log('*****************');
+    console.log(sha);
+    console.log(await exec('git config --get remote.origin.url'));
+    console.log('*****************');
+
     return await get_client(this).comment_create(opts);
   }
 
