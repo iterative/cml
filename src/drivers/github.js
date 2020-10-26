@@ -71,6 +71,7 @@ class Github {
   async comment_create(opts = {}) {
     const { report: body, commit_sha = this.env_head_sha() } = opts;
 
+    console.log(commit_sha);
     const { url: commit_url } = await octokit(
       this.token
     ).repos.createCommitComment({
