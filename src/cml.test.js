@@ -21,11 +21,6 @@ describe('Github tests', () => {
   });
 
   test('driver has to be github', async () => {
-    const cml = new CML();
-    expect(cml.driver).toBe('github');
-  });
-
-  test('driver has to be github', async () => {
     const cml = new CML({ repo: REPO, token: TOKEN });
     expect(cml.driver).toBe('github');
   });
