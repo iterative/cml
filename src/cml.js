@@ -8,6 +8,7 @@ const { upload, exec } = require('./utils');
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
+
 const repo_from_origin = () => {
   const origin = execSync('git config --get remote.origin.url').toString(
     'utf8'
