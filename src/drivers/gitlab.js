@@ -2,19 +2,17 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
 
-const { fetch_upload_data, strip_last_chars } = require('../utils');
+const { fetch_upload_data } = require('../utils');
 
 class Gitlab {
   constructor(opts = {}) {
-    const { repo = this.env_repo(), token = this.env_token() } = opts;
+    const { repo, token } = opts;
 
-    if (!repo) throw new Error('repo not found');
     if (!token) throw new Error('token not found');
+    if (!repo) throw new Error('repo not found');
 
-    this.repo = repo.endsWith('/')
-      ? strip_last_chars({ str: repo, size: 1 })
-      : repo;
     this.token = token;
+    this.repo = repo;
 
     const { protocol, host, pathname } = new URL(this.repo);
     this.repo_origin = `${protocol}//${host}`;
@@ -22,29 +20,9 @@ class Gitlab {
     this.project_path = encodeURIComponent(pathname.substring(1));
   }
 
-  env_repo() {
-    const { CI_PROJECT_URL } = process.env;
-    return CI_PROJECT_URL;
-  }
-
-  env_token() {
-    const { repo_token, GITLAB_TOKEN } = process.env;
-    return repo_token || GITLAB_TOKEN;
-  }
-
-  env_is_pr() {
-    const { CI_MERGE_REQUEST_ID } = process.env;
-    return typeof CI_MERGE_REQUEST_ID !== 'undefined';
-  }
-
-  env_head_sha() {
-    const { CI_COMMIT_SHA } = process.env;
-    return CI_COMMIT_SHA;
-  }
-
   async comment_create(opts = {}) {
     const { project_path } = this;
-    const { commit_sha = this.env_head_sha(), report } = opts;
+    const { commit_sha, report } = opts;
 
     const endpoint = `/projects/${project_path}/repository/commits/${commit_sha}/comments`;
     const body = new URLSearchParams();

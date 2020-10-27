@@ -8,7 +8,6 @@ const yargs = require('yargs');
 const CML = require('../src/cml');
 
 const run = async (opts) => {
-  console.error(process.env);
   const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
