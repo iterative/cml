@@ -1,6 +1,35 @@
+const { execSync } = require('child_process');
+const git_url_parse = require('git-url-parse');
+
 const GitlabClient = require('./drivers/gitlab');
 const GithubClient = require('./drivers/github');
-const { upload } = require('./utils');
+const { upload, exec } = require('./utils');
+
+const uri_no_trailing_slash = (uri) => {
+  return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
+};
+
+const repo_from_origin = () => {
+  const origin = execSync('git config --get remote.origin.url').toString(
+    'utf8'
+  );
+  return git_url_parse(origin).toString('https').replace('.git', '');
+};
+
+const infer_driver = (opts = {}) => {
+  const { repo } = opts;
+  if (repo && repo.includes('github.com')) return 'github';
+  if (repo && repo.includes('gitlab.com')) return 'gitlab';
+
+  const { GITHUB_REPOSITORY, CI_PROJECT_URL } = process.env;
+  if (GITHUB_REPOSITORY) return 'github';
+  if (CI_PROJECT_URL) return 'gitlab';
+};
+
+const env_token = () => {
+  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN } = process.env;
+  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
+};
 
 const get_client = (opts) => {
   const { driver, repo, token } = opts;
@@ -14,44 +43,28 @@ const get_client = (opts) => {
 
 class CML {
   constructor(opts = {}) {
-    const env_driver = () => {
-      const { repo } = opts;
-      const { GITHUB_REPOSITORY, CI_PROJECT_URL } = process.env;
+    const { driver, repo, token } = opts;
 
-      if (repo && repo.startsWith('https://github.com')) return 'github';
-      if (repo && repo.startsWith('https://gitlab.com')) return 'gitlab';
-
-      if (GITHUB_REPOSITORY) return 'github';
-      if (CI_PROJECT_URL) return 'gitlab';
-    };
-
-    const { driver = env_driver(), repo, token } = opts;
-    this.driver = driver;
-    this.repo = repo;
-    this.token = token;
+    this.repo = uri_no_trailing_slash(repo || repo_from_origin());
+    this.token = token || env_token();
+    this.driver = driver || infer_driver({ repo: this.repo });
   }
 
-  env_repo() {
-    return get_client(this).env_repo();
-  }
-
-  env_token() {
-    return get_client(this).env_token();
-  }
-
-  env_is_pr() {
-    return get_client(this).env_is_pr();
-  }
-
-  env_head_sha() {
-    return get_client(this).env_head_sha();
+  async head_sha() {
+    return (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
   }
 
   async comment_create(opts = {}) {
+    const sha = await this.head_sha();
+    opts.commit_sha = opts.commit_sha || sha;
+
     return await get_client(this).comment_create(opts);
   }
 
   async check_create(opts = {}) {
+    const sha = await this.head_sha();
+    opts.head_sha = opts.head_sha || sha;
+
     return await get_client(this).check_create(opts);
   }
 
