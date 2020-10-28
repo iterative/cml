@@ -73,6 +73,10 @@ class Gitlab {
     return await this.request({ endpoint, method: 'POST', body });
   }
 
+  async unregister_runner(opts = {}) {
+    throw new Error('Gitlab does not support unregister_runner!');
+  }
+
   async runner_by_name(opts = {}) {
     const { name } = opts;
 

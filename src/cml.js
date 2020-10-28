@@ -95,6 +95,10 @@ class CML {
     return await get_driver(this).register_runner(opts);
   }
 
+  async unregister_runner(opts = {}) {
+    return await get_driver(this).unregister_runner(opts);
+  }
+
   async runner_by_name(opts = {}) {
     return await get_driver(this).runner_by_name(opts);
   }
