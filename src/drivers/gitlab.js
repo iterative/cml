@@ -2,47 +2,27 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
 
-const { fetch_upload_data, strip_last_chars } = require('./utils');
+const { fetch_upload_data } = require('../utils');
 
-class GitlabClient {
+class Gitlab {
   constructor(opts = {}) {
-    const { repo = this.env_repo(), token = this.env_token() } = opts;
+    const { repo, token } = opts;
 
-    if (!repo) throw new Error('repo not found');
     if (!token) throw new Error('token not found');
+    if (!repo) throw new Error('repo not found');
 
-    this.repo = repo.endsWith('/') ? strip_last_chars(repo, 1) : repo;
     this.token = token;
+    this.repo = repo;
 
-    const { protocol, host, pathname } = new URL(repo);
+    const { protocol, host, pathname } = new URL(this.repo);
     this.repo_origin = `${protocol}//${host}`;
     this.api_v4 = `${this.repo_origin}/api/v4`;
     this.project_path = encodeURIComponent(pathname.substring(1));
   }
 
-  env_repo() {
-    const { CI_PROJECT_URL } = process.env;
-    return CI_PROJECT_URL;
-  }
-
-  env_token() {
-    const { repo_token, GITLAB_TOKEN } = process.env;
-    return repo_token || GITLAB_TOKEN;
-  }
-
-  env_is_pr() {
-    const { CI_MERGE_REQUEST_ID } = process.env;
-    return typeof CI_MERGE_REQUEST_ID !== 'undefined';
-  }
-
-  env_head_sha() {
-    const { CI_COMMIT_SHA } = process.env;
-    return CI_COMMIT_SHA;
-  }
-
   async comment_create(opts = {}) {
     const { project_path } = this;
-    const { commit_sha = this.env_head_sha(), report } = opts;
+    const { commit_sha, report } = opts;
 
     const endpoint = `/projects/${project_path}/repository/commits/${commit_sha}/comments`;
     const body = new URLSearchParams();
@@ -57,7 +37,7 @@ class GitlabClient {
     throw new Error('Gitlab does not support check!');
   }
 
-  async publish(opts = {}) {
+  async upload(opts = {}) {
     const { project_path, repo } = this;
     const endpoint = `/projects/${project_path}/uploads`;
     const { size, mime, data } = await fetch_upload_data(opts);
@@ -109,4 +89,4 @@ class GitlabClient {
   }
 }
 
-module.exports = GitlabClient;
+module.exports = Gitlab;
