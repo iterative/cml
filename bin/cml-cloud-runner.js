@@ -5,6 +5,7 @@ const NodeSSH = require('node-ssh').NodeSSH;
 const fss = require('fs');
 const fs = fss.promises;
 const path = require('path');
+
 const {
   exec,
   sleep,
@@ -12,9 +13,10 @@ const {
   parse_param_newline
 } = require('../src/utils');
 
-const { handle_error, repo: REPO, token: TOKEN } = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
+
+let REPO;
+let TOKEN;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
@@ -55,7 +57,8 @@ const setup_runners = async (opts) => {
     name: runner_name,
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
-    attached
+    attached,
+    driver
   } = opts;
 
   const tf_path = path.join(TF_FOLDER, 'main.tf');
@@ -107,6 +110,7 @@ const setup_runners = async (opts) => {
       -v $(pwd)/main.tf:/main.tf \
       -e "repo_token=${repo_token}" \
       -e "RUNNER_REPO=${runner_repo}" \
+      -e "RUNNER_DRIVER=${driver}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
@@ -208,9 +212,13 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
+  const cml = new CML(opts);
+  REPO = cml.env_repo();
+  TOKEN = cml.env_token();
+
   try {
     const terraform_state = await run_terraform(opts);
-    await setup_runners({ terraform_state, ...opts });
+    await setup_runners({ terraform_state, ...opts, driver: cml.driver });
     await sleep(20);
   } catch (err) {
     await destroy_terraform({});
@@ -267,5 +275,21 @@ const argv = yargs
   .boolean('attached')
   .describe('attached', 'Runs the runner in the foreground.')
   .coerce('rsa-private-key', parse_param_newline)
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h').argv;
-run(argv).catch((e) => handle_error(e));
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

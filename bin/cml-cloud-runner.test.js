@@ -13,8 +13,8 @@ describe('CML e2e', () => {
         --version          Show version number                               [boolean]
         --repo-token       Repository token. Defaults to workflow env variable
                            repo_token.
-        --repo             Repository to register with. Tries to guess from workflow
-                           env variables.
+        --repo             Specifies the repo to be used. If not specified is
+                           extracted from the CI ENV.
         --labels           Comma delimited runner labels. Defaults to cml
         --idle-timeout     Time in seconds for the runner to be waiting for jobs
                            before shutting down. Defaults to 5 min
@@ -29,6 +29,10 @@ describe('CML e2e', () => {
         --rsa-private-key  Your private RSA SHH key. If not provided will be generated
                            by the tf provider.                           [default: \\"\\"]
         --attached         Runs the runner in the foreground.                [boolean]
+        --token            Personal access token to be used. If not specified in
+                           extracted from ENV repo_token or GITLAB_TOKEN.
+        --driver           If not specify it infers it from the ENV.
+                                                         [choices: \\"github\\", \\"gitlab\\"]
         -h                 Show help                                         [boolean]"
     `);
   });
