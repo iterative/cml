@@ -37,7 +37,7 @@ class Gitlab {
     throw new Error('Gitlab does not support check!');
   }
 
-  async publish(opts = {}) {
+  async upload(opts = {}) {
     const { project_path, repo } = this;
     const endpoint = `/projects/${project_path}/uploads`;
     const { size, mime, data } = await fetch_upload_data(opts);

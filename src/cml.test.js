@@ -140,12 +140,43 @@ describe('Gitlab tests', () => {
     expect(output.endsWith(')')).toBe(true);
   });
 
+  test('Publish a non image file using gl specifiying backend', async () => {
+    const path = `${__dirname}/../assets/logo.pdf`;
+    const title = 'my title';
+
+    const output = await new CML({ repo: REPO }).publish({
+      path,
+      md: true,
+      title,
+      backend: 'gitlab'
+    });
+
+    expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.endsWith(')')).toBe(true);
+  });
+
+  test('Publish should fail with an invalid backend', async () => {
+    let catched_err;
+    try {
+      const path = `${__dirname}/../assets/logo.pdf`;
+      await new CML({ repo: REPO }).publish({
+        path,
+        md: true,
+        backend: 'invalid'
+      });
+    } catch (err) {
+      catched_err = err.message;
+    }
+
+    expect(catched_err).not.toBeUndefined();
+  });
+
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
     await new CML({ repo: REPO }).comment_create({ report, commit_sha: SHA });
   });
 
-  test('Comment should fail with a unvalid sha', async () => {
+  test('Comment should fail with a invalid sha', async () => {
     let catched_err;
     try {
       const report = '## Test comment';

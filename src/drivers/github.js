@@ -77,7 +77,7 @@ class Github {
     });
   }
 
-  async publish() {
+  async upload() {
     throw new Error('Github does not support publish!');
   }
 

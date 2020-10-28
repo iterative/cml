@@ -69,13 +69,13 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, gitlab_uploads } = opts;
+    const { title = '', md, gitlab_uploads, backend = 'cml' } = opts;
 
     let mime, uri;
 
-    if (gitlab_uploads) {
+    if (gitlab_uploads || backend !== 'cml') {
       const client = get_client({ ...this, driver: 'gitlab' });
-      ({ mime, uri } = await client.publish(opts));
+      ({ mime, uri } = await client.upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
     }

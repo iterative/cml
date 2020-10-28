@@ -29,7 +29,7 @@ describe('Non Enviromental tests', () => {
   });
 
   test('Publish', async () => {
-    await expect(client.publish()).rejects.toThrow(
+    await expect(client.upload()).rejects.toThrow(
       'Github does not support publish!'
     );
   });

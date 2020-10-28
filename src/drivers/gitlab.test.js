@@ -33,7 +33,7 @@ describe('Non Enviromental tests', () => {
 
   test('Publish', async () => {
     const path = `${__dirname}/../../assets/logo.png`;
-    const { uri } = await client.publish({ path });
+    const { uri } = await client.upload({ path });
 
     expect(uri).not.toBeUndefined();
   });
