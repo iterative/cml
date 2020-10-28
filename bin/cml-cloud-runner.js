@@ -108,6 +108,7 @@ const setup_runners = async (opts) => {
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
+      -e "RUNNER_TF_NAME=iterative_machine.${resource.name}" \
       -e "repo_token=${repo_token}" \
       -e "RUNNER_REPO=${runner_repo}" \
       -e "RUNNER_DRIVER=${driver}" \
