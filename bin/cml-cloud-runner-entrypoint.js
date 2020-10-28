@@ -70,11 +70,7 @@ const shutdown = async (error) => {
 
     try {
       if (IS_GITHUB) {
-        console.log(
-          await exec(
-            `${RUNNER_PATH}/config.sh remove --token "${RUNNER_TOKEN}"`
-          )
-        );
+        await cml.unregister_runner({ name: RUNNER_NAME });
       } else {
         console.log(await exec(`gitlab-runner verify --delete`));
         console.log(
@@ -83,7 +79,9 @@ const shutdown = async (error) => {
           )
         );
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
 
     await shutdown_docker_machine();
     await shutdown_host();
