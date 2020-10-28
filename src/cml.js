@@ -99,6 +99,33 @@ class CML {
     return await get_driver(this).unregister_runner(opts);
   }
 
+  async runner_by_name(opts = {}) {
+    return await get_driver(this).runner_by_name(opts);
+  }
+
+  async await_runner(opts = {}) {
+    const { name, timer_max = 30, timer_step = 5 } = opts;
+
+    let timer = 0;
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        const runner = await this.runner_by_name({ name });
+
+        if (runner) {
+          clearInterval(interval);
+          resolve(runner);
+        }
+
+        if (timer_max === timer) {
+          clearInterval(interval);
+          reject(new Error('Waiting for runner expiration timeout'));
+        }
+
+        timer += timer_step;
+      }, timer_step * 1000);
+    });
+  }
+
   log_error(e) {
     console.error(e.message);
   }

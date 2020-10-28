@@ -152,6 +152,9 @@ class Github {
       }));
     }
 
+    const runner = runners.filter((runner) => runner.name === name)[0];
+
+    if (runner) return { id: runner.id, name: runner.name };
     return runners.filter((runner) => runner.name === name)[0];
   }
 }

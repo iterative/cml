@@ -10,13 +10,12 @@ const {
   exec,
   sleep,
   ssh_public_from_private_rsa,
-  parse_param_newline
+  parse_param_newline,
+  randid
 } = require('../src/utils');
 
 const CML = require('../src/cml');
-
-let REPO;
-let TOKEN;
+let cml;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
@@ -47,29 +46,27 @@ const ssh_connect = async (opts) => {
 };
 
 const setup_runners = async (opts) => {
+  const { token, repo, driver } = cml;
   const {
     terraform_state,
     username = 'ubuntu',
-    'repo-token': repo_token = TOKEN,
-    repo: runner_repo = REPO,
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
-    name: runner_name,
+    name: runner_name = randid(),
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
-    attached,
-    driver
+    attached
   } = opts;
 
   const tf_path = path.join(TF_FOLDER, 'main.tf');
   const tfstate_path = path.join(TF_FOLDER, 'terraform.tfstate');
 
-  if (!repo_token)
+  if (!token)
     throw new Error(
       'Repository token not set. Your repo_token is not available!'
     );
 
-  if (!runner_repo)
+  if (!repo)
     throw new Error(
       'Repo not set. Your repo must be set to register the runner!'
     );
@@ -109,16 +106,16 @@ const setup_runners = async (opts) => {
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
       -e "RUNNER_TF_NAME=iterative_machine.${resource.name}" \
-      -e "repo_token=${repo_token}" \
-      -e "RUNNER_REPO=${runner_repo}" \
+      -e "repo_token=${token}" \
+      -e "RUNNER_REPO=${repo}" \
       -e "RUNNER_DRIVER=${driver}" \
+      -e "RUNNER_NAME=${runner_name}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
           ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
           : ''
       } \
-      ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
       ${image}`;
 
     console.log(start_runner_cmd);
@@ -132,6 +129,8 @@ const setup_runners = async (opts) => {
 
     await ssh.dispose();
   }
+
+  await cml.await_runner({ name: runner_name });
 };
 
 const run_terraform = async (opts) => {
@@ -213,14 +212,10 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
-  const cml = new CML(opts);
-  REPO = cml.env_repo();
-  TOKEN = cml.env_token();
-
+  cml = new CML({ ...opts });
   try {
     const terraform_state = await run_terraform(opts);
-    await setup_runners({ terraform_state, ...opts, driver: cml.driver });
-    await sleep(20);
+    await setup_runners({ terraform_state, ...opts });
   } catch (err) {
     await destroy_terraform({});
 
@@ -234,9 +229,9 @@ process.on('SIGQUIT', shutdown);
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .default('repo-token')
+  .default('token')
   .describe(
-    'repo-token',
+    'token',
     'Repository token. Defaults to workflow env variable repo_token.'
   )
   .default('repo')
@@ -280,11 +275,6 @@ const argv = yargs
   .describe(
     'repo',
     'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  )
-  .default('token')
-  .describe(
-    'token',
-    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
   )
   .default('driver')
   .choices('driver', ['github', 'gitlab'])
