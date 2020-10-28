@@ -11,7 +11,7 @@ describe('CML e2e', () => {
 
       Options:
         --version          Show version number                               [boolean]
-        --repo-token       Repository token. Defaults to workflow env variable
+        --token            Repository token. Defaults to workflow env variable
                            repo_token.
         --repo             Specifies the repo to be used. If not specified is
                            extracted from the CI ENV.
@@ -29,8 +29,6 @@ describe('CML e2e', () => {
         --rsa-private-key  Your private RSA SHH key. If not provided will be generated
                            by the tf provider.                           [default: \\"\\"]
         --attached         Runs the runner in the foreground.                [boolean]
-        --token            Personal access token to be used. If not specified in
-                           extracted from ENV repo_token or GITLAB_TOKEN.
         --driver           If not specify it infers it from the ENV.
                                                          [choices: \\"github\\", \\"gitlab\\"]
         -h                 Show help                                         [boolean]"
