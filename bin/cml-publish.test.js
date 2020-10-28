@@ -17,7 +17,9 @@ describe('CML e2e', () => {
         --gitlab-uploads  Uses GitLab uploads instead of CML storage. Use GitLab
                           uploads to get around CML size limitations for hosting
                           artifacts persistently. Only available for GitLab CI.
-                                                                             [boolean]
+                                            [deprecated: Use native instead] [boolean]
+        --native          Uses driver's native capabilities to upload assets instead
+                          of CML's backend.                                  [boolean]
         --file, -f        Append the output to the given file. Create it if does not
                           exist.
         --repo            Specifies the repo to be used. If not specified is extracted
