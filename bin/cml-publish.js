@@ -38,6 +38,12 @@ const argv = yargs
     'gitlab-uploads',
     'Uses GitLab uploads instead of CML storage. Use GitLab uploads to get around CML size limitations for hosting artifacts persistently. Only available for GitLab CI.'
   )
+  .deprecateOption('gitlab-uploads', 'Use native instead')
+  .boolean('native')
+  .describe(
+    'native',
+    "Uses driver's native capabilities to upload assets instead of CML's backend."
+  )
   .default('file')
   .describe(
     'file',

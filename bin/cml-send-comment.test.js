@@ -47,4 +47,11 @@ describe('Comment integration tests', () => {
       `node ./bin/cml-send-comment.js --repo=${repo} --token=${token} --commit-sha=${sha} ${path}`
     );
   });
+
+  test('cml-send-comment to current repo', async () => {
+    const report = `## Test Comment`;
+
+    await fs.writeFile(path, report);
+    await exec(`node ./bin/cml-send-comment.js ${path}`);
+  });
 });

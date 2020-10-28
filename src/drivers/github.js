@@ -1,8 +1,5 @@
 const github = require('@actions/github');
 
-const { strip_last_chars } = require('./utils');
-
-const GITHUB_HOST = 'https://github.com/';
 const CHECK_TITLE = 'CML Report';
 
 const owner_repo = (opts) => {
@@ -26,39 +23,15 @@ const octokit = (token) => {
   return github.getOctokit(token);
 };
 
-class GithubClient {
+class Github {
   constructor(opts = {}) {
-    const { repo = this.env_repo(), token = this.env_token() } = opts;
+    const { repo, token } = opts;
 
     if (!repo) throw new Error('repo not found');
+    if (!token) throw new Error('token not found');
 
-    this.repo = repo.endsWith('/') ? strip_last_chars(repo, 1) : repo;
+    this.repo = repo;
     this.token = token;
-  }
-
-  env_repo() {
-    const { GITHUB_REPOSITORY } = process.env;
-    if (GITHUB_REPOSITORY) return `${GITHUB_HOST}${GITHUB_REPOSITORY}`;
-  }
-
-  env_token() {
-    const { repo_token, GITHUB_TOKEN } = process.env;
-    return repo_token || GITHUB_TOKEN;
-  }
-
-  env_is_pr() {
-    try {
-      return typeof github.context.payload.pull_request !== 'undefined';
-    } catch (err) {
-      return false;
-    }
-  }
-
-  env_head_sha() {
-    if (this.env_is_pr()) return github.context.payload.pull_request.head.sha;
-
-    const { GITHUB_SHA } = process.env;
-    return GITHUB_SHA;
   }
 
   owner_repo(opts = {}) {
@@ -67,7 +40,7 @@ class GithubClient {
   }
 
   async comment_create(opts = {}) {
-    const { report: body, commit_sha = this.env_head_sha() } = opts;
+    const { report: body, commit_sha } = opts;
 
     const { url: commit_url } = await octokit(
       this.token
@@ -83,7 +56,7 @@ class GithubClient {
   async check_create(opts = {}) {
     const {
       report,
-      commit_sha: head_sha = this.env_head_sha(),
+      head_sha,
       title = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
@@ -104,7 +77,7 @@ class GithubClient {
     });
   }
 
-  async publish() {
+  async upload() {
     throw new Error('Github does not support publish!');
   }
 
@@ -165,4 +138,4 @@ class GithubClient {
   }
 }
 
-module.exports = GithubClient;
+module.exports = Github;
