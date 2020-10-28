@@ -1,8 +1,8 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 
-const GitlabClient = require('./drivers/gitlab');
-const GithubClient = require('./drivers/github');
+const Gitlab = require('./drivers/gitlab');
+const Github = require('./drivers/github');
 const { upload, exec } = require('./utils');
 
 const uri_no_trailing_slash = (uri) => {
@@ -26,19 +26,19 @@ const infer_driver = (opts = {}) => {
   if (CI_PROJECT_URL) return 'gitlab';
 };
 
-const env_token = () => {
-  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN } = process.env;
-  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
-};
-
-const get_client = (opts) => {
+const get_driver = (opts) => {
   const { driver, repo, token } = opts;
   if (!driver) throw new Error('driver not set');
 
-  if (driver === 'github') return new GithubClient({ repo, token });
-  if (driver === 'gitlab') return new GitlabClient({ repo, token });
+  if (driver === 'github') return new Github({ repo, token });
+  if (driver === 'gitlab') return new Gitlab({ repo, token });
 
   throw new Error('driver unknown!');
+};
+
+const infer_token = () => {
+  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN } = process.env;
+  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
 };
 
 class CML {
@@ -46,7 +46,7 @@ class CML {
     const { driver, repo, token } = opts;
 
     this.repo = uri_no_trailing_slash(repo || repo_from_origin());
-    this.token = token || env_token();
+    this.token = token || infer_token();
     this.driver = driver || infer_driver({ repo: this.repo });
   }
 
@@ -58,23 +58,22 @@ class CML {
     const sha = await this.head_sha();
     opts.commit_sha = opts.commit_sha || sha;
 
-    return await get_client(this).comment_create(opts);
+    return await get_driver(this).comment_create(opts);
   }
 
   async check_create(opts = {}) {
     const sha = await this.head_sha();
     opts.head_sha = opts.head_sha || sha;
 
-    return await get_client(this).check_create(opts);
+    return await get_driver(this).check_create(opts);
   }
 
   async publish(opts = {}) {
-    const { title = '', md, gitlab_uploads, backend = 'cml' } = opts;
+    const { title = '', md, native, gitlab_uploads } = opts;
 
     let mime, uri;
-
-    if (gitlab_uploads || backend !== 'cml') {
-      const client = get_client({ ...this, driver: 'gitlab' });
+    if (native || gitlab_uploads) {
+      const client = get_driver(this);
       ({ mime, uri } = await client.upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
@@ -89,11 +88,11 @@ class CML {
   }
 
   async runner_token() {
-    return await get_client(this).runner_token();
+    return await get_driver(this).runner_token();
   }
 
   async register_runner(opts = {}) {
-    return await get_client(this).register_runner(opts);
+    return await get_driver(this).register_runner(opts);
   }
 
   log_error(e) {

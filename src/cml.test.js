@@ -140,7 +140,7 @@ describe('Gitlab tests', () => {
     expect(output.endsWith(')')).toBe(true);
   });
 
-  test('Publish a non image file using gl specifiying backend', async () => {
+  test('Publish a non image file using native', async () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
@@ -148,21 +148,21 @@ describe('Gitlab tests', () => {
       path,
       md: true,
       title,
-      backend: 'gitlab'
+      native: true
     });
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
   });
 
-  test('Publish should fail with an invalid backend', async () => {
+  test('Publish should fail with an invalid driver', async () => {
     let catched_err;
     try {
       const path = `${__dirname}/../assets/logo.pdf`;
-      await new CML({ repo: REPO }).publish({
+      await new CML({ repo: REPO, driver: 'invalid' }).publish({
         path,
         md: true,
-        backend: 'invalid'
+        native: true
       });
     } catch (err) {
       catched_err = err.message;
