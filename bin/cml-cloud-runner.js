@@ -229,16 +229,6 @@ process.on('SIGQUIT', shutdown);
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .default('token')
-  .describe(
-    'token',
-    'Repository token. Defaults to workflow env variable repo_token.'
-  )
-  .default('repo')
-  .describe(
-    'repo',
-    'Repository to register with. Tries to guess from workflow env variables.'
-  )
   .default('labels')
   .describe('labels', 'Comma delimited runner labels. Defaults to cml')
   .default('idle-timeout')
@@ -275,6 +265,11 @@ const argv = yargs
   .describe(
     'repo',
     'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
   )
   .default('driver')
   .choices('driver', ['github', 'gitlab'])
