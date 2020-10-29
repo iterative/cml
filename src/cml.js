@@ -33,7 +33,7 @@ const get_driver = (opts) => {
   if (driver === 'github') return new Github({ repo, token });
   if (driver === 'gitlab') return new Gitlab({ repo, token });
 
-  throw new Error('driver unknown!');
+  throw new Error(`driver ${driver} unknown!`);
 };
 
 const infer_token = () => {
