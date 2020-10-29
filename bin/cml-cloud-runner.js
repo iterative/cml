@@ -14,9 +14,7 @@ const {
 } = require('../src/utils');
 
 const CML = require('../src/cml');
-
-let REPO;
-let TOKEN;
+let cml;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
@@ -47,29 +45,27 @@ const ssh_connect = async (opts) => {
 };
 
 const setup_runners = async (opts) => {
+  const { repo, token, driver } = cml;
   const {
     terraform_state,
     username = 'ubuntu',
-    'repo-token': repo_token = TOKEN,
-    repo: runner_repo = REPO,
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
     name: runner_name,
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
-    attached,
-    driver
+    attached
   } = opts;
 
   const tf_path = path.join(TF_FOLDER, 'main.tf');
   const tfstate_path = path.join(TF_FOLDER, 'terraform.tfstate');
 
-  if (!repo_token)
+  if (!token)
     throw new Error(
       'Repository token not set. Your repo_token is not available!'
     );
 
-  if (!runner_repo)
+  if (!repo)
     throw new Error(
       'Repo not set. Your repo must be set to register the runner!'
     );
@@ -108,8 +104,8 @@ const setup_runners = async (opts) => {
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
-      -e "repo_token=${repo_token}" \
-      -e "RUNNER_REPO=${runner_repo}" \
+      -e "repo_token=${token}" \
+      -e "RUNNER_REPO=${repo}" \
       -e "RUNNER_DRIVER=${driver}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
@@ -212,13 +208,11 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
-  const cml = new CML(opts);
-  REPO = cml.env_repo();
-  TOKEN = cml.env_token();
+  cml = new CML(opts);
 
   try {
     const terraform_state = await run_terraform(opts);
-    await setup_runners({ terraform_state, ...opts, driver: cml.driver });
+    await setup_runners({ terraform_state, ...opts });
     await sleep(20);
   } catch (err) {
     await destroy_terraform({});
@@ -233,16 +227,6 @@ process.on('SIGQUIT', shutdown);
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .default('repo-token')
-  .describe(
-    'repo-token',
-    'Repository token. Defaults to workflow env variable repo_token.'
-  )
-  .default('repo')
-  .describe(
-    'repo',
-    'Repository to register with. Tries to guess from workflow env variables.'
-  )
   .default('labels')
   .describe('labels', 'Comma delimited runner labels. Defaults to cml')
   .default('idle-timeout')
