@@ -5,6 +5,7 @@ const NodeSSH = require('node-ssh').NodeSSH;
 const fss = require('fs');
 const fs = fss.promises;
 const path = require('path');
+
 const {
   exec,
   sleep,
@@ -12,9 +13,8 @@ const {
   parse_param_newline
 } = require('../src/utils');
 
-const { handle_error, repo: REPO, token: TOKEN } = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
+let cml;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
@@ -45,11 +45,10 @@ const ssh_connect = async (opts) => {
 };
 
 const setup_runners = async (opts) => {
+  const { repo, token, driver } = cml;
   const {
     terraform_state,
     username = 'ubuntu',
-    'repo-token': repo_token = TOKEN,
-    repo: runner_repo = REPO,
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
     name: runner_name,
@@ -61,12 +60,12 @@ const setup_runners = async (opts) => {
   const tf_path = path.join(TF_FOLDER, 'main.tf');
   const tfstate_path = path.join(TF_FOLDER, 'terraform.tfstate');
 
-  if (!repo_token)
+  if (!token)
     throw new Error(
       'Repository token not set. Your repo_token is not available!'
     );
 
-  if (!runner_repo)
+  if (!repo)
     throw new Error(
       'Repo not set. Your repo must be set to register the runner!'
     );
@@ -105,8 +104,9 @@ const setup_runners = async (opts) => {
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
-      -e "repo_token=${repo_token}" \
-      -e "RUNNER_REPO=${runner_repo}" \
+      -e "repo_token=${token}" \
+      -e "RUNNER_REPO=${repo}" \
+      -e "RUNNER_DRIVER=${driver}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
@@ -208,6 +208,8 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
+  cml = new CML(opts);
+
   try {
     const terraform_state = await run_terraform(opts);
     await setup_runners({ terraform_state, ...opts });
@@ -225,16 +227,6 @@ process.on('SIGQUIT', shutdown);
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .default('repo-token')
-  .describe(
-    'repo-token',
-    'Repository token. Defaults to workflow env variable repo_token.'
-  )
-  .default('repo')
-  .describe(
-    'repo',
-    'Repository to register with. Tries to guess from workflow env variables.'
-  )
   .default('labels')
   .describe('labels', 'Comma delimited runner labels. Defaults to cml')
   .default('idle-timeout')
@@ -267,5 +259,21 @@ const argv = yargs
   .boolean('attached')
   .describe('attached', 'Runs the runner in the foreground.')
   .coerce('rsa-private-key', parse_param_newline)
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h').argv;
-run(argv).catch((e) => handle_error(e));
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
