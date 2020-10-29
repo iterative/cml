@@ -1,5 +1,6 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
+const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -13,7 +14,9 @@ const repo_from_origin = () => {
   const origin = execSync('git config --get remote.origin.url').toString(
     'utf8'
   );
-  return git_url_parse(origin).toString('https').replace('.git', '');
+
+  const uri = git_url_parse(origin).toString('https').replace('.git', '');
+  return strip_auth(uri);
 };
 
 const infer_driver = (opts = {}) => {
