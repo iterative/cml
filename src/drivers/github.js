@@ -17,21 +17,22 @@ const owner_repo = (opts) => {
   return { owner, repo };
 };
 
-const octokit = (token) => {
+const octokit = (token, octokitOptions) => {
   if (!token) throw new Error('token not found');
 
-  return github.getOctokit(token);
+  return github.getOctokit(token, octokitOptions);
 };
 
 class Github {
   constructor(opts = {}) {
-    const { repo, token } = opts;
+    const { repo, token, options } = opts;
 
     if (!repo) throw new Error('repo not found');
     if (!token) throw new Error('token not found');
 
     this.repo = repo;
     this.token = token;
+    this.octokitOptions = options;
   }
 
   owner_repo(opts = {}) {
@@ -43,7 +44,8 @@ class Github {
     const { report: body, commit_sha } = opts;
 
     const { url: commit_url } = await octokit(
-      this.token
+      this.token,
+      this.octokitOptions
     ).repos.createCommitComment({
       ...owner_repo({ uri: this.repo }),
       body,
@@ -65,7 +67,7 @@ class Github {
     } = opts;
 
     const name = title;
-    return await octokit(this.token).checks.create({
+    return await octokit(this.token, this.octokitOptions).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
       started_at,
@@ -83,7 +85,7 @@ class Github {
 
   async runner_token() {
     const { owner, repo } = owner_repo({ uri: this.repo });
-    const { actions } = octokit(this.token);
+    const { actions } = octokit(this.token, this.octokitOptions);
 
     if (typeof repo !== 'undefined') {
       const {

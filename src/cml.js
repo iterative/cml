@@ -30,10 +30,10 @@ const infer_driver = (opts = {}) => {
 };
 
 const get_driver = (opts) => {
-  const { driver, repo, token } = opts;
+  const { driver, repo, token, options } = opts;
   if (!driver) throw new Error('driver not set');
 
-  if (driver === 'github') return new Github({ repo, token });
+  if (driver === 'github') return new Github({ repo, token, options });
   if (driver === 'gitlab') return new Gitlab({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
@@ -44,6 +44,15 @@ const infer_token = () => {
   return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
 };
 
+const infer_options = () => {
+  const { GITHUB_BASE_URL } = process.env;
+  options = {};
+
+  if (GITHUB_BASE_URL) options.baseUrl = GITHUB_BASE_URL;
+
+  return options;
+};
+
 class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
@@ -51,6 +60,7 @@ class CML {
     this.repo = uri_no_trailing_slash(repo || repo_from_origin());
     this.token = token || infer_token();
     this.driver = driver || infer_driver({ repo: this.repo });
+    this.options = infer_options();
   }
 
   async head_sha() {
