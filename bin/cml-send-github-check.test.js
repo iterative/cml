@@ -2,31 +2,25 @@ jest.setTimeout(200000);
 
 const { exec } = require('../src/utils');
 const fs = require('fs').promises;
-const { publish_file } = require('../src/report');
 
 describe('CML e2e', () => {
+  const path = 'check.md';
+
+  afterEach(async () => {
+    try {
+      await fs.unlink(path);
+    } catch (err) {}
+  });
+
   test('cml-send-github-check', async () => {
-    const path = 'check.md';
-    const img = await publish_file({
-      path: 'assets/logo.png',
-      md: true,
-      title: 'logo'
-    });
-    const pdf = await publish_file({
-      path: 'assets/logo.pdf',
-      md: true,
-      title: 'logo'
-    });
-    const report = `## Test Check Report \n ${img} \n ${pdf}`;
+    const report = `## Test Check Report`;
 
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTIONS &&
       (await exec(`node ./bin/cml-send-github-check.js ${path}`));
-    await fs.unlink(path);
   });
 
   test('cml-send-github-check failure with tile "CML neutral test"', async () => {
-    const path = 'check.md';
     const report = `## Hi this check should be neutral`;
     const title = 'CML neutral test';
     const conclusion = 'neutral';
@@ -36,7 +30,6 @@ describe('CML e2e', () => {
       (await exec(
         `node ./bin/cml-send-github-check.js ${path} --title "${title}" --conclusion "${conclusion}"`
       ));
-    await fs.unlink(path);
   });
 
   test('cml-send-github-check -h', async () => {
@@ -49,6 +42,10 @@ describe('CML e2e', () => {
         --version     Show version number                                    [boolean]
         --head-sha    Commit sha where the comment will appear. Defaults to HEAD.
         --title       Sets title of the check.                 [default: \\"CML Report\\"]
+        --repo        Specifies the repo to be used. If not specified is extracted
+                      from the CI ENV.
+        --token       Personal access token to be used. If not specified in extracted
+                      from ENV repo_token.
         -h            Show help                                              [boolean]
         --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                       \\"timed_out\\"] [default: Sets the conclusion status of the check.]"

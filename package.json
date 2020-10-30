@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.54",
+  "version": "0.2.0",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -60,6 +60,7 @@
     "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
     "form-data": "^3.0.0",
+    "git-url-parse": "^11.4.0",
     "is-svg": "^4.2.1",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",

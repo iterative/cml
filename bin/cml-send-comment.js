@@ -5,25 +5,23 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const IS_GITHUB = process.env.GITHUB_ACTIONS;
-const { head_sha: HEAD_SHA, handle_error, comment } = IS_GITHUB
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
 
 const run = async (opts) => {
-  const { 'commit-sha': sha, 'head-sha': head_sha, rmWatermark } = opts;
+  const {
+    'commit-sha': sha,
+    'head-sha': head_sha,
+    'rm-watermark': rm_watermark
+  } = opts;
   const path = opts._[0];
+  const report = await fs.readFile(path, 'utf-8');
 
-  const file_content = await fs.readFile(path, 'utf-8');
-
-  const watermark_txt = IS_GITHUB
-    ? '![CML watermark](https://raw.githubusercontent.com/iterative/cml/watermark-comment/assets/watermark.svg)'
-    : '![CML watermark](data:image/png;base64,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)';
-
-  const report = `${file_content}${rmWatermark ? '' : ' \n\n' + watermark_txt}
-  `;
-
-  await comment({ commit_sha: sha || head_sha || HEAD_SHA, report });
+  const cml = new CML(opts);
+  await cml.comment_create({
+    report,
+    commit_sha: sha || head_sha,
+    rm_watermark
+  });
 };
 
 const argv = yargs
@@ -34,13 +32,30 @@ const argv = yargs
     'Commit SHA linked to this comment. Defaults to HEAD.'
   )
   .default('head-sha')
-  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD')
+  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD.')
   .deprecateOption('head-sha', 'Use commit-sha instead')
   .boolean('rm-watermark')
   .describe(
     'no-watermark',
     'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
   )
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;
-run(argv).catch((e) => handle_error(e));
+
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
