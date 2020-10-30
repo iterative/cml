@@ -46,7 +46,7 @@ const infer_token = () => {
 
 const infer_options = () => {
   const { GITHUB_BASE_URL } = process.env;
-  options = {};
+  const options = {};
 
   if (GITHUB_BASE_URL) options.baseUrl = GITHUB_BASE_URL;
 
