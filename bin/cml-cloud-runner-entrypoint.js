@@ -127,7 +127,8 @@ const run = async () => {
     console.log('Registering Gitlab runner');
     const runner = await cml.register_runner({
       tags: RUNNER_LABELS,
-      runner_token: RUNNER_TOKEN
+      runner_token: RUNNER_TOKEN,
+      name: RUNNER_NAME
     });
 
     GITLAB_CI_TOKEN = runner.token;
