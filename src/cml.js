@@ -59,9 +59,17 @@ class CML {
 
   async comment_create(opts = {}) {
     const sha = await this.head_sha();
-    opts.commit_sha = opts.commit_sha || sha;
+    const { report: user_report, commit_sha = sha, rm_watermark } = opts;
+    const watermark = rm_watermark
+      ? ''
+      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/watermark-comment/assets/watermark.svg)';
+    const report = `${user_report}${watermark}`;
 
-    return await get_driver(this).comment_create(opts);
+    return await get_driver(this).comment_create({
+      ...opts,
+      report,
+      commit_sha
+    });
   }
 
   async check_create(opts = {}) {
