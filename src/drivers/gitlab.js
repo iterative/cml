@@ -60,10 +60,11 @@ class Gitlab {
   }
 
   async register_runner(opts = {}) {
-    const { tags, runner_token } = opts;
+    const { tags, runner_token, name } = opts;
 
     const endpoint = `/runners`;
     const body = new URLSearchParams();
+    body.append('description', name);
     body.append('token', runner_token);
     body.append('tag_list', tags);
     body.append('locked', 'true');
@@ -71,6 +72,22 @@ class Gitlab {
     body.append('access_level', 'not_protected');
 
     return await this.request({ endpoint, method: 'POST', body });
+  }
+
+  async unregister_runner(opts = {}) {
+    throw new Error('Gitlab does not support unregister_runner!');
+  }
+
+  async runner_by_name(opts = {}) {
+    const { name } = opts;
+
+    const endpoint = `/runners?per_page=100`;
+    const runners = await this.request({ endpoint, method: 'GET' });
+    const runner = runners.filter(
+      (runner) => runner.name === name || runner.description === name
+    )[0];
+
+    if (runner) return { id: runner.id, name: runner.name };
   }
 
   async request(opts = {}) {

@@ -15,6 +15,7 @@ const {
   RUNNER_EXECUTOR = 'shell',
   RUNNER_RUNTIME = '',
   RUNNER_IMAGE = 'dvcorg/cml:latest',
+  RUNNER_TF_NAME,
 
   RUNNER_DRIVER,
   RUNNER_REPO,
@@ -49,8 +50,11 @@ const shutdown_host = async () => {
   try {
     console.log('Terraform destroy...');
     try {
+      const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
       console.log(
-        await exec('cd / && terraform init && terraform destroy -auto-approve')
+        await exec(
+          `cd / && terraform init && terraform destroy -auto-approve ${tf_resource}`
+        )
       );
     } catch (err) {
       console.log(`Failed destroying terraform: ${err.message}`);
@@ -66,11 +70,7 @@ const shutdown = async (error) => {
 
     try {
       if (IS_GITHUB) {
-        console.log(
-          await exec(
-            `${RUNNER_PATH}/config.sh remove --token "${RUNNER_TOKEN}"`
-          )
-        );
+        await cml.unregister_runner({ name: RUNNER_NAME });
       } else {
         console.log(await exec(`gitlab-runner verify --delete`));
         console.log(
@@ -79,7 +79,9 @@ const shutdown = async (error) => {
           )
         );
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
 
     await shutdown_docker_machine();
     await shutdown_host();
@@ -125,7 +127,8 @@ const run = async () => {
     console.log('Registering Gitlab runner');
     const runner = await cml.register_runner({
       tags: RUNNER_LABELS,
-      runner_token: RUNNER_TOKEN
+      runner_token: RUNNER_TOKEN,
+      name: RUNNER_NAME
     });
 
     GITLAB_CI_TOKEN = runner.token;

@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -65,6 +65,7 @@
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",
     "node-ssh": "^11.0.0",
+    "strip-url-auth": "^1.0.1",
     "tempy": "^0.6.0",
     "yargs": "^15.1.0"
   },

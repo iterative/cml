@@ -8,12 +8,20 @@ const yargs = require('yargs');
 const CML = require('../src/cml');
 
 const run = async (opts) => {
-  const { 'commit-sha': sha, 'head-sha': head_sha } = opts;
+  const {
+    'commit-sha': sha,
+    'head-sha': head_sha,
+    'rm-watermark': rm_watermark
+  } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
   const cml = new CML(opts);
-  await cml.comment_create({ report, commit_sha: sha || head_sha });
+  await cml.comment_create({
+    report,
+    commit_sha: sha || head_sha,
+    rm_watermark
+  });
 };
 
 const argv = yargs
@@ -26,6 +34,11 @@ const argv = yargs
   .default('head-sha')
   .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD.')
   .deprecateOption('head-sha', 'Use commit-sha instead')
+  .boolean('rm-watermark')
+  .describe(
+    'no-watermark',
+    'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
+  )
   .default('repo')
   .describe(
     'repo',
