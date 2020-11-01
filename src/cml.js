@@ -62,7 +62,7 @@ class CML {
     const { report: user_report, commit_sha = sha, rm_watermark } = opts;
     const watermark = rm_watermark
       ? ''
-      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/watermark-comment/assets/watermark.svg)';
+      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
     const report = `${user_report}${watermark}`;
 
     return await get_driver(this).comment_create({
