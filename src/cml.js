@@ -1,5 +1,6 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
+const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -13,7 +14,9 @@ const repo_from_origin = () => {
   const origin = execSync('git config --get remote.origin.url').toString(
     'utf8'
   );
-  return git_url_parse(origin).toString('https').replace('.git', '');
+
+  const uri = git_url_parse(origin).toString('https').replace('.git', '');
+  return strip_auth(uri);
 };
 
 const infer_driver = (opts = {}) => {
@@ -56,9 +59,17 @@ class CML {
 
   async comment_create(opts = {}) {
     const sha = await this.head_sha();
-    opts.commit_sha = opts.commit_sha || sha;
+    const { report: user_report, commit_sha = sha, rm_watermark } = opts;
+    const watermark = rm_watermark
+      ? ''
+      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/watermark-comment/assets/watermark.svg)';
+    const report = `${user_report}${watermark}`;
 
-    return await get_driver(this).comment_create(opts);
+    return await get_driver(this).comment_create({
+      ...opts,
+      report,
+      commit_sha
+    });
   }
 
   async check_create(opts = {}) {
@@ -93,6 +104,37 @@ class CML {
 
   async register_runner(opts = {}) {
     return await get_driver(this).register_runner(opts);
+  }
+
+  async unregister_runner(opts = {}) {
+    return await get_driver(this).unregister_runner(opts);
+  }
+
+  async runner_by_name(opts = {}) {
+    return await get_driver(this).runner_by_name(opts);
+  }
+
+  async await_runner(opts = {}) {
+    const { name, timer_max = 30, timer_step = 5 } = opts;
+
+    let timer = 0;
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        const runner = await this.runner_by_name({ name });
+
+        if (runner) {
+          clearInterval(interval);
+          resolve(runner);
+        }
+
+        if (timer_max === timer) {
+          clearInterval(interval);
+          reject(new Error('Waiting for runner expiration timeout'));
+        }
+
+        timer += timer_step;
+      }, timer_step * 1000);
+    });
   }
 
   log_error(e) {

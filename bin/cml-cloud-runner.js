@@ -10,7 +10,8 @@ const {
   exec,
   sleep,
   ssh_public_from_private_rsa,
-  parse_param_newline
+  parse_param_newline,
+  randid
 } = require('../src/utils');
 
 const CML = require('../src/cml');
@@ -45,13 +46,13 @@ const ssh_connect = async (opts) => {
 };
 
 const setup_runners = async (opts) => {
-  const { repo, token, driver } = cml;
+  const { token, repo, driver } = cml;
   const {
     terraform_state,
     username = 'ubuntu',
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
-    name: runner_name,
+    name: runner_name = randid(),
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
     attached
@@ -104,16 +105,17 @@ const setup_runners = async (opts) => {
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
+      -e "RUNNER_TF_NAME=iterative_machine.${resource.name}" \
       -e "repo_token=${token}" \
       -e "RUNNER_REPO=${repo}" \
       -e "RUNNER_DRIVER=${driver}" \
+      -e "RUNNER_NAME=${runner_name}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
           ? `-e "RUNNER_IDLE_TIMEOUT=${runner_idle_timeout}"`
           : ''
       } \
-      ${runner_name ? `-e "RUNNER_NAME=${runner_name}"` : ''} \
       ${image}`;
 
     console.log(start_runner_cmd);
@@ -127,6 +129,8 @@ const setup_runners = async (opts) => {
 
     await ssh.dispose();
   }
+
+  await cml.await_runner({ name: runner_name });
 };
 
 const run_terraform = async (opts) => {
@@ -208,12 +212,10 @@ const shutdown = async () => {
 };
 
 const run = async (opts) => {
-  cml = new CML(opts);
-
+  cml = new CML({ ...opts });
   try {
     const terraform_state = await run_terraform(opts);
     await setup_runners({ terraform_state, ...opts });
-    await sleep(20);
   } catch (err) {
     await destroy_terraform({});
 

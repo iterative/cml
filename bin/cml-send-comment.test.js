@@ -19,17 +19,20 @@ describe('Comment integration tests', () => {
       "Usage: cml-send-comment.js <path to markdown file>
 
       Options:
-        --version     Show version number                                    [boolean]
-        --commit-sha  Commit SHA linked to this comment. Defaults to HEAD.
-        --head-sha    Commit SHA linked to this comment. Defaults to HEAD.
+        --version       Show version number                                  [boolean]
+        --commit-sha    Commit SHA linked to this comment. Defaults to HEAD.
+        --head-sha      Commit SHA linked to this comment. Defaults to HEAD.
                                                   [deprecated: Use commit-sha instead]
-        --repo        Specifies the repo to be used. If not specified is extracted
-                      from the CI ENV.
-        --token       Personal access token to be used. If not specified in extracted
-                      from ENV repo_token.
-        --driver      If not specify it infers it from the ENV.
+        --no-watermark  Avoid watermark. CML needs a watermark to be able to
+                        distinguish CML reports from other comments in order to
+                        provide extra functionality.
+        --repo          Specifies the repo to be used. If not specified is extracted
+                        from the CI ENV.
+        --token         Personal access token to be used. If not specified in
+                        extracted from ENV repo_token.
+        --driver        If not specify it infers it from the ENV.
                                                          [choices: \\"github\\", \\"gitlab\\"]
-        -h            Show help                                              [boolean]"
+        -h              Show help                                            [boolean]"
     `);
   });
 
