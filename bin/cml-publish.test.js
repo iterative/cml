@@ -8,15 +8,26 @@ describe('CML e2e', () => {
     const output = await exec(`echo none | node ./bin/cml-publish.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-publish.js <path> --file <string>
+      "Usage: cml-publish.js <path to file>
 
       Options:
         --version         Show version number                                [boolean]
-        --md              Output in markdown.                                [boolean]
-        --title, -t       If --md sets the title in markdown [title](url) or ![](url
-                          title).
-        --file, -f        Outputs to the given file.
-        --gitlab-uploads  Uses Gitlab's uploads api instead of CML's storage.[boolean]
+        --md              Output in markdown format [title || name](url).    [boolean]
+        --title, -t       Markdown title [title](url) or ![](url title).
+        --gitlab-uploads  Uses GitLab uploads instead of CML storage. Use GitLab
+                          uploads to get around CML size limitations for hosting
+                          artifacts persistently. Only available for GitLab CI.
+                                          [deprecated: Use --native instead] [boolean]
+        --native          Uses driver's native capabilities to upload assets instead
+                          of CML's storage.                                  [boolean]
+        --file, -f        Append the output to the given file. Create it if does not
+                          exist.
+        --repo            Specifies the repo to be used. If not specified is extracted
+                          from the CI ENV.
+        --token           Personal access token to be used. If not specified in
+                          extracted from ENV repo_token or GITLAB_TOKEN.
+        --driver          If not specify it infers it from the ENV.
+                                                         [choices: \\"github\\", \\"gitlab\\"]
         -h                Show help                                          [boolean]"
     `);
   });
@@ -82,5 +93,15 @@ describe('CML e2e', () => {
 
     expect(fs.existsSync(file)).toBe(true);
     await fs.promises.unlink(file);
+  });
+
+  test('cml-publish assets/test.svg in Gitlab storage', async () => {
+    const { TEST_GITLAB_REPO: repo, TEST_GITLAB_TOKEN: token } = process.env;
+
+    const output = await exec(
+      `echo none | node ./bin/cml-publish.js --repo=${repo} --token=${token} --gitlab-uploads assets/test.svg`
+    );
+
+    expect(output.startsWith('https://')).toBe(true);
   });
 });

@@ -6,33 +6,18 @@ console.log = console.error;
 const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
-const { publish_file } = require('../src/report');
 
-const { GITHUB_ACTIONS } = process.env;
-
-const { handle_error } = GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
 
 const run = async (opts) => {
-  const { data, file } = opts;
-  let { 'gitlab-uploads': gitlab_uploads } = opts;
-  const path = opts._[0];
+  const { data, file, 'gitlab-uploads': gitlab_uploads } = opts;
 
+  const path = opts._[0];
   let buffer;
   if (data) buffer = Buffer.from(data, 'binary');
 
-  if (GITHUB_ACTIONS && gitlab_uploads) {
-    console.error(`
-    *********************************************
-    * gitlab-uploads option is only for gitlab! *
-    * *******************************************
-    `);
-
-    gitlab_uploads = false;
-  }
-
-  const output = await publish_file({ buffer, path, gitlab_uploads, ...opts });
+  const cml = new CML(opts);
+  const output = await cml.publish({ buffer, path, gitlab_uploads, ...opts });
 
   if (!file) print(output);
   else await fs.writeFile(file, output);
@@ -41,23 +26,47 @@ const run = async (opts) => {
 pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
-  .usage(`Usage: $0 <path> --file <string>`)
+  .usage(`Usage: $0 <path to file>`)
+  .describe('md', 'Output in markdown format [title || name](url).')
   .boolean('md')
-  .describe('md', 'Output in markdown.')
+  .describe('md', 'Output in markdown format [title || name](url).')
   .default('title')
-  .describe(
-    'title',
-    'If --md sets the title in markdown [title](url) or ![](url title).'
-  )
+  .describe('title', 'Markdown title [title](url) or ![](url title).')
   .alias('title', 't')
-  .default('file')
-  .describe('file', 'Outputs to the given file.')
-  .alias('file', 'f')
   .boolean('gitlab-uploads')
   .describe(
     'gitlab-uploads',
-    "Uses Gitlab's uploads api instead of CML's storage."
+    'Uses GitLab uploads instead of CML storage. Use GitLab uploads to get around CML size limitations for hosting artifacts persistently. Only available for GitLab CI.'
   )
+  .deprecateOption('gitlab-uploads', 'Use --native instead')
+  .boolean('native')
+  .describe(
+    'native',
+    "Uses driver's native capabilities to upload assets instead of CML's storage."
+  )
+  .default('file')
+  .describe(
+    'file',
+    'Append the output to the given file. Create it if does not exist.'
+  )
+  .alias('file', 'f')
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+  )
+  .default('driver')
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(data ? 0 : 1).argv;
-run({ ...argv, data }).catch((e) => handle_error(e));
+
+run({ ...argv, data }).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

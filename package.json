@@ -1,7 +1,10 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.1.49",
-  "author": "DVC (http://cml.dev)",
+  "version": "0.2.1",
+  "author": {
+    "name": "DVC",
+    "url": "http://cml.dev"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/iterative/cml.git"
@@ -58,10 +61,13 @@
     "@actions/github": "^4.0.0",
     "file-type": "^14.2.0",
     "form-data": "^3.0.0",
+    "git-url-parse": "^11.4.0",
     "is-svg": "^4.2.1",
     "js-base64":"^3.5.2",
     "node-fetch": "^2.6.0",
+    "node-forge": "^0.10.0",
     "node-ssh": "^11.0.0",
+    "strip-url-auth": "^1.0.1",
     "tempy": "^0.6.0",
     "yargs": "^15.1.0"
   },

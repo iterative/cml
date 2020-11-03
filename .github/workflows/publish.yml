@@ -4,6 +4,12 @@ on: [push, pull_request]
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+  TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }} 
+  TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
+  TEST_GITHUB_SHA: 62edc8b3f46a60b3fe1e5c08fd3e0046d350ee29
+  TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
+  TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
+  TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
 
 jobs:
   test_and_deploy:
