@@ -4,7 +4,9 @@ const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
+const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec } = require('./utils');
+
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -23,10 +25,12 @@ const infer_driver = (opts = {}) => {
   const { repo } = opts;
   if (repo && repo.includes('github.com')) return 'github';
   if (repo && repo.includes('gitlab.com')) return 'gitlab';
+  if (repo && repo.includes('bitbucket.com')) return 'bitbucket';
 
   const { GITHUB_REPOSITORY, CI_PROJECT_URL } = process.env;
   if (GITHUB_REPOSITORY) return 'github';
   if (CI_PROJECT_URL) return 'gitlab';
+  if (BITBUCKET_REPO_UUID) return 'bitbucket';
 };
 
 const get_driver = (opts) => {
@@ -35,12 +39,13 @@ const get_driver = (opts) => {
 
   if (driver === 'github') return new Github({ repo, token });
   if (driver === 'gitlab') return new Gitlab({ repo, token });
+  if (driver === 'bitbucket') return new BitBucketCloud({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
 };
 
 const infer_token = () => {
-  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN } = process.env;
+  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN} = process.env;
   return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
 };
 
