@@ -26,8 +26,6 @@ class BitBucketCloud {
     const { commit_sha, report} = opts;
 
     // Print some variables
-    console.log(project_path);
-
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body= JSON.stringify({"content": {"raw": report}});
 
@@ -65,8 +63,10 @@ class BitBucketCloud {
     const { endpoint, method = 'GET', body } = opts;
 
     if (!endpoint) throw new Error('BitBucket API endpoint not found');
-
-    const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
+    const USERNAME = "elleobrien";
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${token}`)};
     const url = `${api}${endpoint}`;
     console.log(url)
     const response = await fetch(url, { method, headers, body });
