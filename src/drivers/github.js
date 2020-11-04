@@ -1,3 +1,4 @@
+const url = require('url');
 const github = require('@actions/github');
 
 const CHECK_TITLE = 'CML Report';
@@ -17,22 +18,28 @@ const owner_repo = (opts) => {
   return { owner, repo };
 };
 
-const octokit = (token, octokitOptions) => {
+const octokit = (token, octokit_options) => {
   if (!token) throw new Error('token not found');
 
-  return github.getOctokit(token, octokitOptions);
+  return github.getOctokit(token, octokit_options);
 };
 
 class Github {
   constructor(opts = {}) {
-    const { repo, token, options } = opts;
+    const { repo, token } = opts;
 
     if (!repo) throw new Error('repo not found');
     if (!token) throw new Error('token not found');
 
     this.repo = repo;
     this.token = token;
-    this.octokitOptions = options;
+    this.octokit_options = {};
+
+    if (!repo.includes('github.com')) {
+      const repo_url = url.parse(repo);
+
+      this.octokit_options['baseUrl'] = 'https://' + repo_url.host + '/api/v3';
+    }
   }
 
   owner_repo(opts = {}) {
@@ -45,7 +52,7 @@ class Github {
 
     const { url: commit_url } = await octokit(
       this.token,
-      this.octokitOptions
+      this.octokit_options
     ).repos.createCommitComment({
       ...owner_repo({ uri: this.repo }),
       body,
@@ -67,7 +74,7 @@ class Github {
     } = opts;
 
     const name = title;
-    return await octokit(this.token, this.octokitOptions).checks.create({
+    return await octokit(this.token, this.octokit_options).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
       started_at,
@@ -85,7 +92,7 @@ class Github {
 
   async runner_token() {
     const { owner, repo } = owner_repo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.octokitOptions);
+    const { actions } = octokit(this.token, this.octokit_options);
 
     if (typeof repo !== 'undefined') {
       const {
