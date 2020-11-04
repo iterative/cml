@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
+const {Base64} = require('js-base64');
 
 const { fetch_upload_data } = require('../utils');
 
@@ -28,8 +29,7 @@ class BitBucketCloud {
     console.log(project_path);
 
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
-    const body = new URLSearchParams();
-    body.append('note', report);
+    const body= JSON.stringify({"content": {"raw": report}});
 
     const output = await this.request({ endpoint, method: 'POST', body });
 
