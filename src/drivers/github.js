@@ -36,9 +36,9 @@ class Github {
     this.octokit_options = {};
 
     if (!repo.includes('github.com')) {
-      const repo_url = url.parse(repo);
+      const repo_url = new url.URL(repo);
 
-      this.octokit_options['baseUrl'] = 'https://' + repo_url.host + '/api/v3';
+      this.octokit_options.baseUrl = 'https://' + repo_url.host + '/api/v3';
     }
   }
 
