@@ -27,7 +27,7 @@ const infer_driver = (opts = {}) => {
   if (repo && repo.includes('gitlab.com')) return 'gitlab';
   if (repo && repo.includes('bitbucket.com')) return 'bitbucket';
 
-  const { GITHUB_REPOSITORY, CI_PROJECT_URL } = process.env;
+  const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
   if (GITHUB_REPOSITORY) return 'github';
   if (CI_PROJECT_URL) return 'gitlab';
   if (BITBUCKET_REPO_UUID) return 'bitbucket';
