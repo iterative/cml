@@ -26,7 +26,6 @@ class BitBucketCloud {
 
     // Print some variables
     console.log(project_path);
-    console.log(commit_sha);
 
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = new URLSearchParams();
@@ -69,6 +68,7 @@ class BitBucketCloud {
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const url = `${api}${endpoint}`;
+    console.log(url)
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
