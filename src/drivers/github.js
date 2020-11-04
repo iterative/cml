@@ -1,4 +1,4 @@
-const url = require('url')
+const url = require('url');
 const github = require('@actions/github');
 
 const CHECK_TITLE = 'CML Report';
