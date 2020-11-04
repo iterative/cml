@@ -28,7 +28,7 @@ class BitBucketCloud {
     console.log(project_path);
     console.log(commit_sha);
 
-    const endpoint = `/repositories/${username}/${project_path}/commit/${commit_sha}/comments/`;
+    const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = new URLSearchParams();
     body.append('note', report);
 
