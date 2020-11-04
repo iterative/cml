@@ -63,12 +63,11 @@ class BitBucketCloud {
     const { endpoint, method = 'GET', body } = opts;
 
     if (!endpoint) throw new Error('BitBucket API endpoint not found');
-    const USERNAME = "elleobrien";
+    const {BITBUCKET_WORKSPACE}=process.env;
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + Base64.encode(`${USERNAME}:${token}`)};
+      'Authorization': 'Basic ' + Base64.encode(`${BITBUCKET_WORKSPACE}:${token}`)};
     const url = `${api}${endpoint}`;
-    console.log(url)
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
