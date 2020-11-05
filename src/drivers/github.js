@@ -18,8 +18,18 @@ const owner_repo = (opts) => {
   return { owner, repo };
 };
 
-const octokit = (token, octokit_options) => {
+const octokit = (token, repo) => {
   if (!token) throw new Error('token not found');
+
+  const octokit_options = {};
+
+  if (!repo.includes('github.com')) {
+    // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
+    //  as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
+    const repo_url = new url.URL(repo);
+
+    octokit_options.baseUrl = 'https://' + repo_url.host + '/api/v3';
+  }
 
   return github.getOctokit(token, octokit_options);
 };
@@ -33,13 +43,6 @@ class Github {
 
     this.repo = repo;
     this.token = token;
-    this.octokit_options = {};
-
-    if (!repo.includes('github.com')) {
-      const repo_url = new url.URL(repo);
-
-      this.octokit_options.baseUrl = 'https://' + repo_url.host + '/api/v3';
-    }
   }
 
   owner_repo(opts = {}) {
@@ -52,7 +55,7 @@ class Github {
 
     const { url: commit_url } = await octokit(
       this.token,
-      this.octokit_options
+      this.repo
     ).repos.createCommitComment({
       ...owner_repo({ uri: this.repo }),
       body,
@@ -74,7 +77,7 @@ class Github {
     } = opts;
 
     const name = title;
-    return await octokit(this.token, this.octokit_options).checks.create({
+    return await octokit(this.token, this.repo).checks.create({
       ...owner_repo({ uri: this.repo }),
       head_sha,
       started_at,
@@ -92,7 +95,7 @@ class Github {
 
   async runner_token() {
     const { owner, repo } = owner_repo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.octokit_options);
+    const { actions } = octokit(this.token, this.repo);
 
     if (typeof repo !== 'undefined') {
       const {
