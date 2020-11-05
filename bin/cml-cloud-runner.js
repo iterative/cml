@@ -52,7 +52,6 @@ const setup_runners = async (opts) => {
     username = 'ubuntu',
     labels: runner_labels,
     'idle-timeout': runner_idle_timeout,
-    name: runner_name = randid(),
     image = 'dvcorg/cml:latest',
     'rsa-private-key': rsa_private_key,
     attached
@@ -78,7 +77,7 @@ const setup_runners = async (opts) => {
     console.log('Instance', instance);
 
     const {
-      attributes: { instance_ip: host, key_private }
+      attributes: { instance_name, instance_ip: host, key_private }
     } = instance;
 
     if (!host)
@@ -105,11 +104,11 @@ const setup_runners = async (opts) => {
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
       -v $(pwd)/terraform.tfstate:/terraform.tfstate \
       -v $(pwd)/main.tf:/main.tf \
-      -e "RUNNER_TF_NAME=iterative_machine.${resource.name}" \
       -e "repo_token=${token}" \
+      -e "RUNNER_TF_NAME=iterative_machine.${resource.name}" \
       -e "RUNNER_REPO=${repo}" \
       -e "RUNNER_DRIVER=${driver}" \
-      -e "RUNNER_NAME=${runner_name}" \
+      -e "RUNNER_NAME=${instance_name}" \
       ${runner_labels ? `-e "RUNNER_LABELS=${runner_labels}"` : ''} \
       ${
         runner_idle_timeout
@@ -124,13 +123,12 @@ const setup_runners = async (opts) => {
 
     if (start_runner_cmd_out.code)
       throw new Error(
-        `Error starting the runner. $${start_runner_cmd_out.stdout}`
+        `Error starting the runner. ${start_runner_cmd_out.stdout}`
       );
 
     await ssh.dispose();
+    await cml.await_runner({ name: instance_name });
   }
-
-  await cml.await_runner({ name: runner_name });
 };
 
 const run_terraform = async (opts) => {
@@ -138,6 +136,7 @@ const run_terraform = async (opts) => {
 
   const {
     region,
+    name: instance_name = `cml_${randid()}`,
     type: instance_type,
     'hdd-size': instance_hdd_size,
     'tf-file': tf_file,
@@ -165,7 +164,7 @@ terraform {
   required_providers {
     iterative = {
       source = "DavidGOrtega/iterative"
-      version = "0.4.0"
+      version = "0.5.0"
     }
   }
 }
@@ -174,6 +173,7 @@ provider "iterative" {}
 
 resource "iterative_machine" "machine" {
   ${region ? `region = "${region}"` : ''}
+  ${instance_name ? `instance_name = "${instance_name}"` : ''}
   ${instance_type ? `instance_type = "${instance_type}"` : ''}
   ${instance_hdd_size ? `instance_hdd_size = "${instance_hdd_size}"` : ''}
   ${
