@@ -7,7 +7,6 @@ const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec } = require('./utils');
 
-
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
@@ -27,7 +26,11 @@ const infer_driver = (opts = {}) => {
   if (repo && repo.includes('gitlab.com')) return 'gitlab';
   if (repo && repo.includes('bitbucket.com')) return 'bitbucket';
 
-  const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
+  const {
+    GITHUB_REPOSITORY,
+    CI_PROJECT_URL,
+    BITBUCKET_REPO_UUID
+  } = process.env;
   if (GITHUB_REPOSITORY) return 'github';
   if (CI_PROJECT_URL) return 'gitlab';
   if (BITBUCKET_REPO_UUID) return 'bitbucket';
@@ -45,7 +48,7 @@ const get_driver = (opts) => {
 };
 
 const infer_token = () => {
-  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN} = process.env;
+  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN } = process.env;
   return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
 };
 

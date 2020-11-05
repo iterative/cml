@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
-const {Base64} = require('js-base64');
+const { Base64 } = require('js-base64');
 
 const { fetch_upload_data } = require('../utils');
 
@@ -23,11 +23,11 @@ class BitBucketCloud {
 
   async comment_create(opts = {}) {
     const { project_path } = this;
-    const { commit_sha, report} = opts;
+    const { commit_sha, report } = opts;
 
     // Print some variables
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
-    const body= JSON.stringify({"content": {"raw": report}});
+    const body = JSON.stringify({ content: { raw: report } });
 
     const output = await this.request({ endpoint, method: 'POST', body });
 
@@ -63,10 +63,11 @@ class BitBucketCloud {
     const { endpoint, method = 'GET', body } = opts;
 
     if (!endpoint) throw new Error('BitBucket API endpoint not found');
-    const {BITBUCKET_WORKSPACE}=process.env;
+    const { BITBUCKET_WORKSPACE } = process.env;
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + Base64.encode(`${BITBUCKET_WORKSPACE}:${token}`)};
+      Authorization: 'Basic ' + Base64.encode(`${BITBUCKET_WORKSPACE}:${token}`)
+    };
     const url = `${api}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
 
