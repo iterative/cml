@@ -4,7 +4,7 @@ const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
-const { upload, exec } = require('./utils');
+const { upload, exec, watermark_uri } = require('./utils');
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -89,6 +89,9 @@ class CML {
     } else {
       ({ mime, uri } = await upload(opts));
     }
+
+    const [, type] = mime.split('/');
+    uri = watermark_uri({ uri, type });
 
     if (md && mime.match('(image|video)/.*'))
       return `![](${uri}${title ? ` "${title}"` : ''})`;

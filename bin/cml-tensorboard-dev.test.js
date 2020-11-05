@@ -57,5 +57,6 @@ describe('CML e2e', () => {
 
     expect(is_running).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.includes('cml=tb')).toBe(true);
   });
 });
