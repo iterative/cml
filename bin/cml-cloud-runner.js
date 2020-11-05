@@ -245,9 +245,9 @@ const argv = yargs
     'region',
     'Region where the instance is deployed. Defaults to us-east-1.'
   )
-  .describe('type', 'Instance type. Defaults to t2.micro.')
+  .describe('type', 'Instance type. Defaults to m.')
   .default('hdd-size')
-  .describe('hdd-size', 'HDD size in GB. Defaults to 100. Minimum is 100.')
+  .describe('hdd-size', 'HDD size in GB. Defaults to 10.')
   .default('tf-file')
   .describe(
     'tf-file',
