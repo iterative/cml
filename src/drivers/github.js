@@ -25,10 +25,9 @@ const octokit = (token, repo) => {
 
   if (!repo.includes('github.com')) {
     // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
-    //  as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
-    const repo_url = new url.URL(repo);
-
-    octokit_options.baseUrl = 'https://' + repo_url.host + '/api/v3';
+    // as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
+    const { host } = new url.URL(repo);
+    octokit_options.baseUrl = `https://${host}/api/v3`;
   }
 
   return github.getOctokit(token, octokit_options);
@@ -124,7 +123,7 @@ class Github {
   async unregister_runner(opts) {
     const { name } = opts;
     const { owner, repo } = owner_repo({ uri: this.repo });
-    const { actions } = octokit(this.token);
+    const { actions } = octokit(this.token, this.repo);
     const { id: runner_id } = await this.runner_by_name({ name });
 
     if (typeof repo !== 'undefined') {
@@ -144,7 +143,7 @@ class Github {
   async runner_by_name(opts = {}) {
     const { name } = opts;
     const { owner, repo } = owner_repo({ uri: this.repo });
-    const { actions } = octokit(this.token);
+    const { actions } = octokit(this.token, this.repo);
     let runners = [];
 
     if (typeof repo !== 'undefined') {
