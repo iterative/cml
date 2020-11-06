@@ -80,7 +80,7 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlab_uploads } = opts;
+    const { title = '', md, native, gitlab_uploads, rm_watermark } = opts;
 
     let mime, uri;
     if (native || gitlab_uploads) {
@@ -90,8 +90,10 @@ class CML {
       ({ mime, uri } = await upload(opts));
     }
 
-    const [, type] = mime.split('/');
-    uri = watermark_uri({ uri, type });
+    if (!rm_watermark) {
+      const [, type] = mime.split('/');
+      uri = watermark_uri({ uri, type });
+    }
 
     if (md && mime.match('(image|video)/.*'))
       return `![](${uri}${title ? ` "${title}"` : ''})`;

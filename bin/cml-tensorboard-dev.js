@@ -29,7 +29,8 @@ const run = async (opts) => {
     logdir,
     name,
     description,
-    title
+    title,
+    'rm-watermark': rm_watermark
   } = opts;
 
   // set credentials
@@ -70,7 +71,7 @@ const run = async (opts) => {
     if (matches.length) {
       let output = matches[0];
 
-      output = watermark_uri({ uri: output, type: 'tb' });
+      if (!rm_watermark) output = watermark_uri({ uri: output, type: 'tb' });
 
       if (md) output = `[${title || name}](${output})`;
 
@@ -121,6 +122,7 @@ const argv = yargs
     'file',
     'Append the output to the given file. Create it if does not exist.'
   )
+  .describe('rm-watermark', 'Avoid CML watermark.')
   .alias('file', 'f')
   .help('h').argv;
 
