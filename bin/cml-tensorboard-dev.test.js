@@ -37,6 +37,7 @@ describe('CML e2e', () => {
         --title, -t        Markdown title, if not specified, param name will be used.
         --file, -f         Append the output to the given file. Create it if does not
                            exist.
+        --rm-watermark     Avoid CML watermark.
         -h                 Show help                                         [boolean]
         --plugins"
     `);
@@ -57,5 +58,6 @@ describe('CML e2e', () => {
 
     expect(is_running).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.includes('cml=tb')).toBe(true);
   });
 });
