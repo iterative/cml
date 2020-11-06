@@ -23,9 +23,9 @@ describe('Comment integration tests', () => {
         --commit-sha    Commit SHA linked to this comment. Defaults to HEAD.
         --head-sha      Commit SHA linked to this comment. Defaults to HEAD.
                                                   [deprecated: Use commit-sha instead]
-        --no-watermark  Avoid watermark. CML needs a watermark to be able to
+        --rm-watermark  Avoid watermark. CML needs a watermark to be able to
                         distinguish CML reports from other comments in order to
-                        provide extra functionality.
+                        provide extra functionality.                         [boolean]
         --repo          Specifies the repo to be used. If not specified is extracted
                         from the CI ENV.
         --token         Personal access token to be used. If not specified in

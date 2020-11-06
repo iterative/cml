@@ -31,6 +31,7 @@ describe('Github tests', () => {
     const output = await new CML().publish({ path });
 
     expect(output.startsWith('https://')).toBe(true);
+    expect(output.includes('cml=png')).toBe(true);
   });
 
   test('Publish image with markdown', async () => {
@@ -41,6 +42,7 @@ describe('Github tests', () => {
 
     expect(output.startsWith('![](https://')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
+    expect(output.includes('cml=png')).toBe(true);
   });
 
   test('Publish a non image file in markdown', async () => {
@@ -51,6 +53,8 @@ describe('Github tests', () => {
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
+    console.log(output);
+    expect(output.includes('cml=pdf')).toBe(true);
   });
 
   test('Comment should succeed with a valid sha', async () => {
@@ -108,6 +112,7 @@ describe('Gitlab tests', () => {
     });
 
     expect(output.startsWith('https://')).toBe(true);
+    expect(output.includes('cml=png')).toBe(true);
   });
 
   test('Publish image using gl with markdown', async () => {
@@ -123,6 +128,7 @@ describe('Gitlab tests', () => {
 
     expect(output.startsWith('![](https://')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
+    expect(output.includes('cml=png')).toBe(true);
   });
 
   test('Publish a non image file using gl in markdown', async () => {
@@ -138,6 +144,7 @@ describe('Gitlab tests', () => {
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
+    expect(output.includes('cml=pdf')).toBe(true);
   });
 
   test('Publish a non image file using native', async () => {
@@ -153,6 +160,7 @@ describe('Gitlab tests', () => {
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
+    expect(output.includes('cml=pdf')).toBe(true);
   });
 
   test('Publish should fail with an invalid driver', async () => {
