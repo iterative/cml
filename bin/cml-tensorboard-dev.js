@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const { exec } = require('../src/utils');
+const { exec, watermark_uri } = require('../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
 
@@ -29,7 +29,8 @@ const run = async (opts) => {
     logdir,
     name,
     description,
-    title
+    title,
+    'rm-watermark': rm_watermark
   } = opts;
 
   // set credentials
@@ -69,6 +70,8 @@ const run = async (opts) => {
 
     if (matches.length) {
       let output = matches[0];
+
+      if (!rm_watermark) output = watermark_uri({ uri: output, type: 'tb' });
 
       if (md) output = `[${title || name}](${output})`;
 
@@ -119,6 +122,7 @@ const argv = yargs
     'file',
     'Append the output to the given file. Create it if does not exist.'
   )
+  .describe('rm-watermark', 'Avoid CML watermark.')
   .alias('file', 'f')
   .help('h').argv;
 

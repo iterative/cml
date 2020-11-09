@@ -36,7 +36,7 @@ const argv = yargs
   .deprecateOption('head-sha', 'Use commit-sha instead')
   .boolean('rm-watermark')
   .describe(
-    'no-watermark',
+    'rm-watermark',
     'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
   )
   .default('repo')
