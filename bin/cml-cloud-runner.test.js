@@ -16,10 +16,9 @@ describe('CML e2e', () => {
                            before shutting down. Defaults to 5 min
         --image            Docker image. Defaults to dvcorg/cml:latest
         --name             Name displayed in the repo once registered.
-        --region           Region where the instance is deployed. Defaults to
-                           us-east-1.
-        --type             Instance type. Defaults to t2.micro.
-        --hdd-size         HDD size in GB. Defaults to 100. Minimum is 100.
+        --region           Region where the instance is deployed. Defaults to us-west.
+        --type             Instance type. Defaults to m.
+        --hdd-size         HDD size in GB. Defaults to 10.
         --tf-file          Use a tf file configuration ignoring region, type and
                            hdd_size.
         --rsa-private-key  Your private RSA SHH key. If not provided will be generated

@@ -243,7 +243,7 @@ const argv = yargs
   .default('region')
   .describe(
     'region',
-    'Region where the instance is deployed. Defaults to us-east-1.'
+    'Region where the instance is deployed. Defaults to us-west.'
   )
   .describe('type', 'Instance type. Defaults to m.')
   .default('hdd-size')
