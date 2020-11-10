@@ -20,6 +20,7 @@ describe('CML e2e', () => {
                                           [deprecated: Use --native instead] [boolean]
         --native          Uses driver's native capabilities to upload assets instead
                           of CML's storage.                                  [boolean]
+        --rm-watermark    Avoid CML watermark.                               [boolean]
         --file, -f        Append the output to the given file. Create it if does not
                           exist.
         --repo            Specifies the repo to be used. If not specified is extracted

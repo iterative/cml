@@ -10,14 +10,25 @@ const yargs = require('yargs');
 const CML = require('../src/cml');
 
 const run = async (opts) => {
-  const { data, file, 'gitlab-uploads': gitlab_uploads } = opts;
+  const {
+    data,
+    file,
+    'gitlab-uploads': gitlab_uploads,
+    'rm-watermark': rm_watermark
+  } = opts;
 
   const path = opts._[0];
   let buffer;
   if (data) buffer = Buffer.from(data, 'binary');
 
   const cml = new CML(opts);
-  const output = await cml.publish({ buffer, path, gitlab_uploads, ...opts });
+  const output = await cml.publish({
+    ...opts,
+    buffer,
+    path,
+    gitlab_uploads,
+    rm_watermark
+  });
 
   if (!file) print(output);
   else await fs.writeFile(file, output);
@@ -44,6 +55,8 @@ const argv = yargs
     'native',
     "Uses driver's native capabilities to upload assets instead of CML's storage."
   )
+  .boolean('rm-watermark')
+  .describe('rm-watermark', 'Avoid CML watermark.')
   .default('file')
   .describe(
     'file',
