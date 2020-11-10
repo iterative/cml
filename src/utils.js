@@ -135,6 +135,14 @@ const parse_param_newline = (param) => {
   return param.replace(/\\n/g, '\n');
 };
 
+const watermark_uri = (opts = {}) => {
+  const { uri, type } = opts;
+  const url = new URL(uri);
+  url.searchParams.append('cml', type);
+
+  return url.toString();
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -143,3 +151,4 @@ exports.sleep = sleep;
 exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
+exports.watermark_uri = watermark_uri;

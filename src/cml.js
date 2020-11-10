@@ -4,8 +4,9 @@ const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
+
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec } = require('./utils');
+const { upload, exec, watermark_uri } = require('./utils');
 
 
 const uri_no_trailing_slash = (uri) => {
@@ -85,7 +86,7 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlab_uploads } = opts;
+    const { title = '', md, native, gitlab_uploads, rm_watermark } = opts;
 
     let mime, uri;
     if (native || gitlab_uploads) {
@@ -93,6 +94,11 @@ class CML {
       ({ mime, uri } = await client.upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
+    }
+
+    if (!rm_watermark) {
+      const [, type] = mime.split('/');
+      uri = watermark_uri({ uri, type });
     }
 
     if (md && mime.match('(image|video)/.*'))
