@@ -5,27 +5,26 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const {
-  head_sha: HEAD_SHA,
-  handle_error,
-  create_check_report,
-  CHECK_TITLE
-} = process.env.GITHUB_ACTIONS
-  ? require('../src/github')
-  : require('../src/gitlab');
+const CML = require('../src/cml');
+const CHECK_TITLE = 'CML Report';
 
 const run = async (opts) => {
-  const { 'head-sha': head_sha = HEAD_SHA, conclusion, title } = opts;
+  const { 'head-sha': head_sha, conclusion, title } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
 
-  await create_check_report({ head_sha, report, conclusion, title });
+  const cml = new CML({ ...opts, driver: 'github' });
+  await cml.check_create({ head_sha, report, conclusion, title });
 };
 
 const argv = yargs
-  .usage(`Usage: $0 <path> --head-sha <string>`)
+  .usage('Usage: $0 <path to markdown file>')
   .default('head-sha')
-  .default('conclusion', 'success')
+  .describe(
+    'head-sha',
+    'Commit sha where the comment will appear. Defaults to HEAD.'
+  )
+  .default('conclusion', 'success', 'Sets the conclusion status of the check.')
   .choices('conclusion', [
     'success',
     'failure',
@@ -35,7 +34,21 @@ const argv = yargs
     'timed_out'
   ])
   .default('title', CHECK_TITLE)
-  .describe('head-sha', 'Commit sha')
+  .describe('title', 'Sets title of the check.')
+  .default('repo')
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token')
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+  )
   .help('h')
   .demand(1).argv;
-run(argv).catch((e) => handle_error(e));
+
+run(argv).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

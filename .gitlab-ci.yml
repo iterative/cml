@@ -1,7 +1,8 @@
-default:
-  before_script:
-    - apt-get update
-
-run:
+test:
+  image: dvcorg/cml-py3:latest
   script:
-    - echo "Hello GitLab CI"
+    - sudo pip install tensorboard
+
+    - npm ci
+    - npm run lint
+    - npm run test

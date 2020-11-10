@@ -21,21 +21,25 @@ describe('CML e2e', () => {
     const output = await exec(`node ./bin/cml-tensorboard-dev.js -h`);
 
     expect(output).toMatchInlineSnapshot(`
-      "Usage: cml-tensorboard-dev.js <path> --file <string>
+      "Usage: cml-tensorboard-dev.js
 
       Options:
-        --version      Show version number                                   [boolean]
-        --md           Markdown output with the form [title || name](url).   [boolean]
-        -h             Show help                                             [boolean]
-        --logdir                  [default: Directory containing the logs to process.]
-        --name            [default: Tensorboard experiment title. Max 100 characters.]
-        --description
-                [default: Tensorboard experiment description. Markdown format. Max 600
-                                                                          characters.]
-        --plugins                                                      [default: null]
-        --title     [default: Title of markdown, if not specified, name will be used.]
-        --file, -f
-         [default: Append the output to the given file. Create it if does not exists.]"
+        --version          Show version number                               [boolean]
+        --credentials, -c  TB credentials as json. Usually found at
+                           ~/.config/tensorboard/credentials/uploader-creds.json. If
+                           not specified will look for the json at the env variable
+                           TB_CREDENTIALS.
+        --logdir           Directory containing the logs to process.
+        --name             Tensorboard experiment title. Max 100 characters.
+        --description      Tensorboard experiment description. Markdown format. Max
+                           600 characters.
+        --md               Output as markdown [title || name](url).          [boolean]
+        --title, -t        Markdown title, if not specified, param name will be used.
+        --file, -f         Append the output to the given file. Create it if does not
+                           exist.
+        --rm-watermark     Avoid CML watermark.
+        -h                 Show help                                         [boolean]
+        --plugins"
     `);
   });
 
@@ -54,5 +58,6 @@ describe('CML e2e', () => {
 
     expect(is_running).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.includes('cml=tb')).toBe(true);
   });
 });

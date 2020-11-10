@@ -4,6 +4,7 @@ const fs = require('fs');
 const PATH = require('path');
 const FileType = require('file-type');
 const isSvg = require('is-svg');
+const forge = require('node-forge');
 
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
@@ -119,9 +120,35 @@ const is_proc_running = async (opts) => {
   });
 };
 
+const ssh_public_from_private_rsa = (private_key) => {
+  const forge_private = forge.pki.privateKeyFromPem(private_key);
+  const forge_public = forge.pki.setRsaPublicKey(
+    forge_private.n,
+    forge_private.e
+  );
+  const ssh_public = forge.ssh.publicKeyToOpenSSH(forge_public);
+
+  return ssh_public;
+};
+
+const parse_param_newline = (param) => {
+  return param.replace(/\\n/g, '\n');
+};
+
+const watermark_uri = (opts = {}) => {
+  const { uri, type } = opts;
+  const url = new URL(uri);
+  url.searchParams.append('cml', type);
+
+  return url.toString();
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
 exports.is_proc_running = is_proc_running;
+exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
+exports.parse_param_newline = parse_param_newline;
+exports.watermark_uri = watermark_uri;
