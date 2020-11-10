@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
-const {Base64} = require('js-base64');
 
 const { fetch_upload_data } = require('../utils');
 
@@ -47,26 +46,25 @@ class BitBucketCloud {
   }
 
   async register_runner(opts = {}) {
-    throw new Error('BitBucket does not support register_runner!');
+    throw new Error('BitBucket Cloud does not support register_runner!');
   }
 
   async unregister_runner(opts = {}) {
-    throw new Error('BitBucket does not support unregister_runner!');
+    throw new Error('BitBucket Cloud does not support unregister_runner!');
   }
 
   async runner_by_name(opts = {}) {
-    throw new Error('BitBucket does not support runner_by_name!');
+    throw new Error('BitBucket Cloud does not support runner_by_name!');
   }
 
   async request(opts = {}) {
     const { token, api } = this;
     const { endpoint, method = 'GET', body } = opts;
 
-    if (!endpoint) throw new Error('BitBucket API endpoint not found');
-    const {BITBUCKET_WORKSPACE}=process.env;
+    if (!endpoint) throw new Error('BitBucket Cloud API endpoint not found');
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Basic ' + Base64.encode(`${BITBUCKET_WORKSPACE}:${token}`)};
+      'Authorization': 'Basic ' + `${token}`};
     const url = `${api}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
 
