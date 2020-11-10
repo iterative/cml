@@ -14,8 +14,8 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commit_sha = SHA;
-    const { created_at } = await client.comment_create({ report, commit_sha });
-    expect(created_at).not.toBeUndefined();
+
+    await client.comment_create({ report, commit_sha });
   });
   test('Check', async () => {
     await expect(client.check_create()).rejects.toThrow(
