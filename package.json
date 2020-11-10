@@ -30,12 +30,12 @@
   ],
   "main": "index.js",
   "bin": {
-    "cml-send-github-check": "./bin/cml-send-github-check.js",
-    "cml-send-comment": "./bin/cml-send-comment.js",
-    "cml-publish": "./bin/cml-publish.js",
-    "cml-tensorboard-dev": "./bin/cml-tensorboard-dev.js",
-    "cml-cloud-runner-entrypoint": "./bin/cml-cloud-runner-entrypoint.js",
-    "test-cml-cloud-runner": "./bin/cml-cloud-runner.js"
+    "cml-send-github-check": "bin/cml-send-github-check.js",
+    "cml-send-comment": "bin/cml-send-comment.js",
+    "cml-publish": "bin/cml-publish.js",
+    "cml-tensorboard-dev": "bin/cml-tensorboard-dev.js",
+    "cml-cloud-runner-entrypoint": "bin/cml-cloud-runner-entrypoint.js",
+    "test-cml-cloud-runner": "bin/cml-cloud-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -82,5 +82,7 @@
     "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
     "prettier": "^2.1.1"
-  }
+  },
+  "description": "<p align=\"center\">   <img src=\"imgs/title_strip_trim.png\" width=400> </p>",
+  "homepage": "https://github.com/iterative/cml#readme"
 }
