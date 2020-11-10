@@ -45,8 +45,8 @@ const get_driver = (opts) => {
 };
 
 const infer_token = () => {
-  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN} = process.env;
-  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN;
+  const { repo_token, GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN} = process.env;
+  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN;
 };
 
 class CML {
