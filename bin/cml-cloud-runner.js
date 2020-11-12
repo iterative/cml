@@ -163,8 +163,8 @@ const run_terraform = async (opts) => {
 terraform {
   required_providers {
     iterative = {
-      source = "DavidGOrtega/iterative"
-      version = "0.5.0"
+      source = "iterative/iterative"
+      version = "0.5.1"
     }
   }
 }
