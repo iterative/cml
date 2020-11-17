@@ -127,7 +127,8 @@ const setup_runners = async (opts) => {
       );
 
     await ssh.dispose();
-    await cml.await_runner({ name: instance_name });
+
+    if (!attached) await cml.await_runner({ name: instance_name });
   }
 };
 
