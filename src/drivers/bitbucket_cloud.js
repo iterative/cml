@@ -23,10 +23,8 @@ class BitBucketCloud {
 
     // Let's try to hit the other endpoint
     const pr_endpt = `repositories/${project_path}/commit/${commit_sha}/pullrequests/`;
-    console.log(pr_endpt);
     const pr_out = await this.request({ endpoint: pr_endpt });
     console.log(pr_out);
-
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = JSON.stringify({ content: { raw: report } });
 
@@ -69,6 +67,7 @@ class BitBucketCloud {
       Authorization: 'Basic ' + `${token}`
     };
     const url = `${api}${endpoint}`;
+    console.log(url);
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
