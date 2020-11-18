@@ -21,8 +21,12 @@ class BitBucketCloud {
     const { project_path } = this;
     const { commit_sha, report } = opts;
 
-    // Print some variables
-    console.log(commit_sha);
+    // Let's try to hit the other endpoint
+    const pr_endpt = `repositories/${project_path}/commit/${commit_sha}/pullrequests/`;
+    console.log(pr_endpt);
+    const pr_out = await this.request({ endpoint: pr_endpt });
+    console.log(pr_out);
+
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = JSON.stringify({ content: { raw: report } });
 
