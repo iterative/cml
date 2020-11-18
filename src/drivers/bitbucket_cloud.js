@@ -22,6 +22,7 @@ class BitBucketCloud {
     const { commit_sha, report } = opts;
 
     // Print some variables
+    console.log(commit_sha);
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = JSON.stringify({ content: { raw: report } });
 
