@@ -21,11 +21,13 @@ class BitBucketCloud {
     const { project_path } = this;
     const { commit_sha, report } = opts;
 
-    // Let's try to hit the other endpoint
+    // Get the PR ID #
     const pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
     const pr_out = await this.request({ endpoint: pr_endpt });
-    console.log(pr_out.values[0].id);
-    const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
+    const pr_id = pr_out.values[0].id;
+
+    // Now put the comment on the PR
+    const endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
     const body = JSON.stringify({ content: { raw: report } });
 
     const output = await this.request({ endpoint, method: 'POST', body });
