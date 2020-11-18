@@ -24,6 +24,10 @@ class BitBucketCloud {
     // Get the PR ID #
     const pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
     const pr_out = await this.request({ endpoint: pr_endpt });
+    if (!pr_out)
+      throw new Error(
+        'CML was unable to find a Pull Request corresponding to your commit.'
+      );
     const pr_id = pr_out.values[0].id;
 
     // Append a watermark to the report with a link to the commit
@@ -74,7 +78,6 @@ class BitBucketCloud {
       Authorization: 'Basic ' + `${token}`
     };
     const url = `${api}${endpoint}`;
-    console.log(url);
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
