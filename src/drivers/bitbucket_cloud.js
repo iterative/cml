@@ -29,11 +29,11 @@ class BitBucketCloud {
     // Append a watermark to the report with a link to the commit
     const commit_url = `https://bitbucket.org/${project_path}/commits/${commit_sha}`;
     const commit_link = `![Go to commit.](${commit_url})`;
-    const report = report.concat(commit_link);
-    
+    const long_report = report.concat(commit_link);
+
     // Write a comment on the PR
     const endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
-    const body = JSON.stringify({ content: { raw: report } });
+    const body = JSON.stringify({ content: { raw: long_report } });
 
     const output = await this.request({ endpoint, method: 'POST', body });
 
