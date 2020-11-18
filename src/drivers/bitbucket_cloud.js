@@ -24,7 +24,7 @@ class BitBucketCloud {
     // Let's try to hit the other endpoint
     const pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
     const pr_out = await this.request({ endpoint: pr_endpt });
-    console.log(pr_out);
+    console.log(pr_out.values[0].id);
     const endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
     const body = JSON.stringify({ content: { raw: report } });
 
