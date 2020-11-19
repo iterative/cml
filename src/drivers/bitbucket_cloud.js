@@ -31,9 +31,8 @@ class BitBucketCloud {
     const pr_id = pr_out.values[0].id;
 
     // Append a watermark to the report with a link to the commit
-    const commit_url = `https://bitbucket.org/${project_path}/commits/${commit_sha}`;
-    const commit_link = `[Go to commit.](${commit_url})`;
-    const long_report = report.concat(commit_link);
+    const commit_link = commit_sha.substr(0, 7);
+    const long_report = `${commit_link}\n  ${report}`;
 
     // Write a comment on the PR
     const endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
