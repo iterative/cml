@@ -27,7 +27,7 @@ class BitBucketCloud {
     const commit_output = await this.request({
       endpoint: commit_endpoint,
       method: 'POST',
-      commit_body
+      body: commit_body
     });
 
     // Check for a corresponding PR. If it exists, also put the comment there.
