@@ -86,9 +86,7 @@ class BitBucketCloud {
       Authorization: 'Basic ' + `${token}`
     };
     const url = `${api}${endpoint}`;
-    console.log(url);
     const response = await fetch(url, { method, headers, body });
-    console.log(url);
     if (response.status > 300) throw new Error(response.statusText);
 
     return await response.json();
