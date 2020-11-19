@@ -11,8 +11,7 @@
 image: node:10.15.3
 
 pipelines:
-  pull-requests:
-    '**': #this runs as default for any branch not elsewhere defined
+  default:
       - step:
           caches:
             - node
