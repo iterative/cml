@@ -38,7 +38,7 @@ class BitBucketCloud {
       const pr_id = pr_out.values[0].id;
       // Append a watermark to the report with a link to the commit
       const commit_link = commit_sha.substr(0, 7);
-      const long_report = `${commit_link}   \n${report}`;
+      const long_report = `${commit_link}  \n${report}`;
       const pr_body = JSON.stringify({ content: { raw: long_report } });
 
       // Write a comment on the PR
