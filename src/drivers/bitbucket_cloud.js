@@ -33,12 +33,12 @@ class BitBucketCloud {
     // Check for a corresponding PR. If it exists, also put the comment there.
     const get_pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
     const pr_out = await this.request({ endpoint: get_pr_endpt });
-    if (pr_out.values) {
+    if (pr_out.values && pr_out.values.length) {
       // Get PR ID
       const pr_id = pr_out.values[0].id;
       // Append a watermark to the report with a link to the commit
       const commit_link = commit_sha.substr(0, 7);
-      const long_report = `${commit_link}\n  ${report}`;
+      const long_report = `${commit_link}<br/>  ${report}`;
       const pr_body = JSON.stringify({ content: { raw: long_report } });
 
       // Write a comment on the PR
