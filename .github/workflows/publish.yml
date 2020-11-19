@@ -12,7 +12,7 @@ env:
   TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
   TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
   TEST_BBCLOUD_REPO:  https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
-  TEST_BBCLOUD_SHA: 29cd2485d122d78ecc440f1542f60a4d2b3336e7
+  TEST_BBCLOUD_SHA: 8119698b09994844a6803d5380cc370e0d0ffc6a
 
 jobs:
   test_and_deploy:
