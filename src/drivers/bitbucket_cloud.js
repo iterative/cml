@@ -21,23 +21,35 @@ class BitBucketCloud {
     const { project_path } = this;
     const { commit_sha, report } = opts;
 
-    // Get the PR ID #
-    const pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
-    const pr_out = await this.request({ endpoint: pr_endpt });
-    const pr_id = pr_out.values[0].id;
+    // Make a comment in the commit
+    const commit_endpoint = `/repositories/${project_path}/commit/${commit_sha}/comments/`;
+    const commit_body = JSON.stringify({ content: { raw: report } });
+    const commit_output = await this.request({
+      endpoint: commit_endpoint,
+      method: 'POST',
+      body: commit_body
+    });
 
-    // Append a watermark to the report with a link to the commit
-    const commit_url = `https://bitbucket.org/${project_path}/commits/${commit_sha}`;
-    const commit_link = `[Go to commit.](${commit_url})`;
-    const long_report = report.concat(commit_link);
+    // Check for a corresponding PR. If it exists, also put the comment there.
+    const get_pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
+    const pr_out = await this.request({ endpoint: get_pr_endpt });
+    if (pr_out.values && pr_out.values.length) {
+      // Get PR ID
+      const pr_id = pr_out.values[0].id;
+      // Append a watermark to the report with a link to the commit
+      const commit_link = commit_sha.substr(0, 7);
+      const long_report = `${commit_link}   \n${report}`;
+      const pr_body = JSON.stringify({ content: { raw: long_report } });
 
-    // Write a comment on the PR
-    const endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
-    const body = JSON.stringify({ content: { raw: long_report } });
-
-    const output = await this.request({ endpoint, method: 'POST', body });
-
-    return output;
+      // Write a comment on the PR
+      const pr_endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
+      await this.request({
+        endpoint: pr_endpoint,
+        method: 'POST',
+        body: pr_body
+      });
+    }
+    return commit_output;
   }
 
   async check_create() {
@@ -76,7 +88,7 @@ class BitBucketCloud {
     const url = `${api}${endpoint}`;
     console.log(url);
     const response = await fetch(url, { method, headers, body });
-
+    console.log(url);
     if (response.status > 300) throw new Error(response.statusText);
 
     return await response.json();
