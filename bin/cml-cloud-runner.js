@@ -19,6 +19,7 @@ let cml;
 
 const TF_FOLDER = '.cml';
 const TF_NO_LOCAL = '.nolocal';
+const TF_VERSION = '0.13.2';
 
 const ssh_connect = async (opts) => {
   const { host, username, private_key: privateKey, max_tries = 5 } = opts;
@@ -193,11 +194,12 @@ resource "iterative_machine" "machine" {
   console.log(await exec(`terraform init ${TF_FOLDER}`));
   console.log(await exec(`terraform apply -auto-approve ${TF_FOLDER}`));
 
-  const terraform_state_json = await fs.readFile(
-    path.join(TF_FOLDER, 'terraform.tfstate'),
-    'utf-8'
-  );
+  const terraform_state_json = await fs.readFile(tfstate_path, 'utf-8');
+
   const terraform_state = JSON.parse(terraform_state_json);
+  terraform_state.terraform_version = TF_VERSION;
+
+  await fs.writeFile(tfstate_path, JSON.stringify(terraform_state, null, '\t'));
 
   return terraform_state;
 };
