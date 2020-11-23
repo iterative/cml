@@ -49,9 +49,14 @@ themselves with [Github Actions](https://help.github.com/en/actions) or
 [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
 Here, will discuss the GitHub use case.
 
-⚠️ **GitLab users! Please see our
-[docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab).**
-⚠️
+⚠️ **GitLab users!** Please see our
+[docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab).
+
+
+🪣 **Bitbucket Cloud users** We support you, too- [see our docs here](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).🪣
+_Bitbucket Server support estimated to arrive by January 2021._
+
+
 
 The key file in any CML project is `.github/workflows/cml.yaml`.
 
