@@ -41,7 +41,7 @@ RUN add-apt-repository universe -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN npm config set user 0 && \
-    npm install -g vega-cli vega-lite
+    npm install -g canvas vega vega-cli vega-lite
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
