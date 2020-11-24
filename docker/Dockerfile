@@ -31,11 +31,10 @@ RUN apt-get update && \
 RUN add-apt-repository universe -y && \
     add-apt-repository ppa:git-core/ppa -y && \
     add-apt-repository ppa:longsleep/golang-backports -y && \
-    wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     curl -sL https://deb.nodesource.com/setup_12.x | bash && \
     apt-get update && \
     apt-get install -y \
-        git dvc nodejs \
+        git nodejs \
         libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libfontconfig-dev \
         golang-go && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -120,5 +119,8 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
 ADD "./" "/cml"
 RUN npm config set user 0 && \
     npm install -g /cml
+
+RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
+    apt-get update && apt-get install -y dvc && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 CMD ["cml-cloud-runner-entrypoint"]
