@@ -121,8 +121,6 @@ RUN npm config set user 0 && \
     npm install -g /cml
 
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
-    apt-get update && \
-    apt-get install -y dvc \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get update && apt-get install -y dvc && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 CMD ["cml-cloud-runner-entrypoint"]
