@@ -4,7 +4,6 @@ const strip_auth = require('strip-url-auth');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
-
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermark_uri } = require('./utils');
 
@@ -68,6 +67,9 @@ class CML {
   }
 
   async head_sha() {
+    if (process.env.GITHUB_EVENT_NAME === 'pull_request')
+      return require('@actions/github').context.payload.pull_request.head.sha;
+
     return (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
   }
 
