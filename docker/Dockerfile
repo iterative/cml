@@ -1,8 +1,8 @@
 ARG ARCH=
-ARG CUDA=10.1
-ARG UBUNTU_VERSION=18.04
+ARG CUDA=11.1
+ARG UBUNTU_VERSION=20.04
 
-FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
+FROM nvidia/cuda${ARCH:+-$ARCH}:${CUDA}-runtime-ubuntu${UBUNTU_VERSION} as base
 
 LABEL maintainer="dvc.org"
 
