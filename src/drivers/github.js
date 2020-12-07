@@ -1,5 +1,11 @@
 const url = require('url');
+const { spawn } = require('child_process');
+const fs = require('fs').promises;
+
 const github = require('@actions/github');
+const targz = require('tar.gz');
+
+const { download, exec } = require('../utils');
 
 const CHECK_TITLE = 'CML Report';
 
@@ -116,7 +122,7 @@ class Github {
     return token;
   }
 
-  async register_runner(opts = {}) {
+  async register_runner() {
     throw new Error('Github does not support register_runner!');
   }
 
@@ -137,6 +143,36 @@ class Github {
         org: owner,
         runner_id
       });
+    }
+  }
+
+  async start_runner(opts) {
+    const { path = '.', name, labels } = opts;
+
+    try {
+      try {
+        await fs.rmdir(path, { recursive: true });
+      } catch (err) {}
+
+      await fs.mkdir(path);
+
+      const tar = `${path}/actions-runner.tar.gz`;
+      const arch = 'linux-x64';
+      const ver = '2.274.2';
+      const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
+
+      await download({ url, path: tar });
+      await targz().extract(tar, path);
+      await exec(`${path}/bin/installdependencies.sh`);
+
+      await exec(
+        `${path}/config.sh --token "${await this.runner_token()}" --url "${
+          this.repo
+        }"  --name "${name}" --labels "${labels}" --work "_work"`
+      );
+      return spawn(`${path}/run.sh`, { shell: true });
+    } catch (err) {
+      throw new Error(`Failed preparing GitHub runner: ${err.message}`);
     }
   }
 

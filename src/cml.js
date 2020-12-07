@@ -123,6 +123,62 @@ class CML {
     return await get_driver(this).runner_token();
   }
 
+  parse_runner_log(opts = {}) {
+    let { data } = opts;
+    if (!data) return '';
+
+    data = data.toString('utf8');
+
+    let log = {
+      level: 'info',
+      time: new Date().toISOString(),
+      repo: this.repo
+    };
+
+    if (this.driver === 'github') {
+      if (data.includes('Running job')) {
+        log.job = '';
+        log.status = 'job_started';
+        return log;
+      } else if (
+        data.includes('Job') &&
+        data.includes('completed with result')
+      ) {
+        log.job = '';
+        log.status = 'job_ended';
+        log.success = !!data.endsWith('Succeeded');
+        log.level = log.success ? 'info' : 'error';
+        return log;
+      } else if (data.includes('Listening for Jobs')) {
+        log.status = 'ready';
+        return log;
+      }
+    }
+
+    if (this.driver === 'gitlab') {
+      const { msg, job } = JSON.parse(data);
+
+      if (msg.endsWith('received')) {
+        log = { ...log, job };
+        log.status = 'job_started';
+        return log;
+      } else if (msg.startsWith('Failure') || msg.startsWith('Job succeeded')) {
+        log = { ...log, job };
+        log.status = 'job_ended';
+        log.success = !!msg.startsWith('Failure');
+        log.level = log.success ? 'info' : 'error';
+        return log;
+      } else if (msg.includes('Starting runner for')) {
+        log.status = 'ready';
+        return log;
+      }
+    }
+  }
+
+  async start_runner(opts = {}) {
+    return await get_driver(this).start_runner(opts);
+  }
+
   async register_runner(opts = {}) {
     return await get_driver(this).register_runner(opts);
   }

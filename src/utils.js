@@ -6,10 +6,12 @@ const FileType = require('file-type');
 const isSvg = require('is-svg');
 const forge = require('node-forge');
 
+const { DEBUG_EXEC } = process.env;
+
 const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
   return new Promise(function (resolve, reject) {
-    const { debug } = opts || {};
+    const { debug = DEBUG_EXEC } = opts || {};
 
     execp(command, (error, stdout, stderr) => {
       if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
@@ -143,6 +145,17 @@ const watermark_uri = (opts = {}) => {
   return url.toString();
 };
 
+const download = async (opts = {}) => {
+  const { url, path } = opts;
+  const res = await fetch(url);
+  const stream = fs.createWriteStream(path);
+  await new Promise((resolve, reject) => {
+    res.body.pipe(stream);
+    res.body.on('error', reject);
+    stream.on('finish', resolve);
+  });
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -152,3 +165,4 @@ exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
 exports.watermark_uri = watermark_uri;
+exports.download = download;

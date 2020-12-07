@@ -1,20 +1,16 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+const yargs = require('yargs');
 
 const { exec, randid } = require('../src/utils');
 const CML = require('../src/cml');
 
-const {
+let {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
-  RUNNER_EXECUTOR = 'shell',
-  RUNNER_RUNTIME = '',
-  RUNNER_IMAGE = 'dvcorg/cml:latest',
   RUNNER_TF_NAME,
 
   RUNNER_DRIVER,
@@ -22,69 +18,52 @@ const {
   repo_token
 } = process.env;
 
-const cml = new CML({
-  driver: RUNNER_DRIVER,
-  repo: RUNNER_REPO,
-  token: repo_token
-});
-const IS_GITHUB = cml.driver === 'github';
-const { protocol, host } = new URL(RUNNER_REPO);
-const RUNNER_REPO_ORIGIN = `${protocol}//${host}`;
-
+let cml;
+let IS_GITHUB;
 let TIMEOUT_TIMER = 0;
-let JOB_RUNNING = false;
-let RUNNER_TOKEN;
-let GITLAB_CI_TOKEN;
+const JOBS_RUNNING = [];
 
 const shutdown_docker_machine = async () => {
-  console.log('Shutting down docker machine');
-  try {
-    DOCKER_MACHINE &&
+  if (DOCKER_MACHINE) {
+    console.log('docker-machine destroy...');
+    console.log(
+      'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
+    );
+    try {
       console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
-  } catch (err) {
-    console.log(`Failed shutting down docker machine: ${err.message}`);
+    } catch (err) {
+      console.log(`Failed shutting down docker machine: ${err.message}`);
+    }
   }
 };
 
-const shutdown_host = async () => {
+const shutdown_cloud = async () => {
   try {
     console.log('Terraform destroy...');
-    try {
-      const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
-      console.log(
-        await exec(
-          `cd / && terraform init && terraform destroy -auto-approve ${tf_resource}`
-        )
-      );
-    } catch (err) {
-      console.log(`Failed destroying terraform: ${err.message}`);
-    }
+    const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
+    console.log(
+      await exec(
+        `terraform init && terraform destroy -auto-approve ${tf_resource}`
+      )
+    );
   } catch (err) {
-    console.log(err.message);
+    console.log(`Failed destroying terraform: ${err.message}`);
   }
 };
 
-const shutdown = async (error) => {
-  try {
-    console.log('Unregistering runner');
+const shutdown = async (opts) => {
+  const { name, error } = opts;
 
+  try {
     try {
-      if (IS_GITHUB) {
-        await cml.unregister_runner({ name: RUNNER_NAME });
-      } else {
-        console.log(await exec(`gitlab-runner verify --delete`));
-        console.log(
-          await exec(
-            `gitlab-runner unregister --url "${RUNNER_REPO_ORIGIN}" --token "${GITLAB_CI_TOKEN}" `
-          )
-        );
-      }
+      console.log('Unregistering runner');
+      await cml.unregister_runner({ name });
     } catch (err) {
-      console.log(err);
+      console.log('Failed unregistering runner');
     }
 
     await shutdown_docker_machine();
-    await shutdown_host();
+    await shutdown_cloud();
 
     if (error) throw error;
 
@@ -95,98 +74,94 @@ const shutdown = async (error) => {
   }
 };
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
-process.on('SIGQUIT', shutdown);
-const run = async () => {
-  RUNNER_TOKEN = await cml.runner_token();
+const run = async (opts) => {
+  process.on('SIGTERM', () => shutdown(opts));
+  process.on('SIGINT', () => shutdown(opts));
+  process.on('SIGQUIT', () => shutdown(opts));
 
-  if (!RUNNER_TOKEN) {
+  const {
+    driver,
+    repo,
+    token,
+    name,
+    labels,
+    'idle-timeout': idle_timeout
+  } = opts;
+  cml = new CML({ driver, repo, token });
+
+  IS_GITHUB = cml.driver === 'github';
+  RUNNER_NAME = name;
+
+  try {
+    await cml.runner_token();
+  } catch (err) {
     throw new Error(
-      'RUNNER_TOKEN is needed to start the runner. Are you setting a runner?'
+      'repo_token does not have enough permissions to access CI jobs'
     );
   }
 
-  if (IS_GITHUB && RUNNER_EXECUTOR !== 'shell') {
-    throw new Error('Github only supports shell executor');
-  }
+  console.log(`Starting ${cml.driver} runner`);
+  const proc = await cml.start_runner({
+    path: './runner',
+    name,
+    labels,
+    idle_timeout
+  });
 
-  console.log(`Starting runner with ${RUNNER_EXECUTOR} executor`);
-
-  let command;
-  if (IS_GITHUB) {
-    console.log('Registering Github runner');
-    console.log(
-      await exec(
-        `${RUNNER_PATH}/config.sh --url "${RUNNER_REPO}" --token "${RUNNER_TOKEN}" --name "${RUNNER_NAME}" --labels "${RUNNER_LABELS}" --work "_work"`
-      )
-    );
-
-    command = `${RUNNER_PATH}/run.sh`;
-  } else {
-    console.log('Registering Gitlab runner');
-    const runner = await cml.register_runner({
-      tags: RUNNER_LABELS,
-      runner_token: RUNNER_TOKEN,
-      name: RUNNER_NAME
-    });
-
-    GITLAB_CI_TOKEN = runner.token;
-
-    command = `gitlab-runner --log-format="json" run-single \
-      --token "${runner.token}" \
-      --url "${RUNNER_REPO_ORIGIN}" \
-      --executor "${RUNNER_EXECUTOR}" \
-      --docker-runtime "${RUNNER_RUNTIME}" \
-      --docker-image "${RUNNER_IMAGE}" \
-      --wait-timeout ${RUNNER_IDLE_TIMEOUT} \
-      --name "${RUNNER_NAME}" \
-      --request-concurrency 1 \
-      --limit 1`;
-  }
-
-  const proc = spawn(command, { shell: true });
-
+  proc.on('exit', () => {
+    shutdown(opts);
+  });
   proc.stderr.on('data', (data) => {
-    data && console.log(data.toString('utf8'));
-
-    if (data && !IS_GITHUB) {
-      try {
-        const { msg } = JSON.parse(data);
-        msg.includes('runner has not received a job') && shutdown();
-      } catch (err) {}
-    }
+    const log = cml.parse_runner_log({ data });
+    log && console.log(JSON.stringify(log));
   });
+  proc.stdout.on('data', (data) => {
+    const log = cml.parse_runner_log({ data });
+    log && console.log(JSON.stringify(log));
 
-  proc.stdout.on('data', async (data) => {
-    data && console.log(data.toString('utf8'));
-
-    if (data && IS_GITHUB && data.includes('Running job')) {
-      JOB_RUNNING = true;
+    if (log && log.status === 'job_started') {
+      JOBS_RUNNING.push(1);
       TIMEOUT_TIMER = 0;
-    }
-
-    if (
-      data &&
-      IS_GITHUB &&
-      data.includes('Job') &&
-      data.includes('completed with result')
-    ) {
-      JOB_RUNNING = false;
+    } else if (log && log.status === 'job_ended') {
+      JOBS_RUNNING.pop();
     }
   });
 
-  if (IS_GITHUB && parseInt(RUNNER_IDLE_TIMEOUT) !== 0) {
+  if (IS_GITHUB && parseInt(idle_timeout) !== 0) {
     const watcher = setInterval(() => {
-      TIMEOUT_TIMER >= RUNNER_IDLE_TIMEOUT &&
-        shutdown() &&
-        clearInterval(watcher);
+      TIMEOUT_TIMER >= idle_timeout && shutdown(opts) && clearInterval(watcher);
 
-      if (!JOB_RUNNING) TIMEOUT_TIMER++;
+      if (!JOBS_RUNNING.length) TIMEOUT_TIMER++;
     }, 1000);
   }
 };
 
-run().catch((err) => {
-  shutdown(err);
+const argv = yargs
+  .usage(`Usage: $0`)
+  .default('labels', RUNNER_LABELS)
+  .describe('labels', 'Comma delimited runner labels')
+  .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
+  .describe(
+    'idle-timeout',
+    'Time in seconds for the runner to be waiting for jobs before shutting down'
+  )
+  .default('name', RUNNER_NAME)
+  .describe('name', 'Name displayed in the repo once registered')
+  .default('repo', RUNNER_REPO)
+  .describe(
+    'repo',
+    'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  )
+  .default('token', repo_token)
+  .describe(
+    'token',
+    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+  )
+  .default('driver', RUNNER_DRIVER)
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
+
+  .help('h').argv;
+run(argv).catch((error) => {
+  shutdown({ error });
 });
