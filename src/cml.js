@@ -1,6 +1,7 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
+const fs = require('fs').promises;
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -146,7 +147,7 @@ class CML {
       ) {
         log.job = '';
         log.status = 'job_ended';
-        log.success = !!data.endsWith('Succeeded');
+        log.success = !data.endsWith('Succeeded');
         log.level = log.success ? 'info' : 'error';
         return log;
       } else if (data.includes('Listening for Jobs')) {
@@ -179,6 +180,9 @@ class CML {
   }
 
   async start_runner(opts = {}) {
+    const { path } = opts;
+
+    await fs.mkdir(path);
     return await get_driver(this).start_runner(opts);
   }
 

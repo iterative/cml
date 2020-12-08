@@ -1,6 +1,6 @@
 const url = require('url');
 const { spawn } = require('child_process');
-const fs = require('fs').promises;
+// const fs = require('fs').promises;
 
 const github = require('@actions/github');
 const targz = require('tar.gz');
@@ -150,11 +150,13 @@ class Github {
     const { path = '.', name, labels } = opts;
 
     try {
+      /*
       try {
         await fs.rmdir(path, { recursive: true });
       } catch (err) {}
 
       await fs.mkdir(path);
+      */
 
       const tar = `${path}/actions-runner.tar.gz`;
       const arch = 'linux-x64';
