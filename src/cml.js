@@ -201,7 +201,7 @@ class CML {
   }
 
   async await_runner(opts = {}) {
-    const { name, timer_max = 30, timer_step = 5 } = opts;
+    const { name, max_tries = 15 } = opts;
 
     let timer = 0;
     return new Promise((resolve, reject) => {
@@ -213,14 +213,24 @@ class CML {
           resolve(runner);
         }
 
-        if (timer_max === timer) {
+        if (timer >= max_tries) {
           clearInterval(interval);
           reject(new Error('Waiting for runner expiration timeout'));
         }
 
-        timer += timer_step;
-      }, timer_step * 1000);
+        timer += 1;
+      }, 10 * 1000);
     });
+  }
+
+  async repo_token_check() {
+    try {
+      await this.runner_token();
+    } catch (err) {
+      throw new Error(
+        'repo_token does not have enough permissions to access workflow API'
+      );
+    }
   }
 
   log_error(e) {

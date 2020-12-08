@@ -5,17 +5,17 @@ const fse = require('fs-extra');
 const yargs = require('yargs');
 
 const { exec, randid } = require('../src/utils');
+const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
 const {
   DOCKER_MACHINE, // DEPRECATED
-
-  RUNNER_PATH = '.',
-  RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_LABELS = 'cml',
-  RUNNER_NAME = randid(),
   RUNNER_TF_NAME,
 
+  RUNNER_PATH = './',
+  RUNNER_IDLE_TIMEOUT = 5 * 60,
+  RUNNER_LABELS = 'cml',
+  RUNNER_NAME = `cml-${randid()}`,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -26,7 +26,21 @@ let TIMEOUT_TIMER = 0;
 const JOBS_RUNNING = [];
 
 const shutdown = async (opts) => {
-  const { name, error, workspace } = opts;
+  let { error } = opts;
+  const { name, workspace = '' } = opts;
+
+  if (error) console.error(error);
+
+  const unregister_runner = async () => {
+    try {
+      console.log('Unregistering runner...');
+      await cml.unregister_runner({ name });
+      console.log('\tSuccess');
+    } catch (err) {
+      console.error('\tFailed');
+      error = err;
+    }
+  };
 
   const shutdown_docker_machine = async () => {
     if (DOCKER_MACHINE) {
@@ -35,52 +49,37 @@ const shutdown = async (opts) => {
         'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
       );
       try {
-        console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
+        await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
       } catch (err) {
-        console.log(`\tFailed shutting down docker machine: ${err.message}`);
+        console.error(`\tFailed shutting down docker machine: ${err.message}`);
+        error = err;
       }
     }
   };
 
-  const shutdown_cloud = async () => {
+  const shutdown_tf = async () => {
     console.log('Cleanup Iterative cloud resources...');
+    const tfstate_path = resolve(workspace, 'terraform.tfstate');
 
-    if (!(await fse.pathExists(resolve(workspace, 'terraform.tfstate')))) {
+    if (!(await fse.pathExists(tfstate_path))) {
       console.log('\tNo Iterative cloud config found. Nothing to do.');
       return;
     }
 
     try {
-      const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
-      console.log(
-        await exec(
-          `terraform init && terraform destroy -auto-approve ${tf_resource}`
-        )
-      );
+      await tf.fix_tfstate_version({ path: tfstate_path });
+      await tf.initdestroy({ target: RUNNER_TF_NAME });
     } catch (err) {
-      console.log(`\tFailed destroying terraform: ${err.message}`);
+      console.error(`\tFailed Terraform destroy: ${err.message}`);
+      error = err;
     }
   };
 
-  try {
-    try {
-      console.log('Unregistering runner...');
-      await cml.unregister_runner({ name });
-      console.log('\tSuccess');
-    } catch (err) {
-      console.log('\tFailed');
-    }
+  await unregister_runner();
+  await shutdown_docker_machine();
+  await shutdown_tf();
 
-    await shutdown_docker_machine();
-    await shutdown_cloud();
-
-    if (error) throw error;
-
-    return process.exit(0);
-  } catch (err) {
-    console.error(err);
-    return process.exit(1);
-  }
+  process.exit(error ? 1 : 0);
 };
 
 const run = async (opts) => {
@@ -98,14 +97,7 @@ const run = async (opts) => {
     'idle-timeout': idle_timeout
   } = opts;
   cml = new CML({ driver, repo, token });
-
-  try {
-    await cml.runner_token();
-  } catch (err) {
-    throw new Error(
-      'repo_token does not have enough permissions to access workflow API'
-    );
-  }
+  await cml.repo_token_check();
 
   console.log(`Starting ${cml.driver} runner`);
   const proc = await cml.start_runner({
@@ -172,6 +164,7 @@ const argv = yargs
     'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
   )
   .help('h').argv;
+
 run(argv).catch((error) => {
   shutdown({ error });
 });

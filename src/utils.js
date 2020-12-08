@@ -5,6 +5,7 @@ const PATH = require('path');
 const FileType = require('file-type');
 const isSvg = require('is-svg');
 const forge = require('node-forge');
+const NodeSSH = require('node-ssh').NodeSSH;
 
 const { DEBUG_EXEC } = process.env;
 
@@ -156,6 +157,30 @@ const download = async (opts = {}) => {
   });
 };
 
+const ssh_connection = async (opts) => {
+  const { host, username, private_key: privateKey, max_tries = 5 } = opts;
+
+  const ssh = new NodeSSH();
+
+  let trials = 0;
+  while (true) {
+    try {
+      await ssh.connect({
+        host,
+        username,
+        privateKey
+      });
+      break;
+    } catch (err) {
+      if (max_tries === trials) throw err;
+      trials += 1;
+      await sleep(10);
+    }
+  }
+
+  return ssh;
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -166,3 +191,4 @@ exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
 exports.watermark_uri = watermark_uri;
 exports.download = download;
+exports.ssh_connection = ssh_connection;
