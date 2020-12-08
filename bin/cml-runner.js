@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { resolve } = require('path');
+const fse = require('fs-extra');
 const yargs = require('yargs');
 
 const { exec, randid } = require('../src/utils');
@@ -25,7 +26,7 @@ let TIMEOUT_TIMER = 0;
 const JOBS_RUNNING = [];
 
 const shutdown = async (opts) => {
-  const { name, error } = opts;
+  const { name, error, workspace } = opts;
 
   const shutdown_docker_machine = async () => {
     if (DOCKER_MACHINE) {
@@ -36,14 +37,20 @@ const shutdown = async (opts) => {
       try {
         console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
       } catch (err) {
-        console.log(`Failed shutting down docker machine: ${err.message}`);
+        console.log(`\tFailed shutting down docker machine: ${err.message}`);
       }
     }
   };
 
   const shutdown_cloud = async () => {
+    console.log('Cleanup Iterative cloud resources...');
+
+    if (!(await fse.pathExists(resolve(workspace, 'terraform.tfstate')))) {
+      console.log('\tNo Iterative cloud config found. Nothing to do.');
+      return;
+    }
+
     try {
-      console.log('Terraform destroy...');
       const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
       console.log(
         await exec(
@@ -51,16 +58,17 @@ const shutdown = async (opts) => {
         )
       );
     } catch (err) {
-      console.log(`Failed destroying terraform: ${err.message}`);
+      console.log(`\tFailed destroying terraform: ${err.message}`);
     }
   };
 
   try {
     try {
-      console.log('Unregistering runner');
+      console.log('Unregistering runner...');
       await cml.unregister_runner({ name });
+      console.log('\tSuccess');
     } catch (err) {
-      console.log('Failed unregistering runner');
+      console.log('\tFailed');
     }
 
     await shutdown_docker_machine();
@@ -95,7 +103,7 @@ const run = async (opts) => {
     await cml.runner_token();
   } catch (err) {
     throw new Error(
-      'repo_token does not have enough permissions to access CI jobs'
+      'repo_token does not have enough permissions to access workflow API'
     );
   }
 
@@ -120,7 +128,7 @@ const run = async (opts) => {
   };
   proc.stderr.on('data', data_handler);
   proc.stdout.on('data', data_handler);
-  proc.on('exit', () => {
+  proc.on('error', () => {
     shutdown(opts);
   });
 

@@ -1,6 +1,7 @@
 const url = require('url');
 const { spawn } = require('child_process');
-// const fs = require('fs').promises;
+const { resolve } = require('path');
+const fs = require('fs').promises;
 
 const github = require('@actions/github');
 const targz = require('tar.gz');
@@ -150,29 +151,32 @@ class Github {
     const { path = '.', name, labels } = opts;
 
     try {
-      /*
+      const runner_cfg = resolve(path, '.runner');
+
       try {
-        await fs.rmdir(path, { recursive: true });
-      } catch (err) {}
-
-      await fs.mkdir(path);
-      */
-
-      const tar = `${path}/actions-runner.tar.gz`;
-      const arch = 'linux-x64';
-      const ver = '2.274.2';
-      const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
-
-      await download({ url, path: tar });
-      await targz().extract(tar, path);
-      await exec(`${path}/bin/installdependencies.sh`);
+        await fs.unlink(runner_cfg);
+      } catch (e) {
+        const arch = 'linux-x64';
+        const ver = '2.274.2';
+        const tar = resolve(path, 'actions-runner.tar.gz');
+        const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
+        await download({ url, path: tar });
+        await targz().extract(tar, path);
+        await exec(`${path}/bin/installdependencies.sh`);
+      }
 
       await exec(
-        `${path}/config.sh --token "${await this.runner_token()}" --url "${
+        `${resolve(
+          path,
+          'config.sh'
+        )} --token "${await this.runner_token()}" --url "${
           this.repo
-        }"  --name "${name}" --labels "${labels}" --work "${path}/_work"`
+        }"  --name "${name}" --labels "${labels}" --work "${resolve(
+          path,
+          '_work'
+        )}"`
       );
-      return spawn(`${path}/run.sh`, { shell: true });
+      return spawn(resolve(path, 'run.sh'), { shell: true });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
     }

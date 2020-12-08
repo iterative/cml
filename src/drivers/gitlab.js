@@ -3,6 +3,7 @@ const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
 const { spawn } = require('child_process');
 const fs = require('fs').promises;
+const { resolve } = require('path');
 
 const { fetch_upload_data, download } = require('../utils');
 
@@ -90,7 +91,7 @@ class Gitlab {
     const { path = '.', idle_timeout, labels, name } = opts;
 
     try {
-      const bin = `${path}/gitlab-runner`;
+      const bin = resolve(path, 'gitlab-runner');
       const url =
         'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
       await download({ url, path: bin });
