@@ -168,7 +168,7 @@ class Github {
       await exec(
         `${path}/config.sh --token "${await this.runner_token()}" --url "${
           this.repo
-        }"  --name "${name}" --labels "${labels}" --work "_work"`
+        }"  --name "${name}" --labels "${labels}" --work "${path}/_work"`
       );
       return spawn(`${path}/run.sh`, { shell: true });
     } catch (err) {

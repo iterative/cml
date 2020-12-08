@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
+const { resolve } = require('path');
 const yargs = require('yargs');
 
 const { exec, randid } = require('../src/utils');
 const CML = require('../src/cml');
 
-let {
+const {
   DOCKER_MACHINE, // DEPRECATED
 
+  RUNNER_PATH = '.',
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = randid(),
@@ -19,40 +21,39 @@ let {
 } = process.env;
 
 let cml;
-let IS_GITHUB;
 let TIMEOUT_TIMER = 0;
 const JOBS_RUNNING = [];
 
-const shutdown_docker_machine = async () => {
-  if (DOCKER_MACHINE) {
-    console.log('docker-machine destroy...');
-    console.log(
-      'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
-    );
-    try {
-      console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
-    } catch (err) {
-      console.log(`Failed shutting down docker machine: ${err.message}`);
-    }
-  }
-};
-
-const shutdown_cloud = async () => {
-  try {
-    console.log('Terraform destroy...');
-    const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
-    console.log(
-      await exec(
-        `terraform init && terraform destroy -auto-approve ${tf_resource}`
-      )
-    );
-  } catch (err) {
-    console.log(`Failed destroying terraform: ${err.message}`);
-  }
-};
-
 const shutdown = async (opts) => {
   const { name, error } = opts;
+
+  const shutdown_docker_machine = async () => {
+    if (DOCKER_MACHINE) {
+      console.log('docker-machine destroy...');
+      console.log(
+        'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
+      );
+      try {
+        console.log(await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`));
+      } catch (err) {
+        console.log(`Failed shutting down docker machine: ${err.message}`);
+      }
+    }
+  };
+
+  const shutdown_cloud = async () => {
+    try {
+      console.log('Terraform destroy...');
+      const tf_resource = RUNNER_TF_NAME ? `-target=${RUNNER_TF_NAME}` : '';
+      console.log(
+        await exec(
+          `terraform init && terraform destroy -auto-approve ${tf_resource}`
+        )
+      );
+    } catch (err) {
+      console.log(`Failed destroying terraform: ${err.message}`);
+    }
+  };
 
   try {
     try {
@@ -80,6 +81,7 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   const {
+    workspace: path,
     driver,
     repo,
     token,
@@ -88,9 +90,6 @@ const run = async (opts) => {
     'idle-timeout': idle_timeout
   } = opts;
   cml = new CML({ driver, repo, token });
-
-  IS_GITHUB = cml.driver === 'github';
-  RUNNER_NAME = name;
 
   try {
     await cml.runner_token();
@@ -102,20 +101,13 @@ const run = async (opts) => {
 
   console.log(`Starting ${cml.driver} runner`);
   const proc = await cml.start_runner({
-    path: './runner',
+    path,
     name,
     labels,
     idle_timeout
   });
 
-  proc.on('exit', () => {
-    shutdown(opts);
-  });
-  proc.stderr.on('data', (data) => {
-    const log = cml.parse_runner_log({ data });
-    log && console.log(JSON.stringify(log));
-  });
-  proc.stdout.on('data', (data) => {
+  const data_handler = (data) => {
     const log = cml.parse_runner_log({ data });
     log && console.log(JSON.stringify(log));
 
@@ -125,9 +117,14 @@ const run = async (opts) => {
     } else if (log && log.status === 'job_ended') {
       JOBS_RUNNING.pop();
     }
+  };
+  proc.stderr.on('data', data_handler);
+  proc.stdout.on('data', data_handler);
+  proc.on('exit', () => {
+    shutdown(opts);
   });
 
-  if (IS_GITHUB && parseInt(idle_timeout) !== 0) {
+  if (parseInt(idle_timeout) !== 0) {
     const watcher = setInterval(() => {
       TIMEOUT_TIMER >= idle_timeout && shutdown(opts) && clearInterval(watcher);
 
@@ -138,6 +135,12 @@ const run = async (opts) => {
 
 const argv = yargs
   .usage(`Usage: $0`)
+  .default('workspace', RUNNER_PATH)
+  .describe(
+    'workspace',
+    'Runner workspace location. Defaults to current directory.'
+  )
+  .coerce('workspace', (path) => resolve(__dirname, path))
   .default('labels', RUNNER_LABELS)
   .describe('labels', 'Comma delimited runner labels')
   .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
@@ -147,6 +150,9 @@ const argv = yargs
   )
   .default('name', RUNNER_NAME)
   .describe('name', 'Name displayed in the repo once registered')
+  .default('driver', RUNNER_DRIVER)
+  .choices('driver', ['github', 'gitlab'])
+  .describe('driver', 'If not specify it infers it from the ENV.')
   .default('repo', RUNNER_REPO)
   .describe(
     'repo',
@@ -157,10 +163,6 @@ const argv = yargs
     'token',
     'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
   )
-  .default('driver', RUNNER_DRIVER)
-  .choices('driver', ['github', 'gitlab'])
-  .describe('driver', 'If not specify it infers it from the ENV.')
-
   .help('h').argv;
 run(argv).catch((error) => {
   shutdown({ error });

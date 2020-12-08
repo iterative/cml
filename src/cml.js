@@ -125,7 +125,7 @@ class CML {
 
   parse_runner_log(opts = {}) {
     let { data } = opts;
-    if (!data) return '';
+    if (!data) return;
 
     data = data.toString('utf8');
 
@@ -162,10 +162,13 @@ class CML {
         log = { ...log, job };
         log.status = 'job_started';
         return log;
-      } else if (msg.startsWith('Failure') || msg.startsWith('Job succeeded')) {
+      } else if (
+        msg.startsWith('Job failed') ||
+        msg.startsWith('Job succeeded')
+      ) {
         log = { ...log, job };
         log.status = 'job_ended';
-        log.success = !!msg.startsWith('Failure');
+        log.success = !msg.startsWith('Job failed');
         log.level = log.success ? 'info' : 'error';
         return log;
       } else if (msg.includes('Starting runner for')) {
