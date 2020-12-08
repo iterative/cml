@@ -182,7 +182,9 @@ class CML {
   async start_runner(opts = {}) {
     const { path } = opts;
 
-    await fs.mkdir(path);
+    try {
+      await fs.mkdir(path);
+    } catch (e) {}
     return await get_driver(this).start_runner(opts);
   }
 
