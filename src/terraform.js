@@ -26,14 +26,14 @@ const fix_tfstate_version = async (opts = {}) => {
 };
 
 const initapply = async (opts = {}) => {
-  const { dir } = opts;
+  const { dir = '' } = opts;
   return await exec(
     `terraform init ${dir} && terraform apply -auto-approve ${dir}`
   );
 };
 
 const initdestroy = async (opts = {}) => {
-  const { dir, target } = opts;
+  const { dir = '', target } = opts;
   const targetop = target ? `-target=${target}` : '';
   return await exec(
     `terraform init ${dir} && terraform destroy -auto-approve ${targetop} ${dir}`
