@@ -79,6 +79,7 @@ const shutdown = async (opts) => {
   await shutdown_docker_machine();
   await shutdown_tf();
 
+  console.log("exit code:", error ? 1 : 0)
   process.exit(error ? 1 : 0);
 };
 

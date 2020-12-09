@@ -92,11 +92,13 @@ const setup_runners = async (opts) => {
       } \
       ${image}`;
 
-    const { code: docker_code, stdout } = await ssh.execCommand(
+    const xxxx = await ssh.execCommand(
       start_runner_cmd
     );
 
-    if (docker_code) throw new Error(`Error deploying the runner: ${stdout}`);
+    console.log(xxxx);
+
+    //if (docker_code) throw new Error(`Error deploying the runner: ${stdout}`);
 
     await ssh.dispose();
 
@@ -178,8 +180,8 @@ const shutdown = async (opts) => {
     }
   };
 
-  await destroy_terraform();
-  await clear_cml();
+  //await destroy_terraform();
+  //await clear_cml();
   process.exit(error ? 1 : 0);
 };
 
