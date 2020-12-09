@@ -36,7 +36,7 @@ const initdestroy = async (opts = {}) => {
   const { dir, target } = opts;
   const targetop = target ? `-target=${target}` : '';
   return await exec(
-    `terraform init ${dir} && terraform apply -auto-approve ${targetop} ${dir}`
+    `terraform init ${dir} && terraform destroy -auto-approve ${targetop} ${dir}`
   );
 };
 

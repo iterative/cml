@@ -44,8 +44,8 @@ const setup_runners = async (opts) => {
     const resource = resources[i];
     const instance = resource.instances[0];
 
-    console.log('Preparing cloud instance...');
-    console.log(JSON.encode(instance));
+    console.log('Provisioning cloud instance...');
+    console.log(JSON.stringify(instance));
 
     const {
       attributes: {
@@ -107,6 +107,8 @@ const setup_runners = async (opts) => {
 };
 
 const run_terraform = async (opts) => {
+  console.log('Terraform apply...');
+
   const {
     cloud,
     region,
@@ -120,13 +122,6 @@ const run_terraform = async (opts) => {
   const tf_path = join(TF_FOLDER, 'main.tf');
   const tfstate_path = join(TF_FOLDER, 'terraform.tfstate');
 
-  console.log('Clearing previous .cml...');
-  try {
-    await fs.rmdir(TF_FOLDER, { recursive: true });
-    await fs.mkdir(TF_FOLDER);
-  } catch (err) {}
-
-  console.log('Terraform apply...');
   let tpl;
   if (tf_file) {
     tpl = await fs.writeFile(tf_path, await fs.readFile(tf_file));
@@ -161,6 +156,14 @@ const run_terraform = async (opts) => {
   return tfstate;
 };
 
+const clear_cml = async (opts) => {
+  console.log('Clearing previous .cml...');
+  try {
+    await fs.rmdir(TF_FOLDER, { recursive: true });
+    await fs.mkdir(TF_FOLDER);
+  } catch (err) {}
+};
+
 const shutdown = async (opts) => {
   let { error } = opts;
   if (error)
@@ -176,6 +179,7 @@ const shutdown = async (opts) => {
   };
 
   await destroy_terraform();
+  await clear_cml();
   process.exit(error ? 1 : 0);
 };
 
@@ -187,8 +191,10 @@ const run = async (opts) => {
   cml = new CML({ ...opts });
   await cml.repo_token_check();
 
+  await clear_cml();
   const tfstate = await run_terraform(opts);
   await setup_runners({ tfstate, ...opts });
+  console.log('Plan succesfully deployed!');
 };
 
 const argv = yargs
@@ -220,6 +226,9 @@ const argv = yargs
     'tf-file',
     'Use a tf file configuration ignoring region, type and hdd_size.'
   )
+
+  .default('ssh-user', 'ubuntu')
+  .describe('ssh-user', 'Your username to connect with ssh.')
   .default('ssh-private', '')
   .describe(
     'ssh-private',

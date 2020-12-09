@@ -96,6 +96,7 @@ const run = async (opts) => {
     labels,
     'idle-timeout': idle_timeout
   } = opts;
+
   cml = new CML({ driver, repo, token });
   await cml.repo_token_check();
 
