@@ -92,9 +92,7 @@ const setup_runners = async (opts) => {
       } \
       ${image}`;
 
-    const xxxx = await ssh.execCommand(
-      start_runner_cmd
-    );
+    const xxxx = await ssh.execCommand(start_runner_cmd);
 
     console.log(xxxx);
 
