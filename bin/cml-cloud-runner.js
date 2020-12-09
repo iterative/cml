@@ -64,11 +64,14 @@ const setup_runners = async (opts) => {
     console.log('Uploading terraform files...');
     await ssh.putFile(tfstate_path, 'terraform.tfstate');
     await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
+    console.log('\tSuccess');
 
     console.log('Deploying runner...');
     const { code: nvidia_code } = await ssh.execCommand('nvidia-smi');
     const gpu = !nvidia_code;
+    console.log(`\tGPU ${gpu}`);
 
+    console.log(`\tDocker image`);
     const start_runner_cmd = `
       sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
       docker run --name runner --rm ${attached ? '' : '-d'} ${
@@ -92,15 +95,14 @@ const setup_runners = async (opts) => {
       } \
       ${image}`;
 
-    const xxxx = await ssh.execCommand(
+    const { code: docker_code, stdout, stderr } = await ssh.execCommand(
       start_runner_cmd
     );
 
-    console.log(xxxx);
-
-    //if (docker_code) throw new Error(`Error deploying the runner: ${stdout}`);
-
     await ssh.dispose();
+
+    if (docker_code)
+      throw new Error(`Error deploying the runner: ${stdout || stderr}`);
 
     if (!attached) await cml.await_runner({ name: instance_name });
 
@@ -180,8 +182,8 @@ const shutdown = async (opts) => {
     }
   };
 
-  //await destroy_terraform();
-  //await clear_cml();
+  await destroy_terraform();
+  await clear_cml();
   process.exit(error ? 1 : 0);
 };
 
