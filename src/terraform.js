@@ -41,14 +41,7 @@ const initdestroy = async (opts = {}) => {
 };
 
 const iterative_tpl = (opts = {}) => {
-  const {
-    cloud,
-    region,
-    instance_name,
-    instance_type,
-    instance_hdd_size,
-    key_public
-  } = opts;
+  const { cloud, region, name, type, gpu, hdd_size, ssh_public } = opts;
 
   const tpl = `
 terraform {
@@ -65,10 +58,11 @@ provider "iterative" {}
 resource "iterative_machine" "machine" {
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
-  ${instance_name ? `instance_name = "${instance_name}"` : ''}
-  ${instance_type ? `instance_type = "${instance_type}"` : ''}
-  ${instance_hdd_size ? `instance_hdd_size = "${instance_hdd_size}"` : ''}
-  ${key_public ? `key_public = "${key_public}"` : ''}
+  ${name ? `instance_name = "${name}"` : ''}
+  ${type ? `instance_type = "${type}"` : ''}
+  ${gpu ? `instance_gpu = "${gpu}"` : ''}
+  ${hdd_size ? `instance_hdd_size = "${hdd_size}"` : ''}
+  ${ssh_public ? `key_public = "${ssh_public}"` : ''}
 }
 `;
 
