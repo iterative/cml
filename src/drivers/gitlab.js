@@ -88,7 +88,7 @@ class Gitlab {
   }
 
   async start_runner(opts) {
-    const { path = '.', idle_timeout, labels, name } = opts;
+    const { path, idle_timeout, labels, name } = opts;
 
     try {
       const bin = resolve(path, 'gitlab-runner');

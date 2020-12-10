@@ -16,14 +16,15 @@ const {
 const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
+const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
   TF_TARGET,
 
-  RUNNER_PATH = './',
+  RUNNER_PATH = `~/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
-  RUNNER_NAME = `cml-${randid()}`,
+  RUNNER_NAME = NAME,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token,
@@ -33,15 +34,16 @@ const {
 } = process.env;
 
 let cml;
-let TIMEOUT_TIMER = 0;
-const JOBS_RUNNING = [];
+let RUNNER_LAUNCHED = false;
+let RUNNER_TIMEOUT_TIMER = 0;
+const RUNNER_JOBS_RUNNING = [];
 
 const clear_cml = async (opts = {}) => {
   const { cml_path = CML_PATH } = opts;
   console.log('Clearing previous plan...');
   try {
     await fs.rmdir(cml_path, { recursive: true });
-    await fs.mkdir(cml_path);
+    await fs.mkdir(cml_path, { recursive: true });
   } catch (err) {}
 };
 
@@ -63,17 +65,15 @@ const shutdown = async (opts) => {
   };
 
   const shutdown_docker_machine = async () => {
-    if (DOCKER_MACHINE) {
-      console.log('docker-machine destroy...');
-      console.log(
-        'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
-      );
-      try {
-        await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
-      } catch (err) {
-        console.error(`\tFailed shutting down docker machine: ${err.message}`);
-        error = err;
-      }
+    console.log('docker-machine destroy...');
+    console.log(
+      'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
+    );
+    try {
+      await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
+    } catch (err) {
+      console.error(`\tFailed shutting down docker machine: ${err.message}`);
+      error = err;
     }
   };
 
@@ -96,10 +96,10 @@ const shutdown = async (opts) => {
   };
 
   if (cloud) {
-    await clear_cml();
+    //await clear_cml();
   } else {
-    await unregister_runner();
-    await shutdown_docker_machine();
+    RUNNER_LAUNCHED && await unregister_runner();
+    DOCKER_MACHINE && await shutdown_docker_machine();
   }
 
   await shutdown_tf();
@@ -114,11 +114,13 @@ const run_cloud = async (opts) => {
     const {
       cloud,
       cloud_region: region,
-      cloud_name: name = `cml_${randid()}`,
+      cloud_name: name,
       cloud_type: type,
       cloud_gpu: gpu,
       cloud_hdd_size: hdd_size,
       cloud_ssh_private: ssh_private,
+      cloud_ssh_username: ssh_username,
+      cloud_image: image,
       tf_file
     } = opts;
 
@@ -140,7 +142,9 @@ const run_cloud = async (opts) => {
         type,
         gpu,
         hdd_size,
-        ssh_public
+        ssh_public,
+        ssh_username,
+        image,
       });
     }
 
@@ -165,13 +169,12 @@ const run_cloud = async (opts) => {
       instance,
       labels,
       idle_timeout,
-
-      cloud_ssh_user: ssh_user,
+      cloud_ssh_username: username,
       cloud_ssh_private: ssh_private,
       attached,
 
       tf_target,
-      runner_path = '/home/runner'
+      runner_path = RUNNER_PATH
     } = opts;
 
     const {
@@ -187,7 +190,7 @@ const run_cloud = async (opts) => {
 
     const ssh = await ssh_connection({
       host,
-      username: ssh_user,
+      username,
       private_key: key_private
     });
 
@@ -259,7 +262,8 @@ const run_cloud = async (opts) => {
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
 
-  const { workspace: path, name, labels, 'idle-timeout': idle_timeout } = opts;
+  opts.workspace = resolve(__dirname, (workspace ? workspace : ( opts.name? name : RUNNER_NAME)));
+  const { workspace: path, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
     path,
@@ -273,10 +277,10 @@ const run_local = async (opts) => {
     log && console.log(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
-      JOBS_RUNNING.push(1);
-      TIMEOUT_TIMER = 0;
+      RUNNER_JOBS_RUNNING.push(1);
+      RUNNER_TIMEOUT_TIMER = 0;
     } else if (log && log.status === 'job_ended') {
-      JOBS_RUNNING.pop();
+      RUNNER_JOBS_RUNNING.pop();
     }
   };
   proc.stderr.on('data', data_handler);
@@ -287,11 +291,13 @@ const run_local = async (opts) => {
 
   if (parseInt(idle_timeout) !== 0) {
     const watcher = setInterval(() => {
-      TIMEOUT_TIMER >= idle_timeout && shutdown(opts) && clearInterval(watcher);
+      RUNNER_TIMEOUT_TIMER >= idle_timeout && shutdown(opts) && clearInterval(watcher);
 
-      if (!JOBS_RUNNING.length) TIMEOUT_TIMER++;
+      if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
     }, 1000);
   }
+
+  RUNNER_LAUNCHED = true;
 };
 
 const run = async (opts) => {
@@ -314,9 +320,8 @@ const opts = decamelize(
     .default('workspace', RUNNER_PATH)
     .describe(
       'workspace',
-      'Runner workspace location. Defaults to current directory.'
+      'Runner workspace location. Defaults to ~/{name}'
     )
-    .coerce('workspace', (path) => resolve(__dirname, path))
     .default('labels', RUNNER_LABELS)
     .describe('labels', 'Comma delimited runner labels')
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
@@ -326,9 +331,10 @@ const opts = decamelize(
     )
     .default('name', RUNNER_NAME)
     .describe('name', 'Name displayed in the repo once registered')
+
     .default('driver', RUNNER_DRIVER)
-    .choices('driver', ['github', 'gitlab'])
     .describe('driver', 'If not specify it infers it from the ENV.')
+    .choices('driver', ['github', 'gitlab'])
     .default('repo', RUNNER_REPO)
     .describe(
       'repo',
@@ -337,33 +343,37 @@ const opts = decamelize(
     .default('token', repo_token)
     .describe(
       'token',
-      'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+      'Personal access token to be used. If not specified in extracted from ENV.'
     )
 
     .default('cloud')
     .describe('cloud', 'Cloud to deploy the runner')
-    .choices('driver', ['aws', 'azure'])
-    .default('cloud-region')
+    .choices('cloud', ['aws', 'azure'])
+    .default('cloud-region', 'us-west')
     .describe(
       'cloud-region',
-      'Region where the instance is deployed. Defaults to us-west. Also accepts native cloud regions.'
+      'Region where the instance is deployed. Also accepts native cloud regions.'
     )
-    .choices('driver', ['us-east', 'us-west', 'eu-west', 'eu-north'])
+    .choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
     .default('cloud-type')
     .describe('cloud-type', 'Instance type')
-    .choices('cloud-type', ['m', 'l', 'xl'])
+    //.choices('cloud-type', ['m', 'l', 'xl'])
     .default('cloud-gpu-type')
     .describe('cloud-gpu-type', 'Instance type')
     .choices('cloud-gpu-type', ['nogpu', 'k80', 'tesla'])
+    .coerce('cloud-gpu-type', (val) => val === 'nogpu' ? null : val)
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB.')
     .default('cloud-image', 'iterative-cml')
     .describe(
       'cloud-image',
-      'Image used in the cloud instance. Defaults to our CML image (Ubuntu 18.04)'
+      'Image used in the cloud instance. Defaults to our iterative-cml (Ubuntu 18.04)'
     )
-    .default('cloud-ssh-user', 'root')
-    .describe('cloud-ssh-user', 'Your username to connect with ssh.')
+    .default('cloud-ssh-username', 'ubuntu')
+    .describe(
+      'cloud-ssh-username',
+      'Your ssh username. Change only if the specified image is not iterative-cml.'
+    )
     .default('cloud-ssh-private', '')
     .describe(
       'cloud-ssh-private',
@@ -374,12 +384,6 @@ const opts = decamelize(
     .describe(
       'attached',
       'Runs the cloud runner deployment in the foreground. Useful for debugging.'
-    )
-
-    .default('cloud-tf-target', TF_TARGET)
-    .describe(
-      'cloud-tf-target',
-      'Specifies the target resource to be disposed in the tf plan.'
     )
 
     .help('h').argv

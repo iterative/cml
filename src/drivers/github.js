@@ -148,7 +148,7 @@ class Github {
   }
 
   async start_runner(opts) {
-    const { path = '.', name, labels } = opts;
+    const { path, name, labels } = opts;
 
     try {
       const runner_cfg = resolve(path, '.runner');

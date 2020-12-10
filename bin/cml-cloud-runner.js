@@ -17,8 +17,8 @@ const tf = require('../src/terraform');
 const CML = require('../src/cml');
 let cml;
 
-const TF_FOLDER = '.cml';
-const TF_NO_LOCAL = '.nolocal';
+const CML_PATH = '.cml';
+const CML_NO_LOCAL = '.nolocal';
 
 const setup_runners = async (opts) => {
   const { token, repo, driver } = cml;
@@ -36,8 +36,8 @@ const setup_runners = async (opts) => {
     attached
   } = opts;
 
-  const tf_path = join(TF_FOLDER, 'main.tf');
-  const tfstate_path = join(TF_FOLDER, 'terraform.tfstate');
+  const tf_path = join(CML_PATH, 'main.tf');
+  const tfstate_path = join(CML_PATH, 'terraform.tfstate');
 
   const { resources } = tfstate;
   for (let i = 0; i < resources.length; i++) {
@@ -63,7 +63,7 @@ const setup_runners = async (opts) => {
 
     console.log('Uploading terraform files...');
     await ssh.putFile(tfstate_path, 'terraform.tfstate');
-    await ssh.putFile(`${tf_path}${TF_NO_LOCAL}`, 'main.tf');
+    await ssh.putFile(`${tf_path}${CML_NO_LOCAL}`, 'main.tf');
     console.log('\tSuccess');
 
     console.log('Deploying runner...');
@@ -123,8 +123,8 @@ const run_terraform = async (opts) => {
     'ssh-private': ssh_private
   } = opts;
 
-  const tf_path = join(TF_FOLDER, 'main.tf');
-  const tfstate_path = join(TF_FOLDER, 'terraform.tfstate');
+  const tf_path = join(CML_PATH, 'main.tf');
+  const tfstate_path = join(CML_PATH, 'terraform.tfstate');
 
   let tpl;
   if (tf_file) {
@@ -146,14 +146,14 @@ const run_terraform = async (opts) => {
   }
 
   await fs.writeFile(tf_path, tpl);
-  await fs.writeFile(`${tf_path}${TF_NO_LOCAL}`, tpl);
+  await fs.writeFile(`${tf_path}${CML_NO_LOCAL}`, tpl);
 
   const tpl_local = `terraform {
     backend "local" { path = "./${tfstate_path}" }
   }`;
   await fs.appendFile(tf_path, tpl_local);
 
-  await tf.initapply({ dir: TF_FOLDER });
+  await tf.initapply({ dir: CML_PATH });
 
   const tfstate = await tf.load_tfstate(tfstate_path);
 
@@ -163,8 +163,8 @@ const run_terraform = async (opts) => {
 const clear_cml = async (opts) => {
   console.log('Clearing previous .cml...');
   try {
-    await fs.rmdir(TF_FOLDER, { recursive: true });
-    await fs.mkdir(TF_FOLDER);
+    await fs.rmdir(CML_PATH, { recursive: true });
+    await fs.mkdir(CML_PATH);
   } catch (err) {}
 };
 
@@ -175,7 +175,7 @@ const shutdown = async (opts) => {
 
   const destroy_terraform = async () => {
     try {
-      console.log(await tf.initdestroy({ dir: TF_FOLDER }));
+      console.log(await tf.initdestroy({ dir: CML_PATH }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
       error = err;
@@ -203,11 +203,6 @@ const run = async (opts) => {
 
 const argv = yargs
   .usage(`Usage: $0`)
-  .default('image')
-  .describe('image', 'Docker image. Defaults to dvcorg/cml:latest')
-
-  .default('cloud')
-  .describe('cloud', 'Cloud to deploy the runner')
   .default('labels')
   .describe('labels', 'Comma delimited runner labels. Defaults to cml')
   .default('idle-timeout')
@@ -217,6 +212,8 @@ const argv = yargs
   )
   .default('name')
   .describe('name', 'Name displayed in the repo once registered.')
+
+
   .default('region')
   .describe(
     'region',
@@ -225,12 +222,16 @@ const argv = yargs
   .describe('type', 'Instance type. Defaults to m.')
   .default('hdd-size')
   .describe('hdd-size', 'HDD size in GB. Defaults to 10.')
+  .default('image')
+  .describe('image', 'Docker image. Defaults to dvcorg/cml:latest')
+
+  .default('cloud')
+  .describe('cloud', 'Cloud to deploy the runner')
   .default('tf-file')
   .describe(
     'tf-file',
     'Use a tf file configuration ignoring region, type and hdd_size.'
   )
-
   .default('ssh-user', 'ubuntu')
   .describe('ssh-user', 'Your username to connect with ssh.')
   .default('ssh-private', '')

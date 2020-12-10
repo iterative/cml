@@ -150,7 +150,8 @@ const download = async (opts = {}) => {
   const { url, path } = opts;
   const res = await fetch(url);
   const stream = fs.createWriteStream(path);
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    stream.on('error', err => reject(err));
     res.body.pipe(stream);
     res.body.on('error', reject);
     stream.on('finish', resolve);
