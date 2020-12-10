@@ -213,7 +213,6 @@ const argv = yargs
   .default('name')
   .describe('name', 'Name displayed in the repo once registered.')
 
-
   .default('region')
   .describe(
     'region',

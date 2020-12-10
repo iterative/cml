@@ -186,7 +186,9 @@ class CML {
       try {
         await fs.mkdir(path, { recursive: true });
         resolve(await get_driver(this).start_runner(opts));
-      } catch (e) {reject(e)}
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 
