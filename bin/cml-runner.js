@@ -21,7 +21,7 @@ const {
   DOCKER_MACHINE, // DEPRECATED
   TF_TARGET,
 
-  RUNNER_PATH = `~/${NAME}`,
+  RUNNER_PATH = `${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -95,14 +95,23 @@ const shutdown = async (opts) => {
     }
   };
 
-  if (cloud) {
-    //await clear_cml();
-  } else {
-    RUNNER_LAUNCHED && await unregister_runner();
-    DOCKER_MACHINE && await shutdown_docker_machine();
-  }
+  const destroy_terraform = async () => {
+    try {
+      console.log(await tf.initdestroy({ dir: CML_PATH }));
+    } catch (err) {
+      console.error(`\tFailed destroying terraform: ${err.message}`);
+      error = err;
+    }
+  };
 
-  await shutdown_tf();
+  if (cloud) {
+    await destroy_terraform();
+    await clear_cml();
+  } else {
+    RUNNER_LAUNCHED && (await unregister_runner());
+    DOCKER_MACHINE && (await shutdown_docker_machine());
+    await shutdown_tf();
+  }
 
   process.exit(error ? 1 : 0);
 };
@@ -144,7 +153,7 @@ const run_cloud = async (opts) => {
         hdd_size,
         ssh_public,
         ssh_username,
-        image,
+        image
       });
     }
 
@@ -173,8 +182,8 @@ const run_cloud = async (opts) => {
       cloud_ssh_private: ssh_private,
       attached,
 
-      tf_target,
-      runner_path = RUNNER_PATH
+      tf_target
+      // runner_path = RUNNER_PATH
     } = opts;
 
     const {
@@ -215,9 +224,9 @@ const run_cloud = async (opts) => {
     } \
       -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
       -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
-      -v $(pwd)/terraform.tfstate:${join(runner_path, 'terraform.tfstate')} \
-      -v $(pwd)/main.tf:${join(runner_path, 'main.tf')} \
-      -e "RUNNER_PATH=${runner_path}" \
+      -v $(pwd)/terraform.tfstate:${join('/home/runner', 'terraform.tfstate')} \
+      -v $(pwd)/main.tf:${join('/home/runner', 'main.tf')} \
+      -e "RUNNER_PATH=${'/home/runner'}" \
       -e "RUNNER_DRIVER=${driver}" \
       -e "RUNNER_NAME=${instance_name}" \
       -e "RUNNER_REPO=${repo}" \
@@ -256,13 +265,15 @@ const run_cloud = async (opts) => {
       instance
     });
   }
-  console.log('\tSuccesfully deployed!');
 };
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
 
-  opts.workspace = resolve(__dirname, (workspace ? workspace : ( opts.name? name : RUNNER_NAME)));
+  opts.workspace = resolve(
+    __dirname,
+    opts.workspace ? opts.workspace : opts.name ? opts.name : RUNNER_NAME
+  );
   const { workspace: path, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
@@ -291,7 +302,9 @@ const run_local = async (opts) => {
 
   if (parseInt(idle_timeout) !== 0) {
     const watcher = setInterval(() => {
-      RUNNER_TIMEOUT_TIMER >= idle_timeout && shutdown(opts) && clearInterval(watcher);
+      RUNNER_TIMEOUT_TIMER >= idle_timeout &&
+        shutdown(opts) &&
+        clearInterval(watcher);
 
       if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
     }, 1000);
@@ -318,10 +331,7 @@ const opts = decamelize(
   yargs
     .usage(`Usage: $0`)
     .default('workspace', RUNNER_PATH)
-    .describe(
-      'workspace',
-      'Runner workspace location. Defaults to ~/{name}'
-    )
+    .describe('workspace', 'Runner workspace location. Defaults to {name}')
     .default('labels', RUNNER_LABELS)
     .describe('labels', 'Comma delimited runner labels')
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
@@ -357,11 +367,11 @@ const opts = decamelize(
     .choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
     .default('cloud-type')
     .describe('cloud-type', 'Instance type')
-    //.choices('cloud-type', ['m', 'l', 'xl'])
+    // .choices('cloud-type', ['m', 'l', 'xl'])
     .default('cloud-gpu-type')
     .describe('cloud-gpu-type', 'Instance type')
     .choices('cloud-gpu-type', ['nogpu', 'k80', 'tesla'])
-    .coerce('cloud-gpu-type', (val) => val === 'nogpu' ? null : val)
+    .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB.')
     .default('cloud-image', 'iterative-cml')

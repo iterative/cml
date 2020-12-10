@@ -3,6 +3,7 @@ const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
 const { spawn } = require('child_process');
 const fs = require('fs').promises;
+const fse = require('fs-extra');
 const { resolve } = require('path');
 
 const { fetch_upload_data, download } = require('../utils');
@@ -92,10 +93,12 @@ class Gitlab {
 
     try {
       const bin = resolve(path, 'gitlab-runner');
-      const url =
-        'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
-      await download({ url, path: bin });
-      await fs.chmod(bin, '755');
+      if (!(await fse.pathExists(bin))) {
+        const url =
+          'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
+        await download({ url, path: bin });
+        await fs.chmod(bin, '755');
+      }
 
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.register_runner({ tags: labels, name });
