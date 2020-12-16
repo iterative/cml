@@ -149,6 +149,7 @@ class Github {
 
   async start_runner(opts) {
     const { path, name, labels } = opts;
+    console.log('starting_runner');
 
     try {
       const runner_cfg = resolve(path, '.runner');
@@ -156,17 +157,19 @@ class Github {
       try {
         await fs.unlink(runner_cfg);
       } catch (e) {
+        console.log('downloading runner');
         const arch = 'linux-x64';
         const ver = '2.274.2';
         const tar = resolve(path, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: tar });
         await targz().extract(tar, path);
-        await exec(`${path}/bin/installdependencies.sh`);
+        await exec(`sudo ${path}/bin/installdependencies.sh`);
       }
 
+      console.log('launching runner');
       await exec(
-        `${resolve(
+        `sudo ${resolve(
           path,
           'config.sh'
         )} --token "${await this.runner_token()}" --url "${
@@ -176,6 +179,8 @@ class Github {
           '_work'
         )}"`
       );
+
+      console.log('spawning runner');
       return spawn(resolve(path, 'run.sh'), { shell: true });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);

@@ -366,10 +366,12 @@ const opts = decamelize(
     )
     .choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
     .default('cloud-type')
-    .describe('cloud-type', 'Instance type')
-    // .choices('cloud-type', ['m', 'l', 'xl'])
+    .describe(
+      'cloud-type',
+      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+    )
     .default('cloud-gpu-type')
-    .describe('cloud-gpu-type', 'Instance type')
+    .describe('cloud-gpu-type', 'GPU type.')
     .choices('cloud-gpu-type', ['nogpu', 'k80', 'tesla'])
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
