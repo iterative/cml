@@ -164,6 +164,7 @@ class Github {
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: tar });
         await targz().extract(tar, path);
+        await exec(`sudo chmod -R 777 ${path}`);
         await exec(`sudo ${path}/bin/installdependencies.sh`);
       }
 
