@@ -181,13 +181,9 @@ class CML {
 
   async start_runner(opts = {}) {
     const { path } = opts;
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        await fs.mkdir(path, { recursive: true });
-        resolve(await get_driver(this).start_runner(opts));
-      } catch (e) {reject(e)}
-    });
+    await fs.mkdir(path, { recursive: true });
+    await exec(`chmod 777 -R ${path}`);
+    return await get_driver(this).start_runner(opts);
   }
 
   async register_runner(opts = {}) {
