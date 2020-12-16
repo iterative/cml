@@ -169,7 +169,7 @@ class Github {
 
       console.log('launching runner');
       await exec(
-        `sudo ${resolve(
+        `${resolve(
           path,
           'config.sh'
         )} --token "${await this.runner_token()}" --url "${
