@@ -35,8 +35,7 @@
     "cml-publish": "bin/cml-publish.js",
     "cml-tensorboard-dev": "bin/cml-tensorboard-dev.js",
     "cml-runner": "bin/cml-runner.js",
-    "cml-cloud-runner-entrypoint": "bin/cml-runner.js",
-    "test-cml-cloud-runner": "bin/cml-cloud-runner.js"
+    "cml-cloud-runner-entrypoint": "bin/cml-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
