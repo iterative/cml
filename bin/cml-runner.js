@@ -111,7 +111,7 @@ const shutdown = async (opts) => {
   };
 
   if (cloud) {
-    //await destroy_terraform();
+    await destroy_terraform();
   } else {
     RUNNER_LAUNCHED && (await unregister_runner());
     DOCKER_MACHINE && (await shutdown_docker_machine());
@@ -317,6 +317,7 @@ const run_local = async (opts) => {
 
 const run = async (opts) => {
   console.log(process.env);
+  console.log(opts);
 
   process.on('SIGTERM', () => shutdown(opts));
   process.on('SIGINT', () => shutdown(opts));
