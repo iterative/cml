@@ -219,7 +219,9 @@ const run_cloud = async (opts) => {
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     sudo apt update && sudo apt-get install -y terraform nodejs && \
-    sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
+    sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner`;
+
+    const launch_runner_cmd = `
 (echo 'launching runner' && \
 cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
@@ -233,16 +235,24 @@ cml-runner \
 sleep 10)
 `;
 
-    const { code: docker_code, stdout, stderr } = await ssh.execCommand(
+    console.log(start_runner_cmd);
+    console.log(launch_runner_cmd);
+
+    const { code: install_code, stdout, stderr } = await ssh.execCommand(
       start_runner_cmd
     );
 
-    console.log(start_runner_cmd);
+    const { code: run_code, stdout, stderr } = await ssh.execCommand(
+      start_runner_cmd
+    );
 
     await ssh.dispose();
 
-    if (docker_code)
-      throw new Error(`Error deploying the runner: ${stdout || stderr}`);
+    if (install_code)
+      throw new Error(`Error installing the runner: ${stdout || stderr}`);
+
+    if (run_code)
+      throw new Error(`Error running the runner: ${stdout || stderr}`);
 
     if (!attached) await cml.await_runner({ name: instance_name });
 
