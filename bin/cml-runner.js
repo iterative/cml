@@ -52,6 +52,7 @@ const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workspace = '' } = opts;
 
+  console.log(error);
   if (error) console.error(error);
 
   const unregister_runner = async () => {
