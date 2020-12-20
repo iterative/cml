@@ -57,7 +57,7 @@ const iterative_machine_tpl = (opts = {}) => {
   const { cloud, region, image, name, type, gpu, hdd_size } = opts;
 
   return `
-${iterative_provider_tpl(opts)}
+${iterative_provider_tpl()}
 
 resource "iterative_machine" "machine" {
   ${cloud ? `cloud = "${cloud}"` : ''}

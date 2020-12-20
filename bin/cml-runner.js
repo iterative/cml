@@ -132,8 +132,8 @@ const run_cloud = async (opts) => {
 
     const {
       cloud,
+      name,
       cloud_region: region,
-      cloud_name: name,
       cloud_type: type,
       cloud_gpu: gpu,
       cloud_hdd_size: hdd_size,
@@ -165,8 +165,6 @@ const run_cloud = async (opts) => {
         image,
       });
     }
-
-    console.log(tpl);
 
     await fs.writeFile(tf_path, tpl);
     await tf.init({ dir: CML_PATH });
@@ -225,7 +223,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 --idle-timeout ${idle_timeout} \
 --driver ${driver} \
 --repo ${repo} \
---token ${token} ${attached ? '' : '< /dev/null > std.out 2> std.err &'}) && sleep 10)
+--token ${token} ${attached ? '' : '< /dev/null > std.out 2> std.err &'}) && sleep 10
 `;
 
     const { 
