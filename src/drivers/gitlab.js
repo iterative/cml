@@ -6,7 +6,7 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 
-const { fetch_upload_data, download } = require('../utils');
+const { fetch_upload_data, download, exec } = require('../utils');
 
 class Gitlab {
   constructor(opts = {}) {
@@ -97,18 +97,23 @@ class Gitlab {
         const url =
           'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
         await download({ url, path: bin });
-        await fs.chmod(bin, '755');
+        //await fs.chmod(path, '777');
+        await exec(`chmod 777 -R ${path}`);
       }
 
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.register_runner({ tags: labels, name });
       const command = `${bin} --log-format="json" run-single \
+        --builds-dir "${path}" \
+        --cache-dir "${path}" \
         --url "${protocol}//${host}" \
         --name "${name}" \
         --token "${token}" \
         --wait-timeout ${idle_timeout} \
         --executor "shell" \
         --request-concurrency 1`;
+
+      console.log(command)
 
       return spawn(command, { shell: true });
     } catch (err) {

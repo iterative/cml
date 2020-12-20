@@ -82,7 +82,7 @@ const shutdown = async (opts) => {
     const { tf_resource } = opts;
 
     if (!tf_resource) {
-      console.log(`\tNo TF resosurce found`);
+      console.log(`\tNo TF resource found`);
       return;
     }
     
