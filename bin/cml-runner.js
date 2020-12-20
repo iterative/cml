@@ -87,8 +87,12 @@ const shutdown = async (opts) => {
     }
     
     try {
-      await tf.init({ dir: CML_PATH });
-      await tf.apply({ dir: CML_PATH });
+      const tf_path = join(CML_PATH, 'main.tf');
+      tpl = tf.iterative_provider_tpl();
+      await fs.writeFile(tf_path, tpl);
+      console.log(await tf.init({ dir: CML_PATH }));
+      console.log(await exec('ls'));
+      console.log(await tf.apply({ dir: CML_PATH }));
       const path = join(CML_PATH, 'terraform.tfstate');
       const tfstate = await load_tfstate({ path });
       tfstate.resources = [ JSON.parse(tf_resource) ];
