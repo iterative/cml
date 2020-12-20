@@ -89,7 +89,7 @@ const shutdown = async (opts) => {
     }
     
     try {
-      await fs.mkdir(cml_path, { recursive: true });
+      await fs.mkdir(CML_PATH, { recursive: true });
       const tf_path = join(CML_PATH, 'main.tf');
       const tpl = tf.iterative_provider_tpl();
       await fs.writeFile(tf_path, tpl);
