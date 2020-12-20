@@ -242,7 +242,7 @@ sleep 10)
       start_runner_cmd
     );
 
-    const { code: run_code, stdout, stderr } = await ssh.execCommand(
+    const { code: run_code, stdout: run_stdout, stderr: run_stderr} = await ssh.execCommand(
       start_runner_cmd
     );
 
@@ -252,7 +252,7 @@ sleep 10)
       throw new Error(`Error installing the runner: ${stdout || stderr}`);
 
     if (run_code)
-      throw new Error(`Error running the runner: ${stdout || stderr}`);
+      throw new Error(`Error running the runner: ${run_stdout || run_stderr}`);
 
     if (!attached) await cml.await_runner({ name: instance_name });
 
