@@ -225,6 +225,7 @@ class CML {
     try {
       await this.runner_token();
     } catch (err) {
+      console.log(err)
       throw new Error(
         'repo_token does not have enough permissions to access workflow API'
       );

@@ -19,7 +19,6 @@ const CML = require('../src/cml');
 const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
-  TF_TARGET,
 
   RUNNER_PATH = `${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
@@ -30,7 +29,9 @@ const {
   repo_token,
 
   CML_PATH = '.cml',
-  CML_NO_LOCAL = '.nolocal'
+
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY
 } = process.env;
 
 let cml;
@@ -78,17 +79,22 @@ const shutdown = async (opts) => {
   };
 
   const shutdown_tf = async () => {
-    console.log('Cleanup Iterative cloud resources...');
-    const tfstate_path = resolve(workspace, 'terraform.tfstate');
+    const { tf_resource } = opts;
 
-    if (!(await fse.pathExists(tfstate_path))) {
-      console.log('\tNo Iterative cloud config found. Nothing to do.');
+    if (!tf_resource) {
+      console.log(`\tNo TF resosurce found`);
       return;
     }
-
+    
     try {
-      await tf.fix_tfstate_version({ path: tfstate_path });
-      await tf.initdestroy({ target: TF_TARGET });
+      await tf.init({ dir: CML_PATH });
+      await tf.apply({ dir: CML_PATH });
+      const path = join(CML_PATH, 'terraform.tfstate');
+      const tfstate = await load_tfstate({ path });
+      tfstate.resources = [ JSON.parse(tf_resource) ];
+      console.log(tfstate);
+      await save_tfstate({ tfstate, path });
+      await tf.destroy({ dir: CML_PATH });
     } catch (err) {
       console.error(`\tFailed Terraform destroy: ${err.message}`);
       error = err;
@@ -97,7 +103,7 @@ const shutdown = async (opts) => {
 
   const destroy_terraform = async () => {
     try {
-      console.log(await tf.initdestroy({ dir: CML_PATH }));
+      console.log(await tf.destroy({ dir: CML_PATH }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
       error = err;
@@ -105,8 +111,7 @@ const shutdown = async (opts) => {
   };
 
   if (cloud) {
-    await destroy_terraform();
-    await clear_cml();
+    //await destroy_terraform();
   } else {
     RUNNER_LAUNCHED && (await unregister_runner());
     DOCKER_MACHINE && (await shutdown_docker_machine());
@@ -118,6 +123,8 @@ const shutdown = async (opts) => {
 
 const run_cloud = async (opts) => {
   const run_terraform = async (opts) => {
+    await tf.check_min_version();
+
     console.log('Terraform apply...');
 
     const {
@@ -134,7 +141,6 @@ const run_cloud = async (opts) => {
     } = opts;
 
     const tf_path = join(CML_PATH, 'main.tf');
-    const tfstate_path = join(CML_PATH, 'terraform.tfstate');
 
     let tpl;
     if (tf_file) {
@@ -144,7 +150,7 @@ const run_cloud = async (opts) => {
         ? ssh_public_from_private_rsa(ssh_private)
         : null;
 
-      tpl = tf.iterative_tpl({
+      tpl = tf.iterative_machine_tpl({
         cloud,
         region,
         name,
@@ -153,21 +159,18 @@ const run_cloud = async (opts) => {
         hdd_size,
         ssh_public,
         ssh_username,
-        image
+        image,
       });
     }
 
+    console.log(tpl);
+
     await fs.writeFile(tf_path, tpl);
-    await fs.writeFile(`${tf_path}${CML_NO_LOCAL}`, tpl);
+    await tf.init({ dir: CML_PATH });
+    await tf.apply({ dir: CML_PATH });
 
-    const tpl_local = `terraform {
-      backend "local" { path = "./${tfstate_path}" }
-    }`;
-    await fs.appendFile(tf_path, tpl_local);
-
-    await tf.initapply({ dir: CML_PATH });
-
-    const tfstate = await tf.load_tfstate(tfstate_path);
+    const tfstate_path = join(CML_PATH, 'terraform.tfstate');
+    const tfstate = await tf.load_tfstate({ path: tfstate_path });
 
     return tfstate;
   };
@@ -175,14 +178,13 @@ const run_cloud = async (opts) => {
   const setup_runner = async (opts) => {
     const { token, repo, driver } = cml;
     const {
-      instance,
       labels,
       idle_timeout,
       cloud_ssh_username: username,
       cloud_ssh_private: ssh_private,
       attached,
 
-      tf_target
+      resource,
       // runner_path = RUNNER_PATH
     } = opts;
 
@@ -192,10 +194,10 @@ const run_cloud = async (opts) => {
         instance_ip: host,
         key_private = ssh_private
       }
-    } = instance;
+    } = resource.instances[0];
 
-    console.log('Provisioning cloud instance...');
-    console.log(JSON.stringify(instance));
+    console.log('Provisioning resource...');
+    console.log(JSON.stringify(resource));
 
     const ssh = await ssh_connection({
       host,
@@ -203,42 +205,35 @@ const run_cloud = async (opts) => {
       private_key: key_private
     });
 
-    console.log('Uploading terraform files...');
-    const tfstate_path = join(CML_PATH, 'terraform.tfstate');
-    await ssh.putFile(tfstate_path, 'terraform.tfstate');
-
-    const tf_path = join(CML_PATH, 'main.tf');
-    await ssh.putFile(`${tf_path}${CML_NO_LOCAL}`, 'main.tf');
-    console.log('\tSuccess');
-
     console.log('Deploying runner...');
-    const { code: nvidia_code } = await ssh.execCommand('nvidia-smi');
-    const gpu = !nvidia_code;
-    console.log(`\tGPU ${gpu}`);
-
-    console.log(`\tDocker image`);
     const start_runner_cmd = `
-      sudo setfacl --modify user:\${USER}:rw /var/run/docker.sock && \
-      docker run --name runner --rm ${attached ? '' : '-d'} ${
-      gpu ? '--gpus all' : ''
-    } \
-      -e AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY} \
-      -e AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID} \
-      -v $(pwd)/terraform.tfstate:${join('/home/runner', 'terraform.tfstate')} \
-      -v $(pwd)/main.tf:${join('/home/runner', 'main.tf')} \
-      -e "RUNNER_PATH=${'/home/runner'}" \
-      -e "RUNNER_DRIVER=${driver}" \
-      -e "RUNNER_NAME=${instance_name}" \
-      -e "RUNNER_REPO=${repo}" \
-      -e "repo_token=${token}" \
-      ${tf_target ? `-e "TF_TARGET=iterative_machine.${tf_target}"` : ''} \
-      ${labels ? `-e "RUNNER_LABELS=${labels}"` : ''} \
-      ${idle_timeout ? `-e "RUNNER_IDLE_TIMEOUT=${idle_timeout}"` : ''} \
-      davidgortega/cml:runner`;
+    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
+    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
+    sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /etc/apt/sources.list.d/* && \
+    echo "APT::Get::Assume-Yes \"true\";" | sudo tee -a /etc/apt/apt.conf.d/90assumeyes && \
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo bash && \
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
+    sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    sudo apt update && sudo apt-get install -y terraform nodejs && \
+    sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
+(echo 'launching runner' && \
+cml-runner \
+--tf_resource='${JSON.stringify(resource)}' \
+--name ${instance_name} \
+--workspace ~/runner \
+--labels ${labels} \
+--idle-timeout ${idle_timeout} \
+--driver ${driver}
+--repo ${repo} \
+--token ${token}  && \
+sleep 10)
+`;
 
     const { code: docker_code, stdout, stderr } = await ssh.execCommand(
       start_runner_cmd
     );
+
+    console.log(start_runner_cmd);
 
     await ssh.dispose();
 
@@ -257,13 +252,20 @@ const run_cloud = async (opts) => {
   const { resources } = tfstate;
   for (let i = 0; i < resources.length; i++) {
     const resource = resources[i];
-    const instance = resource.instances[0];
 
-    await setup_runner({
-      ...opts,
-      tf_target: resource.name,
-      instance
-    });
+    if (resource.type.startsWith('iterative_')) {
+
+      const { instances } = resource;
+
+      for (let j = 0; j < instances.length; j++) {
+        const instance = instances[j];
+
+        await setup_runner({
+          ...opts,
+          resource: { ...resource, instances: [instance] }
+        });
+      }
+    }
   }
 };
 
@@ -314,6 +316,8 @@ const run_local = async (opts) => {
 };
 
 const run = async (opts) => {
+  console.log(process.env);
+
   process.on('SIGTERM', () => shutdown(opts));
   process.on('SIGINT', () => shutdown(opts));
   process.on('SIGQUIT', () => shutdown(opts));
@@ -321,6 +325,7 @@ const run = async (opts) => {
   const { driver, repo, token, cloud } = opts;
 
   cml = new CML({ driver, repo, token });
+
   await cml.repo_token_check();
 
   if (cloud) await run_cloud(opts);
@@ -397,6 +402,8 @@ const opts = decamelize(
       'attached',
       'Runs the cloud runner deployment in the foreground. Useful for debugging.'
     )
+    .default('tf_resource')
+    .hide('tf_resource')
 
     .help('h').argv
 );
