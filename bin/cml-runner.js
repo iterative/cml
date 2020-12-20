@@ -214,11 +214,10 @@ const run_cloud = async (opts) => {
     const start_runner_cmd = `
     export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
     export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
-    sudo rm -rf /var/lib/apt/lists/* && sudo rm -rf /etc/apt/sources.list.d/* && \
     echo "APT::Get::Assume-Yes \"true\";" | sudo tee -a /etc/apt/apt.conf.d/90assumeyes && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    sudo apt update && sudo apt-get install -y terraform && \
+    sudo apt update && sudo apt-get install -y terraform && echo 'installed tf' && \
     sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner`;
 
     const launch_runner_cmd = `
