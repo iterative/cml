@@ -211,7 +211,7 @@ const run_cloud = async (opts) => {
     const cmd = `
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
-DEBIAN_FRONTEND=noninteractive & \
+DEBIAN_FRONTEND=noninteractive && \
 echo "APT::Get::Assume-Yes \"true\";" | sudo tee -a /etc/apt/apt.conf.d/90assumeyes && \
 sudo apt update && sudo apt install -y git && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
@@ -230,7 +230,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
       code: cmd_code, 
       stdout: cmd_stdout, 
       stderr: cmd_stderr} = await ssh.execCommand(cmd);
-
+    
     if (cmd_code) {
       await ssh.dispose();
       throw new Error(`Error launching the runner: ${cmd_stdout || cmd_stderr}`);
@@ -241,7 +241,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
       await cml.await_runner({ name: instance_name });
     }
 
-    console.log('\tSuccess');
+    console.log(`\tSuccess: ${cmd_stdout}`);
   };
 
   console.log('Deploying cloud runner plan...');
