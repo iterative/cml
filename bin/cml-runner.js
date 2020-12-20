@@ -233,9 +233,11 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
       stdout: cmd_stdout, 
       stderr: cmd_stderr} = await ssh.execCommand(cmd);
 
-    if (cmd_code)
+    if (cmd_code) {
+      await ssh.dispose();
       throw new Error(`Error launching the runner: ${cmd_stdout || cmd_stderr}`);
-
+    }
+      
     if (!attached) {
       await ssh.dispose();
       await cml.await_runner({ name: instance_name });
