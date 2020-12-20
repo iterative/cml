@@ -52,7 +52,6 @@ const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workspace = '' } = opts;
 
-  console.log(error);
   if (error) console.error(error);
 
   const unregister_runner = async () => {
@@ -81,7 +80,6 @@ const shutdown = async (opts) => {
 
   const shutdown_tf = async () => {
     const { tf_resource } = opts;
-    console.log( JSON.parse(tf_resource) );
 
     if (!tf_resource) {
       console.log(`\tNo TF resosurce found`);
@@ -230,6 +228,8 @@ console.log({ repo, token });
 console.log({ repo, token });
 console.log({ repo, token });
     const launch_runner_cmd = `
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 (echo 'launching runner' && \
 cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
@@ -267,15 +267,16 @@ sleep 10)
       launch_runner_cmd
     );
 
-    await ssh.dispose();
-
     //if (install_code)
       //throw new Error(`Error installing the runner: ${stdout || stderr}`);
 
     if (run_code)
       throw new Error(`Error running the runner: ${run_stdout || run_stderr}`);
 
-    if (!attached) await cml.await_runner({ name: instance_name });
+    if (!attached) {
+      await ssh.dispose();
+      await cml.await_runner({ name: instance_name });
+    }
 
     console.log('\tSuccess');
   };
