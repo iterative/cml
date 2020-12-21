@@ -209,6 +209,14 @@ const run_cloud = async (opts) => {
 
     console.log('Deploying runner...');
 
+    const cmd_setup = `
+DEBIAN_FRONTEND=noninteractive
+curl -sL https://deb.nodesource.com/setup_12.x | sudo bash
+curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+sudo apt -y update && sudo apt-get install -y terraform nodejs 
+    `;
+
     const cmd = `
 DEBIAN_FRONTEND=noninteractive && \
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
@@ -228,6 +236,8 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 --repo ${repo} \
 --token ${token} ${attached ? '' : '< /dev/null > std.out 2> std.err &'}) && sleep 10
 `;
+
+    //await ssh.execCommand(cmd_setup);
 
     const { 
       code: cmd_code, 
