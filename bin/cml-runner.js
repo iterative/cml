@@ -314,8 +314,8 @@ const run = async (opts) => {
   const { driver, repo, token, cloud, workdir } = opts;
 
   console.log(workdir);
-  await fs.mkdir(opts.workdir, { recursive: true });
-  //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
+  //await fs.mkdir(opts.workdir, { recursive: true });
+  await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
 
   cml = new CML({ driver, repo, token });
 
