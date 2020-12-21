@@ -9,6 +9,7 @@ const targz = require('tar.gz');
 const { download, exec } = require('../utils');
 
 const CHECK_TITLE = 'CML Report';
+process.env.RUNNER_ALLOW_RUNASROOT=1
 
 const owner_repo = (opts) => {
   let owner, repo;
@@ -158,7 +159,7 @@ class Github {
         await fs.unlink(runner_cfg);
       } catch (e) {
         console.log('downloading runner');
-        const arch =  process.platform === 'darwin' ? 'osx': 'linux-x64';
+        const arch = process.platform === 'darwin' ? 'osx-x64': 'linux-x64';
         const ver = '2.274.2';
         const tar = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
