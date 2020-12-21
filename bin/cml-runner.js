@@ -268,7 +268,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
 
-  opts.workdir = resolve(__dirname, opts.workdir || opts.name);
+  opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
   const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
