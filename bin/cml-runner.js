@@ -269,6 +269,7 @@ const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
 
   opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
+  console.log(opts.workdir);
   const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
