@@ -310,8 +310,7 @@ const run = async (opts) => {
   process.on('SIGINT', () => shutdown(opts));
   process.on('SIGQUIT', () => shutdown(opts));
 
-  opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
-  
+  opts.workdir = RUNNER_PATH;
   const { driver, repo, token, cloud, workdir } = opts;
 
   console.log(workdir);
@@ -329,8 +328,6 @@ const run = async (opts) => {
 const opts = decamelize(
   yargs
     .usage(`Usage: $0`)
-    .default('workdir', RUNNER_PATH)
-    .describe('workdir', 'Runner workspace location. Defaults to {name}')
     .default('labels', RUNNER_LABELS)
     .describe('labels', 'Comma delimited runner labels')
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
