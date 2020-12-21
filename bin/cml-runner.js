@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { resolve, join } = require('path');
+const { join } = require('path');
 const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
@@ -137,11 +137,6 @@ const run_cloud = async (opts) => {
       workdir
     } = opts;
 
-    console.log('Clearing previous plan...');
-    try {
-      await fs.rmdir(join(workdir, CML_PATH), { recursive: true });
-      await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
-    } catch (err) {}
     const tf_path = join(workdir, CML_PATH);
     const tf_main_path = join(tf_path, 'main.tf');
 
@@ -209,10 +204,11 @@ const run_cloud = async (opts) => {
     console.log('Deploying runner...');
 
     const cmd = `
+sudo sh -c "echo \"group ALL=(ubuntu) NOPASSWD: ALL\" >> /etc/sudoers"
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 DEBIAN_FRONTEND=noninteractive && \
-sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
+npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
 --name ${instance_name} \
@@ -314,9 +310,12 @@ const run = async (opts) => {
   const { driver, repo, token, cloud, workdir } = opts;
 
   console.log(workdir);
-  //await fs.mkdir(opts.workdir, { recursive: true });
-  await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
-
+  await fs.mkdir(opts.workdir, { recursive: true });
+  //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
+  try {
+    await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
+  } catch (err) {}
+  
   cml = new CML({ driver, repo, token });
 
   await cml.repo_token_check();
