@@ -159,7 +159,7 @@ class Github {
       } catch (e) {
         console.log('downloading runner');
         const arch =  process.platform === 'darwin' ? 'osx': 'linux-x64';
-        const ver = '2.275.1';
+        const ver = '2.274.2';
         const tar = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: tar });
