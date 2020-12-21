@@ -211,8 +211,6 @@ const run_cloud = async (opts) => {
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 DEBIAN_FRONTEND=noninteractive && \
-echo "APT::Get::Assume-Yes \"true\";" | sudo tee -a /etc/apt/apt.conf.d/90assumeyes && \
-sudo apt update && sudo apt install -y git && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
