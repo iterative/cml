@@ -204,7 +204,7 @@ const run_cloud = async (opts) => {
     console.log('Deploying runner...');
 
     const cmd = `
-sudo sh -c "echo \"group ALL=(ubuntu) NOPASSWD: ALL\" >> /etc/sudoers && \"
+sudo sh -c "echo \"group ALL=ubuntu NOPASSWD: ALL\" >> /etc/sudoers && sudo su && \"
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 DEBIAN_FRONTEND=noninteractive && \
