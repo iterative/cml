@@ -19,7 +19,7 @@ const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `./${NAME}`,
+  RUNNER_PATH = `/~/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -38,18 +38,10 @@ let RUNNER_LAUNCHED = false;
 let RUNNER_TIMEOUT_TIMER = 0;
 const RUNNER_JOBS_RUNNING = [];
 
-const setup_cml = async (opts = {}) => {
-  const { workdir = '' } = opts;
-  console.log('Clearing previous plan...');
-  try {
-    await fs.rmdir(join(workdir, CML_PATH), { recursive: true });
-    await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
-  } catch (err) {}
-};
-
 const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
+  const tf_path = join(workdir) 
 
   if (error) console.error(error);
 
@@ -86,7 +78,6 @@ const shutdown = async (opts) => {
     }
     
     try {
-      const tf_path = join(workdir, CML_PATH) 
       await fs.mkdir(tf_path, { recursive: true });
       const tf_main_path = join(tf_main_path, 'main.tf');
       const tpl = tf.iterative_provider_tpl();
@@ -106,7 +97,7 @@ const shutdown = async (opts) => {
 
   const destroy_terraform = async () => {
     try {
-      console.log(await tf.destroy({ dir: CML_PATH }));
+      console.log(await tf.destroy({ dir: tf_path }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
       error = err;
@@ -146,6 +137,11 @@ const run_cloud = async (opts) => {
       workdir
     } = opts;
 
+    console.log('Clearing previous plan...');
+    try {
+      await fs.rmdir(join(workdir, CML_PATH), { recursive: true });
+      await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
+    } catch (err) {}
     const tf_path = join(workdir, CML_PATH);
     const tf_main_path = join(tf_path, 'main.tf');
 
@@ -247,8 +243,6 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
   };
 
   console.log('Deploying cloud runner plan...');
-  await setup_cml({ workdir });
-
   const tfstate = await run_terraform(opts);
   const { resources } = tfstate;
   for (let i = 0; i < resources.length; i++) {
