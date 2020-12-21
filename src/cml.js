@@ -186,9 +186,6 @@ class CML {
   }
 
   async start_runner(opts = {}) {
-    const { workdir } = opts;
-    await fs.mkdir(workdir, { recursive: true });
-    //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
     return await get_driver(this).start_runner(opts);
   }
 

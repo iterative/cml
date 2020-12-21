@@ -19,7 +19,7 @@ const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `${NAME}`,
+  RUNNER_PATH = `./${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -49,7 +49,7 @@ const clear_cml = async (opts = {}) => {
 
 const shutdown = async (opts) => {
   let { error, cloud } = opts;
-  const { name, workspace = '' } = opts;
+  const { name, workdir = '' } = opts;
 
   if (error) console.error(error);
 
@@ -86,17 +86,18 @@ const shutdown = async (opts) => {
     }
     
     try {
-      await fs.mkdir(CML_PATH, { recursive: true });
-      const tf_path = join(CML_PATH, 'main.tf');
+      const tf_path = join(workdir, CML_PATH) 
+      await fs.mkdir(tf_path, { recursive: true });
+      const tf_main_path = join(tf_main_path, 'main.tf');
       const tpl = tf.iterative_provider_tpl();
       await fs.writeFile(tf_path, tpl);
-      await tf.init({ dir: CML_PATH });
-      await tf.apply({ dir: CML_PATH });
-      const path = join(CML_PATH, 'terraform.tfstate');
+      await tf.init({ dir: tf_path });
+      await tf.apply({ dir: tf_path });
+      const path = join(tf_path, 'terraform.tfstate');
       const tfstate = await tf.load_tfstate({ path });
       tfstate.resources = [ JSON.parse(tf_resource) ];
       await tf.save_tfstate({ tfstate, path });
-      await tf.destroy({ dir: CML_PATH });
+      await tf.destroy({ dir: tf_path });
     } catch (err) {
       console.error(`\tFailed Terraform destroy: ${err.message}`);
       error = err;
@@ -139,14 +140,16 @@ const run_cloud = async (opts) => {
       cloud_ssh_private: ssh_private,
       cloud_ssh_username: ssh_username,
       cloud_image: image,
-      tf_file
+      tf_file,
+      workdir
     } = opts;
 
-    const tf_path = join(CML_PATH, 'main.tf');
+    const tf_path = join(workdir, CML_PATH);
+    const tf_main_path = join(tf_path, 'main.tf');
 
     let tpl;
     if (tf_file) {
-      tpl = await fs.writeFile(tf_path, await fs.readFile(tf_file));
+      tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
     } else {
       const ssh_public = ssh_private
         ? ssh_public_from_private_rsa(ssh_private)
@@ -165,11 +168,11 @@ const run_cloud = async (opts) => {
       });
     }
 
-    await fs.writeFile(tf_path, tpl);
-    await tf.init({ dir: CML_PATH });
-    await tf.apply({ dir: CML_PATH });
+    await fs.writeFile(tf_main_path, tpl);
+    await tf.init({ dir: tf_path });
+    await tf.apply({ dir: tf_path });
 
-    const tfstate_path = join(CML_PATH, 'terraform.tfstate');
+    const tfstate_path = join(tf_path, 'terraform.tfstate');
     const tfstate = await tf.load_tfstate({ path: tfstate_path });
 
     return tfstate;
@@ -185,7 +188,7 @@ const run_cloud = async (opts) => {
       attached,
 
       resource,
-      // runner_path = RUNNER_PATH
+      workdir
     } = opts;
 
     const {
@@ -215,7 +218,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
 --name ${instance_name} \
---workspace ~/runner \
+--workdir ${workdir} \
 --labels ${labels} \
 --idle-timeout ${idle_timeout} \
 --driver ${driver} \
@@ -267,9 +270,6 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-
-  opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
-  console.log(opts.workdir);
   const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
@@ -314,7 +314,14 @@ const run = async (opts) => {
   process.on('SIGINT', () => shutdown(opts));
   process.on('SIGQUIT', () => shutdown(opts));
 
-  const { driver, repo, token, cloud } = opts;
+  opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
+  
+
+  const { driver, repo, token, cloud, workdir } = opts;
+
+  console.log(workdir);
+  await fs.mkdir(opts.workdir, { recursive: true });
+  //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
 
   cml = new CML({ driver, repo, token });
 
