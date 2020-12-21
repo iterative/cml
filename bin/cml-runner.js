@@ -206,9 +206,13 @@ const run_cloud = async (opts) => {
     console.log('Deploying runner...');
 
     const cmd = `
+DEBIAN_FRONTEND=noninteractive && \
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
-DEBIAN_FRONTEND=noninteractive && \
+export AZURE_CLIENT_ID=${AZURE_CLIENT_ID} && \
+export AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET} && \
+export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
+export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
@@ -310,10 +314,8 @@ const run = async (opts) => {
   opts.workdir = RUNNER_PATH;
   const { driver, repo, token, cloud, workdir } = opts;
 
-  console.log(workdir);
-  await fs.mkdir(opts.workdir, { recursive: true });
-  //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
   try {
+    console.log(`Preparing workdir ${workdir}...`);
     await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
   } catch (err) {}
   
