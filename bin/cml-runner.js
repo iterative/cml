@@ -38,12 +38,12 @@ let RUNNER_LAUNCHED = false;
 let RUNNER_TIMEOUT_TIMER = 0;
 const RUNNER_JOBS_RUNNING = [];
 
-const clear_cml = async (opts = {}) => {
-  const { cml_path = CML_PATH } = opts;
+const setup_cml = async (opts = {}) => {
+  const { workdir = '' } = opts;
   console.log('Clearing previous plan...');
   try {
-    await fs.rmdir(cml_path, { recursive: true });
-    await fs.mkdir(cml_path, { recursive: true });
+    await fs.rmdir(join(workdir, CML_PATH), { recursive: true });
+    await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
   } catch (err) {}
 };
 
@@ -125,6 +125,8 @@ const shutdown = async (opts) => {
 };
 
 const run_cloud = async (opts) => {
+  const { workdir } = opts;
+
   const run_terraform = async (opts) => {
     await tf.check_min_version();
 
@@ -245,7 +247,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
   };
 
   console.log('Deploying cloud runner plan...');
-  await clear_cml();
+  await setup_cml({ workdir });
 
   const tfstate = await run_terraform(opts);
   const { resources } = tfstate;
@@ -316,12 +318,11 @@ const run = async (opts) => {
 
   opts.workdir = resolve(process.cwd(), opts.workdir || opts.name);
   
-
   const { driver, repo, token, cloud, workdir } = opts;
 
   console.log(workdir);
-  await fs.mkdir(opts.workdir, { recursive: true });
-  //await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
+  //await fs.mkdir(opts.workdir, { recursive: true });
+  await exec(`sudo mkdir -p ${workdir} && sudo chmod 777 -R ${workdir}`);
 
   cml = new CML({ driver, repo, token });
 
