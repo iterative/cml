@@ -165,7 +165,7 @@ class Github {
         await download({ url, path: tar });
         await targz().extract(tar, workdir);
         await exec(`chmod -R 777 ${workdir}`);
-        await exec(`export DEBIAN_FRONTEND=noninteractive && sudo ${workdir}/bin/installdependencies.sh`);
+        //await exec(`export DEBIAN_FRONTEND=noninteractive && sudo ${workdir}/bin/installdependencies.sh`);
       }
 
       console.log('launching runner');
