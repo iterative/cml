@@ -19,7 +19,7 @@ const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `~/${NAME}`,
+  RUNNER_PATH = `${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -232,7 +232,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
     
     if (cmd_code) {
       await ssh.dispose();
-      throw new Error(`Error launching the runner: ${cmd_stdout || cmd_stderr}`);
+      throw new Error(`Error launching the runner: ${cmd_stdout} ${cmd_stderr}`);
     }
       
     if (!attached) {
