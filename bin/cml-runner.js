@@ -41,7 +41,7 @@ const RUNNER_JOBS_RUNNING = [];
 const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
-  const tf_path = join(workdir) 
+  const tf_path = join(workdir, CML_PATH) 
 
   if (error) console.error(error);
 
@@ -79,9 +79,9 @@ const shutdown = async (opts) => {
     
     try {
       await fs.mkdir(tf_path, { recursive: true });
-      const tf_main_path = join(tf_main_path, 'main.tf');
+      const tf_main_path = join(tf_path, 'main.tf');
       const tpl = tf.iterative_provider_tpl();
-      await fs.writeFile(tf_path, tpl);
+      await fs.writeFile(tf_main_path, tpl);
       await tf.init({ dir: tf_path });
       await tf.apply({ dir: tf_path });
       const path = join(tf_path, 'terraform.tfstate');
