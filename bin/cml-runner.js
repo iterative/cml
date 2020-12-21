@@ -47,7 +47,7 @@ const RUNNER_JOBS_RUNNING = [];
 const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
-  const tf_path = join(workdir, CML_PATH) 
+  const tf_path = join(workdir, CML_PATH);
 
   if (error) console.error(error);
 
@@ -82,7 +82,7 @@ const shutdown = async (opts) => {
       console.log(`\tNo TF resource found`);
       return;
     }
-    
+
     try {
       await fs.mkdir(tf_path, { recursive: true });
       const tf_main_path = join(tf_path, 'main.tf');
@@ -92,7 +92,7 @@ const shutdown = async (opts) => {
       await tf.apply({ dir: tf_path });
       const path = join(tf_path, 'terraform.tfstate');
       const tfstate = await tf.load_tfstate({ path });
-      tfstate.resources = [ JSON.parse(tf_resource) ];
+      tfstate.resources = [JSON.parse(tf_resource)];
       await tf.save_tfstate({ tfstate, path });
       await tf.destroy({ dir: tf_path });
     } catch (err) {
@@ -122,8 +122,6 @@ const shutdown = async (opts) => {
 };
 
 const run_cloud = async (opts) => {
-  const { workdir } = opts;
-
   const run_terraform = async (opts) => {
     await tf.check_min_version();
 
@@ -163,7 +161,7 @@ const run_cloud = async (opts) => {
         hdd_size,
         ssh_public,
         ssh_username,
-        image,
+        image
       });
     }
 
@@ -209,14 +207,6 @@ const run_cloud = async (opts) => {
 
     console.log('Deploying runner...');
 
-    const cmd_setup = `
-DEBIAN_FRONTEND=noninteractive
-curl -sL https://deb.nodesource.com/setup_12.x | sudo bash
-curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-sudo apt -y update && sudo apt-get install -y terraform nodejs 
-    `;
-
     const cmd = `
 export DEBIAN_FRONTEND=noninteractive && \
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
@@ -234,21 +224,24 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 --idle-timeout ${idle_timeout} \
 --driver ${driver} \
 --repo ${repo} \
---token ${token} ${attached ? '' : '< /dev/null > std.out 2> std.err &'}) && sleep 10
+--token ${token} ${
+      attached ? '' : '< /dev/null > std.out 2> std.err &'
+    }) && sleep 10
 `;
 
-    //await ssh.execCommand(cmd_setup);
+    const {
+      code: cmd_code,
+      stdout: cmd_stdout,
+      stderr: cmd_stderr
+    } = await ssh.execCommand(cmd);
 
-    const { 
-      code: cmd_code, 
-      stdout: cmd_stdout, 
-      stderr: cmd_stderr} = await ssh.execCommand(cmd);
-    
     if (cmd_code) {
       await ssh.dispose();
-      throw new Error(`Error launching the runner: ${cmd_stdout} ${cmd_stderr}`);
+      throw new Error(
+        `Error launching the runner: ${cmd_stdout} ${cmd_stderr}`
+      );
     }
-      
+
     if (!attached) {
       await ssh.dispose();
       await cml.await_runner({ name: instance_name });
@@ -264,7 +257,6 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
     const resource = resources[i];
 
     if (resource.type.startsWith('iterative_')) {
-
       const { instances } = resource;
 
       for (let j = 0; j < instances.length; j++) {
@@ -332,7 +324,7 @@ const run = async (opts) => {
     console.log(`Preparing workdir ${workdir}...`);
     await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
   } catch (err) {}
-  
+
   cml = new CML({ driver, repo, token });
 
   await cml.repo_token_check();
@@ -376,7 +368,7 @@ const opts = decamelize(
       'cloud-region',
       'Region where the instance is deployed. Also accepts native cloud regions.'
     )
-    //.choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
+    // .choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
     .default('cloud-type')
     .describe(
       'cloud-type',

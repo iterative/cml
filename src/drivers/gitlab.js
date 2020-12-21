@@ -6,7 +6,7 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 
-const { fetch_upload_data, download, exec } = require('../utils');
+const { fetch_upload_data, download } = require('../utils');
 
 class Gitlab {
   constructor(opts = {}) {
@@ -111,8 +111,6 @@ class Gitlab {
         --wait-timeout ${idle_timeout} \
         --executor "shell" \
         --request-concurrency 1`;
-
-      //console.log(command)
 
       return spawn(command, { shell: true });
     } catch (err) {
