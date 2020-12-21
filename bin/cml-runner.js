@@ -225,7 +225,7 @@ export AZURE_CLIENT_ID=${AZURE_CLIENT_ID} && \
 export AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET} && \
 export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
 export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
-sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
+npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (sudo ${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
 --name ${instance_name} \
