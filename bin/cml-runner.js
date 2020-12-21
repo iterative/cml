@@ -218,7 +218,7 @@ sudo apt -y update && sudo apt-get install -y terraform nodejs
     `;
 
     const cmd = `
-DEBIAN_FRONTEND=noninteractive && \
+export DEBIAN_FRONTEND=noninteractive && \
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 export AZURE_CLIENT_ID=${AZURE_CLIENT_ID} && \
@@ -226,7 +226,7 @@ export AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET} && \
 export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
 export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
-(${attached ? '' : 'nohup'} cml-runner \
+(sudo ${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
 --name ${instance_name} \
 --workdir ${workdir} \
