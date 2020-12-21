@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 const { join } = require('path');
+const { homedir } = require('os');
+
 const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
@@ -19,7 +21,7 @@ const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `/~/${NAME}`,
+  RUNNER_PATH = `${homedir()}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -204,11 +206,10 @@ const run_cloud = async (opts) => {
     console.log('Deploying runner...');
 
     const cmd = `
-sudo sh -c "echo \"group ALL=ubuntu NOPASSWD: ALL\" >> /etc/sudoers && sudo su && \"
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
 DEBIAN_FRONTEND=noninteractive && \
-npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
+sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource='${JSON.stringify(resource)}' \
 --name ${instance_name} \
