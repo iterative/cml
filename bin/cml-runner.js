@@ -2,7 +2,6 @@
 
 const { resolve, join } = require('path');
 const fs = require('fs').promises;
-const fse = require('fs-extra');
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
@@ -20,7 +19,7 @@ const NAME = `cml-${randid()}`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `${NAME}`,
+  RUNNER_PATH = `~/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
@@ -271,14 +270,11 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
 
-  opts.workspace = resolve(
-    __dirname,
-    opts.workspace ? opts.workspace : opts.name ? opts.name : RUNNER_NAME
-  );
-  const { workspace: path, name, labels, idle_timeout } = opts;
+  opts.workdir = resolve(__dirname, opts.workdir || opts.name);
+  const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
-    path,
+    workdir,
     name,
     labels,
     idle_timeout
@@ -332,8 +328,8 @@ const run = async (opts) => {
 const opts = decamelize(
   yargs
     .usage(`Usage: $0`)
-    .default('workspace', RUNNER_PATH)
-    .describe('workspace', 'Runner workspace location. Defaults to {name}')
+    .default('workdir', RUNNER_PATH)
+    .describe('workdir', 'Runner workspace location. Defaults to {name}')
     .default('labels', RUNNER_LABELS)
     .describe('labels', 'Comma delimited runner labels')
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)

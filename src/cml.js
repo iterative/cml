@@ -157,32 +157,38 @@ class CML {
     }
 
     if (this.driver === 'gitlab') {
-      const { msg, job } = JSON.parse(data);
+      try {
+        const { msg, job } = JSON.parse(data);
 
-      if (msg.endsWith('received')) {
-        log = { ...log, job };
-        log.status = 'job_started';
-        return log;
-      } else if (
-        msg.startsWith('Job failed') ||
-        msg.startsWith('Job succeeded')
-      ) {
-        log = { ...log, job };
-        log.status = 'job_ended';
-        log.success = !msg.startsWith('Job failed');
-        log.level = log.success ? 'info' : 'error';
-        return log;
-      } else if (msg.includes('Starting runner for')) {
-        log.status = 'ready';
-        return log;
+        if (msg.endsWith('received')) {
+          log = { ...log, job };
+          log.status = 'job_started';
+          return log;
+        } else if (
+          msg.startsWith('Job failed') ||
+          msg.startsWith('Job succeeded')
+        ) {
+          log = { ...log, job };
+          log.status = 'job_ended';
+          log.success = !msg.startsWith('Job failed');
+          log.level = log.success ? 'info' : 'error';
+          return log;
+        } else if (msg.includes('Starting runner for')) {
+          log.status = 'ready';
+          return log;
+        }
+      } catch (err) {
+        console.log(data)
+        console.log(err)
       }
+      
     }
   }
 
   async start_runner(opts = {}) {
-    const { path } = opts;
-    await fs.mkdir(path, { recursive: true });
-    await exec(`chmod 777 -R ${path}`);
+    const { workdir } = opts;
+    await fs.mkdir(workdir, { recursive: true });
+    await exec(`chmod 777 -R ${workdir}`);
     return await get_driver(this).start_runner(opts);
   }
 

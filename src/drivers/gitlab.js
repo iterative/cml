@@ -89,23 +89,22 @@ class Gitlab {
   }
 
   async start_runner(opts) {
-    const { path, idle_timeout, labels, name } = opts;
+    const { workdir, idle_timeout, labels, name } = opts;
 
     try {
-      const bin = resolve(path, 'gitlab-runner');
+      const bin = resolve(workdir, 'gitlab-runner');
       if (!(await fse.pathExists(bin))) {
         const url =
           'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
         await download({ url, path: bin });
-        //await fs.chmod(path, '777');
-        await exec(`chmod 777 -R ${path}`);
+        await fs.chmod(bin, '777');
       }
 
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.register_runner({ tags: labels, name });
       const command = `${bin} --log-format="json" run-single \
-        --builds-dir "${path}" \
-        --cache-dir "${path}" \
+        --builds-dir "${workdir}" \
+        --cache-dir "${workdir}" \
         --url "${protocol}//${host}" \
         --name "${name}" \
         --token "${token}" \
@@ -113,7 +112,7 @@ class Gitlab {
         --executor "shell" \
         --request-concurrency 1`;
 
-      console.log(command)
+      //console.log(command)
 
       return spawn(command, { shell: true });
     } catch (err) {
