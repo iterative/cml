@@ -2,8 +2,7 @@ const fs = require('fs').promises;
 const { ltr } = require('semver');
 const { exec } = require('./utils');
 
-
-const MIN_TF_VER =  '0.14.0';
+const MIN_TF_VER = '0.14.0';
 
 const version = async () => {
   const output = await exec('terraform version -json');
@@ -11,7 +10,7 @@ const version = async () => {
   return terraform_version;
 };
 
-const load_tfstate = async (opts={}) => {
+const load_tfstate = async (opts = {}) => {
   const { path } = opts;
   const json = await fs.readFile(path, 'utf-8');
   return JSON.parse(json);
@@ -35,7 +34,9 @@ const apply = async (opts = {}) => {
 const destroy = async (opts = {}) => {
   const { dir = './', target } = opts;
   const targetop = target ? `-target=${target}` : '';
-  return await exec(`terraform -chdir='${dir}' destroy -auto-approve ${targetop}`);
+  return await exec(
+    `terraform -chdir='${dir}' destroy -auto-approve ${targetop}`
+  );
 };
 
 const iterative_provider_tpl = () => {
@@ -44,14 +45,14 @@ terraform {
   required_providers {
     iterative = {
       source = "iterative/iterative"
-      version = "0.5.2"
+      version = "0.5.3"
     }
   }
 }
 
 provider "iterative" {}
-`
-}
+`;
+};
 
 const iterative_machine_tpl = (opts = {}) => {
   const { cloud, region, image, name, type, gpu, hdd_size } = opts;
@@ -74,8 +75,10 @@ resource "iterative_machine" "machine" {
 const check_min_version = async () => {
   const ver = await version();
   if (ltr(ver, MIN_TF_VER))
-    throw new Error(`Terraform version must be greater that 14: current ${ver}`);
-}
+    throw new Error(
+      `Terraform version must be greater that 14: current ${ver}`
+    );
+};
 
 exports.version = version;
 exports.load_tfstate = load_tfstate;
