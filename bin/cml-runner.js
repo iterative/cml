@@ -92,7 +92,9 @@ const shutdown = async (opts) => {
       await tf.apply({ dir: tf_path });
       const path = join(tf_path, 'terraform.tfstate');
       const tfstate = await tf.load_tfstate({ path });
-      tfstate.resources = [JSON.parse(tf_resource)];
+      tfstate.resources = [
+        JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
+      ];
       await tf.save_tfstate({ tfstate, path });
       await tf.destroy({ dir: tf_path });
     } catch (err) {
@@ -217,7 +219,7 @@ export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
 export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
---tf_resource='${JSON.stringify(resource)}' \
+--tf_resource='${Buffer.from(JSON.stringify(resource)).toString('base64')}' \
 --name ${instance_name} \
 --workdir ${workdir} \
 --labels ${labels} \
