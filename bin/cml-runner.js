@@ -219,7 +219,7 @@ export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
 export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
---tf_resource='${Buffer.from(JSON.stringify(resource)).toString('base64')}' \
+--tf_resource=${Buffer.from(JSON.stringify(resource)).toString('base64')} \
 --name ${instance_name} \
 --workdir ${workdir} \
 --labels ${labels} \
