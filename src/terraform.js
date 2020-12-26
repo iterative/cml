@@ -45,7 +45,7 @@ terraform {
   required_providers {
     iterative = {
       source = "iterative/iterative"
-      version = "0.5.8"
+      version = "0.5.9"
     }
   }
 }
