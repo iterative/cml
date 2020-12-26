@@ -64,7 +64,7 @@ resource "iterative_machine" "machine" {
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
   ${image ? `image = "${image}"` : ''}
-  ${name ? `instance_name = "${name}"` : ''}
+  ${name ? `name = "${name}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hdd_size ? `instance_hdd_size = "${hdd_size}"` : ''}

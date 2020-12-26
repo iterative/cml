@@ -182,8 +182,8 @@ const run_cloud = async (opts) => {
     const {
       labels,
       idle_timeout,
-      cloud_ssh_username: username,
-      cloud_ssh_private: ssh_private,
+      cloud_ssh_username,
+      cloud_ssh_private,
       attached,
 
       resource,
@@ -192,9 +192,10 @@ const run_cloud = async (opts) => {
 
     const {
       attributes: {
-        instance_name,
+        name,
         instance_ip: host,
-        key_private = ssh_private
+        ssh_username: username = cloud_ssh_username,
+        ssh_private: private_key = cloud_ssh_private
       }
     } = resource.instances[0];
 
@@ -204,7 +205,7 @@ const run_cloud = async (opts) => {
     const ssh = await ssh_connection({
       host,
       username,
-      private_key: key_private
+      private_key
     });
 
     console.log('Deploying runner...');
@@ -220,7 +221,7 @@ export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
 sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 (${attached ? '' : 'nohup'} cml-runner \
 --tf_resource=${Buffer.from(JSON.stringify(resource)).toString('base64')} \
---name ${instance_name} \
+--name ${name} \
 --workdir ${workdir} \
 --labels ${labels} \
 --idle-timeout ${idle_timeout} \
@@ -231,6 +232,7 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
     }) && sleep 10
 `;
 
+    console.log(cmd);
     const {
       code: cmd_code,
       stdout: cmd_stdout,
@@ -246,10 +248,10 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
 
     if (!attached) {
       await ssh.dispose();
-      await cml.await_runner({ name: instance_name });
+      await cml.await_runner({ name });
     }
 
-    console.log(`\tSuccess: ${cmd_stdout}`);
+    console.log(`\tSuccess`);
   };
 
   console.log('Deploying cloud runner plan...');
