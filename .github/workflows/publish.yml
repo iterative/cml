@@ -29,7 +29,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         run: |
           npm ci
-          npx cml-runner \
+          npm link
+          cml-runner \
           --cloud aws \
           --cloud-region us-west \
           --cloud-type=t2.micro \
