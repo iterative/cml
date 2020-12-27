@@ -45,7 +45,7 @@ terraform {
   required_providers {
     iterative = {
       source = "iterative/iterative"
-      version = "0.5.9"
+      version = "0.5.11"
     }
   }
 }
@@ -55,19 +55,37 @@ provider "iterative" {}
 };
 
 const iterative_machine_tpl = (opts = {}) => {
-  const { cloud, region, image, name, type, gpu, hdd_size } = opts;
+  const {
+    repo,
+    token,
+    driver,
+    labels,
+    idle_timeout,
+    cloud,
+    region,
+    name,
+    type,
+    gpu,
+    hdd_size,
+    ssh_private
+  } = opts;
 
   return `
 ${iterative_provider_tpl()}
 
-resource "iterative_machine" "machine" {
+resource "iterative_runner" "runner" {
+  ${repo ? `repo = "${repo}"` : ''}
+  ${token ? `token = "${token}"` : ''}
+  ${driver ? `driver = "${driver}"` : ''}
+  ${labels ? `labels = "${labels}"` : ''}
+  ${idle_timeout ? `idle_timeout = "${idle_timeout}"` : ''}
+  ${name ? `name = "${name}"` : ''}
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
-  ${image ? `image = "${image}"` : ''}
-  ${name ? `name = "${name}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hdd_size ? `instance_hdd_size = "${hdd_size}"` : ''}
+  ${ssh_private ? `ssh_private = "${ssh_private}"` : ''}
 }
 `;
 };

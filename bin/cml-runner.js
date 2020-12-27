@@ -7,13 +7,7 @@ const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const {
-  exec,
-  randid,
-  ssh_connection,
-  ssh_public_from_private_rsa,
-  parse_param_newline
-} = require('../src/utils');
+const { exec, randid, parse_param_newline } = require('../src/utils');
 const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
@@ -29,14 +23,7 @@ const {
   RUNNER_REPO,
   repo_token,
 
-  CML_PATH = '.cml',
-
-  AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY,
-  AZURE_CLIENT_ID,
-  AZURE_CLIENT_SECRET,
-  AZURE_SUBSCRIPTION_ID,
-  AZURE_TENANT_ID
+  CML_PATH = '.cml'
 } = process.env;
 
 let cml;
@@ -125,20 +112,21 @@ const shutdown = async (opts) => {
 
 const run_cloud = async (opts) => {
   const run_terraform = async (opts) => {
-    await tf.check_min_version();
-
     console.log('Terraform apply...');
 
+    await tf.check_min_version();
+
+    const { token, repo, driver } = cml;
     const {
-      cloud,
+      labels,
+      idle_timeout,
       name,
+      cloud,
       cloud_region: region,
       cloud_type: type,
       cloud_gpu: gpu,
       cloud_hdd_size: hdd_size,
       cloud_ssh_private: ssh_private,
-      cloud_ssh_username: ssh_username,
-      cloud_image: image,
       tf_file,
       workdir
     } = opts;
@@ -150,20 +138,19 @@ const run_cloud = async (opts) => {
     if (tf_file) {
       tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
     } else {
-      const ssh_public = ssh_private
-        ? ssh_public_from_private_rsa(ssh_private)
-        : null;
-
       tpl = tf.iterative_machine_tpl({
+        repo,
+        token,
+        driver,
+        labels,
+        idle_timeout,
+        name,
         cloud,
         region,
-        name,
         type,
         gpu,
         hdd_size,
-        ssh_public,
-        ssh_username,
-        image
+        ssh_private
       });
     }
 
@@ -175,83 +162,6 @@ const run_cloud = async (opts) => {
     const tfstate = await tf.load_tfstate({ path: tfstate_path });
 
     return tfstate;
-  };
-
-  const setup_runner = async (opts) => {
-    const { token, repo, driver } = cml;
-    const {
-      labels,
-      idle_timeout,
-      cloud_ssh_username,
-      cloud_ssh_private,
-      attached,
-
-      resource,
-      workdir
-    } = opts;
-
-    const {
-      attributes: {
-        name,
-        instance_ip: host,
-        ssh_username: username = cloud_ssh_username,
-        ssh_private: private_key = cloud_ssh_private
-      }
-    } = resource.instances[0];
-
-    console.log('Provisioning resource...');
-    console.log(JSON.stringify(resource));
-
-    const ssh = await ssh_connection({
-      host,
-      username,
-      private_key
-    });
-
-    console.log('Deploying runner...');
-
-    const cmd = `
-export DEBIAN_FRONTEND=noninteractive && \
-export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && \
-export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
-export AZURE_CLIENT_ID=${AZURE_CLIENT_ID} && \
-export AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET} && \
-export AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID} && \
-export AZURE_TENANT_ID=${AZURE_TENANT_ID} && \
-sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
-(${attached ? '' : 'nohup'} cml-runner \
---tf_resource=${Buffer.from(JSON.stringify(resource)).toString('base64')} \
---name ${name} \
---workdir ${workdir} \
---labels ${labels} \
---idle-timeout ${idle_timeout} \
---driver ${driver} \
---repo ${repo} \
---token ${token} ${
-      attached ? '' : '< /dev/null > std.out 2> std.err &'
-    }) && sleep 10
-`;
-
-    console.log(cmd);
-    const {
-      code: cmd_code,
-      stdout: cmd_stdout,
-      stderr: cmd_stderr
-    } = await ssh.execCommand(cmd);
-
-    if (cmd_code) {
-      await ssh.dispose();
-      throw new Error(
-        `Error launching the runner: ${cmd_stdout} ${cmd_stderr}`
-      );
-    }
-
-    if (!attached) {
-      await ssh.dispose();
-      await cml.await_runner({ name });
-    }
-
-    console.log(`\tSuccess`);
   };
 
   console.log('Deploying cloud runner plan...');
@@ -266,10 +176,12 @@ sudo npm install -g git+https://github.com/iterative/cml.git#cml-runner && \
       for (let j = 0; j < instances.length; j++) {
         const instance = instances[j];
 
-        await setup_runner({
-          ...opts,
-          resource: { ...resource, instances: [instance] }
-        });
+        console.log(JSON.stringify(instance));
+
+        const {
+          attributes: { name }
+        } = instance;
+        await cml.await_runner({ name });
       }
     }
   }
@@ -363,16 +275,14 @@ const opts = decamelize(
       'token',
       'Personal access token to be used. If not specified in extracted from ENV.'
     )
-
     .default('cloud')
     .describe('cloud', 'Cloud to deploy the runner')
     .choices('cloud', ['aws', 'azure'])
     .default('cloud-region', 'us-west')
     .describe(
       'cloud-region',
-      'Region where the instance is deployed. Also accepts native cloud regions.'
+      'Region where the instance is deployed. Choices:[us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions.'
     )
-    // .choices('cloud-region', ['us-east', 'us-west', 'eu-west', 'eu-north'])
     .default('cloud-type')
     .describe(
       'cloud-type',
@@ -384,30 +294,14 @@ const opts = decamelize(
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB.')
-    .default('cloud-image', 'iterative-cml')
-    .describe(
-      'cloud-image',
-      'Image used in the cloud instance. Defaults to our iterative-cml (Ubuntu 18.04)'
-    )
-    .default('cloud-ssh-username', 'ubuntu')
-    .describe(
-      'cloud-ssh-username',
-      'Your ssh username. Change only if the specified image is not iterative-cml.'
-    )
     .default('cloud-ssh-private', '')
     .describe(
       'cloud-ssh-private',
       'Your private RSA SHH key. If not provided will be generated by the Terraform-provider-Iterative.'
     )
     .coerce('cloud-ssh-private', parse_param_newline)
-    .boolean('attached')
-    .describe(
-      'attached',
-      'Runs the cloud runner deployment in the foreground. Useful for debugging.'
-    )
     .default('tf_resource')
     .hide('tf_resource')
-
     .help('h').argv
 );
 
