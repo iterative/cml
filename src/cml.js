@@ -1,7 +1,6 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
-const fs = require('fs').promises;
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -128,36 +127,36 @@ class CML {
     let { data } = opts;
     if (!data) return;
 
-    data = data.toString('utf8');
+    try {
+      data = data.toString('utf8');
 
-    let log = {
-      level: 'info',
-      time: new Date().toISOString(),
-      repo: this.repo
-    };
+      let log = {
+        level: 'info',
+        time: new Date().toISOString(),
+        repo: this.repo
+      };
 
-    if (this.driver === 'github') {
-      if (data.includes('Running job')) {
-        log.job = '';
-        log.status = 'job_started';
-        return log;
-      } else if (
-        data.includes('Job') &&
-        data.includes('completed with result')
-      ) {
-        log.job = '';
-        log.status = 'job_ended';
-        log.success = !data.endsWith('Succeeded');
-        log.level = log.success ? 'info' : 'error';
-        return log;
-      } else if (data.includes('Listening for Jobs')) {
-        log.status = 'ready';
-        return log;
+      if (this.driver === 'github') {
+        if (data.includes('Running job')) {
+          log.job = '';
+          log.status = 'job_started';
+          return log;
+        } else if (
+          data.includes('Job') &&
+          data.includes('completed with result')
+        ) {
+          log.job = '';
+          log.status = 'job_ended';
+          log.success = !data.endsWith('Succeeded');
+          log.level = log.success ? 'info' : 'error';
+          return log;
+        } else if (data.includes('Listening for Jobs')) {
+          log.status = 'ready';
+          return log;
+        }
       }
-    }
 
-    if (this.driver === 'gitlab') {
-      try {
+      if (this.driver === 'gitlab') {
         const { msg, job } = JSON.parse(data);
 
         if (msg.endsWith('received')) {
@@ -177,11 +176,9 @@ class CML {
           log.status = 'ready';
           return log;
         }
-      } catch (err) {
-        console.log(data)
-        console.log(err)
       }
-      
+    } catch (err) {
+      console.log(`Failed parsing log: ${err.message}`);
     }
   }
 
@@ -228,7 +225,6 @@ class CML {
     try {
       await this.runner_token();
     } catch (err) {
-      console.log(err)
       throw new Error(
         'repo_token does not have enough permissions to access workflow API'
       );
