@@ -15,9 +15,29 @@ env:
   TEST_BBCLOUD_SHA: 8119698b09994844a6803d5380cc370e0d0ffc6a
 
 jobs:
-  test_and_deploy:
+  deploy-runner:
     runs-on: [ubuntu-latest]
-    
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: deploy
+        shell: bash
+        env:
+          repo_token: ${{ secrets.REPO_TOKEN }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        run: |
+          npx cml-runner \
+          --cloud aws \
+          --cloud-region us-west \
+          --cloud-type=t2.micro \
+          --labels=cml-runner
+          
+  test_and_deploy:
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner]
+
     steps:
     - uses: actions/checkout@v2
 
