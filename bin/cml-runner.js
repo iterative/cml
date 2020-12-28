@@ -12,18 +12,17 @@ const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
 const NAME = `cml-${randid()}`;
+const WORKDIR_BASE = `${homedir()}/.cml`;
 const {
   DOCKER_MACHINE, // DEPRECATED
 
-  RUNNER_PATH = `${homedir()}/${NAME}`,
+  RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_DRIVER,
   RUNNER_REPO,
-  repo_token,
-
-  CML_PATH = '.cml'
+  repo_token
 } = process.env;
 
 let cml;
@@ -34,7 +33,7 @@ const RUNNER_JOBS_RUNNING = [];
 const shutdown = async (opts) => {
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
-  const tf_path = join(workdir, CML_PATH);
+  const tf_path = workdir;
 
   if (error) console.error(error);
 
@@ -131,7 +130,7 @@ const run_cloud = async (opts) => {
       workdir
     } = opts;
 
-    const tf_path = join(workdir, CML_PATH);
+    const tf_path = workdir;
     const tf_main_path = join(tf_path, 'main.tf');
 
     let tpl;
@@ -238,7 +237,7 @@ const run = async (opts) => {
 
   try {
     console.log(`Preparing workdir ${workdir}...`);
-    await fs.mkdir(join(workdir, CML_PATH), { recursive: true });
+    await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
   cml = new CML({ driver, repo, token });
