@@ -109,8 +109,7 @@ class Gitlab {
         --name "${name}" \
         --token "${token}" \
         --wait-timeout ${idle_timeout} \
-        --executor "shell" \
-        --request-concurrency 1`;
+        --executor "shell"`;
 
       return spawn(command, { shell: true });
     } catch (err) {
