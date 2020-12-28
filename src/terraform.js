@@ -45,7 +45,7 @@ terraform {
   required_providers {
     iterative = {
       source = "iterative/iterative"
-      version = "0.5.11"
+      version = "0.5.12"
     }
   }
 }
@@ -73,7 +73,7 @@ const iterative_machine_tpl = (opts = {}) => {
   return `
 ${iterative_provider_tpl()}
 
-resource "iterative_runner" "runner" {
+resource "iterative_cml_runner" "runner" {
   ${repo ? `repo = "${repo}"` : ''}
   ${token ? `token = "${token}"` : ''}
   ${driver ? `driver = "${driver}"` : ''}
