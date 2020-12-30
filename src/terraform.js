@@ -6,6 +6,8 @@ const MIN_TF_VER = '0.14.0';
 
 const version = async () => {
   const output = await exec('terraform version -json');
+  console.log('Checking version');
+  console.log(output);
   const { terraform_version } = JSON.parse(output);
   return terraform_version;
 };
