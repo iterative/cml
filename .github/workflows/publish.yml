@@ -19,6 +19,10 @@ jobs:
     runs-on: [ubuntu-latest]
 
     steps:
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.3
+          
       - uses: actions/checkout@v2
 
       - name: deploy
