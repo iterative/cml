@@ -1,4 +1,3 @@
-const util = require('util');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
@@ -9,18 +8,22 @@ const NodeSSH = require('node-ssh').NodeSSH;
 
 const { DEBUG_EXEC } = process.env;
 
-const execp = util.promisify(require('child_process').exec);
 const exec = async (command, opts) => {
   return new Promise(function (resolve, reject) {
     const { debug = DEBUG_EXEC } = opts || {};
 
-    execp(command, { ...process.env }, (error, stdout, stderr) => {
-      if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
+    require('child_process').exec(
+      command,
+      { ...process.env },
+      (error, stdout, stderr) => {
+        if (debug)
+          console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
 
-      if (error) reject(error);
+        if (error) reject(error);
 
-      resolve(stdout || stderr);
-    });
+        resolve(stdout || stderr);
+      }
+    );
   });
 };
 
