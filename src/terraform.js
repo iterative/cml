@@ -1,13 +1,13 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
 const { exec } = require('./utils');
+const execa = require('execa');
 
 const MIN_TF_VER = '0.14.0';
 
 const version = async () => {
-  const output = await exec('terraform version -json');
-  console.log('Checking version');
-  console.log('line' + 'line\n' + output.slice(0, 40) + '\nendofline');
+  const { stdout: output } = await execa.command('terraform version -json');
+  console.log('line' + 'line\n' + output + '\nendofline');
   const { terraform_version } = JSON.parse(output);
   return terraform_version;
 };
