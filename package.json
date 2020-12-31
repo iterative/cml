@@ -60,7 +60,6 @@
     "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
     "decamelize-keys": "^1.1.0",
-    "execa": "^5.0.0",
     "file-type": "^14.2.0",
     "form-data": "^3.0.0",
     "fs-extra": "^9.0.1",

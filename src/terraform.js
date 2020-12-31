@@ -1,15 +1,22 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
 const { exec } = require('./utils');
-const execa = require('execa');
 
 const MIN_TF_VER = '0.14.0';
 
 const version = async () => {
-  const { stdout: output } = await execa.command('terraform version -json');
-  console.log('line' + 'line\n' + output + '\nendofline');
-  const { terraform_version } = JSON.parse(output);
-  return terraform_version;
+  try {
+    const output = await exec('terraform version -json');
+    const { terraform_version } = JSON.parse(output);
+    return terraform_version;
+  } catch (err) {
+    const output = await exec('terraform version');
+    const matches = output.match(/Terraform v(\d{1,2}\.\d{1,2}\.\d{1,2})/);
+
+    if (matches.length < 2) throw new Error('Unable to get TF version');
+
+    return matches[1];
+  }
 };
 
 const load_tfstate = async (opts = {}) => {
