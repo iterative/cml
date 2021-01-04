@@ -210,9 +210,10 @@ const run_local = async (opts) => {
   };
   proc.stderr.on('data', data_handler);
   proc.stdout.on('data', data_handler);
-  proc.on('error', () => {
-    shutdown(opts);
-  });
+  proc.on('uncaughtException', () => shutdown(opts));
+  proc.on('SIGINT', () => shutdown(opts));
+  proc.on('SIGTERM', () => shutdown(opts));
+  proc.on('SIGQUIT', () => shutdown(opts));
 
   if (parseInt(idle_timeout) !== 0) {
     const watcher = setInterval(() => {
