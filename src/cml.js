@@ -147,7 +147,7 @@ class CML {
         ) {
           log.job = '';
           log.status = 'job_ended';
-          log.success = !data.endsWith('Succeeded');
+          log.success = data.endsWith('Succeeded');
           log.level = log.success ? 'info' : 'error';
           return log;
         } else if (data.includes('Listening for Jobs')) {
