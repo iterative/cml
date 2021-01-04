@@ -14,7 +14,7 @@ const exec = async (command) => {
       (error, stdout, stderr) => {
         if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
-        resolve(stdout || stderr);
+        resolve((stdout || stderr).slice(0, -1));
       }
     );
   });
