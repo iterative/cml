@@ -75,7 +75,9 @@ const iterative_machine_tpl = (opts = {}) => {
     type,
     gpu,
     hdd_size,
-    ssh_private
+    ssh_private,
+    spot,
+    spot_price
   } = opts;
 
   return `
@@ -94,6 +96,8 @@ resource "iterative_cml_runner" "runner" {
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hdd_size ? `instance_hdd_size = "${hdd_size}"` : ''}
   ${ssh_private ? `ssh_private = "${ssh_private}"` : ''}
+  ${spot ? `spot = ${spot}` : ''}
+  ${spot_price ? `spot_price = ${spot_price}` : ''}
 }
 `;
 };
