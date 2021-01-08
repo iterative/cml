@@ -35,9 +35,9 @@ jobs:
           npm ci
           sudo npm link
           cml-runner \
-          --cloud aws \
+          --cloud azure \
           --cloud-region us-west \
-          --cloud-type=t2.micro \
+          --cloud-type=Standard_A1_v2 \
           --labels=cml-runner
           
   test_and_deploy:
