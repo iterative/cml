@@ -19,6 +19,7 @@ const repo_from_origin = () => {
     const uri = git_url_parse(origin).toString('https').replace('.git', '');
     return strip_auth(uri);
   } catch (err) {
+    console.log('log');
     console.log(err.stderr.toString());
     console.log(err.stdout.toString());
 
