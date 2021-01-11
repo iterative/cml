@@ -113,8 +113,6 @@ const run_cloud = async (opts) => {
   const run_terraform = async (opts) => {
     console.log('Terraform apply...');
 
-    await tf.check_min_version();
-
     const { token, repo, driver } = cml;
     const {
       labels,
@@ -238,16 +236,21 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const { driver, repo, token, cloud, workdir } = opts;
-
-  try {
-    console.log(`Preparing workdir ${workdir}...`);
-    await fs.mkdir(workdir, { recursive: true });
-  } catch (err) {}
+  const { driver, repo, token, cloud, workdir, name } = opts;
 
   cml = new CML({ driver, repo, token });
 
+  await tf.check_min_version();
   await cml.repo_token_check();
+  if (await cml.runner_by_name({ name }))
+    throw new Error(
+      `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
+    );
+
+  try {
+    console.log(`Preparingggggg workdir ${workdir}...`);
+    await fs.mkdir(workdir, { recursive: true });
+  } catch (err) {}
 
   if (cloud) await run_cloud(opts);
   else await run_local(opts);
