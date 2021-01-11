@@ -12,12 +12,19 @@ const uri_no_trailing_slash = (uri) => {
 };
 
 const repo_from_origin = () => {
-  const origin = execSync('git config --get remote.origin.url').toString(
-    'utf8'
-  );
+  try {
+    const origin = execSync('git config --get remote.origin.url').toString(
+      'utf8'
+    );
+    const uri = git_url_parse(origin).toString('https').replace('.git', '');
+    return strip_auth(uri);
+  } catch (err) {
+    console.log('log');
+    console.log(err.stderr.toString());
+    console.log(err.stdout.toString());
 
-  const uri = git_url_parse(origin).toString('https').replace('.git', '');
-  return strip_auth(uri);
+    throw err;
+  }
 };
 
 const infer_driver = (opts = {}) => {
@@ -199,7 +206,7 @@ class CML {
   }
 
   async await_runner(opts = {}) {
-    const { name, max_tries = 15 } = opts;
+    const { name, max_tries = 100 } = opts;
 
     let timer = 0;
     return new Promise((resolve, reject) => {
