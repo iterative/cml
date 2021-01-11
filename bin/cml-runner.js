@@ -306,8 +306,11 @@ const opts = decamelize(
     .coerce('cloud-ssh-private', parse_param_newline)
     .boolean('cloud-spot')
     .describe('cloud-spot', 'Request a spot instance')
-    .boolean('cloud-spot-price', '-1')
-    .describe('cloud-spot-price', 'Spot max price')
+    .default('cloud-spot-price', '-1')
+    .describe(
+      'cloud-spot-price',
+      'Spot max price. If not specified it takes current spot bidding pricing.'
+    )
     .default('tf_resource')
     .hide('tf_resource')
     .help('h').argv
