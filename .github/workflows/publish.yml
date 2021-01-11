@@ -28,9 +28,7 @@ jobs:
       - name: deploy
         shell: bash
         env:
-          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }} 
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }}  
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
