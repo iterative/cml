@@ -42,7 +42,7 @@ jobs:
           --cloud azure \
           --cloud-region us-west \
           --cloud-type=Standard_A1_v2 \
-          --cloud-spot
+          --cloud-spot \
           --labels=cml-runner
           
   test_and_deploy:
