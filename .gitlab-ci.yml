@@ -1,4 +1,33 @@
+deploy:
+  script:
+    - npm ci
+    - sudo npm link
+    - cml-runner \
+      --cloud aws \
+      --cloud-region us-west \
+      --cloud-type=t2.micro \
+      --cloud-spot \
+      --labels=cml-runner
+
 test:
+  tags:
+   - cml-runner
+
+  script:
+    - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
+    - sudo apt-get update && sudo apt-get install -y python-pip python3-pip 
+    - sudo pip install --upgrade pip
+    - sudo pip install --upgrade setuptools
+    - sudo pip install tensorboard
+
+    - npm ci
+    - npm run lint
+    - npm run test 
+
+test-container:
+  tags:
+   - cml-runner
+   
   image: dvcorg/cml-py3:latest
   script:
     - sudo pip install tensorboard
