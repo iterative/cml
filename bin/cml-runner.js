@@ -248,7 +248,7 @@ const run = async (opts) => {
     );
 
   try {
-    console.log(`Preparingggggg workdir ${workdir}...`);
+    console.log(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
