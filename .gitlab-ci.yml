@@ -44,7 +44,7 @@ test_container:
 
   image: dvcorg/cml-py3:latest
   script:
-    - pip install tensorboard
+    - sudo pip install tensorboard
 
     - npm ci
     - npm run lint
