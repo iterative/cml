@@ -1,0 +1,33 @@
+name: checkbot
+
+on: [issue_comment]
+
+jobs:
+  chatbot:
+    if: | 
+      (contains(github.event.comment.body, '/cml-')
+    runs-on: [ubuntu-latest]
+    container: docker://dvcorg/cml:latest
+
+    steps:
+      - name: chatops
+        id: chatops
+        uses: actions/github-script@v1
+        env:
+          COMMAND: ${{github.event.comment.body}}
+        with:
+          github-token: ${{ secrets.repo_token }}
+          script: |
+            github.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            }).then( (pr) => {
+              console.log(`::set-output name=COMMAND::${process.env.COMMAND}`)
+            })
+            
+      - name: test
+        env:
+          repo_token: ${{ secrets.repo_token }}
+        run: |
+          ${{steps.chatops.outputs.COMMAND}}

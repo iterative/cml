@@ -1,17 +1,30 @@
-deploy:
-  script:
-    - npm ci
-    - sudo npm link
-    - cml-runner \
-      --cloud aws \
-      --cloud-region us-west \
-      --cloud-type=t2.micro \
-      --cloud-spot \
-      --labels=cml-runner
+stages:
+  - deploy
+  - test
 
-test:
+deploy_job:
+  stage: deploy
+  script:
+    - apt-get update && apt-get install -y software-properties-common
+    - curl -sL https://deb.nodesource.com/setup_12.x | bash
+    - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
+    - apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    - apt update && apt-get install -y nodejs terraform
+
+    - npm ci
+    - npm link
+    - cml-runner
+      --cloud aws
+      --cloud-region us-west
+      --cloud-type=t2.micro
+      --cloud-spot
+      --labels=cml-runner
+  when: always
+
+test_runner:
+  when: on_success
   tags:
-   - cml-runner
+    - cml-runner
 
   script:
     - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
@@ -24,10 +37,11 @@ test:
     - npm run lint
     - npm run test 
 
-test-container:
+test_container:
+  when: on_success
   tags:
-   - cml-runner
-   
+    - cml-runner
+
   image: dvcorg/cml-py3:latest
   script:
     - sudo pip install tensorboard
