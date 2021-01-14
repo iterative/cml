@@ -43,6 +43,16 @@ jobs:
           --cloud-spot \
           --labels=cml-runner
           
+  test_container:
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner]
+    container: docker://dvcorg/cml:latest
+
+    steps:
+    - name: "tests"
+      run: |
+        dvc --version
+        
   test_and_deploy:
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner]
