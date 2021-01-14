@@ -52,7 +52,8 @@ jobs:
     - name: "tests"
       run: |
         dvc --version
-        
+        echo 'hello world'
+
   test_and_deploy:
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner]
