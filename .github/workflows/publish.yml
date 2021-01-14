@@ -42,7 +42,6 @@ jobs:
           --cloud aws \
           --cloud-region us-west \
           --cloud-type=t2.micro \
-          --cloud-spot \
           --labels=cml-runner-aws
           
   test_container:
