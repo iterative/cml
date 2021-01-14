@@ -28,7 +28,9 @@ jobs:
       - name: deploy
         shell: bash
         env:
-          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }}  
+          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -39,7 +41,7 @@ jobs:
           cml-runner \
           --cloud azure \
           --cloud-region us-west \
-          --cloud-type=Standard_A1_v2 \
+          --cloud-type=t2.micro \
           --cloud-spot \
           --labels=cml-runner
           
