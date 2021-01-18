@@ -92,7 +92,7 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
 # TERRAFORM
 RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt update && apt-get install -y terraform=0.13.2 && \
+    apt update && apt-get install -y terraform && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 # FIX setup-python Action
