@@ -41,7 +41,7 @@ jobs:
           cml-runner \
           --cloud-spot \
           --cloud azure \
-          --cloud-region us-west \
+          --cloud-region eastus \
           --cloud-type Standard_NC6 \
           --cloud-gpu tesla \
           --labels cml-runner-gpu
@@ -58,7 +58,9 @@ jobs:
   test_container:
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner-gpu]
-    container: docker://dvcorg/cml:latest
+    container:
+      image: docker://dvcorg/cml:latest
+      options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
 
     steps:
     - name: "tests"
