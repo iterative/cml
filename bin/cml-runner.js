@@ -190,9 +190,10 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout } = opts;
+  const { workdir, name, labels, idle_timeout, cloud_gpu } = opts;
 
   const proc = await cml.start_runner({
+    cloud_gpu,
     workdir,
     name,
     labels,
@@ -295,9 +296,9 @@ const opts = decamelize(
       'cloud-type',
       'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
     )
-    .default('cloud-gpu-type')
-    .describe('cloud-gpu-type', 'GPU type.')
-    .choices('cloud-gpu-type', ['nogpu', 'k80', 'tesla'])
+    .default('cloud-gpu')
+    .describe('cloud-gpu', 'GPU type.')
+    .choices('cloud-gpu', ['nogpu', 'k80', 'tesla'])
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB.')
