@@ -53,7 +53,7 @@ jobs:
     steps:
     - name: "tests"
       run: |
-        nvidia-gpu
+        nvidia-smi
 
   test_container:
     needs: deploy-runner
@@ -67,7 +67,7 @@ jobs:
       run: |
         dvc --version
         echo 'hello world'
-        nvidia-gpu
+        nvidia-smi
 
   test_and_deploy:
     needs: deploy-runner
