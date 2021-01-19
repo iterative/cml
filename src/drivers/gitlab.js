@@ -89,7 +89,7 @@ class Gitlab {
   }
 
   async start_runner(opts) {
-    const { workdir, idle_timeout, labels, name } = opts;
+    const { workdir, idle_timeout, labels, name, cloud_gpu } = opts;
 
     try {
       const bin = resolve(workdir, 'gitlab-runner');
@@ -109,7 +109,9 @@ class Gitlab {
         --name "${name}" \
         --token "${token}" \
         --wait-timeout ${idle_timeout} \
-        --executor "shell"`;
+        --executor "docker" \
+        --docker-image "dvcorg/cml:latest" \
+        --docker-runtime "${cloud_gpu ? 'nvidia' : ''}"`;
 
       return spawn(command, { shell: true });
     } catch (err) {
