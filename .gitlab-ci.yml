@@ -13,12 +13,12 @@ deploy_job:
       --cloud-type g2.2xlarge
       --cloud-gpu tesla
       --cloud-spot
-      --labels=cml-runner
+      --labels=cml-runner-gpu-gl
 
 test_runner:
   when: on_success
   tags:
-    - cml-runner
+    - cml-runner-gpu-gl
   script:
     - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
     - sudo apt-get update && sudo apt-get install -y python-pip python3-pip 
@@ -38,7 +38,7 @@ test_container:
     NVIDIA_VISIBLE_DEVICES: all
   when: on_success
   tags:
-    - cml-runner
+    - cml-runner-gpu-gl
   script:
     - dvc --version
     - pip install tensorboard
