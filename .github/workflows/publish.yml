@@ -39,25 +39,38 @@ jobs:
           npm ci
           sudo npm link
           cml-runner \
-          --cloud aws \
+          --cloud-spot \
+          --cloud azure \
           --cloud-region us-west \
-          --cloud-type=t2.micro \
-          --labels=cml-runner-aws
-          
+          --cloud-type Standard_NC6 \
+          --cloud-gpu tesla \
+          --labels cml-runner-gpu
+
+  test_machine:
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner-gpu]
+
+    steps:
+    - name: "tests"
+      run: |
+        nvidia-gpu
+
   test_container:
     needs: deploy-runner
-    runs-on: [self-hosted,cml-runner-aws]
+    runs-on: [self-hosted,cml-runner-gpu]
     container: docker://dvcorg/cml:latest
+    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
 
     steps:
     - name: "tests"
       run: |
         dvc --version
         echo 'hello world'
+         nvidia-gpu
 
   test_and_deploy:
     needs: deploy-runner
-    runs-on: [self-hosted,cml-runner-aws]
+    runs-on: [self-hosted,cml-runner-gpu]
 
     steps:
     - uses: actions/checkout@v2
