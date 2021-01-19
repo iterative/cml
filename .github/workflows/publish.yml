@@ -59,7 +59,6 @@ jobs:
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner-gpu]
     container: docker://dvcorg/cml:latest
-    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
 
     steps:
     - name: "tests"
