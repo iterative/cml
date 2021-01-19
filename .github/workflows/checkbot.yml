@@ -31,3 +31,52 @@ jobs:
           repo_token: ${{ secrets.repo_token }}
         run: |
           ${{steps.chatops.outputs.COMMAND}}
+
+  deploy-runner:
+    runs-on: [ubuntu-latest]
+
+    steps:
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.3
+
+      - uses: actions/checkout@v2
+
+      - name: deploy
+        shell: bash
+        env:
+          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }} 
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          npm ci
+          sudo npm link
+          cml-runner \
+          --cloud-spot \
+          --cloud azure \
+          --cloud-region us-west \
+          --cloud-type Standard_NC6 \
+          --cloud-gpu tesla \
+          --labels cml-runner-gpu
+          
+  test_machine:
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner-gpu]
+
+    steps:
+    - name: "tests"
+      run: |
+        nvidia-gpu
+
+  test_container:
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner-gpu]
+    container: docker://dvcorg/cml:latest
+    options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+
+    steps:
+    - name: "tests"
+      run: |
+        nvidia-gpu
