@@ -4,28 +4,23 @@ stages:
 
 deploy_job:
   stage: deploy
+  when: always
+  image: davidgortega/cml:cml-runner
   script:
-    - apt-get update && apt-get install -y software-properties-common
-    - curl -sL https://deb.nodesource.com/setup_12.x | bash
-    - curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add -
-    - apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-    - apt update && apt-get install -y nodejs terraform
-
-    - npm ci
-    - npm link
     - cml-runner
       --cloud aws
       --cloud-region us-west
-      --cloud-type=t2.micro
+      --cloud-type g2.2xlarge
+      --cloud-gpu tesla
       --cloud-spot
       --labels=cml-runner
-  when: always
 
 test_runner:
   when: on_success
   tags:
     - cml-runner
-
+  variables:
+    NVIDIA_VISIBLE_DEVICES: all
   script:
     - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
     - sudo apt-get update && sudo apt-get install -y python-pip python3-pip 
@@ -37,12 +32,15 @@ test_runner:
     - npm run lint
     - npm run test 
 
+    - nvidia-smi
+
 test_container:
+  image: dvcorg/cml-py3:latest
   when: on_success
   tags:
     - cml-runner
-
-  image: dvcorg/cml-py3:latest
+  variables:
+    NVIDIA_VISIBLE_DEVICES: all
   script:
     - dvc --version
     - pip install tensorboard
@@ -50,3 +48,5 @@ test_container:
     - npm ci
     - npm run lint
     - npm run test
+
+    - nvidia-smi
