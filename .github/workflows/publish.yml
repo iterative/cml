@@ -60,7 +60,7 @@ jobs:
     runs-on: [self-hosted,cml-runner-gpu]
     container:
       image: docker://dvcorg/cml:latest
-      options: --runtime "nvidia" -e NVIDIA_VISIBLE_DEVICES=all
+      options: --gpus all
 
     steps:
     - name: "tests"
