@@ -28,9 +28,14 @@ const {
 let cml;
 let RUNNER_LAUNCHED = false;
 let RUNNER_TIMEOUT_TIMER = 0;
+let RUNNER_SHUTTING_DOWN = false;
 const RUNNER_JOBS_RUNNING = [];
 
 const shutdown = async (opts) => {
+  if (RUNNER_SHUTTING_DOWN) return;
+
+  RUNNER_SHUTTING_DOWN = true;
+
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
   const tf_path = workdir;
@@ -89,8 +94,8 @@ const shutdown = async (opts) => {
   if (cloud) {
     await destroy_terraform();
   } else {
-    RUNNER_LAUNCHED && (await unregister_runner());
-    DOCKER_MACHINE && (await shutdown_docker_machine());
+    RUNNER_LAUNCHED && unregister_runner();
+    DOCKER_MACHINE && shutdown_docker_machine();
     await shutdown_tf();
   }
 
@@ -255,7 +260,7 @@ const run = async (opts) => {
     );
 
   try {
-    console.log(`Preparing kdsjdksjdskdksjdsk ${workdir}...`);
+    console.log(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
