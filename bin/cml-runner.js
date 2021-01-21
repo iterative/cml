@@ -70,18 +70,6 @@ const shutdown = async (opts) => {
     }
 
     try {
-      await fs.mkdir(tf_path, { recursive: true });
-      const tf_main_path = join(tf_path, 'main.tf');
-      const tpl = tf.iterative_provider_tpl();
-      await fs.writeFile(tf_main_path, tpl);
-      await tf.init({ dir: tf_path });
-      await tf.apply({ dir: tf_path });
-      const path = join(tf_path, 'terraform.tfstate');
-      const tfstate = await tf.load_tfstate({ path });
-      tfstate.resources = [
-        JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
-      ];
-      await tf.save_tfstate({ tfstate, path });
       await tf.destroy({ dir: tf_path });
     } catch (err) {
       console.error(`\tFailed Terraform destroy: ${err.message}`);
@@ -190,7 +178,25 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout, cloud_gpu } = opts;
+  const { workdir, name, labels, idle_timeout, cloud_gpu, tf_resource } = opts;
+
+  if (tf_resource) {
+    const tf_path = workdir;
+    const { tf_resource } = opts;
+
+    await fs.mkdir(tf_path, { recursive: true });
+    const tf_main_path = join(tf_path, 'main.tf');
+    const tpl = tf.iterative_provider_tpl();
+    await fs.writeFile(tf_main_path, tpl);
+    await tf.init({ dir: tf_path });
+    await tf.apply({ dir: tf_path });
+    const path = join(tf_path, 'terraform.tfstate');
+    const tfstate = await tf.load_tfstate({ path });
+    tfstate.resources = [
+      JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
+    ];
+    await tf.save_tfstate({ tfstate, path });
+  }
 
   const proc = await cml.start_runner({
     cloud_gpu,
@@ -249,7 +255,7 @@ const run = async (opts) => {
     );
 
   try {
-    console.log(`Preparing workdir ${workdir}...`);
+    console.log(`Preparing kdsjdksjdskdksjdsk ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
