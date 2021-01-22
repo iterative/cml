@@ -183,10 +183,9 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout, cloud_gpu } = opts;
+  const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
-    cloud_gpu,
     workdir,
     name,
     labels,
