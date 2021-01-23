@@ -8,6 +8,8 @@ const { resolve } = require('path');
 
 const { fetch_upload_data, download, exec } = require('../utils');
 
+const { IN_DOCKER } = process.env;
+
 class Gitlab {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -116,7 +118,7 @@ class Gitlab {
         --name "${name}" \
         --token "${token}" \
         --wait-timeout ${idle_timeout} \
-        --executor "docker" \
+        --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "dvcorg/cml:latest" \
         --docker-runtime "${gpu ? 'nvidia' : ''}"`;
 
