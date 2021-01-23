@@ -28,9 +28,14 @@ const {
 let cml;
 let RUNNER_LAUNCHED = false;
 let RUNNER_TIMEOUT_TIMER = 0;
+let RUNNER_SHUTTING_DOWN = false;
 const RUNNER_JOBS_RUNNING = [];
 
 const shutdown = async (opts) => {
+  if (RUNNER_SHUTTING_DOWN) return;
+
+  RUNNER_SHUTTING_DOWN = true;
+
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
   const tf_path = workdir;
@@ -70,18 +75,6 @@ const shutdown = async (opts) => {
     }
 
     try {
-      await fs.mkdir(tf_path, { recursive: true });
-      const tf_main_path = join(tf_path, 'main.tf');
-      const tpl = tf.iterative_provider_tpl();
-      await fs.writeFile(tf_main_path, tpl);
-      await tf.init({ dir: tf_path });
-      await tf.apply({ dir: tf_path });
-      const path = join(tf_path, 'terraform.tfstate');
-      const tfstate = await tf.load_tfstate({ path });
-      tfstate.resources = [
-        JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
-      ];
-      await tf.save_tfstate({ tfstate, path });
       await tf.destroy({ dir: tf_path });
     } catch (err) {
       console.error(`\tFailed Terraform destroy: ${err.message}`);
@@ -102,7 +95,7 @@ const shutdown = async (opts) => {
     await destroy_terraform();
   } else {
     RUNNER_LAUNCHED && (await unregister_runner());
-    DOCKER_MACHINE && (await shutdown_docker_machine());
+    DOCKER_MACHINE && shutdown_docker_machine();
     await shutdown_tf();
   }
 
@@ -190,10 +183,9 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout, cloud_gpu } = opts;
+  const { workdir, name, labels, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
-    cloud_gpu,
     workdir,
     name,
     labels,
@@ -237,11 +229,31 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const { driver, repo, token, cloud, workdir, name } = opts;
+  const { driver, repo, token, cloud, workdir, name, tf_resource } = opts;
 
   cml = new CML({ driver, repo, token });
 
   await tf.check_min_version();
+
+  // prepare tf
+  if (tf_resource) {
+    const tf_path = workdir;
+    const { tf_resource } = opts;
+
+    await fs.mkdir(tf_path, { recursive: true });
+    const tf_main_path = join(tf_path, 'main.tf');
+    const tpl = tf.iterative_provider_tpl();
+    await fs.writeFile(tf_main_path, tpl);
+    await tf.init({ dir: tf_path });
+    await tf.apply({ dir: tf_path });
+    const path = join(tf_path, 'terraform.tfstate');
+    const tfstate = await tf.load_tfstate({ path });
+    tfstate.resources = [
+      JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
+    ];
+    await tf.save_tfstate({ tfstate, path });
+  }
+
   await cml.repo_token_check();
   if (await cml.runner_by_name({ name }))
     throw new Error(

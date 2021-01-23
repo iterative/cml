@@ -6,7 +6,9 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 
-const { fetch_upload_data, download } = require('../utils');
+const { fetch_upload_data, download, exec } = require('../utils');
+
+const { IN_DOCKER } = process.env;
 
 class Gitlab {
   constructor(opts = {}) {
@@ -89,7 +91,14 @@ class Gitlab {
   }
 
   async start_runner(opts) {
-    const { workdir, idle_timeout, labels, name, cloud_gpu } = opts;
+    const { workdir, idle_timeout, labels, name } = opts;
+
+    let gpu = true;
+    try {
+      await exec('nvidia-smi');
+    } catch (err) {
+      gpu = false;
+    }
 
     try {
       const bin = resolve(workdir, 'gitlab-runner');
@@ -109,9 +118,9 @@ class Gitlab {
         --name "${name}" \
         --token "${token}" \
         --wait-timeout ${idle_timeout} \
-        --executor "docker" \
+        --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "dvcorg/cml:latest" \
-        --docker-runtime "${cloud_gpu ? 'nvidia' : ''}"`;
+        --docker-runtime "${gpu ? 'nvidia' : ''}"`;
 
       return spawn(command, { shell: true });
     } catch (err) {

@@ -12,19 +12,11 @@ const uri_no_trailing_slash = (uri) => {
 };
 
 const repo_from_origin = () => {
-  try {
-    const origin = execSync('git config --get remote.origin.url').toString(
-      'utf8'
-    );
-    const uri = git_url_parse(origin).toString('https').replace('.git', '');
-    return strip_auth(uri);
-  } catch (err) {
-    console.log('log');
-    console.log(err.stderr.toString());
-    console.log(err.stdout.toString());
-
-    throw err;
-  }
+  const origin = execSync('git config --get remote.origin.url').toString(
+    'utf8'
+  );
+  const uri = git_url_parse(origin).toString('https').replace('.git', '');
+  return strip_auth(uri);
 };
 
 const infer_driver = (opts = {}) => {

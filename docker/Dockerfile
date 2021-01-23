@@ -115,4 +115,5 @@ RUN npm config set user 0 && \
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt-get update && apt-get install -y dvc && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+ENV IN_DOCKER=1
 CMD ["cml-runner"]
