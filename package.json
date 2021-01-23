@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -34,8 +34,8 @@
     "cml-send-comment": "bin/cml-send-comment.js",
     "cml-publish": "bin/cml-publish.js",
     "cml-tensorboard-dev": "bin/cml-tensorboard-dev.js",
-    "cml-cloud-runner-entrypoint": "bin/cml-cloud-runner-entrypoint.js",
-    "test-cml-cloud-runner": "bin/cml-cloud-runner.js"
+    "cml-runner": "bin/cml-runner.js",
+    "cml-cloud-runner-entrypoint": "bin/cml-runner.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -59,15 +59,19 @@
   "dependencies": {
     "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
+    "decamelize-keys": "^1.1.0",
     "file-type": "^14.2.0",
     "form-data": "^3.0.0",
+    "fs-extra": "^9.0.1",
     "git-url-parse": "^11.4.0",
     "is-svg": "^4.2.1",
     "js-base64": "^3.5.2",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",
     "node-ssh": "^11.0.0",
+    "semver": "^7.3.4",
     "strip-url-auth": "^1.0.1",
+    "tar.gz": "^1.0.7",
     "tempy": "^0.6.0",
     "yargs": "^15.1.0"
   },

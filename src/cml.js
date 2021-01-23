@@ -15,7 +15,6 @@ const repo_from_origin = () => {
   const origin = execSync('git config --get remote.origin.url').toString(
     'utf8'
   );
-
   const uri = git_url_parse(origin).toString('https').replace('.git', '');
   return strip_auth(uri);
 };
@@ -123,6 +122,69 @@ class CML {
     return await get_driver(this).runner_token();
   }
 
+  parse_runner_log(opts = {}) {
+    let { data } = opts;
+    if (!data) return;
+
+    try {
+      data = data.toString('utf8');
+
+      let log = {
+        level: 'info',
+        time: new Date().toISOString(),
+        repo: this.repo
+      };
+
+      if (this.driver === 'github') {
+        if (data.includes('Running job')) {
+          log.job = '';
+          log.status = 'job_started';
+          return log;
+        } else if (
+          data.includes('Job') &&
+          data.includes('completed with result')
+        ) {
+          log.job = '';
+          log.status = 'job_ended';
+          log.success = data.endsWith('Succeeded');
+          log.level = log.success ? 'info' : 'error';
+          return log;
+        } else if (data.includes('Listening for Jobs')) {
+          log.status = 'ready';
+          return log;
+        }
+      }
+
+      if (this.driver === 'gitlab') {
+        const { msg, job } = JSON.parse(data);
+
+        if (msg.endsWith('received')) {
+          log = { ...log, job };
+          log.status = 'job_started';
+          return log;
+        } else if (
+          msg.startsWith('Job failed') ||
+          msg.startsWith('Job succeeded')
+        ) {
+          log = { ...log, job };
+          log.status = 'job_ended';
+          log.success = !msg.startsWith('Job failed');
+          log.level = log.success ? 'info' : 'error';
+          return log;
+        } else if (msg.includes('Starting runner for')) {
+          log.status = 'ready';
+          return log;
+        }
+      }
+    } catch (err) {
+      console.log(`Failed parsing log: ${err.message}`);
+    }
+  }
+
+  async start_runner(opts = {}) {
+    return await get_driver(this).start_runner(opts);
+  }
+
   async register_runner(opts = {}) {
     return await get_driver(this).register_runner(opts);
   }
@@ -136,7 +198,7 @@ class CML {
   }
 
   async await_runner(opts = {}) {
-    const { name, timer_max = 30, timer_step = 5 } = opts;
+    const { name, max_tries = 100 } = opts;
 
     let timer = 0;
     return new Promise((resolve, reject) => {
@@ -148,14 +210,24 @@ class CML {
           resolve(runner);
         }
 
-        if (timer_max === timer) {
+        if (timer >= max_tries) {
           clearInterval(interval);
           reject(new Error('Waiting for runner expiration timeout'));
         }
 
-        timer += timer_step;
-      }, timer_step * 1000);
+        timer += 1;
+      }, 10 * 1000);
     });
+  }
+
+  async repo_token_check() {
+    try {
+      await this.runner_token();
+    } catch (err) {
+      throw new Error(
+        'repo_token does not have enough permissions to access workflow API'
+      );
+    }
   }
 
   log_error(e) {

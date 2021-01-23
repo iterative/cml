@@ -1,23 +1,22 @@
-const util = require('util');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
 const FileType = require('file-type');
 const isSvg = require('is-svg');
 const forge = require('node-forge');
+const NodeSSH = require('node-ssh').NodeSSH;
 
-const execp = util.promisify(require('child_process').exec);
-const exec = async (command, opts) => {
+const exec = async (command) => {
   return new Promise(function (resolve, reject) {
-    const { debug } = opts || {};
+    require('child_process').exec(
+      command,
+      { ...process.env },
+      (error, stdout, stderr) => {
+        if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
-    execp(command, (error, stdout, stderr) => {
-      if (debug) console.log(`\nCommand: ${command}\n\t${stdout}\n\t${stderr}`);
-
-      if (error) reject(error);
-
-      resolve((stdout || stderr).slice(0, -1));
-    });
+        resolve((stdout || stderr).slice(0, -1));
+      }
+    );
   });
 };
 
@@ -143,6 +142,42 @@ const watermark_uri = (opts = {}) => {
   return url.toString();
 };
 
+const download = async (opts = {}) => {
+  const { url, path } = opts;
+  const res = await fetch(url);
+  const stream = fs.createWriteStream(path);
+  return new Promise((resolve, reject) => {
+    stream.on('error', (err) => reject(err));
+    res.body.pipe(stream);
+    res.body.on('error', reject);
+    stream.on('finish', resolve);
+  });
+};
+
+const ssh_connection = async (opts) => {
+  const { host, username, private_key: privateKey, max_tries = 5 } = opts;
+
+  const ssh = new NodeSSH();
+
+  let trials = 0;
+  while (true) {
+    try {
+      await ssh.connect({
+        host,
+        username,
+        privateKey
+      });
+      break;
+    } catch (err) {
+      if (max_tries === trials) throw err;
+      trials += 1;
+      await sleep(10);
+    }
+  }
+
+  return ssh;
+};
+
 exports.exec = exec;
 exports.fetch_upload_data = fetch_upload_data;
 exports.upload = upload;
@@ -152,3 +187,5 @@ exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
 exports.parse_param_newline = parse_param_newline;
 exports.watermark_uri = watermark_uri;
+exports.download = download;
+exports.ssh_connection = ssh_connection;

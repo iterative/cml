@@ -1,8 +1,14 @@
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const { URL, URLSearchParams } = require('url');
+const { spawn } = require('child_process');
+const fs = require('fs').promises;
+const fse = require('fs-extra');
+const { resolve } = require('path');
 
-const { fetch_upload_data } = require('../utils');
+const { fetch_upload_data, download, exec } = require('../utils');
+
+const { IN_DOCKER } = process.env;
 
 class Gitlab {
   constructor(opts = {}) {
@@ -60,13 +66,14 @@ class Gitlab {
   }
 
   async register_runner(opts = {}) {
-    const { tags, runner_token, name } = opts;
+    const { tags, name } = opts;
 
+    const token = await this.runner_token();
     const endpoint = `/runners`;
     const body = new URLSearchParams();
     body.append('description', name);
-    body.append('token', runner_token);
     body.append('tag_list', tags);
+    body.append('token', token);
     body.append('locked', 'true');
     body.append('run_untagged', 'true');
     body.append('access_level', 'not_protected');
@@ -75,7 +82,50 @@ class Gitlab {
   }
 
   async unregister_runner(opts = {}) {
-    throw new Error('Gitlab does not support unregister_runner!');
+    const { name } = opts;
+
+    const { id } = await this.runner_by_name({ name });
+    const endpoint = `/runners/${id}`;
+
+    return await this.request({ endpoint, method: 'DELETE', raw: true });
+  }
+
+  async start_runner(opts) {
+    const { workdir, idle_timeout, labels, name } = opts;
+
+    let gpu = true;
+    try {
+      await exec('nvidia-smi');
+    } catch (err) {
+      gpu = false;
+    }
+
+    try {
+      const bin = resolve(workdir, 'gitlab-runner');
+      if (!(await fse.pathExists(bin))) {
+        const url =
+          'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
+        await download({ url, path: bin });
+        await fs.chmod(bin, '777');
+      }
+
+      const { protocol, host } = new URL(this.repo);
+      const { token } = await this.register_runner({ tags: labels, name });
+      const command = `${bin} --log-format="json" run-single \
+        --builds-dir "${workdir}" \
+        --cache-dir "${workdir}" \
+        --url "${protocol}//${host}" \
+        --name "${name}" \
+        --token "${token}" \
+        --wait-timeout ${idle_timeout} \
+        --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
+        --docker-image "dvcorg/cml:latest" \
+        --docker-runtime "${gpu ? 'nvidia' : ''}"`;
+
+      return spawn(command, { shell: true });
+    } catch (err) {
+      throw new Error(`Failed preparing Gitlab runner: ${err.message}`);
+    }
   }
 
   async runner_by_name(opts = {}) {
@@ -92,7 +142,7 @@ class Gitlab {
 
   async request(opts = {}) {
     const { token, api_v4 } = this;
-    const { endpoint, method = 'GET', body } = opts;
+    const { endpoint, method = 'GET', body, raw } = opts;
 
     if (!endpoint) throw new Error('Gitlab API endpoint not found');
 
@@ -101,6 +151,7 @@ class Gitlab {
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
+    if (raw) return response;
 
     return await response.json();
   }

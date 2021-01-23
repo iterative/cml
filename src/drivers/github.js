@@ -1,7 +1,15 @@
 const url = require('url');
+const { spawn } = require('child_process');
+const { resolve } = require('path');
+const fs = require('fs').promises;
+
 const github = require('@actions/github');
+const targz = require('tar.gz');
+
+const { download, exec } = require('../utils');
 
 const CHECK_TITLE = 'CML Report';
+process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
 const owner_repo = (opts) => {
   let owner, repo;
@@ -116,7 +124,7 @@ class Github {
     return token;
   }
 
-  async register_runner(opts = {}) {
+  async register_runner() {
     throw new Error('Github does not support register_runner!');
   }
 
@@ -137,6 +145,42 @@ class Github {
         org: owner,
         runner_id
       });
+    }
+  }
+
+  async start_runner(opts) {
+    const { workdir, name, labels } = opts;
+
+    try {
+      const runner_cfg = resolve(workdir, '.runner');
+
+      try {
+        await fs.unlink(runner_cfg);
+      } catch (e) {
+        const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
+        const ver = '2.274.2';
+        const tar = resolve(workdir, 'actions-runner.tar.gz');
+        const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
+        await download({ url, path: tar });
+        await targz().extract(tar, workdir);
+        await exec(`chmod -R 777 ${workdir}`);
+      }
+
+      await exec(
+        `${resolve(
+          workdir,
+          'config.sh'
+        )} --token "${await this.runner_token()}" --url "${
+          this.repo
+        }"  --name "${name}" --labels "${labels}" --work "${resolve(
+          workdir,
+          '_work'
+        )}"`
+      );
+
+      return spawn(resolve(workdir, 'run.sh'), { shell: true });
+    } catch (err) {
+      throw new Error(`Failed preparing GitHub runner: ${err.message}`);
     }
   }
 
@@ -164,9 +208,7 @@ class Github {
     }
 
     const runner = runners.filter((runner) => runner.name === name)[0];
-
     if (runner) return { id: runner.id, name: runner.name };
-    return runners.filter((runner) => runner.name === name)[0];
   }
 }
 

@@ -89,6 +89,12 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     ln -s $(go env GOPATH)/src/github.com/docker/machine/bin/docker-machine /usr/local/bin/docker-machine && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# TERRAFORM
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
+    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    apt update && apt-get install -y terraform && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+    
 # FIX setup-python Action
 RUN mkdir /__t
 RUN ln -s /__t /opt/hostedtoolcache
@@ -101,20 +107,6 @@ ENV RUNNER_ALLOW_RUNASROOT=1
 RUN mkdir ${RUNNER_PATH}
 WORKDIR ${RUNNER_PATH}
 
-RUN wget -O /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64 && \
-    chmod +x /usr/local/bin/gitlab-runner && \
-    gitlab-runner install --user=root --working-directory=${RUNNER_PATH} && \
-    wget https://github.com/actions/runner/releases/download/v2.267.1/actions-runner-linux-x64-2.267.1.tar.gz && \
-    tar xzf actions-runner-linux-x64-2.267.1.tar.gz && \
-    ./bin/installdependencies.sh && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# TERRAFORM
-RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
-    apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-    apt update && apt-get install -y terraform=0.13.2 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # CML
 ADD "./" "/cml"
 RUN npm config set user 0 && \
@@ -123,4 +115,5 @@ RUN npm config set user 0 && \
 RUN wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list && \
     apt-get update && apt-get install -y dvc && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-CMD ["cml-cloud-runner-entrypoint"]
+ENV IN_DOCKER=1
+CMD ["cml-runner"]
