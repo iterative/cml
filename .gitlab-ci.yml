@@ -1,21 +1,11 @@
 stages:
-  - build
   - deploy
   - test
 
-build_job:
-  stage: build
-  when: always
-  script:
-    - curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
-    - usermod -aG docker root
-    - setfacl --modify user:root:rw /var/run/docker.sock
-    - docker build -t dvcorg/cml-test-gl -f ./docker/Dockerfile .
-
 deploy_job:
   stage: deploy
-  when: on_success
-  image: dvcorg/cml-test-gl
+  when: always
+  image: dvcorg/cml
   script:
     - cml-runner
       --cloud aws

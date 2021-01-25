@@ -6,6 +6,9 @@ on:
       - '*'
       - '!master'
 
+env:
+  repo_token: ${{ secrets.TEST_GITHUB_TOKEN }}
+
 jobs:
   # check that CML container builds properly
   build-container:
@@ -15,9 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build test image and publish
-        env:
-          repo_token: ${{ secrets.repo_token }}
+      - name: Build test image and publish        
         run: | 
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
@@ -52,7 +53,6 @@ jobs:
 
       - name: "CML test"
         env:
-          repo_token: ${{ secrets.repo_token }} 
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
