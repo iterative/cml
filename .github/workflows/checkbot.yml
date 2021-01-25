@@ -14,8 +14,7 @@ env:
 jobs:
   # check that CML container builds properly
   build-container:
-    if: | 
-      contains(github.event.comment.body, '/tests') || github.event_name == 'push'
+    if: contains(github.event.comment.body, '/tests')
     runs-on: [ubuntu-18.04]
 
     steps:
@@ -122,8 +121,7 @@ jobs:
         nvidia-smi
 
   chatbot:
-    if: | 
-      contains(github.event.comment.body, '/cml-')
+    if: contains(github.event.comment.body, '/cml-')
     runs-on: [ubuntu-latest]
 
     steps:
