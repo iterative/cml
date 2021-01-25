@@ -7,7 +7,7 @@ build_job:
   stage: build
   when: always
   script:
-    - curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+    - curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
     - setfacl --modify user:ubuntu:rw /var/run/docker.sock
     - docker build -t dvcorg/cml-test-gl -f ./docker/Dockerfile .
 
