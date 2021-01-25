@@ -7,6 +7,12 @@ build_job:
   stage: build
   when: always
   script:
+    - sudo add-apt-repository universe -y
+    - sudo add-apt-repository ppa:git-core/ppa -y
+    - sudo apt update && sudo apt-get install -y git
+    - sudo curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && \
+    - sudo usermod -aG docker ubuntu
+    - sudo setfacl --modify user:ubuntu:rw /var/run/docker.sock
     - docker build -t dvcorg/cml-test-gl -f ./docker/Dockerfile .
 
 deploy_job:
