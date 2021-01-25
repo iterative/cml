@@ -43,6 +43,8 @@ jobs:
     container: dvcorg/cml-test
 
     steps:
+      - uses: actions/checkout@v2
+      
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 0.14.3
