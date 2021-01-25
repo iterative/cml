@@ -1,24 +1,31 @@
 stages:
+  - build
   - deploy
   - test
 
+build_job:
+  stage: build
+  when: always
+  script:
+    - docker build -t dvcorg/cml-test-gl -f ./docker/Dockerfile .
+
 deploy_job:
   stage: deploy
-  when: always
-  image: davidgortega/cml:cml-runner
+  when: on_success
+  image: dvcorg/cml-test-gl
   script:
     - cml-runner
       --cloud aws
       --cloud-region us-west
       --cloud-type g2.2xlarge
-      --cloud-gpu tesla
       --cloud-spot
-      --labels=cml-runner-gpu-gl
+      --labels=cml-runner-gpu
 
 test_runner:
+  stage: test
   when: on_success
   tags:
-    - cml-runner-gpu-gl
+    - cml-runner-gpu
   script:
     - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
     - sudo apt-get update && sudo apt-get install -y python-pip python3-pip 
@@ -33,10 +40,11 @@ test_runner:
     - nvidia-smi
 
 test_container:
-  image: dvcorg/cml-py3:latest
+  stage: test
   when: on_success
   tags:
-    - cml-runner-gpu-gl
+    - cml-runner-gpu
+  image: dvcorg/cml-py3:latest
   script:
     - dvc --version
     - pip install tensorboard
@@ -46,3 +54,4 @@ test_container:
     - npm run test
 
     - nvidia-smi
+  

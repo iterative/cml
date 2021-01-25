@@ -31,47 +31,19 @@ jobs:
           repo_token: ${{ secrets.TEST_GITHUB_TOKEN }} 
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           npm ci
           sudo npm link
           cml-runner \
           --cloud-spot \
-          --cloud azure \
-          --cloud-region eastus \
-          --cloud-type Standard_NC6 \
-          --cloud-gpu tesla \
-          --labels cml-runner-gpu
-
-  test_machine:
-    needs: deploy-runner
-    runs-on: [self-hosted,cml-runner-gpu]
-
-    steps:
-    - name: "tests"
-      run: |
-        nvidia-smi
-
-  test_container:
-    needs: deploy-runner
-    runs-on: [self-hosted,cml-runner-gpu]
-    container:
-      image: docker://dvcorg/cml:latest
-      options: --gpus all
-
-    steps:
-    - name: "tests"
-      run: |
-        dvc --version
-        echo 'hello world'
-        nvidia-smi
+          --cloud aws \
+          --cloud-region us-west \
+          --cloud-type t2.micro \
+          --labels cml-runner
 
   test_and_deploy:
     needs: deploy-runner
-    runs-on: [self-hosted,cml-runner-gpu]
+    runs-on: [self-hosted,cml-runner]
 
     steps:
     - uses: actions/checkout@v2
@@ -139,23 +111,13 @@ jobs:
       run: | 
         echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
          
-        docker tag dvcorg/cml dvcorg/cml-gpu
-        docker push dvcorg/cml-gpu
-
-        docker tag dvcorg/cml-py3 dvcorg/cml-gpu-py3
-        docker push dvcorg/cml-gpu-py3
-
-        docker tag dvcorg/cml dvcorg/cml-cloud-runner
-        docker push dvcorg/cml-cloud-runner
-
-        docker tag dvcorg/cml-py3 dvcorg/cml-py3-cloud-runner
-        docker push dvcorg/cml-py3-cloud-runner
-
-        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runner
-        docker push dvcorg/cml-gpu-cloud-runner
-
-        docker tag dvcorg/cml-gpu-py3 dvcorg/cml-gpu-py3-cloud-runner
-        docker push dvcorg/cml-gpu-py3-cloud-runner
+        docker tag dvcorg/cml dvcorg/cml-gpu && docker push dvcorg/cml-gpu
+        docker tag dvcorg/cml-py3 dvcorg/cml-gpu-py3 && docker push dvcorg/cml-gpu-py3
+        
+        docker tag dvcorg/cml dvcorg/cml-cloud-runner && docker push dvcorg/cml-cloud-runner
+        docker tag dvcorg/cml-py3 dvcorg/cml-py3-cloud-runner && docker push dvcorg/cml-py3-cloud-runner
+        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runne && docker push dvcorg/cml-gpu-cloud-runner
+        docker tag dvcorg/cml-gpu-py3 dvcorg/cml-gpu-py3-cloud-runner && docker push dvcorg/cml-gpu-py3-cloud-runner
 
     - name: Publish to NPM
       if: github.event_name == 'push' && (contains(github.ref, 'tags') || github.ref == 'refs/heads/master')
