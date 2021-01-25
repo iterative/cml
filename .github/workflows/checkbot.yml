@@ -2,7 +2,7 @@ name: checkbot
 
 on:
   issue_comment:
-    - types: [created]
+    types: [created]
   push:
     branches:
       - '*'
@@ -14,7 +14,7 @@ env:
 jobs:
   # check that CML container builds properly
   build-container:
-    if: contains(github.event.comment.body, '/tests')
+    if: contains(github.event.comment.body, '/tests') || github.event_name == 'push'
     runs-on: [ubuntu-18.04]
 
     steps:
