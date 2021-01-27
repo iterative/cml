@@ -72,17 +72,19 @@ jobs:
 
           cml-runner \
             --cloud-spot \
-            --cloud aws \
-            --cloud-region us-west \
-            --cloud-type g2.2xlarge \
-            --labels cml-runner-aws-gpu
-
-          cml-runner \
-            --cloud-spot \
             --cloud azure \
             --cloud-region eastus \
             --cloud-type Standard_NC6 \
+            --idle-timeout 1800 \
             --labels cml-runner-az-gpu
+
+          cml-runner \
+            --cloud-spot \
+            --cloud aws \
+            --cloud-region us-west \
+            --cloud-type g2.2xlarge \
+            --idle-timeout 1800 \
+            --labels cml-runner-aws-gpu
 
   test_machine_aws:
     needs: check-container
