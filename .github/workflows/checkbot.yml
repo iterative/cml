@@ -1,6 +1,6 @@
 name: checkbot
 
-on: [issue_comment]
+# on: [issue_comment]
   # issue_comment:
   #   types: [created]
   # push:
@@ -11,14 +11,17 @@ on: [issue_comment]
 env:
   repo_token: ${{ secrets.TEST_GITHUB_TOKEN }}
 
-jobs:
-  echo:
-    runs-on: [ubuntu-18.04]
+on: issue_comment
 
+jobs:
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR comment
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Say hello 
-        run: | 
-          echo 'hello world'
+      - run: |
+          echo "Comment on PR #${{ github.event.issue.number }}"
 
   # # check that CML container builds properly
   # build-container:
