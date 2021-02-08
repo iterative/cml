@@ -17,8 +17,8 @@ jobs:
 
     steps:
       - name: Say hello 
-          run: | 
-            echo 'hello world'
+        run: | 
+          echo 'hello world'
 
   # # check that CML container builds properly
   # build-container:
