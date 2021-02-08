@@ -15,9 +15,10 @@ jobs:
   echo:
     runs-on: [ubuntu-18.04]
 
-    - name: Build test image and publish        
-        run: | 
-          echo 'hello world'
+    steps:
+      - name: Say hello 
+          run: | 
+            echo 'hello world'
 
   # # check that CML container builds properly
   # build-container:
