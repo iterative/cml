@@ -207,7 +207,7 @@ const run_local = async (opts) => {
           RUNNER_JOBS_RUNNING.pop();
           break;
         case 'ready':
-          fs.open('/tmp/ready.flag', 'w').then()
+          fs.open('/tmp/ready.flag', 'w').then();
           break;
       }
     }
