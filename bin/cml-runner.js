@@ -194,13 +194,22 @@ const run_local = async (opts) => {
 
   const data_handler = (data) => {
     const log = cml.parse_runner_log({ data });
-    log && console.log(JSON.stringify(log));
 
-    if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push(1);
-      RUNNER_TIMEOUT_TIMER = 0;
-    } else if (log && log.status === 'job_ended') {
-      RUNNER_JOBS_RUNNING.pop();
+    if (log) {
+      console.log(JSON.stringify(log));
+
+      switch (log.status) {
+        case 'job_started':
+          RUNNER_JOBS_RUNNING.push(1);
+          RUNNER_TIMEOUT_TIMER = 0;
+          break;
+        case 'job_ended':
+          RUNNER_JOBS_RUNNING.pop();
+          break;
+        case 'ready':
+          fs.open('/tmp/ready.flag', 'w').then()
+          break;
+      }
     }
   };
   proc.stderr.on('data', data_handler);
