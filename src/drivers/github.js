@@ -149,7 +149,7 @@ class Github {
   }
 
   async start_runner(opts) {
-    const { workdir, name, labels } = opts;
+    const { workdir, single, name, labels } = opts;
 
     try {
       const runner_cfg = resolve(workdir, '.runner');
@@ -178,7 +178,10 @@ class Github {
         )}"`
       );
 
-      return spawn(resolve(workdir, 'run.sh'), { shell: true });
+      return spawn(
+        resolve(workdir, 'run.sh') + (single ? ' --once' : ''),
+        { shell: true }
+      );
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
     }

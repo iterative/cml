@@ -20,6 +20,7 @@ const {
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
+  RUNNER_SINGLE = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -183,12 +184,13 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout } = opts;
+  const { workdir, name, labels, single, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
     workdir,
     name,
     labels,
+    single,
     idle_timeout
   });
 
@@ -229,7 +231,7 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const { driver, repo, token, cloud, workdir, name, tf_resource } = opts;
+  const { driver, repo, token, single, cloud, workdir, name, tf_resource } = opts;
 
   cml = new CML({ driver, repo, token });
 
@@ -281,6 +283,10 @@ const opts = decamelize(
     )
     .default('name', RUNNER_NAME)
     .describe('name', 'Name displayed in the repo once registered')
+
+    .boolean('single')
+    .default('single', RUNNER_SINGLE)
+    .describe('single', 'If specified, exit after running a single job.')
 
     .default('driver', RUNNER_DRIVER)
     .describe('driver', 'If not specify it infers it from the ENV.')
