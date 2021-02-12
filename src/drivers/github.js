@@ -178,10 +178,9 @@ class Github {
         )}"`
       );
 
-      return spawn(
-        resolve(workdir, 'run.sh') + (single ? ' --once' : ''),
-        { shell: true }
-      );
+      return spawn(resolve(workdir, 'run.sh') + (single ? ' --once' : ''), {
+        shell: true
+      });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
     }
