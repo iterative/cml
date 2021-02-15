@@ -89,7 +89,7 @@ jobs:
         
         docker tag dvcorg/cml dvcorg/cml-cloud-runner && docker push dvcorg/cml-cloud-runner
         docker tag dvcorg/cml-py3 dvcorg/cml-py3-cloud-runner && docker push dvcorg/cml-py3-cloud-runner
-        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runne && docker push dvcorg/cml-gpu-cloud-runner
+        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runner && docker push dvcorg/cml-gpu-cloud-runner
         docker tag dvcorg/cml-gpu-py3 dvcorg/cml-gpu-py3-cloud-runner && docker push dvcorg/cml-gpu-py3-cloud-runner
 
     - name: Publish to NPM
