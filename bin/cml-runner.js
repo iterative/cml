@@ -95,7 +95,7 @@ const shutdown = async (opts) => {
     await destroy_terraform();
   } else {
     RUNNER_LAUNCHED && (await unregister_runner());
-    DOCKER_MACHINE && shutdown_docker_machine();
+    DOCKER_MACHINE && (await shutdown_docker_machine());
     await shutdown_tf();
   }
 
