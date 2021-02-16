@@ -297,7 +297,7 @@ const opts = decamelize(
     )
     .default('cloud')
     .describe('cloud', 'Cloud to deploy the runner')
-    .choices('cloud', ['aws', 'azure'])
+    .choices('cloud', ['aws', 'azure', 'kubernetes'])
     .default('cloud-region', 'us-west')
     .describe(
       'cloud-region',
