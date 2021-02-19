@@ -89,8 +89,8 @@ resource "iterative_cml_runner" "runner" {
   ${driver ? `driver = "${driver}"` : ''}
   ${labels ? `labels = "${labels}"` : ''}
   ${
-    typeof idle_timeout !== 'undefined'
-      ? `idle_timeout = "${idle_timeout}"`
+    typeof idle_timeout !== 'undefined' && idle_timeout >= 0
+      ? `idle_timeout = ${idle_timeout}`
       : ''
   }
   ${name ? `name = "${name}"` : ''}
