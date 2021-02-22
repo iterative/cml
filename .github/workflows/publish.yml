@@ -15,35 +15,8 @@ env:
   TEST_BBCLOUD_SHA: 8119698b09994844a6803d5380cc370e0d0ffc6a
 
 jobs:
-  deploy-runner:
-    runs-on: [ubuntu-latest]
-
-    steps:
-      - uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 0.14.3
-
-      - uses: actions/checkout@v2
-
-      - name: deploy
-        shell: bash
-        env:
-          repo_token: ${{ secrets.TEST_GITHUB_TOKEN }} 
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
-        run: |
-          npm ci
-          sudo npm link
-          cml-runner \
-          --cloud-spot \
-          --cloud aws \
-          --cloud-region us-west \
-          --cloud-type t2.micro \
-          --labels cml-runner
-
   test_and_deploy:
-    needs: deploy-runner
-    runs-on: [self-hosted,cml-runner]
+    runs-on: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -116,7 +89,7 @@ jobs:
         
         docker tag dvcorg/cml dvcorg/cml-cloud-runner && docker push dvcorg/cml-cloud-runner
         docker tag dvcorg/cml-py3 dvcorg/cml-py3-cloud-runner && docker push dvcorg/cml-py3-cloud-runner
-        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runne && docker push dvcorg/cml-gpu-cloud-runner
+        docker tag dvcorg/cml-gpu dvcorg/cml-gpu-cloud-runner && docker push dvcorg/cml-gpu-cloud-runner
         docker tag dvcorg/cml-gpu-py3 dvcorg/cml-gpu-py3-cloud-runner && docker push dvcorg/cml-gpu-py3-cloud-runner
 
     - name: Publish to NPM

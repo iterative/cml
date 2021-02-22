@@ -130,10 +130,6 @@ const ssh_public_from_private_rsa = (private_key) => {
   return ssh_public;
 };
 
-const parse_param_newline = (param) => {
-  return param.replace(/\\n/g, '\n');
-};
-
 const watermark_uri = (opts = {}) => {
   const { uri, type } = opts;
   const url = new URL(uri);
@@ -185,7 +181,6 @@ exports.randid = randid;
 exports.sleep = sleep;
 exports.is_proc_running = is_proc_running;
 exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
-exports.parse_param_newline = parse_param_newline;
 exports.watermark_uri = watermark_uri;
 exports.download = download;
 exports.ssh_connection = ssh_connection;

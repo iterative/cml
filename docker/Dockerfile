@@ -95,11 +95,6 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     apt update && apt-get install -y terraform && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
-# FIX setup-python Action
-RUN mkdir /__t
-RUN ln -s /__t /opt/hostedtoolcache
-ENV AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
-
 # GITLAB RUNNER AND GITHUB RUNNER
 ENV RUNNER_PATH=/home/runner
 ENV RUNNER_ALLOW_RUNASROOT=1
