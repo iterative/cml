@@ -451,6 +451,17 @@ uses: hashicorp/setup-terraform@v1
 
 If you are using your own Docker container, you'll want to install Terraform with the package manager of your choice in the image. The CML Docker container comes with Terraform installed. 
 
+### Using on-premise machines as self-hosted runners
+You can also use the new `cml-runner` function to set up a local self-hosted runner. On your local machine or on-premise GPU cluster, you'll install CML as a package and then run:
+
+```yaml
+ cml-runner \
+    --repo $your_project_repository_url \
+    --token=$personal_access_token \
+    --labels tf \
+    --idle-timeout 180
+```
+Now your machine will be listening for workflows from your project repository.
 
 ## Install CML as a package
 
