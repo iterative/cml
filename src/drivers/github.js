@@ -4,7 +4,7 @@ const { resolve } = require('path');
 const fs = require('fs').promises;
 
 const github = require('@actions/github');
-const targz = require('tar.gz');
+const tar = require('tar');
 
 const { download, exec } = require('../utils');
 
@@ -159,10 +159,10 @@ class Github {
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
         const ver = '2.274.2';
-        const tar = resolve(workdir, 'actions-runner.tar.gz');
+        const destination = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
-        await download({ url, path: tar });
-        await targz().extract(tar, workdir);
+        await download({ url, path: destination });
+        await tar.extract({file: destination, cwd: workdir});
         await exec(`chmod -R 777 ${workdir}`);
       }
 
