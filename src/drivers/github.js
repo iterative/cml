@@ -162,7 +162,7 @@ class Github {
         const destination = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: destination });
-        await tar.extract({file: destination, cwd: workdir});
+        await tar.extract({ file: destination, cwd: workdir });
         await exec(`chmod -R 777 ${workdir}`);
       }
 
