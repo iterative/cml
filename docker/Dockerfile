@@ -81,7 +81,8 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 # TENSORFLOW ENDS
 
-# DOCKER, OUR CUSTOM DOCKER MACHINE FORK THAT SUPPORTS GPU ACCELARATOR (DEPRECATED)
+# DOCKER, OUR CUSTOM DOCKER MACHINE FORK THAT SUPPORTS GPU ACCELERATOR (DEPRECATED)
+ENV GO111MODULE=auto
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && \
     go get github.com/iterative/machine && \
     mv $(go env GOPATH)/src/github.com/iterative $(go env GOPATH)/src/github.com/docker && \
