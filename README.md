@@ -376,7 +376,7 @@ jobs:
   train-model:
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner]
-    container: docker://dvcorg/cml-py3
+    container: docker://dvcorg/cml-py3:latest
     steps:
     - uses: actions/checkout@v2
     - name: "Train my model"
