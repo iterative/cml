@@ -69,7 +69,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: ""Train my model"
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -156,7 +156,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: "Train my model"
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -208,7 +208,7 @@ between commits to make reports like this:
 The `.github/workflows/cml.yaml` file to create this report is:
 
 ```yaml
-name: train-test
+name: model-training
 on: [push]
 jobs:
   run:
@@ -216,7 +216,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: "Train my model"
         shell: bash
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -250,6 +250,8 @@ jobs:
 
 If you're using DVC with cloud storage, take note of environmental variables for
 your storage format.
+
+### Environmental variables for supported cloud providers
 
 <details>
   <summary>
@@ -348,7 +350,7 @@ automatically allocate cloud instances using `cml-runner`. You can spin up insta
 
 For example, the following workflow
 deploys a `t2.micro` instance on AWS EC2 and trains a model on the instance.
-After the job runs, the instance automatically shuts down.
+After the job runs, the instance automatically shuts down. You might notice that this workflow is quite similar to the [basic use case](#usage) highlighted in the beginning of the docs- that's because it is! What's new is that we've added `cml-runner`, plus a few environmental variables for passing your cloud service credentials to the workflow.
 
 ```yaml
 name: "Train-in-the-cloud"
@@ -358,10 +360,9 @@ jobs:
   deploy-runner:
     runs-on: [ubuntu-latest]
     steps:
-      - uses: hashicorp/setup-terraform@v1
       - uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
-      - name: deploy
+      - name: "Deploy runner on EC2"
         shell: bash
         env:
           repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -373,7 +374,7 @@ jobs:
           --cloud-region us-west \
           --cloud-type=t2.micro \
           --labels=cml-runner
-  train-model:
+  name: model-training
     needs: deploy-runner
     runs-on: [self-hosted,cml-runner]
     container: docker://dvcorg/cml-py3:latest
@@ -391,7 +392,7 @@ jobs:
         cml-send-comment report.md
 ```
 
-In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro` instance in the `us-west` region. The next step, `train-model`, runs on the newly launched instance. 
+In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro` instance in the `us-west` region. The next step, `model-training`, runs on the newly launched instance. 
 
 **Note that you can use any container with this workflow!** While you must have CML and its dependencies setup to use CML functions like `cml-send-comment` from your instance, you can create your favorite training environment in the cloud by pulling the Docker container of your choice. 
 
@@ -441,6 +442,8 @@ You will need to
 Note that you will also need to provide access credentials for your cloud
 compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
+
+Please see our docs about [environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
 
 ### Requirements
 Terraform is a dependency for `cml-runner`. In GitHub Actions, you can setup Terraform as follows using [Hashicorp's Action](https://github.com/hashicorp/setup-terraform):
@@ -511,4 +514,5 @@ Here are some example projects using CML.
 - [Basic CML project](https://github.com/iterative/cml_base_case)
 - [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
 - [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
+- [CML with a small EC2 instance](https://github.com/iterative/cml-runner-base-case)
 - [CML with EC2 GPU](https://github.com/iterative/cml_cloud_case)
