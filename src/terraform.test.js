@@ -38,7 +38,6 @@ describe('Terraform tests', () => {
   });
 
   test('basic settings', async () => {
-    console.log('skdjskjdskjdskjdskdjkd');
     const output = iterative_cml_runner_tpl({
       repo: 'https://',
       token: 'abc',
@@ -55,7 +54,38 @@ describe('Terraform tests', () => {
       spot: true,
       spot_price: '0.0001'
     });
-    expect(output).toMatchInlineSnapshot();
+    expect(output).toMatchInlineSnapshot(`
+      "
+
+      terraform {
+        required_providers {
+          iterative = {
+            source = \\"iterative/iterative\\"
+          }
+        }
+      }
+
+      provider \\"iterative\\" {}
+
+
+      resource \\"iterative_cml_runner\\" \\"runner\\" {
+        repo = \\"https://\\"
+        token = \\"abc\\"
+        driver = \\"gitlab\\"
+        labels = \\"mylabel\\"
+        idle_timeout = 300
+        name = \\"myrunner\\"
+        cloud = \\"aws\\"
+        region = \\"west\\"
+        instance_type = \\"mymachinetype\\"
+        instance_gpu = \\"mygputype\\"
+        instance_hdd_size = 50
+        ssh_private = \\"myprivate\\"
+        spot = true
+        spot_price = 0.0001
+      }
+      "
+    `);
   });
 
   test('basic settings with runner forever', async () => {
