@@ -445,7 +445,6 @@ compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 
 Please see our docs about [environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
  
-
 ### Using on-premise machines as self-hosted runners
 You can also use the new `cml-runner` function to set up a local self-hosted runner. On your local machine or on-premise GPU cluster, you'll install CML as a package and then run:
 
