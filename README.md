@@ -444,15 +444,7 @@ compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
 
 Please see our docs about [environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
-
-### Requirements
-Terraform is a dependency for `cml-runner`. In GitHub Actions, you can setup Terraform as follows using [Hashicorp's Action](https://github.com/hashicorp/setup-terraform):
-
-```
-uses: hashicorp/setup-terraform@v1
-```
-
-If you are using your own Docker container, you'll want to install Terraform with the package manager of your choice in the image. The CML Docker container comes with Terraform installed. 
+ 
 
 ### Using on-premise machines as self-hosted runners
 You can also use the new `cml-runner` function to set up a local self-hosted runner. On your local machine or on-premise GPU cluster, you'll install CML as a package and then run:
