@@ -130,7 +130,7 @@ const run_cloud = async (opts) => {
     if (tf_file) {
       tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
     } else {
-      tpl = tf.iterative_machine_tpl({
+      tpl = tf.iterative_cml_runner_tpl({
         repo,
         token,
         driver,
