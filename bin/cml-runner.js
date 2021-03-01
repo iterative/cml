@@ -7,7 +7,7 @@ const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const { exec, randid } = require('../src/utils');
+const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
@@ -18,6 +18,7 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
+  RUNNER_DESTROY_DELAY = 2 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
@@ -38,7 +39,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, workdir = '' } = opts;
+  const { name, destroy_delay, workdir = '' } = opts;
   const tf_path = workdir;
 
   if (error) console.error(error);
@@ -91,6 +92,9 @@ const shutdown = async (opts) => {
       error = err;
     }
   };
+
+  console.log(`\tDestroy scheduled: ${destroy_delay} seconds remaining.`);
+  await sleep(destroy_delay);
 
   if (cloud) {
     await destroy_terraform();
@@ -280,6 +284,11 @@ const opts = decamelize(
     .describe(
       'idle-timeout',
       'Time in seconds for the runner to be waiting for jobs before shutting down. 0 waits forever.'
+    )
+    .default('destroy-delay', RUNNER_DESTROY_DELAY)
+    .describe(
+      'destroy-delay',
+      'Time in seconds for cloud runners to await before destroying the cloud resources. 0 proceeds immediately.'
     )
     .default('name', RUNNER_NAME)
     .describe('name', 'Name displayed in the repo once registered')
