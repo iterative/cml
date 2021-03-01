@@ -91,7 +91,7 @@ class Gitlab {
   }
 
   async start_runner(opts) {
-    const { workdir, idle_timeout, labels, name } = opts;
+    const { workdir, idle_timeout, single, labels, name } = opts;
 
     let gpu = true;
     try {
@@ -120,7 +120,8 @@ class Gitlab {
         --wait-timeout ${idle_timeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "dvcorg/cml:latest" \
-        --docker-runtime "${gpu ? 'nvidia' : ''}"`;
+        --docker-runtime "${gpu ? 'nvidia' : ''}" \
+        ${single ? '--max-builds 1' : ''}`;
 
       return spawn(command, { shell: true });
     } catch (err) {
