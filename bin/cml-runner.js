@@ -231,16 +231,7 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const {
-    driver,
-    repo,
-    token,
-    single,
-    cloud,
-    workdir,
-    name,
-    tf_resource
-  } = opts;
+  const { driver, repo, token, cloud, workdir, name, tf_resource } = opts;
 
   cml = new CML({ driver, repo, token });
 
