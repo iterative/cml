@@ -141,6 +141,13 @@ class Gitlab {
     if (runner) return { id: runner.id, name: runner.name };
   }
 
+  async runners_by_labels(opts = {}) {
+    const { labels } = opts;
+    const endpoint = `/runners?per_page=100?tag_list=${labels}`;
+    const runners = await this.request({ endpoint, method: 'GET' });
+    return runners.map((runner) => ({ id: runner.id, name: runner.name }));
+  }
+
   async request(opts = {}) {
     const { token, api_v4 } = this;
     const { endpoint, method = 'GET', body, raw } = opts;

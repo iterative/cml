@@ -186,8 +186,7 @@ class Github {
     }
   }
 
-  async runner_by_name(opts = {}) {
-    const { name } = opts;
+  async get_runners(opts = {}) {
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
     let runners = [];
@@ -209,8 +208,28 @@ class Github {
       }));
     }
 
+    return runners;
+  }
+
+  async runner_by_name(opts = {}) {
+    const { name } = opts;
+    const runners = this.get_runners(opts);
     const runner = runners.filter((runner) => runner.name === name)[0];
     if (runner) return { id: runner.id, name: runner.name };
+  }
+
+  async runners_by_labels(opts = {}) {
+    const { labels } = opts;
+    const runners = this.get_runners(opts);
+    return runners
+      .filter((runner) =>
+        labels
+          .split(',')
+          .every((label) =>
+            runner.labels.map(({ name }) => name).includes(label)
+          )
+      )
+      .map((runner) => ({ id: runner.id, name: runner.name }));
   }
 }
 

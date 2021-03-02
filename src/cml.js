@@ -197,6 +197,10 @@ class CML {
     return await get_driver(this).runner_by_name(opts);
   }
 
+  async runners_by_labels(opts = {}) {
+    return await get_driver(this).runners_by_labels(opts);
+  }
+
   async await_runner(opts = {}) {
     const { name, max_tries = 100 } = opts;
 

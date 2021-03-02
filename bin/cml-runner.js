@@ -21,6 +21,7 @@ const {
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
+  RUNNER_REUSE_EXISTING = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -231,7 +232,17 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const { driver, repo, token, cloud, workdir, name, tf_resource } = opts;
+  const {
+    driver,
+    repo,
+    token,
+    cloud,
+    workdir,
+    labels,
+    name,
+    reuse_existing,
+    tf_resource
+  } = opts;
 
   cml = new CML({ driver, repo, token });
 
@@ -257,10 +268,14 @@ const run = async (opts) => {
   }
 
   await cml.repo_token_check();
-  if (await cml.runner_by_name({ name }))
+  if (await cml.runner_by_name({ name })) {
     throw new Error(
       `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
     );
+  } else if ((await cml.runners_by_labels({ labels })) && reuse_existing) {
+    console.log(`Reusing existing runner[s] with the ${labels} labels...`);
+    return;
+  }
 
   try {
     console.log(`Preparing workdir ${workdir}...`);
@@ -287,6 +302,12 @@ const opts = decamelize(
     .boolean('single')
     .default('single', RUNNER_SINGLE)
     .describe('single', 'If specified, exit after running a single job.')
+    .boolean('reuse-existing')
+    .default('reuse-existing', RUNNER_REUSE_EXISTING)
+    .describe(
+      'reuse-existing',
+      "If specified, don't spawn a new runner if there is a registed runner with the given labels."
+    )
 
     .default('driver', RUNNER_DRIVER)
     .describe('driver', 'If not specify it infers it from the ENV.')
