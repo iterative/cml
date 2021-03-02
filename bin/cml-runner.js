@@ -20,6 +20,7 @@ const {
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
+  RUNNER_SINGLE = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -130,7 +131,7 @@ const run_cloud = async (opts) => {
     if (tf_file) {
       tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
     } else {
-      tpl = tf.iterative_machine_tpl({
+      tpl = tf.iterative_cml_runner_tpl({
         repo,
         token,
         driver,
@@ -183,12 +184,13 @@ const run_cloud = async (opts) => {
 
 const run_local = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, idle_timeout } = opts;
+  const { workdir, name, labels, single, idle_timeout } = opts;
 
   const proc = await cml.start_runner({
     workdir,
     name,
     labels,
+    single,
     idle_timeout
   });
 
@@ -281,6 +283,10 @@ const opts = decamelize(
     )
     .default('name', RUNNER_NAME)
     .describe('name', 'Name displayed in the repo once registered')
+
+    .boolean('single')
+    .default('single', RUNNER_SINGLE)
+    .describe('single', 'If specified, exit after running a single job.')
 
     .default('driver', RUNNER_DRIVER)
     .describe('driver', 'If not specify it infers it from the ENV.')
