@@ -69,7 +69,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: "Train my model"
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -156,7 +156,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: "Train my model"
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -208,7 +208,7 @@ between commits to make reports like this:
 The `.github/workflows/cml.yaml` file to create this report is:
 
 ```yaml
-name: train-test
+name: model-training
 on: [push]
 jobs:
   run:
@@ -216,7 +216,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: cml_run
+      - name: "Train my model"
         shell: bash
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -250,6 +250,8 @@ jobs:
 
 If you're using DVC with cloud storage, take note of environmental variables for
 your storage format.
+
+### Environmental variables for supported cloud providers
 
 <details>
   <summary>
@@ -344,146 +346,115 @@ to get started setting up your self-hosted runner.
 ### Allocating cloud resources with CML
 
 When a workflow requires computational resources (such as GPUs) CML can
-automatically allocate cloud instances. For example, the following workflow
+automatically allocate cloud instances using `cml-runner`. You can spin up instances on your AWS or Azure account (GCP support is forthcoming!). 
+
+For example, the following workflow
 deploys a `t2.micro` instance on AWS EC2 and trains a model on the instance.
-After the instance is idle for 120 seconds, it automatically shuts down.
+After the job runs, the instance automatically shuts down. You might notice that this workflow is quite similar to the [basic use case](#usage) highlighted in the beginning of the docs- that's because it is! What's new is that we've added `cml-runner`, plus a few environmental variables for passing your cloud service credentials to the workflow.
 
 ```yaml
-name: train-my-model
+name: "Train-in-the-cloud"
 on: [push]
+
 jobs:
-  deploy-cloud-runner:
+  deploy-runner:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:latest
     steps:
-      - name: deploy
+      - uses: iterative/setup-cml@v1
+      - uses: actions/checkout@v2
+      - name: "Deploy runner on EC2"
+        shell: bash
         env:
-          repo_token: ${{ secrets.REPO_TOKEN }}
+          repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          echo "Deploying..."
-
-          MACHINE="cml$(date +%s)"
-          docker-machine create \
-              --driver amazonec2 \
-              --amazonec2-instance-type t2.micro \
-              --amazonec2-region us-east-1 \
-              --amazonec2-zone f \
-              --amazonec2-vpc-id vpc-06bc773d85a0a04f7 \
-              --amazonec2-ssh-user ubuntu \
-              $MACHINE
-
-          eval "$(docker-machine env --shell sh $MACHINE)"
-
-          (
-          docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
-          docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
-
-          docker run --name runner -d \
-            -v /docker_machine/machine:/root/.docker/machine \
-            -e RUNNER_IDLE_TIMEOUT=120 \
-            -e DOCKER_MACHINE=${MACHINE} \
-            -e RUNNER_LABELS=cml \
-            -e repo_token=$repo_token \
-            -e RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}" \
-           dvcorg/cml-py3 && \
-
-          sleep 20 && echo "Deployed $MACHINE"
-          ) || (echo y | docker-machine rm $MACHINE && exit 1)
-  train:
-    needs: deploy-cloud-runner
-    runs-on: [self-hosted, cml]
-
+          cml-runner \
+          --cloud aws \
+          --cloud-region us-west \
+          --cloud-type=t2.micro \
+          --labels=cml-runner
+  name: model-training
+    needs: deploy-runner
+    runs-on: [self-hosted,cml-runner]
+    container: docker://dvcorg/cml-py3:latest
     steps:
-      - uses: actions/checkout@v2
-      - name: cml_run
-        env:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pip install -r requirements.txt
-          python train.py
-
-          cat metrics.txt >> report.md
-          cml-publish confusion_matrix.png --md >> report.md
-          cml-send-comment report.md
-```
-
-Please note that for GCP's Compute Engine, deploying the cloud runner involves
-different steps:
-
-```yaml
-deploy-gce:
-  runs-on: [ubuntu-latest]
-  container: docker://dvcorg/cml:latest
-
-  steps:
-    - name: deploy
-      shell: bash
+    - uses: actions/checkout@v2
+    - name: "Train my model"
       env:
-        repo_token: ${{ secrets.REPO_TOKEN }}
-        GOOGLE_APPLICATION_CREDENTIALS_DATA:
-          ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       run: |
-        echo "Deploying..."
-
-        echo '${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}' > gce-credentials.json
-        export GOOGLE_APPLICATION_CREDENTIALS='gce-credentials.json'
-
-        RUNNER_LABELS="gce"
-        RUNNER_REPO="https://github.com/${GITHUB_REPOSITORY}"
-        MACHINE="cml$(date +%s)"
-
-        docker-machine create --driver google \
-          --google-machine-type "n1-standard-4" \
-          --google-project "cml-project-279709" \
-          $MACHINE
-
-        eval "$(docker-machine env --shell sh $MACHINE)"
-
-        (
-        docker-machine ssh $MACHINE "sudo mkdir -p /docker_machine && sudo chmod 777 /docker_machine" && \
-        docker-machine scp -r -q ~/.docker/machine/ $MACHINE:/docker_machine && \
-        docker-machine scp -q gce-credentials.json $MACHINE:/docker_machine/gce-credentials.json && \
-
-        eval "$(docker-machine env --shell sh $MACHINE)" && \
-        docker run --name runner -d \
-          -v /docker_machine/gce-credentials.json:/gce-credentials.json \
-          -e GOOGLE_APPLICATION_CREDENTIALS='/gce-credentials.json' \
-          -v /docker_machine/machine:/root/.docker/machine \
-          -e DOCKER_MACHINE=$MACHINE \
-          -e repo_token=$repo_token \
-          -e RUNNER_LABELS=$RUNNER_LABELS \
-          -e RUNNER_REPO=$RUNNER_REPO \
-          -e RUNNER_IDLE_TIMEOUT=120 \
-          dvcorg/cml-py3 && \
-        sleep 20 && echo "Deployed $MACHINE"
-        ) || (docker-machine rm -f $MACHINE && exit 1)
+        pip install -r requirements.txt
+        python train.py
+        # Publish report with CML
+        cat metrics.txt > report.md
+        cml-send-comment report.md
 ```
 
-### Inputs
+In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro` instance in the `us-west` region. The next step, `model-training`, runs on the newly launched instance. 
+
+**Note that you can use any container with this workflow!** While you must have CML and its dependencies setup to use CML functions like `cml-send-comment` from your instance, you can create your favorite training environment in the cloud by pulling the Docker container of your choice. 
+
+We like the CML container (`docker://dvcorg/cml-py3`) because it comes loaded with Python, CUDA, `git`, `node` and other essentials for full-stack data science. But we don't mind if you do it your way :)
+
+
+### Arguments
+The function `cml-runner` accepts the following arguments:
+
+```
+Options:
+  --version            Show version number                             [boolean]
+  --labels             Comma delimited runner labels            [default: "cml"]
+  --idle-timeout       Time in seconds for the runner to be waiting for jobs
+                       before shutting down. 0 waits forever.     [default: 300]
+  --name               Name displayed in the repo once registered
+                                                     [default: "cml-cfwj9rrari"]
+  --driver             If not specify it infers it from the ENV.
+                                                   [choices: "github", "gitlab"]
+  --repo               Specifies the repo to be used. If not specified is
+                       extracted from the CI ENV.
+  --token              Personal access token to be used. If not specified in
+                       extracted from ENV.
+  --cloud              Cloud to deploy the runner      [choices: "aws", "azure"]
+  --cloud-region       Region where the instance is deployed. Choices:[us-east,
+                       us-west, eu-west, eu-north]. Also accepts native cloud
+                       regions.                             [default: "us-west"]
+  --cloud-type         Instance type. Choices: [m, l, xl]. Also supports native
+                       types like i.e. t2.micro
+  --cloud-gpu          GPU type.              [choices: "nogpu", "k80", "tesla"]
+  --cloud-hdd-size     HDD size in GB.
+  --cloud-ssh-private  Your private RSA SHH key. If not provided will be
+                       generated by the Terraform-provider-Iterative.
+                                                                   [default: ""]
+  --cloud-spot         Request a spot instance                         [boolean]
+  --cloud-spot-price   Spot max price. If not specified it takes current spot
+                       bidding pricing.                          [default: "-1"]
+  -h                   Show help                                       [boolean]
+  ```
+
+
+### Environmental variables
 
 You will need to
-[create a new personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line),
-`REPO_TOKEN`, with repository read/write access. `REPO_TOKEN` must be added as a
-secret in your project repository.
+[create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) with repository read/write access and workflow privileges. In the example workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
 
 Note that you will also need to provide access credentials for your cloud
 compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
 
-### Provisioning cloud compute
+Please see our docs about [environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
+ 
+### Using on-premise machines as self-hosted runners
+You can also use the new `cml-runner` function to set up a local self-hosted runner. On your local machine or on-premise GPU cluster, you'll install CML as a package and then run:
 
-In the above example, we use
-[Docker Machine](https://docs.docker.com/machine/concepts/) to provision
-instances. Please see their documentation for further details.
-
-Note several CML-specific arguments to `docker run`:
-
-- `repo_token` should be set to your repository's personal access token
-- `RUNNER_REPO` should be set to the URL of your project repository
-- The docker container should be given as `dvcorg/cml`, `dvcorg/cml-py3`,
-  `dvc/org/cml-gpu`, or `dvcorg/cml-gpu-py3`
+```yaml
+ cml-runner \
+    --repo $your_project_repository_url \
+    --token=$personal_access_token \
+    --labels tf \
+    --idle-timeout 180
+```
+Now your machine will be listening for workflows from your project repository.
 
 ## Install CML as a package
 
@@ -533,4 +504,5 @@ Here are some example projects using CML.
 - [Basic CML project](https://github.com/iterative/cml_base_case)
 - [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
 - [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
+- [CML with a small EC2 instance](https://github.com/iterative/cml-runner-base-case)
 - [CML with EC2 GPU](https://github.com/iterative/cml_cloud_case)
