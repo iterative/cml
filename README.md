@@ -69,7 +69,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: ""Train my model"
+      - name: "Train my model"
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
