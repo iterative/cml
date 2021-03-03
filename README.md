@@ -386,7 +386,6 @@ jobs:
       run: |
         pip install -r requirements.txt
         python train.py
-        
         # Publish report with CML
         cat metrics.txt > report.md
         cml-send-comment report.md
