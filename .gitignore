@@ -7,4 +7,5 @@ runner/
 main.tf
 terraform.*
 !terraform.js
+!terraform.test.js
 crash.log

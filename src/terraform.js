@@ -62,7 +62,7 @@ provider "iterative" {}
 `;
 };
 
-const iterative_machine_tpl = (opts = {}) => {
+const iterative_cml_runner_tpl = (opts = {}) => {
   const {
     repo,
     token,
@@ -98,7 +98,7 @@ resource "iterative_cml_runner" "runner" {
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
-  ${hdd_size ? `instance_hdd_size = "${hdd_size}"` : ''}
+  ${hdd_size ? `instance_hdd_size = ${hdd_size}` : ''}
   ${ssh_private ? `ssh_private = "${ssh_private}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
   ${spot_price ? `spot_price = ${spot_price}` : ''}
@@ -121,5 +121,5 @@ exports.init = init;
 exports.apply = apply;
 exports.destroy = destroy;
 exports.iterative_provider_tpl = iterative_provider_tpl;
-exports.iterative_machine_tpl = iterative_machine_tpl;
+exports.iterative_cml_runner_tpl = iterative_cml_runner_tpl;
 exports.check_min_version = check_min_version;
