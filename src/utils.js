@@ -55,17 +55,9 @@ const mime_type = async (opts) => {
 const fetch_upload_data = async (opts) => {
   const { path, buffer } = opts;
 
-  if (path) {
-    try {
-      await fs.promises.access(path, fs.constants.F_OK | fs.constants.R_OK);
-    } catch (err) {
-      throw new Error(`Path ${path} does not exist or is not a readable file`);
-    }
-  }
-
-  const mime = await mime_type(opts);
-  const data = path ? fs.createReadStream(path) : buffer;
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
+  const data = path ? fs.createReadStream(path) : buffer;
+  const mime = await mime_type(opts);
 
   return { mime, size, data };
 };
