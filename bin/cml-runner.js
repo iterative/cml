@@ -39,7 +39,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, destroy_delay, workdir = '' } = opts;
+  const { name, workdir = '' } = opts;
   const tf_path = workdir;
 
   if (error) console.error(error);
@@ -93,8 +93,8 @@ const shutdown = async (opts) => {
     }
   };
 
-  console.log(`\tDestroy scheduled: ${destroy_delay} seconds remaining.`);
-  await sleep(destroy_delay);
+  console.log(`\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`);
+  await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
     await destroy_terraform();
@@ -284,11 +284,6 @@ const opts = decamelize(
     .describe(
       'idle-timeout',
       'Time in seconds for the runner to be waiting for jobs before shutting down. 0 waits forever.'
-    )
-    .default('destroy-delay', RUNNER_DESTROY_DELAY)
-    .describe(
-      'destroy-delay',
-      'Time in seconds for cloud runners to await before destroying the cloud resources. 0 proceeds immediately.'
     )
     .default('name', RUNNER_NAME)
     .describe('name', 'Name displayed in the repo once registered')
