@@ -108,9 +108,9 @@ describe('CML e2e', () => {
 
   test('cml-publish /nonexistent produces file error', async () => {
     await expect(
-      exec(`echo none | node ./bin/cml-publish.js /nonexistent`)
+      exec('echo none | node ./bin/cml-publish.js /nonexistent')
     ).rejects.toThrowError(
-      'Path /nonexistent does not exist or is not a readable file'
+      'ENOENT: no such file or directory, stat'
     );
   });
 
