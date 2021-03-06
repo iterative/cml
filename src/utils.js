@@ -59,7 +59,7 @@ const fetch_upload_data = async (opts) => {
     try {
       await fs.promises.access(path, fs.constants.F_OK | fs.constants.R_OK);
     } catch (err) {
-      throw new Error(`Path ${path} does not exist or is not a readable file.`);
+      throw new Error(`Path ${path} does not exist or is not a readable file`);
     }
   }
 

@@ -105,4 +105,18 @@ describe('CML e2e', () => {
 
     expect(output.startsWith('https://')).toBe(true);
   });
+
+  test('cml-publish /nonexistent produces file error', async () => {
+    await expect(
+      exec(`echo none | node ./bin/cml-publish.js /nonexistent`)
+    ).rejects.toThrowError(
+      'Path /nonexistent does not exist or is not a readable file'
+    );
+  });
+
+  test('echo invalid | cml-publish produces buffer mime type error', async () => {
+    await expect(
+      exec(`echo invalid | node ./bin/cml-publish.js`)
+    ).rejects.toThrowError('Failed guessing mime type of buffer');
+  });
 });
