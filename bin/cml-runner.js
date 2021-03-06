@@ -7,7 +7,7 @@ const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const { exec, randid } = require('../src/utils');
+const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
@@ -18,6 +18,7 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
+  RUNNER_DESTROY_DELAY = 30,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
@@ -91,6 +92,11 @@ const shutdown = async (opts) => {
       error = err;
     }
   };
+
+  console.log(
+    `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
+  );
+  await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
     await destroy_terraform();
