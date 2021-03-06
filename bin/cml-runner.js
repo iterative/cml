@@ -93,7 +93,9 @@ const shutdown = async (opts) => {
     }
   };
 
-  console.log(`\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`);
+  console.log(
+    `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
+  );
   await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
