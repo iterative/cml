@@ -55,9 +55,9 @@ const mime_type = async (opts) => {
 const fetch_upload_data = async (opts) => {
   const { path, buffer } = opts;
 
-  const mime = await mime_type(opts);
-  const data = path ? fs.createReadStream(path) : buffer;
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
+  const data = path ? fs.createReadStream(path) : buffer;
+  const mime = await mime_type(opts);
 
   return { mime, size, data };
 };
