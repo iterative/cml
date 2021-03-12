@@ -21,7 +21,7 @@ const {
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
-  RUNNER_REUSE_EXISTING = false,
+  RUNNER_REUSE = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -240,7 +240,7 @@ const run = async (opts) => {
     workdir,
     labels,
     name,
-    reuse_existing,
+    reuse,
     tf_resource
   } = opts;
 
@@ -267,20 +267,26 @@ const run = async (opts) => {
     await tf.save_tfstate({ tfstate, path });
   }
 
-  if (name !== NAME) {
-    console.log(
-      'The --name option is deprecated: please use --labels to differentiate runners instead.'
-    );
-  }
+  // if (name !== NAME) {
+  //   console.log(
+  //     'The --name option is deprecated: please use --labels to differentiate runners instead.'
+  //   );
+  // }
 
   await cml.repo_token_check();
+
   if (await cml.runner_by_name({ name })) {
-    throw new Error(
-      `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
-    );
-  } else if ((await cml.runners_by_labels({ labels })) && reuse_existing) {
-    console.log(`Reusing existing runner[s] with the ${labels} labels...`);
-    return;
+    if (!reuse)
+      throw new Error(
+        `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
+      );
+    console.log(`Reusing existing runner named ${name}...`);
+    process.exit(0);
+  }
+
+  if (reuse && (await cml.runners_by_labels({ labels })).length > 0) {
+    console.log(`Reusing existing runners with the ${labels} labels...`);
+    process.exit(0);
   }
 
   try {
@@ -308,10 +314,10 @@ const opts = decamelize(
     .boolean('single')
     .default('single', RUNNER_SINGLE)
     .describe('single', 'If specified, exit after running a single job.')
-    .boolean('reuse-existing')
-    .default('reuse-existing', RUNNER_REUSE_EXISTING)
+    .boolean('reuse')
+    .default('reuse', RUNNER_REUSE)
     .describe(
-      'reuse-existing',
+      'reuse',
       "If specified, don't spawn a new runner if there is a registed runner with the given labels."
     )
 

@@ -213,14 +213,14 @@ class Github {
 
   async runner_by_name(opts = {}) {
     const { name } = opts;
-    const runners = this.get_runners(opts);
+    const runners = await this.get_runners(opts);
     const runner = runners.filter((runner) => runner.name === name)[0];
     if (runner) return { id: runner.id, name: runner.name };
   }
 
   async runners_by_labels(opts = {}) {
     const { labels } = opts;
-    const runners = this.get_runners(opts);
+    const runners = await this.get_runners(opts);
     return runners
       .filter((runner) =>
         labels
