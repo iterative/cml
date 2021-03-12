@@ -275,7 +275,7 @@ const run = async (opts) => {
 
   await cml.repo_token_check();
 
-  if (reuse_existing && (await cml.runners_by_labels({ labels })).length > 0) {
+  if (reuse_existing && await cml.runners_by_labels({ labels })) {
     console.log(`Reusing existing runners with the ${labels} labels...`);
     process.exit(0);
   }
