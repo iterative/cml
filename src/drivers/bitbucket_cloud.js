@@ -76,6 +76,10 @@ class BitBucketCloud {
     throw new Error('BitBucket Cloud does not support runner_by_name!');
   }
 
+  async runners_by_labels(opts = {}) {
+    throw new Error('BitBucket Cloud does not support runner_by_labels!');
+  }
+
   async request(opts = {}) {
     const { token, api } = this;
     const { endpoint, method = 'GET', body } = opts;
