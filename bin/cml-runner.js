@@ -267,11 +267,11 @@ const run = async (opts) => {
     await tf.save_tfstate({ tfstate, path });
   }
 
-  if (name !== NAME) {
-    console.log(
-      'The --name option is deprecated: please use --labels to differentiate runners instead.'
-    );
-  }
+  // if (name !== NAME) {
+  //   console.log(
+  //     'The --name option is deprecated: please use --labels to differentiate runners instead.'
+  //   );
+  // }
 
   await cml.repo_token_check();
 
