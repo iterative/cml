@@ -274,13 +274,21 @@ const run = async (opts) => {
   }
 
   await cml.repo_token_check();
+
+  if (reuse_existing && (await cml.runners_by_labels({ labels })).length > 0) {
+    console.log(`Reusing existing runners with the ${labels} labels...`);
+    process.exit(0);
+  }
+
   if (await cml.runner_by_name({ name })) {
-    throw new Error(
-      `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
-    );
-  } else if ((await cml.runners_by_labels({ labels })) && reuse_existing) {
-    console.log(`Reusing existing runner[s] with the ${labels} labels...`);
-    return;
+    if (reuse_existing) {
+      console.log(`Reusing existing runner named ${name}...`);
+      process.exit(0);
+    } else {
+      throw new Error(
+        `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
+      );
+    }
   }
 
   try {
