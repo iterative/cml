@@ -103,7 +103,7 @@ resource "iterative_cml_runner" "runner" {
   ${ssh_private ? `ssh_private = "${ssh_private}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
   ${spot_price ? `spot_price = ${spot_price}` : ''}
-  ${startup_script? `startup_script = ${startup_script}` : ''}
+  ${startup_script ? `startup_script = ${startup_script}` : ''}
 }
 `;
 };

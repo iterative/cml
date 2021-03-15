@@ -157,6 +157,6 @@ describe('Terraform tests', () => {
       spot_price: '0.0001',
       startup_script: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
     });
-    expect(output).toMatchInlineSnapshot()
+    expect(output).toMatchInlineSnapshot();
   });
 });
