@@ -32,6 +32,7 @@ describe('Terraform tests', () => {
         
         
         
+        
       }
       "
     `);
@@ -83,6 +84,7 @@ describe('Terraform tests', () => {
         ssh_private = \\"myprivate\\"
         spot = true
         spot_price = 0.0001
+        
       }
       "
     `);
@@ -134,6 +136,7 @@ describe('Terraform tests', () => {
         ssh_private = \\"myprivate\\"
         spot = true
         spot_price = 0.0001
+        
       }
       "
     `);
