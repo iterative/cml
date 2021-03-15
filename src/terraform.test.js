@@ -138,4 +138,25 @@ describe('Terraform tests', () => {
       "
     `);
   });
+
+  test('Startup script', async () => {
+    const output = iterative_cml_runner_tpl({
+      repo: 'https://',
+      token: 'abc',
+      driver: 'gitlab',
+      labels: 'mylabel',
+      idle_timeout: 300,
+      name: 'myrunner',
+      cloud: 'aws',
+      region: 'west',
+      type: 'mymachinetype',
+      gpu: 'mygputype',
+      hdd_size: 50,
+      ssh_private: 'myprivate',
+      spot: true,
+      spot_price: '0.0001',
+      startup_script: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
+    });
+    expect(output).toMatchInlineSnapshot()
+  });
 });
