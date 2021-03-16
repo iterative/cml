@@ -127,6 +127,7 @@ const run_cloud = async (opts) => {
       cloud_ssh_private: ssh_private,
       cloud_spot: spot,
       cloud_spot_price: spot_price,
+      cloud_startup_script: startup_script,
       tf_file,
       workdir
     } = opts;
@@ -152,7 +153,8 @@ const run_cloud = async (opts) => {
         hdd_size,
         ssh_private,
         spot,
-        spot_price
+        spot_price,
+        startup_script
       });
     }
 
@@ -365,6 +367,11 @@ const opts = decamelize(
     .describe(
       'cloud-spot-price',
       'Spot max price. If not specified it takes current spot bidding pricing.'
+    )
+    .default('cloud-startup-script', '')
+    .describe(
+      'cloud-startup-script',
+      'Script to be run in your machine at startup time. Must be Base64 encoded.'
     )
     .default('tf_resource')
     .hide('tf_resource')
