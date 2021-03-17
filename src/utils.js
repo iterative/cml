@@ -78,6 +78,11 @@ const upload = async (opts) => {
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
 
+  if (!uri)
+    throw new Error(
+      `Empty response from asset backend with status code ${response.status}`
+    );
+
   return { uri, mime, size };
 };
 
