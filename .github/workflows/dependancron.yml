@@ -34,7 +34,7 @@ jobs:
 
     - name: Create Pull Request
       if: steps.check.outputs.update == 'true'
-      uses: peter-evans/create-pull-request@v2
+      uses: peter-evans/create-pull-request@v3
       with:
         title: 'chore: dependancron update dependencies'
         body: ${{ steps.check.outputs.comment }}

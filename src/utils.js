@@ -55,9 +55,9 @@ const mime_type = async (opts) => {
 const fetch_upload_data = async (opts) => {
   const { path, buffer } = opts;
 
-  const mime = await mime_type(opts);
-  const data = path ? fs.createReadStream(path) : buffer;
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
+  const data = path ? fs.createReadStream(path) : buffer;
+  const mime = await mime_type(opts);
 
   return { mime, size, data };
 };
@@ -77,6 +77,11 @@ const upload = async (opts) => {
 
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
+
+  if (!uri)
+    throw new Error(
+      `Empty response from asset backend with status code ${response.status}`
+    );
 
   return { uri, mime, size };
 };
