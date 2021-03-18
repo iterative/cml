@@ -7,7 +7,7 @@ const fs = require('fs').promises;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const { exec, randid } = require('../src/utils');
+const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
 const CML = require('../src/cml');
 
@@ -18,9 +18,11 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
+  RUNNER_DESTROY_DELAY = 30,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
+  RUNNER_REUSE = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   repo_token
@@ -92,6 +94,11 @@ const shutdown = async (opts) => {
     }
   };
 
+  console.log(
+    `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
+  );
+  await sleep(RUNNER_DESTROY_DELAY);
+
   if (cloud) {
     await destroy_terraform();
   } else {
@@ -120,6 +127,7 @@ const run_cloud = async (opts) => {
       cloud_ssh_private: ssh_private,
       cloud_spot: spot,
       cloud_spot_price: spot_price,
+      cloud_startup_script: startup_script,
       tf_file,
       workdir
     } = opts;
@@ -145,7 +153,8 @@ const run_cloud = async (opts) => {
         hdd_size,
         ssh_private,
         spot,
-        spot_price
+        spot_price,
+        startup_script
       });
     }
 
@@ -231,7 +240,17 @@ const run = async (opts) => {
   process.on('SIGQUIT', () => shutdown(opts));
 
   opts.workdir = RUNNER_PATH;
-  const { driver, repo, token, cloud, workdir, name, tf_resource } = opts;
+  const {
+    driver,
+    repo,
+    token,
+    cloud,
+    workdir,
+    labels,
+    name,
+    reuse,
+    tf_resource
+  } = opts;
 
   cml = new CML({ driver, repo, token });
 
@@ -256,11 +275,22 @@ const run = async (opts) => {
     await tf.save_tfstate({ tfstate, path });
   }
 
+  // if (name !== NAME) {
   await cml.repo_token_check();
-  if (await cml.runner_by_name({ name }))
-    throw new Error(
-      `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
-    );
+
+  if (await cml.runner_by_name({ name })) {
+    if (!reuse)
+      throw new Error(
+        `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
+      );
+    console.log(`Reusing existing runner named ${name}...`);
+    process.exit(0);
+  }
+
+  if (reuse && (await cml.runners_by_labels({ labels })).length > 0) {
+    console.log(`Reusing existing runners with the ${labels} labels...`);
+    process.exit(0);
+  }
 
   try {
     console.log(`Preparing workdir ${workdir}...`);
@@ -287,6 +317,12 @@ const opts = decamelize(
     .boolean('single')
     .default('single', RUNNER_SINGLE)
     .describe('single', 'If specified, exit after running a single job.')
+    .boolean('reuse')
+    .default('reuse', RUNNER_REUSE)
+    .describe(
+      'reuse',
+      "If specified, don't spawn a new runner if there is a registed runner with the given labels."
+    )
 
     .default('driver', RUNNER_DRIVER)
     .describe('driver', 'If not specify it infers it from the ENV.')
@@ -331,6 +367,11 @@ const opts = decamelize(
     .describe(
       'cloud-spot-price',
       'Spot max price. If not specified it takes current spot bidding pricing.'
+    )
+    .default('cloud-startup-script', '')
+    .describe(
+      'cloud-startup-script',
+      'Script to be run in your machine at startup time. Must be Base64 encoded.'
     )
     .default('tf_resource')
     .hide('tf_resource')
