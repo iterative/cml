@@ -415,14 +415,16 @@ The function `cml-runner` accepts the following arguments:
 Usage: cml-runner.js
 
 Options:
-  --version                    Show version number                     [boolean]
-  --labels                     Comma delimited runner labels    [default: "cml"]
-  --idle-timeout               Time in seconds for the runner to be waiting for
-                               jobs before shutting down. 0 waits forever.
-                                                                  [default: 300]
-  --name                       Name displayed in the repo once registered
-                                                     [default: "cml-7ndgwu1htg"]
-  --single                     If specified, exit after running a single job.
+  --version               Show version number                          [boolean]
+  --labels                Comma delimited runner labels         [default: "cml"]
+  --idle-timeout          Time in seconds for the runner to be waiting for jobs
+                          before shutting down. 0 waits forever.  [default: 300]
+  --name                  Name displayed in the repo once registered
+                                                     [default: "cml-w0qj7mvsz5"]
+  --single                If specified, exit after running a single job.
+                                                      [boolean] [default: false]
+  --reuse                 If specified, don't spawn a new runner if there is a
+                          registed runner with the given labels.
                                                       [boolean] [default: false]
   --driver                     If not specify it infers it from the ENV.
                                                    [choices: "github", "gitlab"]
