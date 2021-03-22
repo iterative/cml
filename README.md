@@ -52,11 +52,9 @@ Here, will discuss the GitHub use case.
 ⚠️ **GitLab users!** Please see our
 [docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab).
 
-
-🪣 **Bitbucket Cloud users** We support you, too- [see our docs here](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).🪣
+🪣 **Bitbucket Cloud users** We support you, too-
+[see our docs here](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).🪣
 _Bitbucket Server support estimated to arrive by January 2021._
-
-
 
 The key file in any CML project is `.github/workflows/cml.yaml`.
 
@@ -69,7 +67,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: "Train my model"
+      - name: 'Train my model'
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -156,7 +154,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: "Train my model"
+      - name: 'Train my model'
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -216,7 +214,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: "Train my model"
+      - name: 'Train my model'
         shell: bash
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -346,11 +344,16 @@ to get started setting up your self-hosted runner.
 ### Allocating cloud resources with CML
 
 When a workflow requires computational resources (such as GPUs) CML can
-automatically allocate cloud instances using `cml-runner`. You can spin up instances on your AWS or Azure account (GCP support is forthcoming!). 
+automatically allocate cloud instances using `cml-runner`. You can spin up
+instances on your AWS or Azure account (GCP support is forthcoming!).
 
-For example, the following workflow
-deploys a `t2.micro` instance on AWS EC2 and trains a model on the instance.
-After the job runs, the instance automatically shuts down. You might notice that this workflow is quite similar to the [basic use case](#usage) highlighted in the beginning of the docs- that's because it is! What's new is that we've added `cml-runner`, plus a few environmental variables for passing your cloud service credentials to the workflow.
+For example, the following workflow deploys a `t2.micro` instance on AWS EC2 and
+trains a model on the instance. After the job runs, the instance automatically
+shuts down. You might notice that this workflow is quite similar to the
+[basic use case](#usage) highlighted in the beginning of the docs- that's
+because it is! What's new is that we've added `cml-runner`, plus a few
+environmental variables for passing your cloud service credentials to the
+workflow.
 
 ```yaml
 name: "Train-in-the-cloud"
@@ -391,69 +394,86 @@ jobs:
         cml-send-comment report.md
 ```
 
-In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro` instance in the `us-west` region. The next step, `model-training`, runs on the newly launched instance. 
+In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro`
+instance in the `us-west` region. The next step, `model-training`, runs on the
+newly launched instance.
 
-**Note that you can use any container with this workflow!** While you must have CML and its dependencies setup to use CML functions like `cml-send-comment` from your instance, you can create your favorite training environment in the cloud by pulling the Docker container of your choice. 
+**Note that you can use any container with this workflow!** While you must have
+CML and its dependencies setup to use CML functions like `cml-send-comment` from
+your instance, you can create your favorite training environment in the cloud by
+pulling the Docker container of your choice.
 
-We like the CML container (`docker://dvcorg/cml-py3`) because it comes loaded with Python, CUDA, `git`, `node` and other essentials for full-stack data science. But we don't mind if you do it your way :)
-
+We like the CML container (`docker://dvcorg/cml-py3`) because it comes loaded
+with Python, CUDA, `git`, `node` and other essentials for full-stack data
+science. But we don't mind if you do it your way :)
 
 ### Arguments
+
 The function `cml-runner` accepts the following arguments:
 
 ```
 Options:
-  --version            Show version number                             [boolean]
-  --labels             Comma delimited runner labels            [default: "cml"]
-  --idle-timeout       Time in seconds for the runner to be waiting for jobs
-                       before shutting down. 0 waits forever.     [default: 300]
-  --name               Name displayed in the repo once registered
-                                                     [default: "cml-cfwj9rrari"]
-  --driver             If not specify it infers it from the ENV.
+    --version                    Show version number                     [boolean]
+  --labels                     Comma delimited runner labels    [default: "cml"]
+  --idle-timeout               Time in seconds for the runner to be waiting for
+                               jobs before shutting down. 0 waits forever.
+                                                                  [default: 300]
+  --name                       Name displayed in the repo once registered
+                                                     [default: "cml-7ndgwu1htg"]
+  --single                     If specified, exit after running a single job.
+                                                      [boolean] [default: false]
+  --driver                     If not specify it infers it from the ENV.
                                                    [choices: "github", "gitlab"]
-  --repo               Specifies the repo to be used. If not specified is
-                       extracted from the CI ENV.
-  --token              Personal access token to be used. If not specified in
-                       extracted from ENV.
-  --cloud              Cloud to deploy the runner      [choices: "aws", "azure"]
-  --cloud-region       Region where the instance is deployed. Choices:[us-east,
-                       us-west, eu-west, eu-north]. Also accepts native cloud
-                       regions.                             [default: "us-west"]
-  --cloud-type         Instance type. Choices: [m, l, xl]. Also supports native
-                       types like i.e. t2.micro
-  --cloud-gpu          GPU type.              [choices: "nogpu", "k80", "tesla"]
-  --cloud-hdd-size     HDD size in GB.
-  --cloud-ssh-private  Your private RSA SHH key. If not provided will be
-                       generated by the Terraform-provider-Iterative.
+  --repo                       Specifies the repo to be used. If not specified
+                               is extracted from the CI ENV.
+  --token                      Personal access token to be used. If not
+                               specified in extracted from ENV.
+  --cloud                      Cloud to deploy the runner
+                                                       [choices: "aws", "azure"]
+  --cloud-region               Region where the instance is deployed.
+                               Choices:[us-east, us-west, eu-west, eu-north].
+                               Also accepts native cloud regions.
+                                                            [default: "us-west"]
+  --cloud-type                 Instance type. Choices: [m, l, xl]. Also supports
+                               native types like i.e. t2.micro
+  --cloud-gpu                  GPU type.      [choices: "nogpu", "k80", "tesla"]
+  --cloud-hdd-size             HDD size in GB.
+  --cloud-ssh-private          Your private RSA SSH key. If not provided will be
+                               generated by the Terraform-provider-Iterative.
                                                                    [default: ""]
-  --cloud-spot         Request a spot instance                         [boolean]
-  --cloud-spot-price   Spot max price. If not specified it takes current spot
-                       bidding pricing.                          [default: "-1"]
-  -h                   Show help                                       [boolean]
-  ```
-
+  --cloud-ssh-private-visible  Your SSH key will be visible in the output with
+                               the rest of the instance properties.    [boolean]
+  --cloud-spot                 Request a spot instance                 [boolean]
+  --cloud-spot-price           Spot max price. If not specified it takes current
+                               spot bidding pricing.             [default: "-1"]
+  -h                           Show help                               [boolean]
+```
 
 ### Environmental variables
 
 You will need to
-[create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line) with repository read/write access and workflow privileges. In the example workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
+[create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
+with repository read/write access and workflow privileges. In the example
+workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
 
 Note that you will also need to provide access credentials for your cloud
 compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
 
-Please see our docs about [environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
- 
+Please see our docs about
+[environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
+
 ### Using on-premise machines as self-hosted runners
-You can also use the new `cml-runner` function to set up a local self-hosted runner. On your local machine or on-premise GPU cluster, you'll install CML as a package and then run:
+
+You can also use the new `cml-runner` function to set up a local self-hosted
+runner. On your local machine or on-premise GPU cluster, you'll install CML as a
+package and then run:
 
 ```yaml
- cml-runner \
-    --repo $your_project_repository_url \
-    --token=$personal_access_token \
-    --labels tf \
-    --idle-timeout 180
+cml-runner \ --repo $your_project_repository_url \
+--token=$personal_access_token \ --labels tf \ --idle-timeout 180
 ```
+
 Now your machine will be listening for workflows from your project repository.
 
 ## Install CML as a package
