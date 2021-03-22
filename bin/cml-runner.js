@@ -43,6 +43,7 @@ const shutdown = async (opts) => {
   const { name, workdir = '' } = opts;
   const tf_path = workdir;
 
+  console.log('Destroying runner...');
   if (error) console.error(error);
 
   const unregister_runner = async () => {
