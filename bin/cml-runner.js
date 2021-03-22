@@ -104,7 +104,7 @@ const shutdown = async (opts) => {
 };
 
 const run_cloud = async (opts) => {
-  const { cloud_ssh_private_visible, cloud_ssh_private: ssh_private } = opts;
+  const { cloud_ssh_private_visible } = opts;
 
   const run_terraform = async (opts) => {
     console.log('Terraform apply...');
@@ -173,12 +173,11 @@ const run_cloud = async (opts) => {
       for (let j = 0; j < instances.length; j++) {
         const instance = instances[j];
 
-        const output = JSON.stringify(instance);
-        console.log(
-          cloud_ssh_private_visible
-            ? output
-            : output.replace(ssh_private, '[MASKED]')
-        );
+        if (!cloud_ssh_private_visible) {
+          instance.attributes.ssh_private = '[MASKED]';
+        }
+
+        console.log(JSON.stringify(instance));
 
         const {
           attributes: { name }
