@@ -472,8 +472,11 @@ runner. On your local machine or on-premise GPU cluster, you'll install CML as a
 package and then run:
 
 ```yaml
-cml-runner \ --repo $your_project_repository_url \
---token=$personal_access_token \ --labels tf \ --idle-timeout 180
+cml-runner \
+    --repo $your_project_repository_url \
+    --token=$personal_access_token \
+    --labels tf \
+    --idle-timeout 180
 ```
 
 Now your machine will be listening for workflows from your project repository.
