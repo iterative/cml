@@ -43,6 +43,9 @@ const shutdown = async (opts) => {
   const { name, workdir = '' } = opts;
   const tf_path = workdir;
 
+  console.log(
+    JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
+  );
   if (error) console.error(error);
 
   const unregister_runner = async () => {
