@@ -97,15 +97,16 @@ const shutdown = async (opts) => {
     }
   };
 
-  console.log(
-    `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
-  );
-  await sleep(RUNNER_DESTROY_DELAY);
-
   if (cloud) {
     await destroy_terraform();
   } else {
     RUNNER_LAUNCHED && (await unregister_runner());
+
+    console.log(
+      `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
+    );
+    await sleep(RUNNER_DESTROY_DELAY);
+
     DOCKER_MACHINE && (await shutdown_docker_machine());
     await shutdown_tf();
   }
