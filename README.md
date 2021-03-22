@@ -412,8 +412,10 @@ science. But we don't mind if you do it your way :)
 The function `cml-runner` accepts the following arguments:
 
 ```
+Usage: cml-runner.js
+
 Options:
-    --version                    Show version number                     [boolean]
+  --version                    Show version number                     [boolean]
   --labels                     Comma delimited runner labels    [default: "cml"]
   --idle-timeout               Time in seconds for the runner to be waiting for
                                jobs before shutting down. 0 waits forever.

@@ -32,23 +32,29 @@ class BitBucketCloud {
 
     // Check for a corresponding PR. If it exists, also put the comment there.
     const get_pr_endpt = `/repositories/${project_path}/commit/${commit_sha}/pullrequests`;
-    const pr_out = await this.request({ endpoint: get_pr_endpt });
-    if (pr_out.values && pr_out.values.length) {
-      // Get PR ID
-      const pr_id = pr_out.values[0].id;
-      // Append a watermark to the report with a link to the commit
-      const commit_link = commit_sha.substr(0, 7);
-      const long_report = `${commit_link}   \n${report}`;
-      const pr_body = JSON.stringify({ content: { raw: long_report } });
+    const { values: prs } = await this.request({ endpoint: get_pr_endpt });
 
-      // Write a comment on the PR
-      const pr_endpoint = `/repositories/${project_path}/pullrequests/${pr_id}/comments`;
-      await this.request({
-        endpoint: pr_endpoint,
-        method: 'POST',
-        body: pr_body
-      });
+    if (prs && prs.length) {
+      for (const pr of prs) {
+        try {
+          // Append a watermark to the report with a link to the commit
+          const commit_link = commit_sha.substr(0, 7);
+          const long_report = `${commit_link}   \n${report}`;
+          const pr_body = JSON.stringify({ content: { raw: long_report } });
+
+          // Write a comment on the PR
+          const pr_endpoint = `/repositories/${project_path}/pullrequests/${pr.id}/comments`;
+          await this.request({
+            endpoint: pr_endpoint,
+            method: 'POST',
+            body: pr_body
+          });
+        } catch (err) {
+          console.debug(err.message);
+        }
+      }
     }
+
     return commit_output;
   }
 
@@ -76,6 +82,10 @@ class BitBucketCloud {
     throw new Error('BitBucket Cloud does not support runner_by_name!');
   }
 
+  async runners_by_labels(opts = {}) {
+    throw new Error('BitBucket Cloud does not support runner_by_labels!');
+  }
+
   async request(opts = {}) {
     const { token, api } = this;
     const { endpoint, method = 'GET', body } = opts;
@@ -87,11 +97,13 @@ class BitBucketCloud {
     };
     const url = `${api}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
-    console.log(url);
-    console.log(headers);
-    console.log(await response.json());
-    console.log(await response.status);
-    if (response.status > 300) throw new Error(response.statusText);
+
+    if (response.status > 300) {
+      const {
+        error: { message }
+      } = await response.json();
+      throw new Error(`${response.statusText} ${message}`);
+    }
 
     return await response.json();
   }
