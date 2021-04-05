@@ -178,9 +178,8 @@ class Gitlab {
     if (endpoint) {
       this.api_v4 = this.api_v4 || (await this.detect_api_v4());
       url = `${this.api_v4}${endpoint}`;
-    } else if (!url) {
-      throw new Error('Gitlab API endpoint not found');
     }
+    if (!url) throw new Error('Gitlab API endpoint not found');
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const response = await fetch(url, { method, headers, body });
