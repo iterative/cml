@@ -21,9 +21,31 @@ class Gitlab {
     this.repo = repo;
 
     const { protocol, host, pathname } = new URL(this.repo);
-    this.repo_origin = `${protocol}//${host}`;
-    this.api_v4 = `${this.repo_origin}/api/v4`;
     this.project_path = encodeURIComponent(pathname.substring(1));
+    this.repo_origin = `${protocol}//${host}`;
+  }
+
+  async detect_api_v4(opts = {}) {
+    const { pathname } = new URL(this.repo);
+
+    const possible_bases = await Promise.all(
+      pathname
+        .split('/')
+        .filter(Boolean)
+        .map(async (_, index, array) => {
+          const components = [...array.slice(0, index), 'api', 'v4'];
+          const path = this.repo_origin + '/' + components.join('/');
+          try {
+            if ((await this.request({ url: `${path}/version` })).version)
+              return path;
+          } catch (error) {}
+        })
+    );
+
+    const detected_base = possible_bases.find(String);
+    if (detected_base) return detected_base;
+
+    throw new Error('GitLab API not found');
   }
 
   async comment_create(opts = {}) {
@@ -149,13 +171,17 @@ class Gitlab {
   }
 
   async request(opts = {}) {
-    const { token, api_v4 } = this;
+    const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
+    let { url } = opts;
 
-    if (!endpoint) throw new Error('Gitlab API endpoint not found');
+    if (endpoint) {
+      this.api_v4 = this.api_v4 || (await this.detect_api_v4());
+      url = `${this.api_v4}${endpoint}`;
+    }
+    if (!url) throw new Error('Gitlab API endpoint not found');
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
-    const url = `${api_v4}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
