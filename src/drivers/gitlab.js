@@ -21,16 +21,43 @@ class Gitlab {
     this.repo = repo;
 
     const { protocol, host, pathname } = new URL(this.repo);
-    this.repo_origin = `${protocol}//${host}`;
-    this.api_v4 = `${this.repo_origin}/api/v4`;
     this.project_path = encodeURIComponent(pathname.substring(1));
+    this.repo_origin = `${protocol}//${host}`;
+  }
+
+  async detect_api_v4(opts = {}) {
+    const { pathname } = new URL(this.repo);
+
+    if (this.api_v4) return this.api_v4;
+
+    const possible_bases = await Promise.all(
+      pathname
+        .split('/')
+        .filter(Boolean)
+        .map(async (_, index, array) => {
+          const components = [...array.slice(0, index), 'api', 'v4'];
+          const path = this.repo_origin + '/' + components.join('/');
+          try {
+            if ((await this.request({ endpoint: `${path}/version` })).version)
+              return path;
+          } catch (error) {}
+        })
+    );
+
+    const detected_base = possible_bases.find(String);
+    if (detected_base) {
+      this.api_v4 = detected_base;
+      return this.api_v4;
+    }
+
+    throw new Error('GitLab API not found');
   }
 
   async comment_create(opts = {}) {
     const { project_path } = this;
     const { commit_sha, report } = opts;
 
-    const endpoint = `/projects/${project_path}/repository/commits/${commit_sha}/comments`;
+    const endpoint = `${await this.detect_api_v4()}/projects/${project_path}/repository/commits/${commit_sha}/comments`;
     const body = new URLSearchParams();
     body.append('note', report);
 
@@ -45,7 +72,7 @@ class Gitlab {
 
   async upload(opts = {}) {
     const { project_path, repo } = this;
-    const endpoint = `/projects/${project_path}/uploads`;
+    const endpoint = `${await this.detect_api_v4()}/projects/${project_path}/uploads`;
     const { size, mime, data } = await fetch_upload_data(opts);
     const body = new FormData();
     body.append('file', data);
@@ -58,7 +85,7 @@ class Gitlab {
   async runner_token() {
     const { project_path } = this;
 
-    const endpoint = `/projects/${project_path}`;
+    const endpoint = `${await this.detect_api_v4()}/projects/${project_path}`;
 
     const { runners_token } = await this.request({ endpoint });
 
@@ -69,7 +96,7 @@ class Gitlab {
     const { tags, name } = opts;
 
     const token = await this.runner_token();
-    const endpoint = `/runners`;
+    const endpoint = `${await this.detect_api_v4()}/runners`;
     const body = new URLSearchParams();
     body.append('description', name);
     body.append('tag_list', tags);
@@ -85,7 +112,7 @@ class Gitlab {
     const { name } = opts;
 
     const { id } = await this.runner_by_name({ name });
-    const endpoint = `/runners/${id}`;
+    const endpoint = `${await this.detect_api_v4()}/runners/${id}`;
 
     return await this.request({ endpoint, method: 'DELETE', raw: true });
   }
@@ -132,7 +159,7 @@ class Gitlab {
   async runner_by_name(opts = {}) {
     const { name } = opts;
 
-    const endpoint = `/runners?per_page=100`;
+    const endpoint = `${await this.detect_api_v4()}/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     const runner = runners.filter(
       (runner) => runner.name === name || runner.description === name
@@ -143,20 +170,19 @@ class Gitlab {
 
   async runners_by_labels(opts = {}) {
     const { labels } = opts;
-    const endpoint = `/runners?per_page=100?tag_list=${labels}`;
+    const endpoint = `${await this.detect_api_v4()}/runners?per_page=100?tag_list=${labels}`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return runners.map((runner) => ({ id: runner.id, name: runner.name }));
   }
 
   async request(opts = {}) {
-    const { token, api_v4 } = this;
+    const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
 
     if (!endpoint) throw new Error('Gitlab API endpoint not found');
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
-    const url = `${api_v4}${endpoint}`;
-    const response = await fetch(url, { method, headers, body });
+    const response = await fetch(endpoint, { method, headers, body });
 
     if (response.status > 300) throw new Error(response.statusText);
     if (raw) return response;
