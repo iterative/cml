@@ -42,7 +42,7 @@ class Gitlab {
         })
     );
 
-    const detected_base = possible_bases.find(String);
+    const detected_base = possible_bases.find(Boolean);
     if (detected_base) return detected_base;
 
     throw new Error('GitLab API not found');
