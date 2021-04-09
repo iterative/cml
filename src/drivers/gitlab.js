@@ -22,7 +22,7 @@ class Gitlab {
   }
 
   async project_path() {
-    const api_path = await this.detect_api_v4();
+    const api_path = await this.detect_api();
     const project_path = encodeURIComponent(
       this.repo.replace(api_path, '').substr(1)
     );
@@ -186,7 +186,7 @@ class Gitlab {
     let { url } = opts;
 
     if (endpoint) {
-      url = `${await this.detect_api_v4()}/api/${API_VER}${endpoint}`;
+      url = `${await this.detect_api()}/api/${API_VER}${endpoint}`;
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
