@@ -170,6 +170,22 @@ class Gitlab {
     return runners.map((runner) => ({ id: runner.id, name: runner.name }));
   }
 
+  async pr_create(opts = {}) {
+    const { project_path } = this;
+    const { source, target, title, description } = opts;
+
+    const endpoint = `/projects/:${project_path}/merge_requests`;
+    const body = new URLSearchParams();
+    body.append('source_branch', source);
+    body.append('target_branch', target);
+    body.append('title', title);
+    body.append('description', description);
+
+    const { web_url } = await this.request({ endpoint, method: 'POST', body });
+
+    return web_url;
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;

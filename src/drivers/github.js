@@ -231,6 +231,31 @@ class Github {
       )
       .map((runner) => ({ id: runner.id, name: runner.name }));
   }
+
+  async pr_create(opts = {}) {
+    const { source: head, target: base, title, description: body } = opts;
+    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { pulls } = octokit(this.token, this.repo);
+
+    const { url } = await pulls.create({
+      owner,
+      repo,
+      head,
+      base,
+      title,
+      body
+    });
+
+    return url;
+  }
+
+  get user_email() {
+    return 'action@github.com';
+  }
+
+  get user_name() {
+    return 'GitHub Action';
+  }
 }
 
 module.exports = Github;
