@@ -9,7 +9,7 @@ const { resolve } = require('path');
 const { fetch_upload_data, download, exec } = require('../utils');
 
 const { IN_DOCKER } = process.env;
-
+const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -19,39 +19,48 @@ class Gitlab {
 
     this.token = token;
     this.repo = repo;
-
-    const { protocol, host, pathname } = new URL(this.repo);
-    this.project_path = encodeURIComponent(pathname.substring(1));
-    this.repo_origin = `${protocol}//${host}`;
   }
 
-  async detect_api_v4(opts = {}) {
-    const { pathname } = new URL(this.repo);
+  async project_path() {
+    const repo_base = await this.repo_base();
+    const project_path = encodeURIComponent(
+      this.repo.replace(repo_base, '').substr(1)
+    );
 
+    return project_path;
+  }
+
+  async repo_base() {
+    if (this._detected_base) return this._detected_base;
+
+    const { origin, pathname } = new URL(this.repo);
     const possible_bases = await Promise.all(
       pathname
         .split('/')
         .filter(Boolean)
         .map(async (_, index, array) => {
-          const components = [...array.slice(0, index), 'api', 'v4'];
-          const path = this.repo_origin + '/' + components.join('/');
+          const components = [origin, ...array.slice(0, index)];
+          const path = components.join('/');
           try {
-            if ((await this.request({ url: `${path}/version` })).version)
+            if (
+              (await this.request({ url: `${path}/api/${API_VER}/version` }))
+                .version
+            )
               return path;
           } catch (error) {}
         })
     );
 
-    const detected_base = possible_bases.find(String);
-    if (detected_base) return detected_base;
+    this._detected_base = possible_bases.find(Boolean);
+    if (!this._detected_base) throw new Error('GitLab API not found');
 
-    throw new Error('GitLab API not found');
+    return this._detected_base;
   }
 
   async comment_create(opts = {}) {
-    const { project_path } = this;
     const { commit_sha, report } = opts;
 
+    const project_path = await this.project_path();
     const endpoint = `/projects/${project_path}/repository/commits/${commit_sha}/comments`;
     const body = new URLSearchParams();
     body.append('note', report);
@@ -66,7 +75,9 @@ class Gitlab {
   }
 
   async upload(opts = {}) {
-    const { project_path, repo } = this;
+    const { repo } = this;
+
+    const project_path = await this.project_path();
     const endpoint = `/projects/${project_path}/uploads`;
     const { size, mime, data } = await fetch_upload_data(opts);
     const body = new FormData();
@@ -78,8 +89,7 @@ class Gitlab {
   }
 
   async runner_token() {
-    const { project_path } = this;
-
+    const project_path = await this.project_path();
     const endpoint = `/projects/${project_path}`;
 
     const { runners_token } = await this.request({ endpoint });
@@ -176,8 +186,7 @@ class Gitlab {
     let { url } = opts;
 
     if (endpoint) {
-      this.api_v4 = this.api_v4 || (await this.detect_api_v4());
-      url = `${this.api_v4}${endpoint}`;
+      url = `${await this.repo_base()}/api/${API_VER}${endpoint}`;
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
