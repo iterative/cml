@@ -22,7 +22,7 @@ class Gitlab {
   }
 
   async project_path() {
-    const api_path = await this.detect_api();
+    const api_path = await this.repo_base();
     const project_path = encodeURIComponent(
       this.repo.replace(api_path, '').substr(1)
     );
@@ -30,7 +30,7 @@ class Gitlab {
     return project_path;
   }
 
-  async detect_api() {
+  async repo_base() {
     if (this._detected_base) return this._detected_base;
 
     const { origin, pathname } = new URL(this.repo);
@@ -186,7 +186,7 @@ class Gitlab {
     let { url } = opts;
 
     if (endpoint) {
-      url = `${await this.detect_api()}/api/${API_VER}${endpoint}`;
+      url = `${await this.repo_base()}/api/${API_VER}${endpoint}`;
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
