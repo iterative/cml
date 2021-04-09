@@ -23,7 +23,9 @@ class Gitlab {
 
   async project_path() {
     const api_path = await this.detect_api_v4();
-    const project_path = encodeURIComponent(this.repo.replace(api_path, ''));
+    const project_path = encodeURIComponent(
+      this.repo.replace(api_path, '').substr(1)
+    );
 
     return project_path;
   }
@@ -37,8 +39,8 @@ class Gitlab {
         .split('/')
         .filter(Boolean)
         .map(async (_, index, array) => {
-          const components = [...array.slice(0, index)];
-          const path = origin + '/' + components.join('/');
+          const components = [origin, ...array.slice(0, index)];
+          const path = components.join('/');
           try {
             if ((await this.request({ url: `${path}/api/v4/version` })).version)
               return path;
