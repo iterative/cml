@@ -48,7 +48,7 @@ class Gitlab {
 
     this._detected_base = possible_bases.find(Boolean);
     if (!this._detected_base) throw new Error('GitLab API not found');
-    
+
     return this._detected_base;
   }
 
