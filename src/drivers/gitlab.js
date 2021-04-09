@@ -9,7 +9,7 @@ const { resolve } = require('path');
 const { fetch_upload_data, download, exec } = require('../utils');
 
 const { IN_DOCKER } = process.env;
-
+const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -30,7 +30,7 @@ class Gitlab {
     return project_path;
   }
 
-  async detect_api_v4() {
+  async detect_api() {
     if (this._detected_base) return this._detected_base;
 
     const { origin, pathname } = new URL(this.repo);
@@ -42,7 +42,10 @@ class Gitlab {
           const components = [origin, ...array.slice(0, index)];
           const path = components.join('/');
           try {
-            if ((await this.request({ url: `${path}/api/v4/version` })).version)
+            if (
+              (await this.request({ url: `${path}/api/${API_VER}/version` }))
+                .version
+            )
               return path;
           } catch (error) {}
         })
@@ -183,7 +186,7 @@ class Gitlab {
     let { url } = opts;
 
     if (endpoint) {
-      url = `${await this.detect_api_v4()}/api/v4${endpoint}`;
+      url = `${await this.detect_api_v4()}/api/${API_VER}${endpoint}`;
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
