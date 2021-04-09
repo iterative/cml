@@ -22,9 +22,9 @@ class Gitlab {
   }
 
   async project_path() {
-    const api_path = await this.repo_base();
+    const repo_base = await this.repo_base();
     const project_path = encodeURIComponent(
-      this.repo.replace(api_path, '').substr(1)
+      this.repo.replace(repo_base, '').substr(1)
     );
 
     return project_path;
