@@ -77,9 +77,3 @@ jobs:
           --commit-sha=${{ steps.commit.outputs.hash }}
           --driver=gitlab
           <(echo message)
-          
-      - name: Check commit comments
-        run: >-
-          curl "http://localhost:8000/gitlab/api/v4/projects/root%2Ftest/repository/${{ steps.commit.outputs.hash }}/comments"
-          --header "PRIVATE-TOKEN: ${{ github.token }}"
-          --request GET | jq -r '.[0].note' | grep '^message$'
