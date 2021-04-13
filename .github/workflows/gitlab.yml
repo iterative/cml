@@ -1,0 +1,85 @@
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      gitlab: 
+        image: docker://gitlab/gitlab-ce
+        ports:
+          - 8000:8000
+        env:
+          GITLAB_OMNIBUS_CONFIG: |
+            external_url 'http://localhost:8000/gitlab'
+            nginx['custom_nginx_config'] = '
+              server {
+                listen 8000;
+                location /gitlab {
+                  proxy_set_header Host $http_host;
+                  proxy_pass http://gitlab-workhorse;
+                }
+              }
+              '
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Configure credentials
+        run: >-
+          docker exec ${{ job.services.gitlab.id }} bin/gitlab-rails runner "
+          ; user = User.find_by_username('root')
+          ; user.password = '${{ github.token }}'
+          ; user.password_confirmation = '${{ github.token }}'
+          ; user.save!
+          ; token = user.personal_access_tokens.create(scopes: [:api], name: 'Token')
+          ; token.set_token('${{ github.token }}')
+          ; token.save!
+          "
+          
+      - name: Create test project
+        run: >-
+          curl "http://localhost:8000/gitlab/api/v4/projects"
+          --header "PRIVATE-TOKEN: ${{ github.token }}"
+          --request POST
+          --get
+          --data "name=test"
+          
+      - name: Create test commit
+        run: >-
+          curl "http://localhost:8000/gitlab/api/v4/projects/root%2Ftest/repository/files/README.md"
+          --header "PRIVATE-TOKEN: ${{ github.token }}"
+          --request POST
+          --get
+          --data "author_email=test@test"
+          --data "author_name=Test"
+          --data "branch=main"
+          --data "commit_message=Create%20README.md"
+          --data "content=Test"
+          
+      - name: Get last commit
+        id: commit
+        run: >-
+          curl "http://localhost:8000/gitlab/api/v4/projects/root%2Ftest/repository/commits/main"
+          --header "PRIVATE-TOKEN: ${{ github.token }}"
+          --request GET | jq -r .id | xargs -0 printf "::set-output name=hash::%s"
+          
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run cml-send-comment
+        run: >-
+          node bin/cml-send-comment.js
+          --token=${{ github.token }}
+          --repo=http://localhost:8000/gitlab/root/test
+          --commit-sha=${{ steps.commit.outputs.hash }}
+          --driver=gitlab
+          <(echo message)
+          
+      - name: Check commit comments
+        run: >-
+          curl "http://localhost:8000/gitlab/api/v4/projects/root%2Ftest/repository/${{ steps.commit.outputs.hash }}/comments"
+          --header "PRIVATE-TOKEN: ${{ github.token }}"
+          --request GET | jq -r '.[0].note' | grep '^message$'
