@@ -1,13 +1,13 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
-
 const git = require('simple-git/promise')('./');
+const globby = require('globby');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermark_uri } = require('./utils');
+const { upload, exec, watermark_uri, randid } = require('./utils');
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -241,30 +241,55 @@ class CML {
   }
 
   async pr_create(opts = {}) {
-    const driver = get_driver(this);
+    const { 
+      globs = ['dvc.lock', '.gitignore'],
+      title = 'CML DVC handling',
+      skip_ci = false,
+      new_pr = true,
+    }= opts;
 
+    const paths = await globby(globs);
+    const driver = get_driver(this);
     const source = await exec(`git branch --show-current`);
-    const target = `${source}-cml-1`;
-    const title = 'CML DVC handling';
+    const target = `${source}-cml${new_pr ? randid() : ''}`;
 
     const git_status = await git.status();
     if (!git_status.files.length) return;
 
-    await exec(`git config --local user.email "${driver.user_email}"`);
-    await exec(`git config --local user.name "${driver.user_name}"`);
     try {
-      await exec(`git remote add remote "${this.repo}"`);
-    } catch (err) {}
+      await exec(`git config --local user.email "${driver.user_email}"`);
+      await exec(`git config --local user.name "${driver.user_name}"`);
+      try {
+        await exec(`git remote add remote "${this.repo}"`);
+      } catch (err) {}
 
-    await exec(`git checkout -b ${target}`);
-    await exec(`git add dvc.lock .gitignore`);
-    await exec(`git commit -m "CML DVC [skip ci]"`);
-    await exec(`git push --set-upstream origin ${target}`);
+      try {
+        await exec(`git checkout -b ${target}`);
+      } catch(err){
+        //await exec(`git stash`);
+        await exec(`git checkout ${target}`);
+        await exec(`git pull`);
+        //await exec(`git stash pop`); 
+      }
+      
+      console.log(paths);
+      console.log(`git add ${paths.join(' ')}`)
+
+      //await exec(`dvc repro`);
+
+      await exec(`git add ${paths.join(' ')}`);
+      await exec(`git commit -m "CML DVC ${skip_ci ? '[skip ci]' : ''}"`);
+      await exec(`git push --set-upstream origin ${target}`);
+      await exec(`git checkout ${source}`);
+
+      console.log(
+        await driver.pr_create({ source: target, target: source, title, description })
+      );
+    } catch(err) {
+      console.log(err);
+    }
+
     await exec(`git checkout ${source}`);
-
-    console.log(
-      await driver.pr_create({ source: target, target: source, title })
-    );
   }
 }
 

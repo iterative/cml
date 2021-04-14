@@ -65,6 +65,7 @@
     "form-data": "^3.0.0",
     "fs-extra": "^9.0.1",
     "git-url-parse": "^11.4.0",
+    "globby": "^11.0.3",
     "is-svg": "^4.2.2",
     "js-base64": "^3.5.2",
     "node-fetch": "^2.6.0",
