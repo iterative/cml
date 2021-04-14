@@ -33,6 +33,7 @@ describe('Terraform tests', () => {
         
         
         
+        
       }
       "
     `);
@@ -46,6 +47,7 @@ describe('Terraform tests', () => {
       labels: 'mylabel',
       idle_timeout: 300,
       name: 'myrunner',
+      single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
@@ -76,6 +78,7 @@ describe('Terraform tests', () => {
         labels = \\"mylabel\\"
         idle_timeout = 300
         name = \\"myrunner\\"
+        single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
@@ -98,6 +101,7 @@ describe('Terraform tests', () => {
       labels: 'mylabel',
       idle_timeout: 0,
       name: 'myrunner',
+      single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
@@ -128,6 +132,7 @@ describe('Terraform tests', () => {
         labels = \\"mylabel\\"
         idle_timeout = 0
         name = \\"myrunner\\"
+        single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
@@ -150,6 +155,7 @@ describe('Terraform tests', () => {
       labels: 'mylabel',
       idle_timeout: 300,
       name: 'myrunner',
+      single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
@@ -181,6 +187,7 @@ describe('Terraform tests', () => {
         labels = \\"mylabel\\"
         idle_timeout = 300
         name = \\"myrunner\\"
+        single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
