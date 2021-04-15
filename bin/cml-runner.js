@@ -343,7 +343,7 @@ const opts = decamelize(
     .default('repo', RUNNER_REPO)
     .describe(
       'repo',
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment.'
+      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
     )
     .default('token', repo_token)
     .describe(
