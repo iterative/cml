@@ -338,7 +338,10 @@ const opts = decamelize(
     )
 
     .default('driver', RUNNER_DRIVER)
-    .describe('driver', 'Platform where the repository is hosted')
+    .describe(
+      'driver',
+      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+    )
     .choices('driver', ['github', 'gitlab'])
     .default('repo', RUNNER_REPO)
     .describe(
@@ -368,7 +371,7 @@ const opts = decamelize(
     .choices('cloud-gpu', ['nogpu', 'k80', 'tesla'])
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
-    .describe('cloud-hdd-size', 'HDD size in GB.')
+    .describe('cloud-hdd-size', 'HDD size in GB')
     .default('cloud-ssh-private', '')
     .describe(
       'cloud-ssh-private',

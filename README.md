@@ -422,17 +422,18 @@ Options:
                                jobs before shutting down. Setting it to 0
                                disables automatic shutdown        [default: 300]
   --name                       Name displayed in the repository once registered
-                                                     [default: "cml-{randomID}"]
+                                                     [default: "cml-4wdd123kha"]
   --single                     Exit after running a single job
                                                       [boolean] [default: false]
   --reuse                      Don't launch a new runner if an existing one has
                                the same name or overlapping labels
                                                       [boolean] [default: false]
-  --driver                     Platform where the repository is hosted
-                                                   [choices: "github", "gitlab"]
+  --driver                     Platform where the repository is hosted. If not
+                               specified, it will be inferred from the
+                               environment         [choices: "github", "gitlab"]
   --repo                       Repository to be used for registering the runner.
                                If not specified, it will be inferred from the
-                               environment.
+                               environment
   --token                      Personal access token to register a self-hosted
                                runner on the repository. If not specified, it
                                will be inferred from the environment
