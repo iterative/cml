@@ -72,6 +72,7 @@ const iterative_cml_runner_tpl = (opts = {}) => {
     cloud,
     region,
     name,
+    single,
     type,
     gpu,
     hdd_size,
@@ -95,6 +96,7 @@ resource "iterative_cml_runner" "runner" {
       : ''
   }
   ${name ? `name = "${name}"` : ''}
+  ${single ? `single = "${single}"` : ''}
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
