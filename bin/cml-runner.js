@@ -338,7 +338,10 @@ const opts = decamelize(
     )
 
     .default('driver', RUNNER_DRIVER)
-    .describe('driver', 'Platform where the repository is hosted. If not specified, it will be inferred from the environment')
+    .describe(
+      'driver',
+      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+    )
     .choices('driver', ['github', 'gitlab'])
     .default('repo', RUNNER_REPO)
     .describe(
