@@ -8,7 +8,7 @@ const { resolve } = require('path');
 
 const { fetch_upload_data, download, exec } = require('../utils');
 
-const { IN_DOCKER } = process.env;
+const { IN_DOCKER, GITLAB_USER_EMAIL, GITLAB_USER_NAME } = process.env;
 
 class Gitlab {
   constructor(opts = {}) {
@@ -204,6 +204,14 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
+  }
+
+  get user_email() {
+    return GITLAB_USER_EMAIL;
+  }
+
+  get user_name() {
+    return GITLAB_USER_NAME;
   }
 }
 
