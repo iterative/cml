@@ -251,7 +251,7 @@ class CML {
     const driver = get_driver(this);
     const sha = await exec(`git rev-parse HEAD`);
     const sha_short = sha.substr(0, 7);
-    const source = await exec(`git branch --show-current`);
+    const source = (await exec(`git branch --show-current`)) || 'master';
     const target = `${source}-cmlpr${new_pr ? `-${sha_short}` : ''}`;
     console.log(source, sha, sha_short, target);
 
