@@ -249,9 +249,9 @@ class CML {
 
     const paths = await globby(globs);
     const driver = get_driver(this);
-    const sha = (await exec(`git rev-parse HEAD`)).substr(0, 7);
+    const sha = await exec(`git rev-parse HEAD`);
     const source = await exec(`git branch --show-current`);
-    const target = `${source}-cmlpr${new_pr ? `-${sha}` : ''}`;
+    const target = `${source}-cmlpr${new_pr ? `-${sha.substr(0, 7)}` : ''}`;
 
     if (!skip_ci && source.includes('cmlpr')) {
       console.log(
@@ -269,8 +269,6 @@ class CML {
     try {
       // await exec(`git config --local user.email "${driver.user_email}"`);
       // await exec(`git config --local user.name "${driver.user_name}"`);
-      await exec(`git config --local user.email "${driver.user_email}"`);
-      await exec(`git config --local user.name "${driver.user_name}"`);
       await exec('git config advice.addIgnoredFile false');
       await exec('git config pull.rebase true');
 
@@ -307,7 +305,7 @@ class CML {
 
       const title = `CML pull request #${sha}`;
       const description = `
-Automated commits for ${this.repo}#${source} for #${sha}, created by CML.
+Automated commits for ${this.repo}/commit/${sha} created by CML.
 
 To incorporate these changes, merge this Pull Request into the original. 
 NOTE: If this work continues on the original Pull Request, this process will
