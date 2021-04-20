@@ -249,7 +249,7 @@ class CML {
 
     const paths = await globby(globs);
     const driver = get_driver(this);
-    const sha = (await exec(`git rev-parse HEAD`)).substr(7);
+    const sha = (await exec(`git rev-parse HEAD`)).substr(0, 7);
     const source = await exec(`git branch --show-current`);
     const target = `${source}-cmlpr${new_pr ? `-${sha}` : ''}`;
 
@@ -267,6 +267,8 @@ class CML {
     }
 
     try {
+      // await exec(`git config --local user.email "${driver.user_email}"`);
+      // await exec(`git config --local user.name "${driver.user_name}"`);
       await exec(`git config --local user.email "${driver.user_email}"`);
       await exec(`git config --local user.name "${driver.user_name}"`);
       await exec('git config advice.addIgnoredFile false');
