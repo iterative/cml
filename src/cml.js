@@ -251,7 +251,7 @@ class CML {
     const paths = await globby(globs);
     const driver = get_driver(this);
     const source = await exec(`git branch --show-current`);
-    const target = `${source}-cmlpraa${new_pr ? `-id${randid()}` : ''}`;
+    const target = `${source}-cmlprs${new_pr ? `-id${randid()}` : ''}`;
 
     if (!skip_ci && source.includes('cmlpr')) {
       console.log(
