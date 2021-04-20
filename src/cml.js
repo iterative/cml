@@ -253,7 +253,14 @@ class CML {
     const sha_short = sha.substr(0, 7);
     const source = (await exec(`git branch --show-current`)) || 'master';
     const target = `${source}-cmlpr${new_pr ? `-${sha_short}` : ''}`;
-    console.log(source, sha, sha_short, target);
+    console.log(
+      source,
+      sha,
+      sha_short,
+      target,
+      driver.user_email,
+      driver.user_name
+    );
 
     if (!skip_ci && source.includes('cmlpr')) {
       console.log(
