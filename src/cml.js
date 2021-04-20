@@ -250,8 +250,9 @@ class CML {
     const paths = await globby(globs);
     const driver = get_driver(this);
     const sha = await exec(`git rev-parse HEAD`);
+    const sha_short = sha.substr(0, 7);
     const source = await exec(`git branch --show-current`);
-    const target = `${source}-cmlpr${new_pr ? `-${sha.substr(0, 7)}` : ''}`;
+    const target = `${source}-cmlpr${new_pr ? `-${sha_short}` : ''}`;
 
     if (!skip_ci && source.includes('cmlpr')) {
       console.log(
@@ -306,7 +307,7 @@ class CML {
       await exec(`git push --set-upstream origin ${target}`);
       await exec(`git checkout ${source}`);
 
-      const title = `CML pull request #${sha}`;
+      const title = `CML ${source}#${sha_short}`;
       const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
 
