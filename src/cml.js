@@ -269,6 +269,9 @@ class CML {
     try {
       // await exec(`git config --local user.email "${driver.user_email}"`);
       // await exec(`git config --local user.name "${driver.user_name}"`);
+
+      await exec(`git config --local user.email "g.ortega.david@gmail.com"`);
+      await exec(`git config --local user.name "DavidGOrtega"`);
       await exec('git config advice.addIgnoredFile false');
       await exec('git config pull.rebase true');
 
