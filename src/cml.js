@@ -269,6 +269,9 @@ class CML {
     try {
       await exec(`git config --local user.email "${driver.user_email}"`);
       await exec(`git config --local user.name "${driver.user_name}"`);
+      await exec('git config advice.addIgnoredFile false');
+      await exec('git config pull.rebase true');
+
       try {
         await exec(`git remote add remote "${this.repo}"`);
       } catch (err) {}
@@ -278,7 +281,6 @@ class CML {
       } catch (err) {
         // console.log(`git stash`);
         // await exec(`git stash`);
-        await exec('git config pull.rebase true');
         // console.log(`git checkout ${target}`);
         await exec(`git checkout ${target}`);
         await exec(`git pull`);
