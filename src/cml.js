@@ -243,16 +243,15 @@ class CML {
   async pr_create(opts = {}) {
     const {
       globs = ['dvc.lock', '.gitignore'],
-      title = 'CML DVC handling',
       skip_ci = false,
       new_pr = false
     } = opts;
 
     const paths = await globby(globs);
     const driver = get_driver(this);
-    const sha = await exec(`git rev-parse HEAD`);
+    const sha = (await exec(`git rev-parse HEAD`)).substr(7);
     const source = await exec(`git branch --show-current`);
-    const target = `${source}-cmlpr${new_pr ? `-${sha.substr(7)}` : ''}`;
+    const target = `${source}-cmlpr${new_pr ? `-${sha}` : ''}`;
 
     if (!skip_ci && source.includes('cmlpr')) {
       console.log(
@@ -304,8 +303,9 @@ class CML {
       await exec(`git push --set-upstream origin ${target}`);
       await exec(`git checkout ${source}`);
 
+      const title = `CML pull request #${sha}`;
       const description = `
-Automated commits for ${this.repo}#${source} for ${sha}, created by CML.
+Automated commits for ${this.repo}#${source} for #${sha}, created by CML.
 
 To incorporate these changes, merge this Pull Request into the original. 
 NOTE: If this work continues on the original Pull Request, this process will
