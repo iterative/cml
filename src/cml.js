@@ -278,13 +278,17 @@ class CML {
     try {
       await exec(`git config --local user.email "${driver.user_email}"`);
       await exec(`git config --local user.name "${driver.user_name}"`);
-
       await exec('git config advice.addIgnoredFile false');
       await exec('git config pull.rebase true');
 
-      try {
-        await exec(`git remote add remote "${this.repo}"`);
-      } catch (err) {}
+      if (this.driver !== 'github') {
+        const repo = new URL(this.repo);
+        repo.password = this.token;
+        repo.username = driver.user_name;
+
+        await exec(`git remote rm origin`);
+        await exec(`git remote add origin "${repo.toString()}.git"`);
+      }
 
       try {
         await exec(`git checkout -b ${target}`);
@@ -305,11 +309,8 @@ class CML {
         // await exec(`git stash pop`);
       }
 
-      console.log(`git add ${paths.join(' ')}`);
       await exec(`git add ${paths.join(' ')}`);
-      console.log(`git commit -m "CML DVC ${skip_ci ? '[skip ci]' : ''}"`);
       await exec(`git commit -m "CML DVC ${skip_ci ? '[skip ci]' : ''}"`);
-      console.log(`git push --set-upstream origin ${target}`);
       await exec(`git push --set-upstream origin ${target}`);
       await exec(`git checkout ${source}`);
 
