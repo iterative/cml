@@ -247,6 +247,11 @@ class CML {
       new_pr = false
     } = opts;
 
+    if (this.driver !== 'github') {
+      await exec('git checkout -B "$CI_BUILD_REF_NAME" "$CI_BUILD_REF"');
+      await exec('git fetch --prune');
+    }
+
     const paths = await globby(globs);
     const driver = get_driver(this);
     const sha = await exec(`git rev-parse HEAD`);
@@ -282,9 +287,6 @@ class CML {
       await exec('git config pull.rebase true');
 
       if (this.driver !== 'github') {
-        await exec('git checkout -B "$CI_BUILD_REF_NAME" "$CI_BUILD_REF"');
-        await exec('git fetch --prune');
-
         const repo = new URL(this.repo);
         repo.password = this.token;
         repo.username = driver.user_name;
