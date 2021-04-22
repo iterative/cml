@@ -174,7 +174,7 @@ class Gitlab {
     const { project_path } = this;
     const { source, target, title, description } = opts;
 
-    const endpoint = `/projects/:${project_path}/merge_requests`;
+    const endpoint = `/projects/${project_path}/merge_requests`;
     const body = new URLSearchParams();
     body.append('source_branch', source);
     body.append('target_branch', target);
