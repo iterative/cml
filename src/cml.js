@@ -339,6 +339,7 @@ re-run and update (force-push) this Pull Request with updated files.
       console.log(err);
     }
 
+    console.log(await exec(`git branch`));
     await exec(`git checkout ${source}`);
   }
 }
