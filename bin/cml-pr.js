@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const print = console.log;
 console.log = console.error;
 
 const yargs = require('yargs');
@@ -10,19 +11,12 @@ const CML = require('../src/cml');
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;
   const cml = new CML(opts);
-  await cml.pr_create({ ...opts, globs });
+  print(await cml.pr_create({ ...opts, globs }));
 };
 
 const opts = decamelize(
   yargs
     .usage('Usage: $0 <path to markdown file>')
-    .boolean('skip-ci')
-    .describe(
-      'skip-ci',
-      'CI will be skipped adding [ci-skip] in the commit comment'
-    )
-    .boolean('new-pr')
-    .describe('skip-ci', 'Will create a new PR instead of reusing a new one')
     .default('repo')
     .describe(
       'repo',

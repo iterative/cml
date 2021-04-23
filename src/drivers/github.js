@@ -237,7 +237,7 @@ class Github {
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
-    const { url } = await pulls.create({
+    const { html_url } = await pulls.create({
       owner,
       repo,
       head,
@@ -246,7 +246,7 @@ class Github {
       body
     });
 
-    return url;
+    return html_url;
   }
 
   get user_email() {
