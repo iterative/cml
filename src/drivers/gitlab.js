@@ -180,7 +180,6 @@ class Gitlab {
     body.append('target_branch', target);
     body.append('title', title);
     body.append('description', description);
-    console.log(body, endpoint);
 
     const { web_url } = await this.request({ endpoint, method: 'POST', body });
 
