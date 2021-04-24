@@ -268,9 +268,8 @@ class CML {
     if (branch_exists) {
       const prs = await driver.prs();
       console.log(prs);
-      const { url } = prs.find(
-        (pr) => pr.source === source && pr.target === target
-      );
+      const { url } =
+        prs.find((pr) => pr.source === source && pr.target === target) || {};
 
       if (url) {
         console.log('found!!!');
