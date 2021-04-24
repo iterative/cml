@@ -262,9 +262,10 @@ class CML {
     }
     const target = `${source}-cmlpr-${sha_short}`;
 
-    const branch_exists = (await exec(`c`)).includes(target);
+    const branch_exists = (await exec(`git branch -r`)).includes(target);
     if (branch_exists) {
       // return open pull request
+      console.log('branch already exists');
     } else {
       try {
         await exec(`git config --local user.email "${driver.user_email}"`);
