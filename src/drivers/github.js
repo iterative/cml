@@ -256,7 +256,7 @@ class Github {
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
-    const prs = await pulls.list({
+    const { data: prs } = await pulls.list({
       owner,
       repo,
       state
