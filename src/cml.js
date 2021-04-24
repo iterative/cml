@@ -298,6 +298,7 @@ class CML {
       }
     }
 
+    console.log('Creating PR');
     const title = `CML commits ${source} ${sha_short}`;
     const description = `
   Automated commits for ${this.repo}/commit/${sha} created by CML.
