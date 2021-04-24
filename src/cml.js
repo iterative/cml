@@ -262,6 +262,10 @@ class CML {
     }
     const target = `${source}-cmlpr-${sha_short}`;
 
+    await exec(`git fetch origin`);
+    console.log(await exec('git branch'));
+    console.log('**S*D*SD*S*D*SD*S*D*S*D*S*D*S*D**SD**SD*S*D*S*D**S*D*SD**S*D');
+    console.log(await exec('git branch -r'));
     const branch_exists = (await exec(`git branch -r`)).includes(target);
     if (branch_exists) {
       // return open pull request
@@ -281,9 +285,6 @@ class CML {
           await exec(`git remote rm origin`);
           await exec(`git remote add origin "${repo.toString()}.git"`);
         }
-
-        await exec(`git fetch --prune`);
-        console.log(await exec('git branch'));
 
         await exec(`git checkout -B ${source} ${sha}`);
         await exec(`git checkout -b ${target}`);
