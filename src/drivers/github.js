@@ -267,8 +267,8 @@ class Github {
     return prs.map((pr) => {
       const {
         url,
-        head: { ref: source },
-        base: { ref: target }
+        head: { ref: target },
+        base: { ref: source }
       } = pr;
       return {
         url,
