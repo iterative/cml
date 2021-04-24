@@ -254,22 +254,28 @@ class CML {
 
     const sha = await exec(`git rev-parse HEAD`);
     const sha_short = sha.substr(0, 7);
-    let source = await exec(`git branch --show-current`);
-    if (!source) {
+    let target = await exec(`git branch --show-current`);
+    if (!target) {
       if (this.driver === 'gitlab') {
-        source = await exec('echo $CI_BUILD_REF_NAME');
+        target = await exec('echo $CI_BUILD_REF_NAME');
       }
     }
-    const target = `${source}-cmlpr-${sha_short}`;
+    const source = `${target}-cmlpr-${sha_short}`;
 
     await exec(`git fetch origin`);
-    console.log(await exec('git branch'));
-    console.log('**S*D*SD*S*D*SD*S*D*S*D*S*D*S*D**SD**SD*S*D*S*D**S*D*SD**S*D');
-    console.log(await exec('git branch -r'));
+
     const branch_exists = (await exec(`git branch -r`)).includes(target);
     if (branch_exists) {
-      // return open pull request
-      console.log('branch already exists');
+      const prs = await driver.prs();
+      console.log(prs);
+      const { url } = prs.find(
+        (pr) => pr.source === source && pr.target === target
+      );
+
+      if (url) {
+        console.log('found!!!');
+        return url;
+      }
     } else {
       try {
         await exec(`git config --local user.email "${driver.user_email}"`);
@@ -298,15 +304,14 @@ class CML {
       }
     }
 
-    console.log('Creating PR');
-    const title = `CML commits ${source} ${sha_short}`;
+    const title = `CML commits ${target} ${sha_short}`;
     const description = `
   Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
 
     const url = await driver.pr_create({
-      source: target,
-      target: source,
+      source,
+      target,
       title,
       description
     });

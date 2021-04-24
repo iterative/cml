@@ -237,7 +237,9 @@ class Github {
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
-    const output = await pulls.create({
+    const {
+      data: { url }
+    } = await pulls.create({
       owner,
       repo,
       head,
@@ -246,8 +248,32 @@ class Github {
       body
     });
 
-    console.log(output);
-    return output.data.url;
+    return url;
+  }
+
+  async prs(opts = {}) {
+    const { state = 'open' } = opts;
+    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { pulls } = octokit(this.token, this.repo);
+
+    const prs = await pulls.list({
+      owner,
+      repo,
+      state
+    });
+
+    return prs.map((pr) => {
+      const {
+        url,
+        head: { ref: source },
+        base: { ref: target }
+      } = pr;
+      return {
+        url,
+        source,
+        target
+      };
+    });
   }
 
   get user_email() {
