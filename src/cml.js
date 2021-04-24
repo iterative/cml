@@ -257,7 +257,7 @@ class CML {
     let source = await exec(`git branch --show-current`);
     if (!source) {
       if (this.driver === 'gitlab') {
-        source = 'echo $CI_BUILD_REF_NAME';
+        source = await exec('echo $CI_BUILD_REF_NAME');
       }
     }
     const target = `${source}-cmlpr-${sha_short}`;
