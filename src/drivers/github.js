@@ -237,7 +237,9 @@ class Github {
     const { owner, repo } = owner_repo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
-    const { data: url } = await pulls.create({
+    const {
+      data: { url }
+    } = await pulls.create({
       owner,
       repo,
       head,
