@@ -280,6 +280,7 @@ class CML {
       }
 
       await exec(`git fetch --prune`);
+      console.log(await exec('git branch'));
       await exec(`git checkout -B ${source} ${sha}`);
       await exec(`git checkout -b ${target}`);
       await exec(`git add ${paths.join(' ')}`);
