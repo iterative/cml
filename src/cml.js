@@ -296,21 +296,21 @@ class CML {
         await exec(`git checkout -B ${source} ${sha}`);
         throw err;
       }
+    }
 
-      const title = `CML commits ${source} ${sha_short}`;
-      const description = `
+    const title = `CML commits ${source} ${sha_short}`;
+    const description = `
   Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
 
-      const url = await driver.pr_create({
-        source: target,
-        target: source,
-        title,
-        description
-      });
+    const url = await driver.pr_create({
+      source: target,
+      target: source,
+      title,
+      description
+    });
 
-      return `[CML PR](${url})`;
-    }
+    return `[CML PR](${url})`;
   }
 }
 
