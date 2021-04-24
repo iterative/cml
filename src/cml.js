@@ -277,7 +277,7 @@ class CML {
         await exec(`git remote add origin "${repo.toString()}.git"`);
       }
 
-      await exec(`git checkout -B ${source} ${sha}`);
+      // await exec(`git checkout -B ${source} ${sha}`);
       await exec(`git checkout -B ${target}`);
       await exec(`git add ${paths.join(' ')}`);
       await exec(`git commit -m "CML [skip ci]"`);
