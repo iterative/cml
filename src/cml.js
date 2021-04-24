@@ -252,6 +252,7 @@ class CML {
     const driver = get_driver(this);
     const paths = await globby(globs);
     console.log(paths);
+    console.log(await exec('git status'));
 
     const sha = await exec(`git rev-parse HEAD`);
     const sha_short = sha.substr(0, 7);
