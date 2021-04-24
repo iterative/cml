@@ -251,8 +251,6 @@ class CML {
 
     const driver = get_driver(this);
     const paths = await globby(globs);
-    console.log(paths);
-    console.log(await exec('git status'));
 
     const sha = await exec(`git rev-parse HEAD`);
     const sha_short = sha.substr(0, 7);
@@ -264,34 +262,43 @@ class CML {
     }
     const target = `${source}-cmlpr-${sha_short}`;
 
-    try {
-      await exec(`git config --local user.email "${driver.user_email}"`);
-      await exec(`git config --local user.name "${driver.user_name}"`);
-      await exec('git config advice.addIgnoredFile false');
-      await exec('git config pull.rebase true');
+    const branch_exists = (await exec(`c`)).includes(target);
+    if (branch_exists) {
+      // return open pull request
+    } else {
+      try {
+        await exec(`git config --local user.email "${driver.user_email}"`);
+        await exec(`git config --local user.name "${driver.user_name}"`);
+        await exec('git config advice.addIgnoredFile false');
+        await exec('git config pull.rebase true');
 
-      if (this.driver !== 'github') {
-        const repo = new URL(this.repo);
-        repo.password = this.token;
-        repo.username = driver.user_name;
+        if (this.driver !== 'github') {
+          const repo = new URL(this.repo);
+          repo.password = this.token;
+          repo.username = driver.user_name;
 
-        await exec(`git remote rm origin`);
-        await exec(`git remote add origin "${repo.toString()}.git"`);
+          await exec(`git remote rm origin`);
+          await exec(`git remote add origin "${repo.toString()}.git"`);
+        }
+
+        await exec(`git fetch --prune`);
+        console.log(await exec('git branch'));
+
+        await exec(`git checkout -B ${source} ${sha}`);
+        await exec(`git checkout -b ${target}`);
+        await exec(`git add ${paths.join(' ')}`);
+        await exec(`git commit -m "CML [skip ci]"`);
+        await exec(`git push --set-upstream origin ${target}`);
+        await exec(`git checkout ${source}`);
+      } catch (err) {
+        await exec(`git checkout -B ${source} ${sha}`);
+        throw err;
       }
-
-      await exec(`git fetch --prune`);
-      console.log(await exec('git branch'));
-      await exec(`git checkout -B ${source} ${sha}`);
-      await exec(`git checkout -b ${target}`);
-      await exec(`git add ${paths.join(' ')}`);
-      await exec(`git commit -m "CML [skip ci]"`);
-      await exec(`git push --set-upstream origin ${target}`);
-      await exec(`git checkout ${source}`);
 
       const title = `CML commits ${source} ${sha_short}`;
       const description = `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-`;
+  Automated commits for ${this.repo}/commit/${sha} created by CML.
+  `;
 
       const url = await driver.pr_create({
         source: target,
@@ -300,12 +307,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
         description
       });
 
-      await exec(`git checkout -B ${source} ${sha}`);
-
       return `[CML PR](${url})`;
-    } catch (err) {
-      await exec(`git checkout -B ${source} ${sha}`);
-      throw err;
     }
   }
 }
