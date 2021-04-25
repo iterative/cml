@@ -267,7 +267,6 @@ class CML {
     const branch_exists = (await exec(`git branch -r`)).includes(target);
     if (branch_exists) {
       const prs = await driver.prs();
-      console.log(prs);
       const { url } =
         prs.find((pr) => pr.source === source && pr.target === target) || {};
 
