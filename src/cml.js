@@ -264,7 +264,7 @@ class CML {
 
     await exec(`git fetch origin`);
 
-    const branch_exists = (await exec(`git branch -r`)).includes(target);
+    const branch_exists = (await exec(`git branch -r`)).includes(source);
     if (branch_exists) {
       const prs = await driver.prs();
       const { url } =
@@ -278,7 +278,6 @@ class CML {
         await exec(`git config --local user.email "${driver.user_email}"`);
         await exec(`git config --local user.name "${driver.user_name}"`);
         await exec('git config advice.addIgnoredFile false');
-        await exec('git config pull.rebase true');
 
         if (this.driver !== 'github') {
           const repo = new URL(this.repo);
