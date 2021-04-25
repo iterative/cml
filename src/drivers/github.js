@@ -262,8 +262,6 @@ class Github {
       state
     });
 
-    console.log(prs);
-
     return prs.map((pr) => {
       const {
         url,

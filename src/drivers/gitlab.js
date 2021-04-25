@@ -186,6 +186,23 @@ class Gitlab {
     return web_url;
   }
 
+  async prs(opts = {}) {
+    const { project_path } = this;
+    const { state = 'opened' } = opts;
+
+    const endpoint = `/projects/${project_path}/merge_requests?state=${state}`;
+    const prs = await this.request({ endpoint, method: 'GET' });
+
+    return prs.map((pr) => {
+      const { web_url: url, source_branch: source, target_branch: target } = pr;
+      return {
+        url,
+        source,
+        target
+      };
+    });
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
