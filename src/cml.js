@@ -288,14 +288,14 @@ class CML {
           await exec(`git remote add origin "${repo.toString()}.git"`);
         }
 
-        await exec(`git checkout -B ${source} ${sha}`);
-        await exec(`git checkout -b ${target}`);
+        await exec(`git checkout -B ${target} ${sha}`);
+        await exec(`git checkout -b ${source}`);
         await exec(`git add ${paths.join(' ')}`);
         await exec(`git commit -m "CML [skip ci]"`);
-        await exec(`git push --set-upstream origin ${target}`);
-        await exec(`git checkout ${source}`);
+        await exec(`git push --set-upstream origin ${source}`);
+        await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
-        await exec(`git checkout -B ${source} ${sha}`);
+        await exec(`git checkout -B ${target} ${sha}`);
         throw err;
       }
     }
