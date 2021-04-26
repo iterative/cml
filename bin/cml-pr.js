@@ -17,6 +17,8 @@ const run = async (opts) => {
 const opts = decamelize(
   yargs
     .usage('Usage: $0 <path to markdown file>')
+    .describe('md', 'Output in markdown format [](url).')
+    .boolean('md')
     .default('repo')
     .describe(
       'repo',
