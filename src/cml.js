@@ -241,16 +241,26 @@ class CML {
   }
 
   async pr_create(opts = {}) {
-    const { globs = ['dvc.lock', '.gitignore'] } = opts;
+    const { globs = ['dvc.lock', '.gitignore'], md } = opts;
 
-    const git_status = await git.status();
-    if (!git_status.files.length) {
+    const { files } = await git.status();
+    if (!files.length) {
       console.log('No files changed. Nothing to do.');
       return;
     }
 
     const driver = get_driver(this);
-    const paths = await globby(globs);
+    const paths = (await globby(globs)).filter((path) =>
+      files.map((item) => item.path).includes(path)
+    );
+
+    const render_pr = (url) => {
+      if (md)
+        return `[CML's ${
+          this.driver === 'gitlab' ? 'Merge' : 'Pull'
+        } Request](${url})`;
+      return url;
+    };
 
     const sha = await exec(`git rev-parse HEAD`);
     const sha_short = sha.substr(0, 7);
@@ -270,9 +280,7 @@ class CML {
       const { url } =
         prs.find((pr) => pr.source === source && pr.target === target) || {};
 
-      if (url) {
-        return url;
-      }
+      if (url) return render_pr(url);
     } else {
       try {
         await exec(`git config --local user.email "david@iterative.ai"`);
@@ -312,7 +320,7 @@ class CML {
       description
     });
 
-    return `[CML PR](${url})`;
+    return render_pr(url);
   }
 }
 
