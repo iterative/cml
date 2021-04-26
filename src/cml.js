@@ -275,8 +275,8 @@ class CML {
       }
     } else {
       try {
-        await exec(`git config --local user.email "${driver.user_email}"`);
-        await exec(`git config --local user.name "${driver.user_name}"`);
+        await exec(`git config --local user.email "david@iterative.ai"`);
+        await exec(`git config --local user.name "cml-bot"`);
         await exec('git config advice.addIgnoredFile false');
 
         if (this.driver !== 'github') {
