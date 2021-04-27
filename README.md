@@ -120,7 +120,7 @@ those reports to your CI system (GitHub Actions or GitLab CI).
 
 CML reports are written in
 [GitHub Flavored Markdown](https://github.github.com/gfm/). That means they can
-contain images, tables, formatted text, HTML blocks, code snippets and more -
+contain images, tables, formatted text, HTML blocks, code snippets and more —
 really, what you put in a CML report is up to you. Some examples:
 
 📝 **Text**. Write to your report using whatever method you prefer. For example,
@@ -206,7 +206,7 @@ Request with your CML report. This is a result of the function
 This is the outline of the CML workflow: when you push changes to your GitHub
 repository, the workflow in your `.github/workflows/cml.yaml` file gets run and
 a report is generated. CML functions let you display relevant results from the
-workflow - such as model performance metrics and visualizations - in GitHub
+workflow — such as model performance metrics and visualizations — in GitHub
 checks and comments. What kind of workflow you want to run, and want to put in
 your CML report, is up to you.
 
