@@ -2,6 +2,9 @@
   <img src="imgs/title_strip_trim.png" width=400>
 </p>
 
+[![GHA](https://img.shields.io/github/v/tag/iterative/setup-cml?label=GH-Actions&logo=GitHub)](https://github.com/iterative/setup-cml)
+[![npm](https://img.shields.io/npm/v/@dvcorg/cml?logo=npm)](https://www.npmjs.com/package/@dvcorg/cml)
+
 **What is CML?** Continuous Machine Learning (CML) is an open-source library for
 implementing continuous integration & delivery (CI/CD) in machine learning
 projects. Use it to automate parts of your development workflow, including model
@@ -46,17 +49,16 @@ for hands-on MLOps tutorials using CML! 🌟🌟🌟
 
 You'll need a GitHub or GitLab account to begin. Users may wish to familiarize
 themselves with [Github Actions](https://help.github.com/en/actions) or
-[GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/).
+[GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration).
 Here, will discuss the GitHub use case.
 
-⚠️ **GitLab users!** Please see our
-[docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab).
-
-🪣 **Bitbucket Cloud users** We support you, too-
-[see our docs here](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).🪣
-_Bitbucket Server support estimated to arrive by January 2021._
-
-The key file in any CML project is `.github/workflows/cml.yaml`.
+- **GitLab users**: Please see our
+  [docs about configuring CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab).
+- **Bitbucket Cloud users**: Please see our
+  [docs on CML with Bitbucket Cloud](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).
+  _Bitbucket Server support estimated to arrive by May 2021._
+- **GitHub Actions users**: The key file in any CML project is
+  `.github/workflows/cml.yaml`:
 
 ```yaml
 name: your-workflow-name
@@ -64,34 +66,47 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml-py3:latest
+    # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
+    # container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'Train my model'
-        env:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+      # may need to setup node & python on e.g. self-hosted
+      # - uses: actions/setup-node@v2
+      #   with:
+      #     node-version: '12'
+      # - uses: actions/setup-python@v2
+      #   with:
+      #     python-version: '3.x'
+      - uses: iterative/setup-cml@v1
+      - name: Train model
         run: |
-
           # Your ML workflow goes here
           pip install -r requirements.txt
           python train.py
-
-          # Write your CML report
+      - name: Write CML report
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Post reports as comments in GitHub PRs
           cat results.txt >> report.md
           cml-send-comment report.md
 ```
+
+We helpfully provide CML and other useful libraries pre-installed on our
+[custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
+In the above example, uncommenting the field
+`container: docker://dvcorg/cml-py3:latest` will make the GitHub Actions runner
+pull the CML Docker image. The image already has NodeJS, Python 3, DVC and CML
+set up on an Ubuntu LTS base with CUDA libraries and
+[Terraform](https://www.terraform.io) installed for convenience.
 
 ### CML Functions
 
 CML provides a number of helper functions to help package outputs from ML
 workflows, such as numeric data and data vizualizations about model performance,
-into a CML report. The library comes pre-installed on our
-[custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
-In the above example, note the field `container: docker://dvcorg/cml-py3:latest`
-specifies the CML Docker image with Python 3 will be pulled by the GitHub
-Actions runner.
+into a CML report.
 
-Below is a list of CML functions for writing markdown reports and delivering
+Below is a table of CML functions for writing markdown reports and delivering
 those reports to your CI system (GitHub Actions or GitLab CI).
 
 | Function                | Description                                                    | Inputs                                                    |
@@ -151,9 +166,10 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: iterative/setup-cml@v1
       - name: 'Train my model'
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -187,12 +203,12 @@ Request with your CML report. This is a result of the function
 
 ![](imgs/cml_first_report.png)
 
-This is the gist of the CML workflow: when you push changes to your GitHub
+This is the outline of the CML workflow: when you push changes to your GitHub
 repository, the workflow in your `.github/workflows/cml.yaml` file gets run and
-a report generated. CML functions let you display relevant results from the
-workflow, like model performance metrics and vizualizations, in GitHub checks
-and comments. What kind of workflow you want to run, and want to put in your CML
-report, is up to you.
+a report is generated. CML functions let you display relevant results from the
+workflow - such as model performance metrics and visualizations - in GitHub
+checks and comments. What kind of workflow you want to run, and want to put in
+your CML report, is up to you.
 
 ## Using CML with DVC
 
