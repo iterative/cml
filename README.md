@@ -70,7 +70,7 @@ jobs:
     # container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      # may need to setup node & python on e.g. self-hosted
+      # may need to setup NodeJS & Python3 on e.g. self-hosted
       # - uses: actions/setup-node@v2
       #   with:
       #     node-version: '12'
@@ -170,7 +170,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
       - uses: iterative/setup-cml@v1
-      - name: 'Train my model'
+      - name: Train model
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -230,7 +230,7 @@ jobs:
     container: docker://dvcorg/cml-py3:latest
     steps:
       - uses: actions/checkout@v2
-      - name: 'Train my model'
+      - name: Train model
         shell: bash
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -250,12 +250,13 @@ jobs:
           dvc metrics diff master --show-md >> report.md
 
           # Publish confusion matrix diff
-          echo -e "## Plots\n### Class confusions" >> report.md
+          echo "## Plots" >> report.md
+          echo "### Class confusions" >> report.md
           dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
           vl2png vega.json -s 1.5 | cml-publish --md >> report.md
 
           # Publish regularization function diff
-          echo "### Effects of regularization\n" >> report.md
+          echo "### Effects of regularization" >> report.md
           dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
           vl2png vega.json -s 1.5 | cml-publish --md >> report.md
 
@@ -372,16 +373,15 @@ environmental variables for passing your cloud service credentials to the
 workflow.
 
 ```yaml
-name: "Train-in-the-cloud"
+name: Train-in-the-cloud
 on: [push]
-
 jobs:
   deploy-runner:
     runs-on: [ubuntu-latest]
     steps:
       - uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
-      - name: "Deploy runner on EC2"
+      - name: Deploy runner on EC2
         shell: bash
         env:
           repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -389,25 +389,25 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           cml-runner \
-          --cloud aws \
-          --cloud-region us-west \
-          --cloud-type=t2.micro \
-          --labels=cml-runner
-  name: model-training
-    needs: deploy-runner
-    runs-on: [self-hosted,cml-runner]
+              --cloud aws \
+              --cloud-region us-west \
+              --cloud-type=t2.micro \
+              --labels=cml-runner
+  model-training:
+    needs: [deploy-runner]
+    runs-on: [self-hosted, cml-runner]
     container: docker://dvcorg/cml-py3:latest
     steps:
-    - uses: actions/checkout@v2
-    - name: "Train my model"
-      env:
-        repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      run: |
-        pip install -r requirements.txt
-        python train.py
-        # Publish report with CML
-        cat metrics.txt > report.md
-        cml-send-comment report.md
+      - uses: actions/checkout@v2
+      - name: Train model
+        env:
+          repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          pip install -r requirements.txt
+          python train.py
+
+          cat metrics.txt > report.md
+          cml-send-comment report.md
 ```
 
 In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro`
@@ -522,26 +522,28 @@ CLI commands:
 
 ```bash
 sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev \
-          librsvg2-dev libfontconfig-dev
+                        librsvg2-dev libfontconfig-dev
 npm install -g vega-cli vega-lite
 ```
 
-CML and Vega-Lite package installation require `npm` command from Node package.
-Below you can find how to install Node.
+CML and Vega-Lite package installation require the NodeJS package manager
+(`npm`) which ships with NodeJS. Installation instructions are below.
 
-### Install Node in GitHub
+### Install NodeJS in GitHub
 
-In GitHub there is a special action for NPM installation:
+This is probably not necessary when using GitHub's default containers or one of
+CML's Docker containers. Self-hosted runners may need to use a set up action to
+install NodeJS:
 
 ```bash
-uses: actions/setup-node@v1
+uses: actions/setup-node@v2
   with:
     node-version: '12'
 ```
 
-### Install Node in GitLab
+### Install NodeJS in GitLab
 
-GitLab requires direct installation of the NMP package:
+GitLab requires direct installation of NodeJS:
 
 ```bash
 curl -sL https://deb.nodesource.com/setup_12.x | bash
