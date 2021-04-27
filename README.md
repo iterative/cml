@@ -498,7 +498,7 @@ You can also use the new `cml-runner` function to set up a local self-hosted
 runner. On your local machine or on-premise GPU cluster, you'll install CML as a
 package and then run:
 
-```yaml
+```bash
 cml-runner \
     --repo $your_project_repository_url \
     --token=$personal_access_token \
