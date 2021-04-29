@@ -8,7 +8,7 @@ const { resolve } = require('path');
 
 const { fetch_upload_data, download, exec } = require('../utils');
 
-const { IN_DOCKER } = process.env;
+const { IN_DOCKER, GITLAB_USER_EMAIL, GITLAB_USER_NAME } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -180,6 +180,39 @@ class Gitlab {
     return runners.map((runner) => ({ id: runner.id, name: runner.name }));
   }
 
+  async pr_create(opts = {}) {
+    const { project_path } = this;
+    const { source, target, title, description } = opts;
+
+    const endpoint = `/projects/${project_path}/merge_requests`;
+    const body = new URLSearchParams();
+    body.append('source_branch', source);
+    body.append('target_branch', target);
+    body.append('title', title);
+    body.append('description', description);
+
+    const { web_url } = await this.request({ endpoint, method: 'POST', body });
+
+    return web_url;
+  }
+
+  async prs(opts = {}) {
+    const { project_path } = this;
+    const { state = 'opened' } = opts;
+
+    const endpoint = `/projects/${project_path}/merge_requests?state=${state}`;
+    const prs = await this.request({ endpoint, method: 'GET' });
+
+    return prs.map((pr) => {
+      const { web_url: url, source_branch: source, target_branch: target } = pr;
+      return {
+        url,
+        source,
+        target
+      };
+    });
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
@@ -197,6 +230,14 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
+  }
+
+  get user_email() {
+    return GITLAB_USER_EMAIL;
+  }
+
+  get user_name() {
+    return GITLAB_USER_NAME;
   }
 }
 
