@@ -1,6 +1,8 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
+const git = require('simple-git/promise')('./');
+const globby = require('globby');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -232,6 +234,89 @@ class CML {
         'repo_token does not have enough permissions to access workflow API'
       );
     }
+  }
+
+  async pr_create(opts = {}) {
+    const { globs = ['dvc.lock', '.gitignore'], md } = opts;
+
+    const { files } = await git.status();
+    if (!files.length) {
+      console.log('No files changed. Nothing to do.');
+      return;
+    }
+
+    const driver = get_driver(this);
+    const paths = (await globby(globs)).filter((path) =>
+      files.map((item) => item.path).includes(path)
+    );
+
+    const render_pr = (url) => {
+      if (md)
+        return `[CML's ${
+          this.driver === 'gitlab' ? 'Merge' : 'Pull'
+        } Request](${url})`;
+      return url;
+    };
+
+    const sha = await exec(`git rev-parse HEAD`);
+    const sha_short = sha.substr(0, 7);
+    let target = await exec(`git branch --show-current`);
+    if (!target) {
+      if (this.driver === 'gitlab') {
+        target = await exec('echo $CI_BUILD_REF_NAME');
+      }
+    }
+    const source = `${target}-cmlpr-${sha_short}`;
+
+    await exec(`git fetch origin`);
+
+    const branch_exists = (await exec(`git branch -r`)).includes(source);
+    if (branch_exists) {
+      const prs = await driver.prs();
+      const { url } =
+        prs.find((pr) => pr.source === source && pr.target === target) || {};
+
+      if (url) return render_pr(url);
+    } else {
+      try {
+        await exec(`git config --local user.email "david@iterative.ai"`);
+        await exec(`git config --local user.name "cml-bot"`);
+        await exec('git config advice.addIgnoredFile false');
+
+        if (this.driver !== 'github') {
+          const repo = new URL(this.repo);
+          repo.password = this.token;
+          repo.username = driver.user_name;
+
+          await exec(`git remote rm origin`);
+          await exec(`git remote add origin "${repo.toString()}.git"`);
+        }
+
+        await exec(`git checkout -B ${target} ${sha}`);
+        await exec(`git checkout -b ${source}`);
+        await exec(`git add ${paths.join(' ')}`);
+        await exec(`git commit -m "CML [skip ci]"`);
+        await exec(`git push --set-upstream origin ${source}`);
+        await exec(`git checkout -B ${target} ${sha}`);
+      } catch (err) {
+        await exec(`git checkout -B ${target} ${sha}`);
+        throw err;
+      }
+    }
+
+    const title = `CML commits ${target} ${sha_short}`;
+    const description = `
+  Automated commits for ${this.repo}/commit/${sha} created by CML.
+  `;
+
+    const url = await driver.pr_create({
+      source,
+      target,
+      title,
+      description
+    });
+
+    return render_pr(url);
   }
 
   log_error(e) {
