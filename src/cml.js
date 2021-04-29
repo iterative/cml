@@ -50,12 +50,15 @@ const get_driver = (opts) => {
 
 const infer_token = () => {
   const {
+    REPO_TOKEN,
     repo_token,
     GITHUB_TOKEN,
     GITLAB_TOKEN,
     BITBUCKET_TOKEN
   } = process.env;
-  return repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN;
+  return (
+    REPO_TOKEN || repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
+  );
 };
 
 class CML {
@@ -231,7 +234,7 @@ class CML {
       await this.runner_token();
     } catch (err) {
       throw new Error(
-        'repo_token does not have enough permissions to access workflow API'
+        'REPO_TOKEN does not have enough permissions to access workflow API'
       );
     }
   }

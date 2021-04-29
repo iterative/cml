@@ -13,7 +13,7 @@ describe('Github tests', () => {
     jest.resetModules();
 
     process.env = {};
-    process.env.repo_token = TOKEN;
+    process.env.REPO_TOKEN = TOKEN;
   });
 
   afterAll(() => {
@@ -91,7 +91,7 @@ describe('Gitlab tests', () => {
     jest.resetModules();
 
     process.env = {};
-    process.env.repo_token = TOKEN;
+    process.env.REPO_TOKEN = TOKEN;
   });
 
   afterAll(() => {
