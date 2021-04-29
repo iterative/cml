@@ -71,7 +71,7 @@ const argv = yargs
   .default('token')
   .describe(
     'token',
-    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+    'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN or GITLAB_TOKEN.'
   )
   .default('driver')
   .choices('driver', ['github', 'gitlab'])

@@ -43,7 +43,7 @@ const argv = yargs
   .default('token')
   .describe(
     'token',
-    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+    'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
   )
   .help('h')
   .demand(1).argv;
