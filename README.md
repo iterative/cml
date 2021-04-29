@@ -26,7 +26,7 @@ We built CML with these principles in mind:
   plots in each Git Pull Request. Rigorous engineering practices help your team
   make informed, data-driven decisions.
 - **No additional services.** Build your own ML platform using just GitHub or
-  GitLab and your favorite cloud services: AWS, Azure, GCP. No databases,
+  GitLab and your favourite cloud services: AWS, Azure, GCP. No databases,
   services or complex setup needed.
 
 _⁉️ Need help? Just want to chat about continuous integration for ML?
@@ -39,11 +39,11 @@ for hands-on MLOps tutorials using CML! 🌟🌟🌟
 ## Table of contents
 
 1. [Usage](#usage)
-2. [Getting started](#getting-started)
+2. [Getting started (tutorial)](#getting-started)
 3. [Using CML with DVC](#using-cml-with-dvc)
 4. [Using self-hosted runners](#using-self-hosted-runners)
 5. [Install CML as a package](#install-cml-as-a-package)
-6. [Examples](#a-library-of-cml-projects)
+6. [Example Projects](#see-also)
 
 ## Usage
 
@@ -102,8 +102,8 @@ set up on an Ubuntu LTS base with CUDA libraries and
 
 ### CML Functions
 
-CML provides a number of helper functions to help package outputs from ML
-workflows, such as numeric data and data vizualizations about model performance,
+CML provides a number of helper functions to help package the outputs of ML
+workflows (including numeric data and visualizations about model performance)
 into a CML report.
 
 Below is a table of CML functions for writing markdown reports and delivering
@@ -139,19 +139,20 @@ example, if `graph.png` is the output of my workflow `python train.py`, run:
 cml-publish graph.png --md >> report.md
 ```
 
-## Getting started
+## Getting Started
 
 1. Fork our
-   [example project repository](https://github.com/iterative/example_cml). ⚠️
-   Note that if you are using GitLab,
-   [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
-   for this example to work.
+   [example project repository](https://github.com/iterative/example_cml).
+
+> :warning: Note that if you are using GitLab,
+> [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
+> for this example to work.
 
 ![](imgs/fork_project.png)
 
-The following steps can all be done in the GitHub browser interface. However, to
-follow along the commands, we recommend cloning your fork to your local
-workstation:
+> :warning: The following steps can all be done in the GitHub browser interface.
+> However, to follow along with the commands, we recommend cloning your fork to
+> your local workstation:
 
 ```bash
 git clone https://github.com/<your-username>/example_cml
@@ -182,9 +183,9 @@ jobs:
           cml-send-comment report.md
 ```
 
-4. In your text editor of choice, edit line 16 of `train.py` to `depth = 5`.
+3. In your text editor of choice, edit line 16 of `train.py` to `depth = 5`.
 
-5. Commit and push the changes:
+4. Commit and push the changes:
 
 ```bash
 git checkout -b experiment
@@ -192,34 +193,38 @@ git add . && git commit -m "modify forest depth"
 git push origin experiment
 ```
 
-6. In GitHub, open up a Pull Request to compare the `experiment` branch to
+5. In GitHub, open up a Pull Request to compare the `experiment` branch to
    `master`.
 
 ![](imgs/make_pr.png)
 
 Shortly, you should see a comment from `github-actions` appear in the Pull
-Request with your CML report. This is a result of the function
-`cml-send-comment` in your workflow.
+Request with your CML report. This is a result of the `cml-send-comment`
+function in your workflow.
 
 ![](imgs/cml_first_report.png)
 
-This is the outline of the CML workflow: when you push changes to your GitHub
-repository, the workflow in your `.github/workflows/cml.yaml` file gets run and
-a report is generated. CML functions let you display relevant results from the
-workflow — such as model performance metrics and visualizations — in GitHub
-checks and comments. What kind of workflow you want to run, and want to put in
-your CML report, is up to you.
+This is the outline of the CML workflow:
+
+- you push changes to your GitHub repository,
+- the workflow in your `.github/workflows/cml.yaml` file gets run, and
+- a report is generated and posted to GitHub.
+
+CML functions let you display relevant results from the workflow — such as model
+performance metrics and visualizations — in GitHub checks and comments. What
+kind of workflow you want to run, and want to put in your CML report, is up to
+you.
 
 ## Using CML with DVC
 
-In many ML projects, data isn't stored in a Git repository and needs to be
+In many ML projects, data isn't stored in a Git repository, but needs to be
 downloaded from external sources. [DVC](https://dvc.org) is a common way to
 bring data to your CML runner. DVC also lets you visualize how metrics differ
 between commits to make reports like this:
 
 ![](imgs/dvc_cml_long_report.png)
 
-The `.github/workflows/cml.yaml` file to create this report is:
+The `.github/workflows/cml.yaml` file used to create this report is:
 
 ```yaml
 name: model-training
@@ -231,7 +236,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Train model
-        shell: bash
         env:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -263,14 +267,14 @@ jobs:
           cml-send-comment report.md
 ```
 
-If you're using DVC with cloud storage, take note of environmental variables for
-your storage format.
+> :warning: If you're using DVC with cloud storage, take note of environment
+> variables for your storage format.
 
-### Environmental variables for supported cloud providers
+### Environment variables for supported cloud providers
 
 <details>
   <summary>
-  S3 and S3 compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...)
+  S3 and S3-compatible storage (Minio, DigitalOcean Spaces, IBM Cloud Object Storage...)
   </summary>
 
 ```yaml
@@ -281,7 +285,7 @@ env:
   AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 ```
 
-> :point_right: AWS_SESSION_TOKEN is optional.
+> :point_right: `AWS_SESSION_TOKEN` is optional.
 
 </details>
 
@@ -319,9 +323,10 @@ env:
   Google Storage
   </summary>
 
-> :warning: Normally, GOOGLE_APPLICATION_CREDENTIALS points to the path of the
-> json file that contains the credentials. However in the action this variable
-> CONTAINS the content of the file. Copy that json and add it as a secret.
+> :warning: Normally, `GOOGLE_APPLICATION_CREDENTIALS` is the **path** of the
+> `json` file containing the credentials. However in the action this secret
+> variable is the **contents** of the file. Copy the `json` contents and add it
+> as a secret.
 
 ```yaml
 env:
@@ -337,9 +342,9 @@ env:
 
 > :warning: After configuring your
 > [Google Drive credentials](https://dvc.org/doc/command-reference/remote/add)
-> you will find a json file at
-> `your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy that json and
-> add it as a secret.
+> you will find a `json` file at
+> `your_project_path/.dvc/tmp/gdrive-user-credentials.json`. Copy its contents
+> and add it as a secret variable.
 
 ```yaml
 env:
@@ -352,7 +357,8 @@ env:
 
 GitHub Actions are run on GitHub-hosted runners by default. However, there are
 many great reasons to use your own runners: to take advantage of GPUs; to
-orchestrate your team's shared computing resources, or to train in the cloud.
+orchestrate your team's shared computing resources, or to access on-premise
+data.
 
 ☝️ **Tip!** Check out the
 [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
@@ -360,16 +366,17 @@ to get started setting up your self-hosted runner.
 
 ### Allocating cloud resources with CML
 
-When a workflow requires computational resources (such as GPUs) CML can
+When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
 instances on your AWS or Azure account (GCP support is forthcoming!).
 
 For example, the following workflow deploys a `t2.micro` instance on AWS EC2 and
 trains a model on the instance. After the job runs, the instance automatically
-shuts down. You might notice that this workflow is quite similar to the
-[basic use case](#usage) highlighted in the beginning of the docs- that's
-because it is! What's new is that we've added `cml-runner`, plus a few
-environmental variables for passing your cloud service credentials to the
+shuts down.
+
+You might notice that this workflow is quite similar to the
+[basic use case](#usage) above. The only addition is `cml-runner` and a few
+environment variables for passing your cloud service credentials to the
 workflow.
 
 ```yaml
@@ -382,7 +389,6 @@ jobs:
       - uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
       - name: Deploy runner on EC2
-        shell: bash
         env:
           repo_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -410,18 +416,19 @@ jobs:
           cml-send-comment report.md
 ```
 
-In the above workflow, the step `deploy-runner` launches an EC2 `t2-micro`
-instance in the `us-west` region. The next step, `model-training`, runs on the
-newly launched instance.
+In the workflow above, the `deploy-runner` step launches an EC2 `t2-micro`
+instance in the `us-west` region. The `model-training` step then runs on the
+newly-launched instance.
 
-**Note that you can use any container with this workflow!** While you must have
-CML and its dependencies setup to use CML functions like `cml-send-comment` from
-your instance, you can create your favorite training environment in the cloud by
-pulling the Docker container of your choice.
+> :tada: **Note that you can use any container with this workflow!** While you
+> must [have CML and its dependencies set up](#install-cml-as-a-package) to use
+> functions such `cml-send-comment` from your instance, you can create your
+> favourite training environment in the cloud by pulling the Docker container of
+> your choice.
 
 We like the CML container (`docker://dvcorg/cml-py3`) because it comes loaded
 with Python, CUDA, `git`, `node` and other essentials for full-stack data
-science. But we don't mind if you do it your way :)
+science.
 
 ### Arguments
 
@@ -478,30 +485,31 @@ Options:
   -h                           Show help                               [boolean]
 ```
 
-### Environmental variables
+### Environment variables
 
-You will need to
-[create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
-with repository read/write access and workflow privileges. In the example
-workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
+> :warning: You will need to
+> [create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
+> with repository read/write access and workflow privileges. In the example
+> workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
 
 Note that you will also need to provide access credentials for your cloud
 compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 `AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
 
 Please see our docs about
-[environmental variables needed to authenticate with supported cloud services](#environmental-variables-for-supported-cloud-providers).
+[environment variables needed to authenticate with supported cloud services](#environment-variables-for-supported-cloud-providers).
 
-### Using on-premise machines as self-hosted runners
+### On-premise (local) runners
 
-You can also use the new `cml-runner` function to set up a local self-hosted
-runner. On your local machine or on-premise GPU cluster, you'll install CML as a
-package and then run:
+This means using on-premise machines as self-hosted runners. The `cml-runner`
+function is used to set up a local self-hosted runner. On your local machine or
+on-premise GPU cluster, [install CML as a package](#install-cml-as-a-package)
+and then run:
 
 ```bash
 cml-runner \
     --repo $your_project_repository_url \
-    --token=$personal_access_token \
+    --token=$PERSONAL_ACCESS_TOKEN \
     --labels tf \
     --idle-timeout 180
 ```
@@ -510,8 +518,9 @@ Now your machine will be listening for workflows from your project repository.
 
 ## Install CML as a package
 
-In the above examples, CML is pre-installed in a custom Docker image, which is
-pulled by a CI runner. You can also install CML as a package:
+In the examples above, CML is installed by the `setup-cml` action, or comes
+pre-installed in a custom Docker image pulled by a CI runner. You can also
+install CML as a package:
 
 ```bash
 npm i -g @dvcorg/cml
@@ -551,9 +560,9 @@ apt-get update
 apt-get install -y nodejs
 ```
 
-## A library of CML projects
+## See Also
 
-Here are some example projects using CML.
+These are some example projects using CML.
 
 - [Basic CML project](https://github.com/iterative/cml_base_case)
 - [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
