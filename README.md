@@ -29,12 +29,12 @@ We built CML with these principles in mind:
   GitLab and your favourite cloud services: AWS, Azure, GCP. No databases,
   services or complex setup needed.
 
-_⁉️ Need help? Just want to chat about continuous integration for ML?
-[Visit our Discord channel!](https://discord.gg/bzA6uY7)_
+:question: Need help? Just want to chat about continuous integration for ML?
+[Visit our Discord channel!](https://discord.gg/bzA6uY7)
 
-🌟🌟🌟 Check out our
+:play_or_pause_button: Check out our
 [YouTube video series](https://www.youtube.com/playlist?list=PL7WG7YrwYcnDBDuCkFbcyjnZQrdskFsBz)
-for hands-on MLOps tutorials using CML! 🌟🌟🌟
+for hands-on MLOps tutorials using CML!
 
 ## Table of contents
 
@@ -123,17 +123,18 @@ CML reports are written in
 contain images, tables, formatted text, HTML blocks, code snippets and more —
 really, what you put in a CML report is up to you. Some examples:
 
-📝 **Text**. Write to your report using whatever method you prefer. For example,
-copy the contents of a text file containing the results of ML model training:
+:spiral_notepad: **Text** Write to your report using whatever method you prefer.
+For example, copy the contents of a text file containing the results of ML model
+training:
 
 ```bash
 cat results.txt >> report.md
 ```
 
-🖼️ **Images** Display images using the markdown or HTML. Note that if an image
-is an output of your ML workflow (i.e., it is produced by your workflow), you
-will need to use the `cml-publish` function to include it a CML report. For
-example, if `graph.png` is the output of my workflow `python train.py`, run:
+:framed_picture: **Images** Display images using the markdown or HTML. Note that
+if an image is an output of your ML workflow (i.e., it is produced by your
+workflow), you will need to use the `cml-publish` function to include it a CML
+report. For example, if `graph.png` is output by `python train.py`, run:
 
 ```bash
 cml-publish graph.png --md >> report.md
@@ -360,9 +361,9 @@ many great reasons to use your own runners: to take advantage of GPUs; to
 orchestrate your team's shared computing resources, or to access on-premise
 data.
 
-☝️ **Tip!** Check out the
-[official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
-to get started setting up your self-hosted runner.
+> :point_up: **Tip!** Check out the
+> [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
+> to get started setting up your own self-hosted runner.
 
 ### Allocating cloud resources with CML
 
@@ -432,7 +433,7 @@ science.
 
 ### Arguments
 
-The function `cml-runner` accepts the following arguments:
+The `cml-runner` function accepts the following arguments:
 
 ```
 Usage: cml-runner.js
