@@ -45,7 +45,7 @@ describe('CML e2e', () => {
         --repo        Specifies the repo to be used. If not specified is extracted
                       from the CI ENV.
         --token       Personal access token to be used. If not specified in extracted
-                      from ENV repo_token.
+                      from ENV REPO_TOKEN.
         -h            Show help                                              [boolean]
         --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                       \\"timed_out\\"] [default: Sets the conclusion status of the check.]"
