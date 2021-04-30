@@ -1,41 +1,41 @@
-name: "Update dependencies"
+name: 'Update dependencies'
 
 on:
   schedule:
-    # runs every six hours 
+    # runs every six hours
     - cron: 0 */6 * * *
- 
+
 env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-  
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   dependancron:
     runs-on: [ubuntu-latest]
-    
+
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: "Check dependencies"
-      id: check
-      run: |
-        sudo wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
-        sudo apt update && sudo apt -y install dvc
-        CML_VER=$(docker run dvcorg/cml:latest dvc --version)
-        DVC_VER=$(dvc --version)
-        UPDATE=false
-        MESSAGE="Updating DVC from $CML_VER to $DVC_VER"
-        if [ $CML_VER != $DVC_VER ]; then
-          UPDATE=true
-          echo "$DVC_VER" > .dependancron
-        fi
+      - uses: actions/checkout@v2
 
-        echo "::set-output name=update::${UPDATE}"
-        echo "::set-output name=comment::${MESSAGE}"
+      - name: 'Check dependencies'
+        id: check
+        run: |
+          sudo wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
+          sudo apt update && sudo apt -y install dvc
+          CML_VER=$(docker run dvcorg/cml:latest dvc --version)
+          DVC_VER=$(dvc --version)
+          UPDATE=false
+          MESSAGE="Updating DVC from $CML_VER to $DVC_VER"
+          if [ $CML_VER != $DVC_VER ]; then
+            UPDATE=true
+            echo "$DVC_VER" > .dependancron
+          fi
 
-    - name: Create Pull Request
-      if: steps.check.outputs.update == 'true'
-      uses: peter-evans/create-pull-request@v3
-      with:
-        title: 'chore: dependancron update dependencies'
-        body: ${{ steps.check.outputs.comment }}
-        branch: 'dependancron-update-dependencies'
+          echo "::set-output name=update::${UPDATE}"
+          echo "::set-output name=comment::${MESSAGE}"
+
+      - name: Create Pull Request
+        if: steps.check.outputs.update == 'true'
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: 'chore: dependancron update dependencies'
+          body: ${{ steps.check.outputs.comment }}
+          branch: 'dependancron-update-dependencies'

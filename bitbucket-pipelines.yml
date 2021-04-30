@@ -19,6 +19,8 @@ pipelines:
           script: # Modify the commands below to build your repository.
             - npm install
             - echo "# My first CML report" > report.md
-            - echo "![](https://static.boredpanda.com/blog/wp-content/uploads/2020/07/funny-expressive-dog-corgi-genthecorgi-1-1-5f0ea719ea38a__700.jpg)" >> report.md
+            - echo
+              "![](https://static.boredpanda.com/blog/wp-content/uploads/2020/07/funny-expressive-dog-corgi-genthecorgi-1-1-5f0ea719ea38a__700.jpg)"
+              >> report.md
             - echo "So much data viz" >> report.md
             - node bin/cml-send-comment report.md

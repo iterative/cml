@@ -7,12 +7,8 @@ deploy_job:
   when: always
   image: dvcorg/cml
   script:
-    - cml-runner
-      --cloud aws
-      --cloud-region us-west
-      --cloud-type g2.2xlarge
-      --cloud-spot
-      --labels=cml-runner-gpu
+    - cml-runner --cloud aws --cloud-region us-west --cloud-type g2.2xlarge
+      --cloud-spot --labels=cml-runner-gpu
 
 test_runner:
   stage: test
@@ -20,15 +16,16 @@ test_runner:
   tags:
     - cml-runner-gpu
   script:
-    - sudo update-alternatives --install /usr/bin/python python $(which python3) 10
-    - sudo apt-get update && sudo apt-get install -y python-pip python3-pip 
+    - sudo update-alternatives --install /usr/bin/python python $(which python3)
+      10
+    - sudo apt-get update && sudo apt-get install -y python-pip python3-pip
     - sudo pip install --upgrade pip
     - sudo pip install --upgrade setuptools
     - sudo pip install tensorboard
 
     - npm ci
     - npm run lint
-    - npm run test 
+    - npm run test
 
     - nvidia-smi
 
@@ -47,4 +44,3 @@ test_container:
     - npm run test
 
     - nvidia-smi
-  
