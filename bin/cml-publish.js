@@ -37,6 +37,7 @@ const run = async (opts) => {
 pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
+  .strict()
   .usage(`Usage: $0 <path to file>`)
   .describe('md', 'Output in markdown format [title || name](url).')
   .boolean('md')
