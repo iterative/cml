@@ -1,23 +1,17 @@
 name: checkbot
-
 on:
   issue_comment:
     types: [created]
-
-env:
-  repo_token: ${{ secrets.TEST_GITHUB_TOKEN }}
-
 jobs:
   # check that CML container builds properly
   build-container:
     if: contains(github.event.comment.body, '/tests')
     runs-on: [ubuntu-18.04]
-
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build test image and publish        
-        run: | 
+      - name: Build test image and publish
+        run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
           docker build -t dvcorg/cml -f ./docker/Dockerfile .
@@ -26,7 +20,7 @@ jobs:
           docker tag dvcorg/cml dvcorg/cml-test
           docker push dvcorg/cml-test
           docker run --name runner --rm \
-            -e "repo_token=$repo_token" \
+            -e "REPO_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }}" \
             -e "RUNNER_REPO=https://github.com/${GITHUB_REPOSITORY}" \
             -e "RUNNER_LABELS=cml-docker" \
             -e "RUNNER_IDLE_TIMEOUT=10" \
@@ -44,7 +38,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 0.14.3
-          
+
       - uses: r-lib/actions/setup-r@master
 
       - uses: actions/setup-python@v2
@@ -54,11 +48,12 @@ jobs:
       - name: "CML test"
         env:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          REPO_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
         run: |
           echo 'Check container!' > report.md
           vl2svg assets/vega-lite.json | cml-publish --md >> report.md
@@ -142,7 +137,7 @@ jobs:
             }).then( (pr) => {
               console.log(`::set-output name=COMMAND::${process.env.COMMAND}`)
             })
-            
+
       - name: chatactions
         run: |
           npm ci
