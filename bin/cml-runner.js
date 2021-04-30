@@ -315,6 +315,7 @@ const run = async (opts) => {
 
 const opts = decamelize(
   yargs
+    .strict()
     .usage(`Usage: $0`)
     .default('labels', RUNNER_LABELS)
     .describe(
