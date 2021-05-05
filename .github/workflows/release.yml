@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
   release:
     types:
-    - published
-    - edited
+      - published
+      - edited
 
 jobs:
   package:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-    - name: Install dependencies
-      run: npm install
-    - name: Publish package
-      run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   docker:
     strategy:
@@ -61,7 +61,9 @@ jobs:
           push: true
           context: ./
           file: ./Dockerfile
-          tags: dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{ matrix.base }}
+          tags:
+            dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{
+            matrix.base }}
           build-args: |
             CML_VERSION=${{ matrix.cml }}
             DVC_VERSION=${{ matrix.dvc }}
@@ -75,7 +77,9 @@ jobs:
           push: true
           context: ./
           file: ./Dockerfile
-          tags: dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{ matrix.base }}-gpu
+          tags:
+            dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{
+            matrix.base }}-gpu
           build-args: |
             CML_VERSION=${{ matrix.cml }}
             DVC_VERSION=${{ matrix.dvc }}
