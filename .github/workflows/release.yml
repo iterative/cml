@@ -62,7 +62,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           tags:
-            dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{
+            dvcorg/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
             matrix.base }}
           build-args: |
             CML_VERSION=${{ matrix.cml }}
@@ -78,7 +78,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           tags:
-            dvcorg/cml:${{ matrix.cml }}-dvc-${{ matrix.dvc }}-base-${{
+            dvcorg/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
             matrix.base }}-gpu
           build-args: |
             CML_VERSION=${{ matrix.cml }}
