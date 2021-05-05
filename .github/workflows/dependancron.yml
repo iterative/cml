@@ -33,6 +33,7 @@ jobs:
           body: ${{ steps.check.outputs.comment }}
           branch: dependancron-update-dependencies
           commit-message: ${{ steps.check.outputs.comment }}
-          author: 'Olivaw[bot] <64868532+Olivaw[bot]@users.noreply.github.com>'
+          author:
+            'Olivaw[bot] <64868532+iterative-olivaw@users.noreply.github.com>'
           committer:
-            'Olivaw[bot] <64868532+Olivaw[bot]@users.noreply.github.com>'
+            'Olivaw[bot] <64868532+iterative-olivaw@users.noreply.github.com>'
