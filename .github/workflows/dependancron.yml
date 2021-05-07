@@ -1,21 +1,14 @@
-name: 'Update dependencies'
-
+name: Update dependencies
 on:
   schedule:
-    # runs every six hours
+    # every six hours
     - cron: 0 */6 * * *
-
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
   dependancron:
     runs-on: [ubuntu-latest]
-
     steps:
       - uses: actions/checkout@v2
-
-      - name: 'Check dependencies'
+      - name: Check dependencies
         id: check
         run: |
           sudo wget https://dvc.org/deb/dvc.list -O /etc/apt/sources.list.d/dvc.list
@@ -31,11 +24,16 @@ jobs:
 
           echo "::set-output name=update::${UPDATE}"
           echo "::set-output name=comment::${MESSAGE}"
-
       - name: Create Pull Request
         if: steps.check.outputs.update == 'true'
         uses: peter-evans/create-pull-request@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           title: 'chore: dependancron update dependencies'
           body: ${{ steps.check.outputs.comment }}
-          branch: 'dependancron-update-dependencies'
+          branch: dependancron-update-dependencies
+          commit-message: ${{ steps.check.outputs.comment }}
+          author:
+            'Olivaw[bot] <64868532+iterative-olivaw@users.noreply.github.com>'
+          committer:
+            'Olivaw[bot] <64868532+iterative-olivaw@users.noreply.github.com>'

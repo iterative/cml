@@ -9,43 +9,41 @@ jobs:
     runs-on: [ubuntu-18.04]
     steps:
       - uses: actions/checkout@v2
-
-      - name: Build test image and publish
+      - name: Build & Publish test image
         run: |
           echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-
-          docker build -t dvcorg/cml -f ./docker/Dockerfile .
-          docker build -t dvcorg/cml-py3 -f ./docker/Dockerfile-py3 .
-
-          docker tag dvcorg/cml dvcorg/cml-test
-          docker push dvcorg/cml-test
+          docker build \
+            --build-arg "CML_VERSION=$CML_VERSION" \
+            --build-arg "DVC_VERSION=$DVC_VERSION" \
+            --build-arg "PYTHON_VERSION=$PYTHON_VERSION" \
+            --build-arg "BASE_IMAGE=$BASE_IMAGE" \
+            -t dvcorg/cml-test .
           docker run --name runner --rm \
             -e "REPO_TOKEN=${{ secrets.TEST_GITHUB_TOKEN }}" \
             -e "RUNNER_REPO=https://github.com/${GITHUB_REPOSITORY}" \
             -e "RUNNER_LABELS=cml-docker" \
             -e "RUNNER_IDLE_TIMEOUT=10" \
             dvcorg/cml-test
-
+        env:
+          CML_VERSION: 0
+          DVC_VERSION: 2
+          PYTHON_VERSION: 3.8
+          BASE_IMAGE: 'ubuntu:20.04'
   # test container all CML features, vega and actions with issues in the past
   check-container:
     needs: build-container
     runs-on: [ubuntu-18.04]
     container: dvcorg/cml-test
-
     steps:
       - uses: actions/checkout@v2
-
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 0.14.3
-
       - uses: r-lib/actions/setup-r@master
-
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-
-      - name: 'CML test'
+      - name: CML test
         env:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -76,15 +74,13 @@ jobs:
             --cloud-type g2.2xlarge \
             --idle-timeout 3600 \
             --labels cml-runner-aws-gpu
-
   test_machine_aws:
     needs: check-container
     runs-on: [self-hosted, cml-runner-aws-gpu]
     steps:
-      - name: 'tests'
+      - name: tests
         run: |
           nvidia-smi
-
   test_container_aws:
     needs: check-container
     runs-on: [self-hosted, cml-runner-aws-gpu]
@@ -92,18 +88,16 @@ jobs:
       image: docker://dvcorg/cml-test
       options: --gpus all
     steps:
-      - name: 'tests'
+      - name: tests
         run: |
           nvidia-smi
-
   test_machine_az:
     needs: check-container
     runs-on: [self-hosted, cml-runner-az-gpu]
     steps:
-      - name: 'tests'
+      - name: tests
         run: |
           nvidia-smi
-
   test_container_az:
     needs: check-container
     runs-on: [self-hosted, cml-runner-az-gpu]
@@ -111,17 +105,14 @@ jobs:
       image: docker://dvcorg/cml-test
       options: --gpus all
     steps:
-      - name: 'tests'
+      - name: tests
         run: |
           nvidia-smi
-
   chatbot:
     if: contains(github.event.comment.body, '/cml-')
     runs-on: [ubuntu-latest]
-
     steps:
       - uses: actions/checkout@v2
-
       - name: chatops
         id: chatops
         uses: actions/github-script@v1
@@ -137,7 +128,6 @@ jobs:
             }).then( (pr) => {
               console.log(`::set-output name=COMMAND::${process.env.COMMAND}`)
             })
-
       - name: chatactions
         run: |
           npm ci
