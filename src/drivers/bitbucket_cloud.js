@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const { URL } = require('url');
 
+const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
 class BitBucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -86,6 +87,65 @@ class BitBucketCloud {
     throw new Error('BitBucket Cloud does not support runner_by_labels!');
   }
 
+  async pr_create(opts = {}) {
+    const { project_path } = this;
+    const { source, target, title, description } = opts;
+
+    const body = JSON.stringify({
+      title,
+      description,
+      source: {
+        branch: {
+          name: source
+        }
+      },
+      destination: {
+        branch: {
+          name: target
+        }
+      }
+    });
+    const endpoint = `/repositories/${project_path}/pullrequests/`;
+    const {
+      links: {
+        html: { href }
+      }
+    } = await this.request({
+      method: 'POST',
+      endpoint,
+      body
+    });
+
+    return href;
+  }
+
+  async prs(opts = {}) {
+    const { project_path } = this;
+    const { state = 'OPEN' } = opts;
+
+    const endpoint = `/repositories/${project_path}/pullrequests?state=${state}`;
+    const { values: prs } = await this.request({ endpoint });
+
+    return prs.map((pr) => {
+      const {
+        links: {
+          html: { href: url }
+        },
+        source: {
+          branch: { name: source }
+        },
+        destination: {
+          branch: { name: target }
+        }
+      } = pr;
+      return {
+        url,
+        source,
+        target
+      };
+    });
+  }
+
   async request(opts = {}) {
     const { token, api } = this;
     const { endpoint, method = 'GET', body } = opts;
@@ -107,6 +167,18 @@ class BitBucketCloud {
 
     return await response.json();
   }
+
+  get sha() {
+    return BITBUCKET_COMMIT;
+  }
+
+  get branch() {
+    return BITBUCKET_BRANCH;
+  }
+
+  get user_email() {}
+
+  get user_name() {}
 }
 
 module.exports = BitBucketCloud;

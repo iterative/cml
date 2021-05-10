@@ -8,7 +8,13 @@ const { resolve } = require('path');
 
 const { fetch_upload_data, download, exec } = require('../utils');
 
-const { IN_DOCKER, GITLAB_USER_EMAIL, GITLAB_USER_NAME } = process.env;
+const {
+  IN_DOCKER,
+  CI_BUILD_REF_NAME,
+  CI_COMMIT_SHA,
+  GITLAB_USER_EMAIL,
+  GITLAB_USER_NAME
+} = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -230,6 +236,14 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
+  }
+
+  get sha() {
+    return CI_COMMIT_SHA;
+  }
+
+  get branch() {
+    return CI_BUILD_REF_NAME;
   }
 
   get user_email() {
