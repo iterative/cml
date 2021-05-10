@@ -338,7 +338,7 @@ class CML {
         }
 
         await git.branch({ ...gitops, ref: source });
-        for (const filepath in paths) {
+        for (const filepath of paths) {
           console.log(filepath);
           await git.add({ ...gitops, filepath });
         }
