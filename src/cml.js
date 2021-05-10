@@ -256,7 +256,7 @@ class CML {
     }
 
     const paths = (await globby(globs)).filter((path) =>
-      files.map((item) => item.path).includes(path)
+      files.map((item) => item).includes(path)
     );
     if (!paths.length) {
       console.log('Input files are not affected. Nothing to do.');
