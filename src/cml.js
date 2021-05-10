@@ -293,6 +293,7 @@ class CML {
       await exec(` git ls-remote $(git config --get remote.origin.url)`)
     );
 
+    await git.fetch({ ...gitops, remote });
     const branchess = await git.listBranches({ ...gitops, remote });
     const branch_existss = branchess.find((branch) => branch === source);
     console.log(branchess);
@@ -348,15 +349,8 @@ class CML {
         });
         await git.push({ ...gitops, remote, ref: source });
         await git.checkout({ ...gitops, ref: target });
-
-        // await exec(`git checkout -b ${source}`);
-        // await exec(`git add ${paths.join(' ')}`);
-        // await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
-        // await exec(`git push --set-upstream origin ${source}`);
-        // await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
         await git.checkout({ ...gitops, ref: target });
-        // await exec(`git checkout -B ${target} ${sha}`);
         throw err;
       }
     }
