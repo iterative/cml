@@ -326,10 +326,9 @@ class CML {
             console.log('here');
             console.log({ remote, url: `${repo.toString()}.git` });
             await git.addRemote({
-              ...opts,
+              ...gitops,
               remote,
               force: true,
-              gitdir: '.git',
               url: `${repo.toString()}.git`
             });
             // await exec(`git remote rm origin`);
