@@ -1,8 +1,11 @@
 const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
-const git = require('simple-git/promise')('./');
 const globby = require('globby');
+
+const git = require('isomorphic-git');
+const http = require('isomorphic-git/http/node');
+const fs = require('fs');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -240,7 +243,13 @@ class CML {
   async pr_create(opts = {}) {
     const { globs = ['dvc.lock', '.gitignore'], md } = opts;
 
-    const { files } = await git.status();
+    const remote = 'origin';
+    const gitops = { fs, http, dir: './' };
+
+    const files = (await git.statusMatrix(gitops))
+      .filter((row) => row[1] !== row[2])
+      .map((row) => row[0]);
+    console.log(files);
     if (!files.length) {
       console.log('No files changed. Nothing to do.');
       return;
@@ -264,9 +273,12 @@ class CML {
       return url;
     };
 
-    const sha = (await exec(`git rev-parse HEAD`)) || driver.sha;
+    const [{ oid: sha }] = (await git.log(gitops)) || driver.sha;
+    console.log(sha);
     const sha_short = sha.substr(0, 8);
-    const target = (await exec(`git branch --show-current`)) || driver.branch;
+
+    const target = (await git.currentBranch(gitops)) || driver.branch;
+    console.log(target);
     const source = `${target}-cmlpr-${sha_short}`;
 
     const branch_exists = (
@@ -274,6 +286,12 @@ class CML {
         ` git ls-remote $(git config --get remote.origin.url) ${source}`
       )
     ).includes(source);
+
+    const branchess = await git.listBranches({ ...gitops, remote });
+    const branch_existss = branchess.find((branch) => branch === source);
+    console.log(branchess);
+    console.log(branch_existss);
+
     if (branch_exists) {
       const prs = await driver.prs();
       const { url } =
@@ -283,26 +301,55 @@ class CML {
     } else {
       try {
         if (isCI() && driver.user_name && driver.user_email) {
-          await exec(`git config --local user.email "${driver.email_name}"`);
-          await exec(`git config --local user.name "${driver.user_name}"`);
+          await git.setConfig({
+            ...gitops,
+            path: 'user.email',
+            value: driver.email_name
+          });
+          await git.setConfig({
+            ...gitops,
+            path: 'user.name',
+            value: driver.user_name
+          });
+
+          // await exec(`git config --local user.email "${driver.email_name}"`);
+          // await exec(`git config --local user.name "${driver.user_name}"`);
 
           if (this.driver === 'gitlab') {
             const repo = new URL(this.repo);
             repo.password = this.token;
             repo.username = driver.user_name;
 
-            await exec(`git remote rm origin`);
-            await exec(`git remote add origin "${repo.toString()}.git"`);
+            await git.deleteRemote(gitops);
+            await git.addRemote({
+              ...opts,
+              remote,
+              url: `${repo.toString()}.git`
+            });
+            // await exec(`git remote rm origin`);
+            // await exec(`git remote add origin "${repo.toString()}.git"`);
           }
         }
 
-        await exec(`git checkout -b ${source}`);
-        await exec(`git add ${paths.join(' ')}`);
-        await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
-        await exec(`git push --set-upstream origin ${source}`);
-        await exec(`git checkout -B ${target} ${sha}`);
+        await git.checkout({ ...gitops, ref: source });
+        for (const filepath in paths) {
+          await git.add({ ...gitops, filepath });
+        }
+        await git.commit({
+          ...gitops,
+          message: `"CML PR for ${sha_short} [skip ci]"`
+        });
+        await git.push({ ...gitops, remote, remoteRef: source });
+        await git.checkout({ ...gitops, ref: target });
+
+        // await exec(`git checkout -b ${source}`);
+        // await exec(`git add ${paths.join(' ')}`);
+        // await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
+        // await exec(`git push --set-upstream origin ${source}`);
+        // await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
-        await exec(`git checkout -B ${target} ${sha}`);
+        await git.checkout({ ...gitops, ref: target });
+        // await exec(`git checkout -B ${target} ${sha}`);
         throw err;
       }
     }
