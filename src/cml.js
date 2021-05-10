@@ -260,7 +260,7 @@ class CML {
     };
 
     const sha = (await exec(`git rev-parse HEAD`)) || driver.sha;
-    const sha_short = sha.substr(0, 7);
+    const sha_short = sha.substr(0, 8);
     const target = (await exec(`git branch --show-current`)) || driver.branch;
     const source = `${target}-cmlpr-${sha_short}`;
 
