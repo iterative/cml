@@ -255,9 +255,7 @@ class CML {
       return;
     }
 
-    const paths = (await globby(globs)).filter((path) =>
-      files.map((item) => item).includes(path)
-    );
+    const paths = (await globby(globs)).filter((path) => files.includes(path));
     if (!paths.length) {
       console.log('Input files are not affected. Nothing to do.');
       return;
@@ -286,6 +284,12 @@ class CML {
         ` git ls-remote $(git config --get remote.origin.url) ${source}`
       )
     ).includes(source);
+
+    console.log(
+      await exec(
+        ` git ls-remote $(git config --get remote.origin.url) ${source}`
+      )
+    );
 
     const branchess = await git.listBranches({ ...gitops, remote });
     const branch_existss = branchess.find((branch) => branch === source);
