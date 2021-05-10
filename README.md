@@ -67,7 +67,7 @@ jobs:
   run:
     runs-on: [ubuntu-latest]
     # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
-    # container: docker://dvcorg/cml-py3:latest
+    # container: docker://dvcorg/cml:0-dvc2-base1-gpu
     steps:
       - uses: actions/checkout@v2
       # may need to setup NodeJS & Python3 on e.g. self-hosted
@@ -95,9 +95,9 @@ jobs:
 We helpfully provide CML and other useful libraries pre-installed on our
 [custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
 In the above example, uncommenting the field
-`container: docker://dvcorg/cml-py3:latest` will make the GitHub Actions runner
-pull the CML Docker image. The image already has NodeJS, Python 3, DVC and CML
-set up on an Ubuntu LTS base with CUDA libraries and
+`container: docker://dvcorg/cml:0-dvc2-base1-gpu` will make the GitHub Actions
+runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
+and CML set up on an Ubuntu LTS base with CUDA libraries and
 [Terraform](https://www.terraform.io) installed for convenience.
 
 ### CML Functions
@@ -233,7 +233,7 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml-py3:latest
+    container: docker://dvcorg/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v2
       - name: Train model
@@ -403,7 +403,7 @@ jobs:
   model-training:
     needs: [deploy-runner]
     runs-on: [self-hosted, cml-runner]
-    container: docker://dvcorg/cml-py3:latest
+    container: docker://dvcorg/cml:0-dvc2-base1-gpu
     steps:
       - uses: actions/checkout@v2
       - name: Train model
@@ -427,9 +427,18 @@ newly-launched instance.
 > favourite training environment in the cloud by pulling the Docker container of
 > your choice.
 
-We like the CML container (`docker://dvcorg/cml-py3`) because it comes loaded
-with Python, CUDA, `git`, `node` and other essentials for full-stack data
-science.
+We like the CML container (`docker://dvcorg/cml`) because it comes loaded with
+Python, CUDA, `git`, `node` and other essentials for full-stack data science.
+Different versions of these essentials are available from different `dvcorg/cml`
+image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
+
+| `{BASE_VER}` | Software included (`-gpu`)                      |
+| ------------ | ----------------------------------------------- |
+| 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7)   |
+| 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.0.3, CuDNN 8) |
+
+For example, `docker://dvcorg/cml:0-dvc2-base1-gpu`, or
+`docker://ghcr.io/iterative/cml:0-dvc2-base1`.
 
 ### Arguments
 
