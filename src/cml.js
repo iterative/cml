@@ -23,7 +23,7 @@ const repo_from_origin = () => {
   return strip_auth(uri);
 };
 
-const isCI = (opts = {}) => {
+const isCI = () => {
   return GITHUB_REPOSITORY || CI_PROJECT_URL || BITBUCKET_REPO_UUID;
 };
 
@@ -277,6 +277,8 @@ class CML {
       if (url) return render_pr(url);
     } else {
       try {
+        console.log([isCI(), driver.email_name.driver.user_email]);
+        console.log(isCI() && driver.email_name && driver.user_email);
         if (isCI() && driver.email_name && driver.user_email) {
           await exec(`git config --local user.email "${driver.email_name}"`);
           await exec(`git config --local user.name "${driver.user_name}"`);
