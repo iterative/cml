@@ -286,6 +286,7 @@ class CML {
     ).includes(source);
 
     console.log(
+      'cnfig',
       await exec(
         ` git ls-remote $(git config --get remote.origin.url) ${source}`
       )
