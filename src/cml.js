@@ -346,7 +346,7 @@ class CML {
           ...gitops,
           message: `"CML PR for ${sha_short} [skip ci]"`
         });
-        await git.push({ ...gitops, remote, remoteRef: source });
+        await git.push({ ...gitops, remote, ref: source });
         await git.checkout({ ...gitops, ref: target });
 
         // await exec(`git checkout -b ${source}`);
