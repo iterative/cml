@@ -437,6 +437,9 @@ image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 | 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7)   |
 | 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.0.3, CuDNN 8) |
 
+For example, `docker://dvcorg/cml:0-dvc2-base1-gpu`, or
+`docker://ghcr.io/iterative/cml:0-dvc2-base1`.
+
 ### Arguments
 
 The `cml-runner` function accepts the following arguments:
