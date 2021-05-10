@@ -249,7 +249,6 @@ class CML {
     const files = (await git.statusMatrix(gitops))
       .filter((row) => row[1] !== row[2])
       .map((row) => row[0]);
-    console.log(files);
     if (!files.length) {
       console.log('No files changed. Nothing to do.');
       return;
@@ -260,6 +259,10 @@ class CML {
       console.log('Input files are not affected. Nothing to do.');
       return;
     }
+
+    console.log(files);
+    console.log(globs);
+    console.log(paths);
 
     const driver = get_driver(this);
 
