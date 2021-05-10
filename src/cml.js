@@ -323,6 +323,9 @@ class CML {
             repo.password = this.token;
             repo.username = driver.user_name;
 
+            console.log('here');
+            console.log({ remote, url: `${repo.toString()}.git` });
+
             await git.deleteRemote({ ...gitops, remote });
             await git.addRemote({
               ...opts,
