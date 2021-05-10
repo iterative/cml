@@ -336,7 +336,7 @@ class CML {
           }
         }
 
-        await git.checkout({ ...gitops, ref: source });
+        await git.branch({ ...gitops, ref: source });
         for (const filepath in paths) {
           await git.add({ ...gitops, filepath });
         }
