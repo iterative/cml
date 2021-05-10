@@ -246,10 +246,15 @@ class CML {
       return;
     }
 
-    const driver = get_driver(this);
     const paths = (await globby(globs)).filter((path) =>
       files.map((item) => item.path).includes(path)
     );
+    if (!paths.length) {
+      console.log('Input files are not affected. Nothing to do.');
+      return;
+    }
+
+    const driver = get_driver(this);
 
     const render_pr = (url) => {
       if (md)
