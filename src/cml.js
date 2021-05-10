@@ -323,7 +323,7 @@ class CML {
             repo.password = this.token;
             repo.username = driver.user_name;
 
-            await git.deleteRemote(gitops);
+            await git.deleteRemote({ ...gitops, remote });
             await git.addRemote({
               ...opts,
               remote,
