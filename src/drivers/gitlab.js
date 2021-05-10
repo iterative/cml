@@ -187,7 +187,7 @@ class Gitlab {
   }
 
   async pr_create(opts = {}) {
-    const { project_path } = this;
+    const project_path = await this.project_path();
     const { source, target, title, description } = opts;
 
     const endpoint = `/projects/${project_path}/merge_requests`;
@@ -203,7 +203,7 @@ class Gitlab {
   }
 
   async prs(opts = {}) {
-    const { project_path } = this;
+    const project_path = await this.project_path();
     const { state = 'opened' } = opts;
 
     const endpoint = `/projects/${project_path}/merge_requests?state=${state}`;
