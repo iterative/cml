@@ -293,13 +293,15 @@ class CML {
       await exec(` git ls-remote $(git config --get remote.origin.url)`)
     );
 
+    /*
     await git.fetch({ ...gitops, remote });
     const branchess = await git.listBranches({ ...gitops, remote });
-    const branch_existss = branchess.find((branch) => branch === source);
+    const branch_exists = branchess.find((branch) => branch === source);
     console.log(branchess);
     console.log(branch_existss);
     const [{ oid: sha2 }] = await git.log(gitops);
     console.log(sha2);
+    */
 
     if (branch_exists) {
       const prs = await driver.prs();
