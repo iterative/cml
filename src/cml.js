@@ -298,6 +298,8 @@ class CML {
     const branch_existss = branchess.find((branch) => branch === source);
     console.log(branchess);
     console.log(branch_existss);
+    const [{ oid: sha2 }] = await git.log(gitops);
+    console.log(sha2);
 
     if (branch_exists) {
       const prs = await driver.prs();
