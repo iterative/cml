@@ -323,7 +323,6 @@ class CML {
             repo.password = this.token;
             repo.username = driver.user_name;
 
-            /*
             await git.addRemote({
               ...gitops,
               remote,
@@ -332,7 +331,6 @@ class CML {
             });
             // await exec(`git remote rm origin`);
             // await exec(`git remote add origin "${repo.toString()}.git"`);
-            */
           }
         }
 
