@@ -287,9 +287,7 @@ class CML {
 
     console.log(
       'cnfig',
-      await exec(
-        ` git ls-remote $(git config --get remote.origin.url) ${source}`
-      )
+      await exec(` git ls-remote $(git config --get remote.origin.url)`)
     );
 
     const branchess = await git.listBranches({ ...gitops, remote });
