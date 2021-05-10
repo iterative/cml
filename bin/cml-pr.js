@@ -11,7 +11,7 @@ const CML = require('../src/cml');
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;
   const cml = new CML(opts);
-  print(await cml.pr_create({ ...opts, globs }));
+  print((await cml.pr_create({ ...opts, globs })) || '');
 };
 
 const opts = decamelize(
