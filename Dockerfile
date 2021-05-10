@@ -77,7 +77,7 @@ RUN cd /etc/apt/sources.list.d \
 ARG CML_VERSION=0
 RUN npm config set user 0 \
  && npm install --global "@dvcorg/cml@${CML_VERSION}"
- 
+
 # INSTALL VEGA
 RUN add-apt-repository universe --yes \
  && apt-get update \
