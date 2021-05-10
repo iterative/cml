@@ -229,6 +229,8 @@ class Gitlab {
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
+    console.log([url, body]);
+
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const response = await fetch(url, { method, headers, body });
 
