@@ -277,7 +277,7 @@ class CML {
       if (url) return render_pr(url);
     } else {
       try {
-        console.log([isCI(), driver.email_name.driver.user_email]);
+        console.log([isCI(), driver.email_name, driver.user_email]);
         console.log(isCI() && driver.email_name && driver.user_email);
         if (isCI() && driver.email_name && driver.user_email) {
           await exec(`git config --local user.email "${driver.email_name}"`);
