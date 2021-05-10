@@ -16,6 +16,7 @@ const run = async (opts) => {
 
 const opts = decamelize(
   yargs
+    .strict()
     .usage('Usage: $0 <path to markdown file>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
@@ -27,7 +28,7 @@ const opts = decamelize(
     .default('token')
     .describe(
       'token',
-      'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+      'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
     )
     .default('driver')
     .choices('driver', ['github', 'gitlab'])

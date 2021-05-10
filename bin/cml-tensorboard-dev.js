@@ -92,6 +92,7 @@ const run = async (opts) => {
 };
 
 const argv = yargs
+  .strict()
   .usage(`Usage: $0`)
   .default('credentials')
   .describe(

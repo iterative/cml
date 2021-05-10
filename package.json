@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -53,7 +53,7 @@
     "*.js": [
       "eslint --fix"
     ],
-    "*.md": [
+    "*.{md,yaml,yml}": [
       "prettier --write"
     ]
   },
