@@ -329,7 +329,7 @@ class CML {
               ...opts,
               remote,
               force: true,
-              gitdir: './.git',
+              gitdir: '.git',
               url: `${repo.toString()}.git`
             });
             // await exec(`git remote rm origin`);
