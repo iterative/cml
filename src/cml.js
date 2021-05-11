@@ -241,10 +241,10 @@ class CML {
   }
 
   async pr_create(opts = {}) {
+    const { remote = 'origin', dir = './' } = opts;
     const { globs = ['dvc.lock', '.gitignore'], md } = opts;
 
-    const remote = 'origin';
-    const gitops = { fs, http, dir: './' };
+    const gitops = { fs, http, dir };
 
     const files = (await git.statusMatrix(gitops))
       .filter((row) => row[1] !== row[2])
@@ -260,10 +260,6 @@ class CML {
       return;
     }
 
-    console.log(files);
-    console.log(globs);
-    console.log(paths);
-
     const driver = get_driver(this);
 
     const render_pr = (url) => {
@@ -275,33 +271,18 @@ class CML {
     };
 
     const [{ oid: sha }] = (await git.log(gitops)) || driver.sha;
-    console.log(sha);
     const sha_short = sha.substr(0, 8);
 
     const target = (await git.currentBranch(gitops)) || driver.branch;
-    console.log(target);
     const source = `${target}-cmlpr-${sha_short}`;
 
-    const branch_exists = (
-      await exec(
-        ` git ls-remote $(git config --get remote.origin.url) ${source}`
-      )
-    ).includes(source);
-
-    console.log(
-      'cnfig',
-      await exec(` git ls-remote $(git config --get remote.origin.url)`)
-    );
-
-    /*
     await git.fetch({ ...gitops, remote });
-    const branchess = await git.listBranches({ ...gitops, remote });
-    const branch_exists = branchess.find((branch) => branch === source);
-    console.log(branchess);
-    console.log(branch_existss);
+    const branches = await git.listBranches({ ...gitops, remote });
+    const branch_exists = branches.find((branch) => branch === source);
+    console.log(branches);
+    console.log(branch_exists);
     const [{ oid: sha2 }] = await git.log(gitops);
     console.log(sha2);
-    */
 
     if (branch_exists) {
       const prs = await driver.prs();
@@ -315,16 +296,13 @@ class CML {
           await git.setConfig({
             ...gitops,
             path: 'user.email',
-            value: driver.email_name
+            value: driver.user_email
           });
           await git.setConfig({
             ...gitops,
             path: 'user.name',
             value: driver.user_name
           });
-
-          // await exec(`git config --local user.email "${driver.email_name}"`);
-          // await exec(`git config --local user.name "${driver.user_name}"`);
 
           if (this.driver === 'gitlab') {
             const repo = new URL(this.repo);
@@ -337,15 +315,12 @@ class CML {
               force: true,
               url: `${repo.toString()}.git`
             });
-            // await exec(`git remote rm origin`);
-            // await exec(`git remote add origin "${repo.toString()}.git"`);
           }
         }
 
         await git.branch({ ...gitops, ref: source });
         await git.checkout({ ...gitops, ref: source });
         for (const filepath of paths) {
-          console.log('filepath', filepath);
           await git.add({ ...gitops, filepath });
         }
         await git.commit({
