@@ -12,12 +12,7 @@ const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, watermark_uri } = require('./utils');
 
-const {
-  GITHUB_REPOSITORY,
-  GITHUB_EVENT_NAME,
-  CI_PROJECT_URL,
-  BITBUCKET_REPO_UUID
-} = process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
 const gitops = { fs, http, dir: './' };
 
@@ -79,11 +74,8 @@ class CML {
   }
 
   async head_sha() {
-    if (GITHUB_EVENT_NAME === 'pull_request')
-      return require('@actions/github').context.payload.pull_request.head.sha;
-
-    const [{ oid: sha }] = await git.log(gitops);
-    return sha;
+    const driver = get_driver(this);
+    return driver.sha || (await git.log(gitops)).oid;
   }
 
   async comment_create(opts = {}) {
@@ -281,7 +273,7 @@ class CML {
 
     const driver = get_driver(this);
 
-    const [{ oid: sha }] = (await git.log(gitops)) || driver.sha;
+    const sha = this.head_sha();
     const sha_short = sha.substr(0, 8);
 
     const target = (await git.currentBranch(gitops)) || driver.branch;
