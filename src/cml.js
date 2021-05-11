@@ -313,7 +313,7 @@ class CML {
         await exec(`git checkout -B ${target} ${sha}`);
         await exec(`git checkout -b ${source}`);
         await exec(`git add ${paths.join(' ')}`);
-        await exec(`git commit -m ""CML PR for ${sha_short} [skip ci]""`);
+        await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
         await exec(`git push --set-upstream origin ${source}`);
         await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
