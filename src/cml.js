@@ -282,12 +282,6 @@ class CML {
     const target = (await git.currentBranch(gitops)) || driver.branch;
     const source = `${target}-cmlpr-${sha_short}`;
 
-    /*
-    await git.fetch({ ...gitops, remote });
-    const branches = await git.listBranches({ ...gitops, remote });
-    const branch_exists = branches.find((branch) => branch === source);
-    */
-
     const branch_exists = (
       await exec(
         ` git ls-remote $(git config --get remote.origin.url) ${source}`
@@ -302,16 +296,8 @@ class CML {
       if (url) return render_pr(url);
     } else {
       try {
-        await git.setConfig({
-          ...gitops,
-          path: 'user.email',
-          value: user_email
-        });
-        await git.setConfig({
-          ...gitops,
-          path: 'user.name',
-          value: user_name
-        });
+        await exec(`git config --local user.email "${user_email}"`);
+        await exec(`git config --local user.name "${user_name}"`);
 
         if (isCI()) {
           if (this.driver === 'gitlab') {
@@ -319,28 +305,19 @@ class CML {
             repo.password = this.token;
             repo.username = driver.user_name;
 
-            await git.addRemote({
-              ...gitops,
-              remote,
-              force: true,
-              url: `${repo.toString()}.git`
-            });
+            await exec(`git remote rm ${remote}`);
+            await exec(`git remote add ${remote} "${repo.toString()}.git"`);
           }
         }
 
-        await git.branch({ ...gitops, ref: source });
-        await git.checkout({ ...gitops, ref: source });
-        for (const filepath of paths) {
-          await git.add({ ...gitops, filepath });
-        }
-        await git.commit({
-          ...gitops,
-          message: `"CML PR for ${sha_short} [skip ci]"`
-        });
-        await git.push({ ...gitops, remote, ref: source });
-        await git.checkout({ ...gitops, ref: target });
+        await exec(`git checkout -B ${target} ${sha}`);
+        await exec(`git checkout -b ${source}`);
+        await exec(`git add ${paths.join(' ')}`);
+        await exec(`git commit -m ""CML PR for ${sha_short} [skip ci]""`);
+        await exec(`git push --set-upstream origin ${source}`);
+        await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
-        await git.checkout({ ...gitops, ref: target });
+        await exec(`git checkout -B ${target} ${sha}`);
         throw err;
       }
     }
