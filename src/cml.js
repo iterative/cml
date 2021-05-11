@@ -2,10 +2,7 @@ const { execSync } = require('child_process');
 const git_url_parse = require('git-url-parse');
 const strip_auth = require('strip-url-auth');
 const globby = require('globby');
-
-const git = require('isomorphic-git');
-const http = require('isomorphic-git/http/node');
-const fs = require('fs');
+const git = require('simple-git/promise')('./');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -13,8 +10,6 @@ const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermark_uri } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
-
-const gitops = { fs, http, dir: './' };
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -74,11 +69,10 @@ class CML {
   }
 
   async head_sha() {
-    let { sha } = get_driver(this);
+    const { sha } = get_driver(this);
     if (sha) return sha;
 
-    [{ oid: sha }] = await git.log(gitops);
-    return sha;
+    return await exec(`git rev-parse HEAD`);
   }
 
   async comment_create(opts = {}) {
@@ -260,15 +254,15 @@ class CML {
       return url;
     };
 
-    const files = (await git.statusMatrix(gitops))
-      .filter((row) => row[1] !== row[2])
-      .map((row) => row[0]);
+    const { files } = await git.status();
     if (!files.length) {
       console.log('No files changed. Nothing to do.');
       return;
     }
 
-    const paths = (await globby(globs)).filter((path) => files.includes(path));
+    const paths = (await globby(globs)).filter((path) =>
+      files.map((file) => file.path).includes(path)
+    );
     if (!paths.length) {
       console.log('Input files are not affected. Nothing to do.');
       return;
@@ -279,7 +273,7 @@ class CML {
     const sha = await this.head_sha();
     const sha_short = sha.substr(0, 8);
 
-    const target = (await git.currentBranch(gitops)) || driver.branch;
+    const target = (await exec(`git branch --show-current`)) || driver.branch;
     const source = `${target}-cmlpr-${sha_short}`;
 
     const branch_exists = (
