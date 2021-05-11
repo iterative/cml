@@ -244,8 +244,15 @@ class CML {
     const { remote = 'origin', dir = './' } = opts;
     const { globs = ['dvc.lock', '.gitignore'], md } = opts;
 
-    const gitops = { fs, http, dir };
+    const render_pr = (url) => {
+      if (md)
+        return `[CML's ${
+          this.driver === 'gitlab' ? 'Merge' : 'Pull'
+        } Request](${url})`;
+      return url;
+    };
 
+    const gitops = { fs, http, dir };
     const files = (await git.statusMatrix(gitops))
       .filter((row) => row[1] !== row[2])
       .map((row) => row[0]);
@@ -262,14 +269,6 @@ class CML {
 
     const driver = get_driver(this);
 
-    const render_pr = (url) => {
-      if (md)
-        return `[CML's ${
-          this.driver === 'gitlab' ? 'Merge' : 'Pull'
-        } Request](${url})`;
-      return url;
-    };
-
     const [{ oid: sha }] = (await git.log(gitops)) || driver.sha;
     const sha_short = sha.substr(0, 8);
 
@@ -279,8 +278,6 @@ class CML {
     await git.fetch({ ...gitops, remote });
     const branches = await git.listBranches({ ...gitops, remote });
     const branch_exists = branches.find((branch) => branch === source);
-    const [{ oid: sha2 }] = await git.log(gitops);
-    console.log(sha + ' VS ' + sha2);
 
     if (branch_exists) {
       const prs = await driver.prs();
@@ -335,7 +332,7 @@ class CML {
 
     const title = `CML PR for ${target} ${sha_short}`;
     const description = `
-  Automated commits for ${this.repo}/commit/${sha} created by CML.
+Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
 
     const url = await driver.pr_create({
