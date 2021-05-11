@@ -11,7 +11,12 @@ const { download, exec } = require('../utils');
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
-const { GITHUB_REPOSITORY, GITHUB_SHA, GITHUB_REF } = process.env;
+const {
+  GITHUB_REPOSITORY,
+  GITHUB_SHA,
+  GITHUB_REF,
+  GITHUB_EVENT_NAME
+} = process.env;
 
 const owner_repo = (opts) => {
   let owner, repo;
@@ -278,6 +283,9 @@ class Github {
   }
 
   get sha() {
+    if (GITHUB_EVENT_NAME === 'pull_request')
+      return github.context.payload.pull_request.head.sha;
+
     return GITHUB_SHA;
   }
 

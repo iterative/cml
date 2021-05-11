@@ -19,6 +19,9 @@ const opts = decamelize(
     .usage('Usage: $0 <path to markdown file>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
+    .default('git-remote', 'origin')
+    .default('git-user-email', 'olivaw@iterative.ai')
+    .default('git-user-name', 'iterative-olivaw')
     .default('repo')
     .describe(
       'repo',

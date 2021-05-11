@@ -10,9 +10,16 @@ const fs = require('fs');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermark_uri } = require('./utils');
+const { upload, watermark_uri } = require('./utils');
 
-const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
+const {
+  GITHUB_REPOSITORY,
+  GITHUB_EVENT_NAME,
+  CI_PROJECT_URL,
+  BITBUCKET_REPO_UUID
+} = process.env;
+
+const gitops = { fs, http, dir: './' };
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -72,10 +79,11 @@ class CML {
   }
 
   async head_sha() {
-    if (process.env.GITHUB_EVENT_NAME === 'pull_request')
+    if (GITHUB_EVENT_NAME === 'pull_request')
       return require('@actions/github').context.payload.pull_request.head.sha;
 
-    return (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
+    const [{ oid: sha }] = await git.log(gitops);
+    return sha;
   }
 
   async comment_create(opts = {}) {
@@ -241,8 +249,13 @@ class CML {
   }
 
   async pr_create(opts = {}) {
-    const { remote = 'origin', dir = './' } = opts;
-    const { globs = ['dvc.lock', '.gitignore'], md } = opts;
+    const {
+      git_remote: remote = 'origin',
+      git_user_email: user_email = 'olivaw@iterative.ai',
+      gir_user_name: user_name = 'iterative-olivaw',
+      globs = ['dvc.lock', '.gitignore'],
+      md
+    } = opts;
 
     const render_pr = (url) => {
       if (md)
@@ -252,7 +265,6 @@ class CML {
       return url;
     };
 
-    const gitops = { fs, http, dir };
     const files = (await git.statusMatrix(gitops))
       .filter((row) => row[1] !== row[2])
       .map((row) => row[0]);
@@ -287,18 +299,18 @@ class CML {
       if (url) return render_pr(url);
     } else {
       try {
-        if (isCI() && driver.user_name && driver.user_email) {
-          await git.setConfig({
-            ...gitops,
-            path: 'user.email',
-            value: driver.user_email
-          });
-          await git.setConfig({
-            ...gitops,
-            path: 'user.name',
-            value: driver.user_name
-          });
+        await git.setConfig({
+          ...gitops,
+          path: 'user.email',
+          value: user_email
+        });
+        await git.setConfig({
+          ...gitops,
+          path: 'user.name',
+          value: user_name
+        });
 
+        if (isCI()) {
           if (this.driver === 'gitlab') {
             const repo = new URL(this.repo);
             repo.password = this.token;
