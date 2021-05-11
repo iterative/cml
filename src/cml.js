@@ -74,9 +74,11 @@ class CML {
   }
 
   async head_sha() {
-    const driver = get_driver(this);
-    const [{ oid: sha }] = (await git.log(gitops)) || driver.sha;
-    return sha || driver.sha;
+    let { sha } = get_driver(this);
+    if (sha) return sha;
+
+    [{ oid: sha }] = await git.log(gitops);
+    return sha;
   }
 
   async comment_create(opts = {}) {
@@ -274,7 +276,7 @@ class CML {
 
     const driver = get_driver(this);
 
-    const sha = this.head_sha();
+    const sha = await this.head_sha();
     const sha_short = sha.substr(0, 8);
 
     const target = (await git.currentBranch(gitops)) || driver.branch;
