@@ -34,7 +34,7 @@ test_container:
   when: on_success
   tags:
     - cml-runner-gpu
-  image: dvcorg/cml:0-dvc2-base1
+  image: dvcorg/cml:0-dvc2-base1-gpu
   script:
     - dvc --version
     - pip install tensorboard
