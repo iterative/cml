@@ -15,7 +15,7 @@ describe('CML e2e', () => {
         --repo            Specifies the repo to be used. If not specified is extracted
                           from the CI ENV.
         --token           Personal access token to be used. If not specified in
-                          extracted from ENV repo_token.
+                          extracted from ENV REPO_TOKEN.
         --driver          If not specify it infers it from the ENV.
                                                          [choices: \\"github\\", \\"gitlab\\"]
         -h                Show help                                          [boolean]
