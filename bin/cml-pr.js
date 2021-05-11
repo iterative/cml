@@ -16,7 +16,7 @@ const run = async (opts) => {
 
 const opts = decamelize(
   yargs
-    .usage('Usage: $0 <path to markdown file>')
+    .usage('Usage: $0 <glob path> ... <glob path>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
     .default('git-remote', 'origin')

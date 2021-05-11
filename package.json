@@ -36,7 +36,7 @@
     "cml-tensorboard-dev": "bin/cml-tensorboard-dev.js",
     "cml-runner": "bin/cml-runner.js",
     "cml-cloud-runner-entrypoint": "bin/cml-runner.js",
-    "test-cml-pr": "bin/cml-pr.js"
+    "cml-pr": "bin/cml-pr.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./",
@@ -67,7 +67,6 @@
     "git-url-parse": "^11.4.0",
     "globby": "^11.0.3",
     "is-svg": "^4.2.2",
-    "isomorphic-git": "^1.8.2",
     "js-base64": "^3.5.2",
     "node-fetch": "^2.6.0",
     "node-forge": "^0.10.0",
