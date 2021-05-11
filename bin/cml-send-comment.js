@@ -25,6 +25,7 @@ const run = async (opts) => {
 };
 
 const argv = yargs
+  .strict()
   .usage('Usage: $0 <path to markdown file>')
   .default('commit-sha')
   .describe(
@@ -47,7 +48,7 @@ const argv = yargs
   .default('token')
   .describe(
     'token',
-    'Personal access token to be used. If not specified in extracted from ENV repo_token.'
+    'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
   )
   .default('driver')
   .choices('driver', ['github', 'gitlab'])

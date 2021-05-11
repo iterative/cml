@@ -25,7 +25,7 @@ const {
   RUNNER_REUSE = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
-  repo_token
+  REPO_TOKEN
 } = process.env;
 
 let cml;
@@ -315,6 +315,7 @@ const run = async (opts) => {
 
 const opts = decamelize(
   yargs
+    .strict()
     .usage(`Usage: $0`)
     .default('labels', RUNNER_LABELS)
     .describe(
@@ -350,7 +351,7 @@ const opts = decamelize(
       'repo',
       'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
     )
-    .default('token', repo_token)
+    .default('token', REPO_TOKEN)
     .describe(
       'token',
       'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'

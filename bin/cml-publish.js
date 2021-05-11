@@ -37,6 +37,7 @@ const run = async (opts) => {
 pipe_args.load('binary');
 const data = pipe_args.piped_arg();
 const argv = yargs
+  .strict()
   .usage(`Usage: $0 <path to file>`)
   .describe('md', 'Output in markdown format [title || name](url).')
   .boolean('md')
@@ -71,7 +72,7 @@ const argv = yargs
   .default('token')
   .describe(
     'token',
-    'Personal access token to be used. If not specified in extracted from ENV repo_token or GITLAB_TOKEN.'
+    'Personal access token to be used. If not specified, extracted from ENV REPO_TOKEN, GITLAB_TOKEN, GITHUB_TOKEN, or BITBUCKET_TOKEN.'
   )
   .default('driver')
   .choices('driver', ['github', 'gitlab'])
