@@ -10,7 +10,7 @@ const fs = require('fs');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, watermark_uri } = require('./utils');
+const { upload, exec, watermark_uri } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -282,9 +282,17 @@ class CML {
     const target = (await git.currentBranch(gitops)) || driver.branch;
     const source = `${target}-cmlpr-${sha_short}`;
 
+    /*
     await git.fetch({ ...gitops, remote });
     const branches = await git.listBranches({ ...gitops, remote });
     const branch_exists = branches.find((branch) => branch === source);
+    */
+
+    const branch_exists = (
+      await exec(
+        ` git ls-remote $(git config --get remote.origin.url) ${source}`
+      )
+    ).includes(source);
 
     if (branch_exists) {
       const prs = await driver.prs();
