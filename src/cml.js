@@ -279,10 +279,8 @@ class CML {
     await git.fetch({ ...gitops, remote });
     const branches = await git.listBranches({ ...gitops, remote });
     const branch_exists = branches.find((branch) => branch === source);
-    console.log(branches);
-    console.log(branch_exists);
     const [{ oid: sha2 }] = await git.log(gitops);
-    console.log(sha2);
+    console.log(sha + ' VS ' + sha2);
 
     if (branch_exists) {
       const prs = await driver.prs();
