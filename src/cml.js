@@ -343,10 +343,7 @@ class CML {
         }
 
         await git.branch({ ...gitops, ref: source });
-        for (const filepath of paths) {
-          console.log('filepath', filepath);
-          await git.add({ ...gitops, filepath });
-        }
+        await exec(`git add dvc.lock`);
         await git.commit({
           ...gitops,
           message: `"CML PR for ${sha_short} [skip ci]"`
