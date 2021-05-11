@@ -74,8 +74,8 @@ class CML {
   }
 
   async head_sha() {
-    const driver = get_driver(this);
-    return driver.sha || (await git.log(gitops)).oid;
+    // const driver = get_driver(this);
+    return await git.log(gitops).oid;
   }
 
   async comment_create(opts = {}) {
