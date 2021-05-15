@@ -39,14 +39,14 @@ describe('CML e2e', () => {
       "Usage: cml-send-github-check.js <path to markdown file>
 
       Options:
-        --version     Show version number                                    [boolean]
-        --head-sha    Commit sha where the comment will appear. Defaults to HEAD.
-        --title       Sets title of the check.                 [default: \\"CML Report\\"]
-        --repo        Specifies the repo to be used. If not specified is extracted
-                      from the CI ENV.
-        --token       Personal access token to be used. If not specified in extracted
-                      from ENV REPO_TOKEN.
-        -h            Show help                                              [boolean]
+        --version                 Show version number                        [boolean]
+        --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
+        --title                   Sets title of the check.     [default: \\"CML Report\\"]
+        --repo                    Specifies the repo to be used. If not specified is
+                                  extracted from the CI ENV.
+        --token                   Personal access token to be used. If not specified
+                                  in extracted from ENV REPO_TOKEN.
+        -h                        Show help                                  [boolean]
         --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                       \\"timed_out\\"] [default: Sets the conclusion status of the check.]"
     `);

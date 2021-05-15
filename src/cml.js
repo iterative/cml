@@ -21,6 +21,19 @@ const repo_from_origin = () => {
   return strip_auth(uri);
 };
 
+const infer_token = () => {
+  const {
+    REPO_TOKEN,
+    repo_token,
+    GITHUB_TOKEN,
+    GITLAB_TOKEN,
+    BITBUCKET_TOKEN
+  } = process.env;
+  return (
+    REPO_TOKEN || repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
+  );
+};
+
 const infer_driver = (opts = {}) => {
   const { repo } = opts;
   if (repo && repo.includes('github.com')) return 'github';
@@ -48,19 +61,6 @@ const get_driver = (opts) => {
   throw new Error(`driver ${driver} unknown!`);
 };
 
-const infer_token = () => {
-  const {
-    REPO_TOKEN,
-    repo_token,
-    GITHUB_TOKEN,
-    GITLAB_TOKEN,
-    BITBUCKET_TOKEN
-  } = process.env;
-  return (
-    REPO_TOKEN || repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
-  );
-};
-
 class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
@@ -78,8 +78,11 @@ class CML {
   }
 
   async comment_create(opts = {}) {
-    const sha = await this.head_sha();
-    const { report: user_report, commit_sha = sha, rm_watermark } = opts;
+    const {
+      report: user_report,
+      commit_sha = await this.head_sha(),
+      rm_watermark
+    } = opts;
     const watermark = rm_watermark
       ? ''
       : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
@@ -93,9 +96,6 @@ class CML {
   }
 
   async check_create(opts = {}) {
-    const sha = await this.head_sha();
-    opts.head_sha = opts.head_sha || sha;
-
     return await get_driver(this).check_create(opts);
   }
 
