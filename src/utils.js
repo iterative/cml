@@ -32,6 +32,8 @@ const mime_type = async (opts) => {
             )
           );
 
+        if (result === 'image/svg') return 'image/svg+xml';
+
         resolve(result);
       }
     );
