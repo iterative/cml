@@ -17,6 +17,7 @@ const run = async (opts) => {
 
 const opts = decamelize(
   yargs
+    .strict()
     .usage('Usage: $0 <glob path> ... <glob path>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
