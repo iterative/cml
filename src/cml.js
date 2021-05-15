@@ -10,17 +10,20 @@ const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermark_uri } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
+const GIT_USER_NAME = 'iterative-olivaw';
+const GIT_USER_EMAIL = 'olivaw@iterative.ai';
+const GIT_REMOTE = 'origin';
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
 
-const repo_from_origin = () => {
-  const origin = execSync('git config --get remote.origin.url').toString(
+const git_remote_url = (opts = {}) => {
+  const { remote } = opts;
+  const url = execSync(`git config --get remote.${remote}.url`).toString(
     'utf8'
   );
-  const uri = git_url_parse(origin).toString('https').replace('.git', '');
-  return strip_auth(uri);
+  return strip_auth(git_url_parse(url).toString('https').replace('.git', ''));
 };
 
 const isCI = () => {
@@ -66,16 +69,19 @@ class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
 
-    this.repo = uri_no_trailing_slash(repo || repo_from_origin());
+    this.repo = uri_no_trailing_slash(repo || git_remote_url());
     this.token = token || infer_token();
     this.driver = driver || infer_driver({ repo: this.repo });
   }
 
   async head_sha() {
     const { sha } = get_driver(this);
-    if (sha) return sha;
+    return sha || (await exec(`git rev-parse HEAD`));
+  }
 
-    return await exec(`git rev-parse HEAD`);
+  async branch() {
+    const { branch } = get_driver(this);
+    return branch || (await exec(`git branch --show-current`));
   }
 
   async comment_create(opts = {}) {
@@ -101,12 +107,12 @@ class CML {
   }
 
   async publish(opts = {}) {
+    const driver = get_driver(this);
     const { title = '', md, native, gitlab_uploads, rm_watermark } = opts;
 
     let mime, uri;
     if (native || gitlab_uploads) {
-      const client = get_driver(this);
-      ({ mime, uri } = await client.upload(opts));
+      ({ mime, uri } = await driver.upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
     }
@@ -241,10 +247,11 @@ class CML {
   }
 
   async pr_create(opts = {}) {
+    const driver = get_driver(this);
     const {
-      git_remote: remote = 'origin',
-      git_user_email: user_email = 'olivaw@iterative.ai',
-      gir_user_name: user_name = 'iterative-olivaw',
+      git_remote: remote = GIT_REMOTE,
+      git_user_email: user_email = GIT_USER_EMAIL,
+      gir_user_name: user_name = GIT_USER_NAME,
       globs = ['dvc.lock', '.gitignore'],
       md
     } = opts;
@@ -271,17 +278,15 @@ class CML {
       return;
     }
 
-    const driver = get_driver(this);
-
     const sha = await this.head_sha();
     const sha_short = sha.substr(0, 8);
 
-    const target = (await exec(`git branch --show-current`)) || driver.branch;
-    const source = `${target}-cmlpr-${sha_short}`;
+    const target = await this.branch();
+    const source = `${target}-cml-pr-${sha_short}`;
 
     const branch_exists = (
       await exec(
-        ` git ls-remote $(git config --get remote.origin.url) ${source}`
+        `git ls-remote $(git config --get remote.${remote}.url) ${source}`
       )
     ).includes(source);
 
@@ -311,7 +316,7 @@ class CML {
         await exec(`git checkout -b ${source}`);
         await exec(`git add ${paths.join(' ')}`);
         await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
-        await exec(`git push --set-upstream origin ${source}`);
+        await exec(`git push --set-upstream ${remote} ${source}`);
         await exec(`git checkout -B ${target} ${sha}`);
       } catch (err) {
         await exec(`git checkout -B ${target} ${sha}`);
@@ -339,4 +344,10 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 }
 
-module.exports = CML;
+module.exports = {
+  CML,
+  GIT_USER_EMAIL,
+  GIT_USER_NAME,
+  GIT_REMOTE,
+  default: CML
+};

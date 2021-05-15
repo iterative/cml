@@ -6,7 +6,12 @@ console.log = console.error;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const CML = require('../src/cml');
+const {
+  CML,
+  GIT_REMOTE,
+  GIT_USER_NAME,
+  GIT_USER_EMAIL
+} = require('../src/cml');
 
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;
@@ -19,9 +24,9 @@ const opts = decamelize(
     .usage('Usage: $0 <glob path> ... <glob path>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
-    .default('git-remote', 'origin')
-    .default('git-user-email', 'olivaw@iterative.ai')
-    .default('git-user-name', 'iterative-olivaw')
+    .default('git-remote', GIT_REMOTE)
+    .default('git-user-email', GIT_USER_EMAIL)
+    .default('git-user-name', GIT_USER_NAME)
     .default('repo')
     .describe(
       'repo',
