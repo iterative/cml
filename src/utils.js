@@ -22,20 +22,19 @@ const exec = async (command) => {
 const mime_type = async (opts) => {
   return new Promise((resolve, reject) => {
     const { path, buffer } = opts;
-    new mmm.Magic(mmm.MAGIC_MIME_TYPE).detectFile(path || buffer, function (
-      err,
-      result
-    ) {
-      console.log(result);
-      if (err)
-        reject(
-          new Error(
-            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-          )
-        );
+    new mmm.Magic(mmm.MAGIC_MIME_TYPE).detectFile(
+      path || buffer,
+      (err, result) => {
+        if (err)
+          reject(
+            new Error(
+              `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
+            )
+          );
 
-      resolve(result);
-    });
+        resolve(result);
+      }
+    );
   });
 };
 

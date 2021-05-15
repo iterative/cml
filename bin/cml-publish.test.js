@@ -7,7 +7,31 @@ describe('CML e2e', () => {
   test('cml-publish -h', async () => {
     const output = await exec(`echo none | node ./bin/cml-publish.js -h`);
 
-    expect(output).toMatchInlineSnapshot();
+    expect(output).toMatchInlineSnapshot(`
+      "Usage: cml-publish.js <path to file>
+
+      Options:
+        --version                   Show version number                      [boolean]
+        --md                        Output in markdown format [title || name](url).
+                                                                             [boolean]
+        --title, -t                 Markdown title [title](url) or ![](url title).
+        --native, --gitlab-uploads  Uses driver's native capabilities to upload assets
+                                    instead of CML's storage. Currently only available
+                                    for GitLab CI.
+        --rm-watermark              Avoid CML watermark.                     [boolean]
+        --mime-type                 Specifies the mime-type. If not set guess it from
+                                    the content.
+        --file, -f                  Append the output to the given file. Create it if
+                                    does not exist.
+        --repo                      Specifies the repo to be used. If not specified is
+                                    extracted from the CI ENV.
+        --token                     Personal access token to be used. If not
+                                    specified, extracted from ENV REPO_TOKEN,
+                                    GITLAB_TOKEN, GITHUB_TOKEN, or BITBUCKET_TOKEN.
+        --driver                    If not specify it infers it from the ENV.
+                                                         [choices: \\"github\\", \\"gitlab\\"]
+        -h                          Show help                                [boolean]"
+    `);
   });
 
   test('cml-publish assets/logo.png --md', async () => {
