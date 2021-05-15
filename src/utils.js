@@ -22,21 +22,22 @@ const exec = async (command) => {
 const mime_type = async (opts) => {
   return new Promise((resolve, reject) => {
     const { path, buffer } = opts;
-    new mmm.Magic(mmm.MAGIC_MIME_TYPE).detectFile(
-      path || buffer,
-      (err, result) => {
-        if (err)
-          reject(
-            new Error(
-              `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-            )
-          );
+    const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
+    const handler = (err, result) => {
+      if (err)
+        reject(
+          new Error(
+            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
+          )
+        );
 
-        if (result === 'image/svg') return 'image/svg+xml';
+      if (result === 'image/svg') return 'image/svg+xml';
 
-        resolve(result);
-      }
-    );
+      resolve(result);
+    };
+
+    if (path) magic.detectFile(path, handler);
+    else magic.detect(buffer, handler);
   });
 };
 
