@@ -1,8 +1,7 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const FileType = require('file-type');
-const isSvg = require('is-svg');
+const mmm = require('mmmagic');
 const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
 
@@ -20,44 +19,32 @@ const exec = async (command) => {
   });
 };
 
-const is_svg = async (opts) => {
-  const { path, buffer } = opts;
-
-  if (path && PATH.extname(path).toLowerCase() === '.svg') return true;
-
-  const svg_candidate = path
-    ? await fs.promises.readFile(path)
-    : buffer.toString('utf-8');
-
-  if (isSvg(svg_candidate)) return true;
-
-  return false;
-};
-
 const mime_type = async (opts) => {
-  const { path, buffer } = opts;
+  return new Promise((resolve, reject) => {
+    const { path, buffer } = opts;
+    new mmm.Magic(mmm.MAGIC_MIME_TYPE).detectFile(path || buffer, function (
+      err,
+      result
+    ) {
+      console.log(result);
+      if (err)
+        reject(
+          new Error(
+            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
+          )
+        );
 
-  try {
-    if (await is_svg(opts)) return 'image/svg+xml';
-
-    let mime;
-    if (path) ({ mime } = await FileType.fromFile(path));
-    else ({ mime } = await FileType.fromBuffer(buffer));
-
-    return mime;
-  } catch (err) {
-    throw new Error(
-      `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-    );
-  }
+      resolve(result);
+    });
+  });
 };
 
 const fetch_upload_data = async (opts) => {
-  const { path, buffer } = opts;
+  const { path, buffer, mime_type: mime_type_in } = opts;
 
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
   const data = path ? fs.createReadStream(path) : buffer;
-  const mime = await mime_type(opts);
+  const mime = mime_type_in || (await mime_type(opts));
 
   return { mime, size, data };
 };
