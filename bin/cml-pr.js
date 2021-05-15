@@ -6,12 +6,8 @@ console.log = console.error;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const {
-  CML,
-  GIT_REMOTE,
-  GIT_USER_NAME,
-  GIT_USER_EMAIL
-} = require('../src/cml');
+const CML = require('../src/cml').default;
+const { GIT_REMOTE, GIT_USER_NAME, GIT_USER_EMAIL } = require('../src/cml');
 
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;

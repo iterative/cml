@@ -7,7 +7,7 @@ const fs = require('fs').promises;
 const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const run = async (opts) => {
   const {

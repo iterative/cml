@@ -19,7 +19,7 @@ const uri_no_trailing_slash = (uri) => {
 };
 
 const git_remote_url = (opts = {}) => {
-  const { remote } = opts;
+  const { remote = GIT_REMOTE } = opts;
   const url = execSync(`git config --get remote.${remote}.url`).toString(
     'utf8'
   );

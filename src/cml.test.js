@@ -1,4 +1,4 @@
-const CML = require('./cml');
+const CML = require('../src/cml').default;
 
 describe('Github tests', () => {
   const OLD_ENV = process.env;
