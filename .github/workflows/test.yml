@@ -19,6 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
+      - uses: actions/setup-python@v2
+      - run: pip install tensorboard
       - run: npm ci
       - run: npm run test
         env:
