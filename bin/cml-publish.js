@@ -17,6 +17,7 @@ const run = async (opts) => {
   const buffer = data ? Buffer.from(data, 'binary') : null;
 
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
+
   const output = await cml.publish({
     ...opts,
     buffer,
@@ -39,6 +40,7 @@ const opts = decamelize(
     .default('title')
     .describe('title', 'Markdown title [title](url) or ![](url title).')
     .alias('title', 't')
+    .boolean('native')
     .describe(
       'native',
       "Uses driver's native capabilities to upload assets instead of CML's storage. Currently only available for GitLab CI."
