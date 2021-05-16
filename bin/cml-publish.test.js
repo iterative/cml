@@ -122,9 +122,10 @@ describe('CML e2e', () => {
     ).rejects.toThrowError('ENOENT: no such file or directory, stat');
   });
 
-  test('echo invalid | cml-publish produces buffer mime type error', async () => {
-    await expect(
-      exec(`echo invalid | node ./bin/cml-publish.js`)
-    ).rejects.toThrowError('Failed guessing mime type of buffer');
+  test('echo text | cml-publish produces a plain text file', async () => {
+    const output = await exec(`echo none | node ./bin/cml-publish.js`);
+
+    expect(output.startsWith('https://')).toBe(true);
+    expect(output.endsWith('plain')).toBe(true);
   });
 });
