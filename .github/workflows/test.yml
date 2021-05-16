@@ -22,7 +22,7 @@ jobs:
       - run: npm ci
       - run: npm run test
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ github.token }} 
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }} 
           TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
           TEST_GITHUB_SHA: 62edc8b3f46a60b3fe1e5c08fd3e0046d350ee29
