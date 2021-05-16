@@ -9,7 +9,13 @@ const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermark_uri } = require('./utils');
 
-const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
+const {
+  GITHUB_REPOSITORY,
+  CI_PROJECT_URL,
+  BITBUCKET_REPO_UUID,
+  CI
+} = process.env;
+
 const GIT_USER_NAME = 'iterative-olivaw';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
@@ -24,10 +30,6 @@ const git_remote_url = (opts = {}) => {
     'utf8'
   );
   return strip_auth(git_url_parse(url).toString('https').replace('.git', ''));
-};
-
-const isCI = () => {
-  return GITHUB_REPOSITORY || CI_PROJECT_URL || BITBUCKET_REPO_UUID;
 };
 
 const infer_driver = (opts = {}) => {
@@ -301,7 +303,7 @@ class CML {
         await exec(`git config --local user.email "${user_email}"`);
         await exec(`git config --local user.name "${user_name}"`);
 
-        if (isCI()) {
+        if (CI) {
           if (this.driver === 'gitlab') {
             const repo = new URL(this.repo);
             repo.password = this.token;
