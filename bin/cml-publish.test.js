@@ -17,7 +17,7 @@ describe('CML e2e', () => {
         --title, -t                 Markdown title [title](url) or ![](url title).
         --native, --gitlab-uploads  Uses driver's native capabilities to upload assets
                                     instead of CML's storage. Currently only available
-                                    for GitLab CI.
+                                    for GitLab CI.                           [boolean]
         --rm-watermark              Avoid CML watermark.                     [boolean]
         --mime-type                 Specifies the mime-type. If not set guess it from
                                     the content.
