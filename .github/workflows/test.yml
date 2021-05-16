@@ -1,8 +1,5 @@
 name: Test source code
 on:
-  push:
-    branches:
-      - master
   pull_request:
     types:
       - opened
@@ -17,7 +14,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
   test:
-    environment: ${{ github.event_name == 'pull_request' && 'external' || 'internal' }}
+    environment: acceptance-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
