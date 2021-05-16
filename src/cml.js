@@ -19,6 +19,9 @@ const {
 const GIT_USER_NAME = 'iterative-olivaw';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
+const GITHUB = 'github';
+const GITLAB = 'gitlab';
+const BB = 'bitbucket';
 
 const uri_no_trailing_slash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -34,22 +37,22 @@ const git_remote_url = (opts = {}) => {
 
 const infer_driver = (opts = {}) => {
   const { repo } = opts;
-  if (repo && repo.includes('github.com')) return 'github';
-  if (repo && repo.includes('gitlab.com')) return 'gitlab';
-  if (repo && repo.includes('bitbucket.com')) return 'bitbucket';
+  if (repo && repo.includes('github.com')) return GITHUB;
+  if (repo && repo.includes('gitlab.com')) return GITLAB;
+  if (repo && repo.includes('bitbucket.com')) return BB;
 
-  if (GITHUB_REPOSITORY) return 'github';
-  if (CI_PROJECT_URL) return 'gitlab';
-  if (BITBUCKET_REPO_UUID) return 'bitbucket';
+  if (GITHUB_REPOSITORY) return GITHUB;
+  if (CI_PROJECT_URL) return GITLAB;
+  if (BITBUCKET_REPO_UUID) return BB;
 };
 
 const get_driver = (opts) => {
   const { driver, repo, token } = opts;
   if (!driver) throw new Error('driver not set');
 
-  if (driver === 'github') return new Github({ repo, token });
-  if (driver === 'gitlab') return new Gitlab({ repo, token });
-  if (driver === 'bitbucket') return new BitBucketCloud({ repo, token });
+  if (driver === GITHUB) return new Github({ repo, token });
+  if (driver === GITLAB) return new Gitlab({ repo, token });
+  if (driver === GITLAB) return new BitBucketCloud({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
 };
@@ -149,7 +152,7 @@ class CML {
         repo: this.repo
       };
 
-      if (this.driver === 'github') {
+      if (this.driver === GITHUB) {
         if (data.includes('Running job')) {
           log.job = '';
           log.status = 'job_started';
@@ -169,7 +172,7 @@ class CML {
         }
       }
 
-      if (this.driver === 'gitlab') {
+      if (this.driver === GITLAB) {
         const { msg, job } = JSON.parse(data);
 
         if (msg.endsWith('received')) {
@@ -261,7 +264,7 @@ class CML {
     const render_pr = (url) => {
       if (md)
         return `[CML's ${
-          this.driver === 'gitlab' ? 'Merge' : 'Pull'
+          this.driver === GITLAB ? 'Merge' : 'Pull'
         } Request](${url})`;
       return url;
     };
@@ -304,7 +307,7 @@ class CML {
         await exec(`git config --local user.name "${user_name}"`);
 
         if (CI) {
-          if (this.driver === 'gitlab') {
+          if (this.driver === GITLAB) {
             const repo = new URL(this.repo);
             repo.password = this.token;
             repo.username = driver.user_name;
