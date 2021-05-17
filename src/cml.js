@@ -17,7 +17,7 @@ const {
 } = process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
-const GIT_USER_EMAIL = 'g.ortega.david@gmail.com';
+const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
@@ -52,7 +52,7 @@ const get_driver = (opts) => {
 
   if (driver === GITHUB) return new Github({ repo, token });
   if (driver === GITLAB) return new Gitlab({ repo, token });
-  if (driver === GITLAB) return new BitBucketCloud({ repo, token });
+  if (driver === BB) return new BitBucketCloud({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
 };
