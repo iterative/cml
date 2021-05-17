@@ -89,8 +89,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
+      - name: Metadata
+        id: metadata
+        run: |
+          if [[ ${{ matrix.gpu }} == true ]]; the
+            echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
+            echo ::set-output name=tag::${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu
+          else
+            echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
+            echo ::set-output name=tag::${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
+          fi
       - uses: docker/build-push-action@v2
-        if: matrix.gpu == false
         with:
           push:
             ${{ github.event_name == 'release' || github.event_name ==
@@ -98,36 +107,13 @@ jobs:
           context: ./
           file: ./Dockerfile
           tags: |
-            docker.io/dvcorg/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
-            matrix.base }}
-            ghcr.io/iterative/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
-            matrix.base }}
+            docker.io/dvcorg/cml:${{ steps.metadata.outputs.tag }}
+            ghcr.io/iterative/cml:${{ steps.metadata.outputs.tag }}
           build-args: |
             CML_VERSION=${{ matrix.cml }}
             DVC_VERSION=${{ matrix.dvc }}
             PYTHON_VERSION=${{ matrix.python }}
-            BASE_IMAGE=ubuntu:${{ matrix.ubuntu }}
-          pull: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
-      - uses: docker/build-push-action@v2
-        if: matrix.gpu == true
-        with:
-          push:
-            ${{ github.event_name == 'release' || github.event_name ==
-            'schedule' }}
-          context: ./
-          file: ./Dockerfile
-          tags: |
-            docker.io/dvcorg/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
-            matrix.base }}-gpu
-            ghcr.io/iterative/cml:${{ matrix.cml }}-dvc${{ matrix.dvc }}-base${{
-            matrix.base }}-gpu
-          build-args: |
-            CML_VERSION=${{ matrix.cml }}
-            DVC_VERSION=${{ matrix.dvc }}
-            PYTHON_VERSION=${{ matrix.python }}
-            BASE_IMAGE=nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
+            BASE_IMAGE=${{ steps.metadata.outputs.base }}
           pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
