@@ -107,6 +107,7 @@ jobs:
             DVC_VERSION=${{ matrix.dvc }}
             PYTHON_VERSION=${{ matrix.python }}
             BASE_IMAGE=ubuntu:${{ matrix.ubuntu }}
+          pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
       - uses: docker/build-push-action@v2
@@ -127,6 +128,7 @@ jobs:
             DVC_VERSION=${{ matrix.dvc }}
             PYTHON_VERSION=${{ matrix.python }}
             BASE_IMAGE=nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
+          pull: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
       - name: Move cache
