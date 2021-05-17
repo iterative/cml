@@ -79,15 +79,14 @@ jobs:
         run: |
           latest_tag=$(git describe --tags | cut -d- -f1)
           cml_version=${latest_tag##v}
-          dvc_version=$(\
-          curl -L https://pypi.org/pypi/dvc/json |
-            jq -r '.releases | keys[]' |
-            python3 -c '
-          import sys
+          dvc_version=$(python3 -c '
           from distutils.version import StrictVersion as Ver
+          from urllib.request import urlopen
+          from json import load
+          data = load(urlopen("https://pypi.org/pypi/dvc/json"))
           print(
               max(
-                  (i.strip() for i in sys.stdin if i.startswith("${{ matrix.dvc }}")),
+                  (i.strip() for i in data["releases"] if i.startswith("${{ matrix.dvc }}")),
                   default="${{ matrix.dvc }}",
                   key=Ver
               )
