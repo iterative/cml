@@ -254,9 +254,9 @@ class CML {
   async pr_create(opts = {}) {
     const driver = get_driver(this);
     const {
-      git_remote: remote = GIT_REMOTE,
-      git_user_email: user_email = GIT_USER_EMAIL,
-      gir_user_name: user_name = GIT_USER_NAME,
+      remote = GIT_REMOTE,
+      user_email = GIT_USER_EMAIL,
+      user_name = GIT_USER_NAME,
       globs = ['dvc.lock', '.gitignore'],
       md
     } = opts;

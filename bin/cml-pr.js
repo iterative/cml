@@ -21,9 +21,12 @@ const opts = decamelize(
     .usage('Usage: $0 <glob path> ... <glob path>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
-    .default('git-remote', GIT_REMOTE)
-    .default('git-user-email', GIT_USER_EMAIL)
-    .default('git-user-name', GIT_USER_NAME)
+    .default('remote', GIT_REMOTE)
+    .describe('remote', 'Sets git remote.')
+    .default('user-email', GIT_USER_EMAIL)
+    .describe('user-email', 'Sets git user email.')
+    .default('user-name', GIT_USER_NAME)
+    .describe('user-name', 'Sets git user name.')
     .default('repo')
     .describe(
       'repo',
