@@ -84,9 +84,10 @@ jobs:
           from urllib.request import urlopen
           from json import load
           data = load(urlopen("https://pypi.org/pypi/dvc/json"))
+          ver_pre = "${{ matrix.dvc }}".rstrip(".") + "."
           print(
               max(
-                  (i.strip() for i in data["releases"] if i.startswith("${{ matrix.dvc }}")),
+                  (i.strip() for i in data["releases"] if i.startswith(ver_pre)),
                   default="${{ matrix.dvc }}",
                   key=Ver
               )
