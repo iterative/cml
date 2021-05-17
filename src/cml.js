@@ -17,7 +17,7 @@ const {
 } = process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
-const GIT_USER_EMAIL = 'olivaw@iterative.ai';
+const GIT_USER_EMAIL = 'g.ortega.david@gmail.com';
 const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
