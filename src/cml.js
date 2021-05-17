@@ -16,7 +16,7 @@ const {
   CI
 } = process.env;
 
-const GIT_USER_NAME = 'iterative-olivaw';
+const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
