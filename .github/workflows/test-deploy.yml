@@ -55,19 +55,19 @@ jobs:
       matrix:
         cml: [0]
         dvc: [1, 2]
-        gpu: [false, true]
         base: [0, 1]
+        gpu: [false, true]
         include:
           - base: 0
+            ubuntu: 18.04
+            python: 2.7
             cuda: 10.1
             cudnn: 7
-            python: 2.7
-            ubuntu: 18.04
           - base: 1
+            ubuntu: 20.04
+            python: 3.8
             cuda: 11.0.3
             cudnn: 8
-            python: 3.8
-            ubuntu: 20.04
     steps:
       - uses: actions/checkout@v2
       - uses: docker/setup-buildx-action@v1
