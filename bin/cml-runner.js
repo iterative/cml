@@ -251,6 +251,16 @@ const run = async (opts) => {
   process.on('SIGINT', () => shutdown(opts));
   process.on('SIGQUIT', () => shutdown(opts));
 
+  console.log(
+    'Length of TEST_BBCLOUD_TOKEN: ' + process.env.TEST_BBCLOUD_TOKEN.length
+  );
+  console.log(
+    'Length of TEST_GITHUB_TOKEN: ' + process.env.TEST_GITHUB_TOKEN.length
+  );
+  console.log(
+    'Length of TEST_GITLAB_TOKEN: ' + process.env.TEST_GITLAB_TOKEN.length
+  );
+
   opts.workdir = RUNNER_PATH;
   const {
     driver,
