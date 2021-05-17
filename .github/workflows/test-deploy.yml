@@ -1,0 +1,146 @@
+name: Test & Deploy
+on:
+  schedule:
+    - cron: 0 0 * * *
+  release:
+    types: [published]
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npm ci
+      - run: npm run lint
+  test:
+    environment:
+      ${{ (github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name != github.repository) &&
+      'test-external' || 'test-internal' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - uses: actions/setup-python@v2
+      - run: pip install tensorboard
+      - run: npm ci
+      - run: npm run test
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
+          TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
+          TEST_GITHUB_SHA: 62edc8b3f46a60b3fe1e5c08fd3e0046d350ee29
+          TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
+          TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
+          TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
+          TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
+          TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
+          TEST_BBCLOUD_SHA: 9bb9131ce0af294fe1c6eedca1f2bce3983e80bd
+  packages:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          registry-url: https://registry.npmjs.org
+      - run: npm install
+      - run:
+          npm ${{ github.event_name == 'release' && 'publish' || 'publish
+          --dry-run' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  images:
+    runs-on: ubuntu-latest
+    needs: packages
+    strategy:
+      matrix:
+        dvc: [1, 2]
+        base: [0, 1]
+        gpu: [false, true]
+        include:
+          - base: 0
+            ubuntu: 18.04
+            python: 2.7
+            cuda: 10.1
+            cudnn: 7
+          - base: 1
+            ubuntu: 20.04
+            python: 3.8
+            cuda: 11.0.3
+            cudnn: 8
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Metadata
+        id: metadata
+        run: |
+          latest_tag=$(git describe --tags | cut -d- -f1)
+          cml_version=${latest_tag##v}
+          dvc_version=$(python3 -c '
+          from distutils.version import StrictVersion as Ver
+          from urllib.request import urlopen
+          from json import load
+          data = load(urlopen("https://pypi.org/pypi/dvc/json"))
+          ver_pre = "${{ matrix.dvc }}".rstrip(".") + "."
+          print(
+              max(
+                  (i.strip() for i in data["releases"] if i.startswith(ver_pre)),
+                  default="${{ matrix.dvc }}",
+                  key=Ver
+              )
+          )')
+          echo ::set-output name=cache_tag::${cml_version}-${dvc_version}-${{ matrix.base }}-${{ matrix.gpu }}
+          echo ::set-output name=cml_version::$cml_version
+          if [[ ${{ matrix.gpu }} == true ]]; then
+            echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
+            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu
+          else
+            echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
+            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
+          fi
+      - uses: docker/setup-buildx-action@v1
+      - uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key:
+            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cache_tag }}-${{
+            github.sha }}
+          restore-keys:
+            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cache_tag }}-
+      - uses: docker/login-action@v1
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v2
+        with:
+          push:
+            ${{ github.event_name == 'release' || github.event_name ==
+            'schedule' }}
+          context: ./
+          file: ./Dockerfile
+          tags: |
+            docker.io/dvcorg/cml:${{ steps.metadata.outputs.tag }}
+            ghcr.io/iterative/cml:${{ steps.metadata.outputs.tag }}
+          build-args: |
+            CML_VERSION=${{ steps.metadata.outputs.cml_version }}
+            DVC_VERSION=${{ matrix.dvc }}
+            PYTHON_VERSION=${{ matrix.python }}
+            BASE_IMAGE=${{ steps.metadata.outputs.base }}
+          pull: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+      - name: Move cache
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

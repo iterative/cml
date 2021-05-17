@@ -76,7 +76,7 @@ RUN cd /etc/apt/sources.list.d \
 # INSTALL CML
 ARG CML_VERSION=0
 RUN npm config set user 0 \
- && npm install --global "git+https://github.com/iterative/cml"
+ && npm install --global "@dvcorg/cml@${CML_VERSION}"
 
 # INSTALL VEGA
 RUN add-apt-repository universe --yes \
