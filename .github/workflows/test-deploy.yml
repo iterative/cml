@@ -79,6 +79,20 @@ jobs:
         run: |
           latest_tag=$(git describe --tags | cut -d- -f1)
           cml_version=${latest_tag##v}
+          dvc_version=$(\
+          curl -L https://pypi.org/pypi/dvc/json |
+            jq -r '.releases | keys[]' |
+            python3 -c '
+          import sys
+          from distutils.version import StrictVersion as Ver
+          print(
+              max(
+                  (i.strip() for i in sys.stdin if i.startswith("${{ matrix.dvc }}")),
+                  default="${{ matrix.dvc }}",
+                  key=Ver
+              )
+          )')
+          echo ::set-output name=cache_tag::${cml_version}-${dvc_version}-${{ matrix.base }}-${{ matrix.gpu }}
           echo ::set-output name=cml_version::$cml_version
           if [[ ${{ matrix.gpu }} == true ]]; then
             echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
@@ -92,10 +106,10 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key:
-            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cml_version
-            }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cache_tag }}-${{
+            github.sha }}
           restore-keys:
-            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cml_version }}-
+            ${{ runner.os }}-buildx-${{ steps.metadata.outputs.cache_tag }}-
       - uses: docker/login-action@v1
         with:
           registry: docker.io
