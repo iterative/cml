@@ -5,7 +5,7 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const run = async (opts) => {
   const {

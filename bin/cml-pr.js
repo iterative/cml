@@ -6,20 +6,27 @@ console.log = console.error;
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
+const { GIT_REMOTE, GIT_USER_NAME, GIT_USER_EMAIL } = require('../src/cml');
 
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;
   const cml = new CML(opts);
-  print(await cml.pr_create({ ...opts, globs }));
+  print((await cml.pr_create({ ...opts, globs })) || '');
 };
 
 const opts = decamelize(
   yargs
     .strict()
-    .usage('Usage: $0 <path to markdown file>')
+    .usage('Usage: $0 <glob path> ... <glob path>')
     .describe('md', 'Output in markdown format [](url).')
     .boolean('md')
+    .default('remote', GIT_REMOTE)
+    .describe('remote', 'Sets git remote.')
+    .default('user-email', GIT_USER_EMAIL)
+    .describe('user-email', 'Sets git user email.')
+    .default('user-name', GIT_USER_NAME)
+    .describe('user-name', 'Sets git user name.')
     .default('repo')
     .describe(
       'repo',

@@ -8,7 +8,7 @@ const pipe_args = require('../src/pipe-args');
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const run = async (opts) => {
   const { data, file, repo, native } = opts;
