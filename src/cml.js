@@ -108,7 +108,9 @@ class CML {
   }
 
   async check_create(opts = {}) {
-    return await get_driver(this).check_create(opts);
+    const { head_sha = await this.head_sha() } = opts;
+
+    return await get_driver(this).check_create({ ...opts, head_sha });
   }
 
   async publish(opts = {}) {
