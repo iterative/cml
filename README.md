@@ -93,7 +93,7 @@ jobs:
 ```
 
 We helpfully provide CML and other useful libraries pre-installed on our
-[custom Docker images](https://github.com/iterative/cml/blob/master/docker/Dockerfile).
+[custom Docker images](https://github.com/iterative/cml/blob/master/Dockerfile).
 In the above example, uncommenting the field
 `container: docker://dvcorg/cml:0-dvc2-base1-gpu` will make the GitHub Actions
 runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
