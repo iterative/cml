@@ -193,11 +193,6 @@ const run_cloud = async (opts) => {
         }
 
         console.log(JSON.stringify(instance));
-
-        const {
-          attributes: { name }
-        } = instance;
-        await cml.await_runner({ name });
       }
     }
   }

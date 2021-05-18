@@ -206,29 +206,6 @@ class CML {
     return await get_driver(this).runners_by_labels(opts);
   }
 
-  async await_runner(opts = {}) {
-    const { name, max_tries = 100 } = opts;
-
-    let timer = 0;
-    return new Promise((resolve, reject) => {
-      const interval = setInterval(async () => {
-        const runner = await this.runner_by_name({ name });
-
-        if (runner) {
-          clearInterval(interval);
-          resolve(runner);
-        }
-
-        if (timer >= max_tries) {
-          clearInterval(interval);
-          reject(new Error('Waiting for runner expiration timeout'));
-        }
-
-        timer += 1;
-      }, 10 * 1000);
-    });
-  }
-
   async repo_token_check() {
     try {
       await this.runner_token();
