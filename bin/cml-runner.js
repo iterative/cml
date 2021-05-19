@@ -366,7 +366,7 @@ const opts = decamelize(
     )
     .default('cloud-gpu')
     .describe('cloud-gpu', 'GPU type.')
-    .choices('cloud-gpu', ['nogpu', 'k80', 'tesla'])
+    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB')
