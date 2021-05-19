@@ -9,7 +9,7 @@ const decamelize = require('decamelize-keys');
 
 const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const NAME = `cml-${randid()}`;
 const WORKDIR_BASE = `${homedir()}/.cml`;
@@ -193,11 +193,6 @@ const run_cloud = async (opts) => {
         }
 
         console.log(JSON.stringify(instance));
-
-        const {
-          attributes: { name }
-        } = instance;
-        await cml.await_runner({ name });
       }
     }
   }

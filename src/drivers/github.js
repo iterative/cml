@@ -11,10 +11,16 @@ const { download, exec } = require('../utils');
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
+const {
+  GITHUB_REPOSITORY,
+  GITHUB_SHA,
+  GITHUB_REF,
+  GITHUB_EVENT_NAME
+} = process.env;
+
 const owner_repo = (opts) => {
   let owner, repo;
   const { uri } = opts;
-  const { GITHUB_REPOSITORY } = process.env;
 
   if (uri) {
     const { pathname } = new URL(uri);
@@ -238,7 +244,7 @@ class Github {
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { url }
+      data: { html_url }
     } = await pulls.create({
       owner,
       repo,
@@ -248,7 +254,7 @@ class Github {
       body
     });
 
-    return url;
+    return html_url;
   }
 
   async prs(opts = {}) {
@@ -264,7 +270,7 @@ class Github {
 
     return prs.map((pr) => {
       const {
-        url,
+        html_url: url,
         head: { ref: source },
         base: { ref: target }
       } = pr;
@@ -274,6 +280,17 @@ class Github {
         target
       };
     });
+  }
+
+  get sha() {
+    if (GITHUB_EVENT_NAME === 'pull_request')
+      return github.context.payload.pull_request.head.sha;
+
+    return GITHUB_SHA;
+  }
+
+  get branch() {
+    return GITHUB_REF;
   }
 
   get user_email() {
