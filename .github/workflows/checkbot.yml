@@ -52,12 +52,13 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           REPO_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo 'Check container!' > report.md
           vl2svg assets/vega-lite.json | cml-publish --md >> report.md
           vl2png assets/vega-lite.json | cml-publish --md >> report.md
-          #cml-send-comment report.md
-          #cml-send-github-check report.md
+          cml-send-comment report.md
+          cml-send-github-check report.md
 
           cml-runner \
             --cloud-spot \
