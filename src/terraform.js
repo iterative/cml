@@ -7,8 +7,8 @@ const MIN_TF_VER = '0.14.0';
 const version = async () => {
   try {
     const output = await exec('terraform version -json');
-    const { terraform_version } = JSON.parse(output);
-    return terraform_version;
+    const { terraformVersion } = JSON.parse(output);
+    return terraformVersion;
   } catch (err) {
     const output = await exec('terraform version');
     const matches = output.match(/Terraform v(\d{1,2}\.\d{1,2}\.\d{1,2})/);
@@ -19,13 +19,13 @@ const version = async () => {
   }
 };
 
-const load_tfstate = async (opts = {}) => {
+const loadTfState = async (opts = {}) => {
   const { path } = opts;
   const json = await fs.readFile(path, 'utf-8');
   return JSON.parse(json);
 };
 
-const save_tfstate = async (opts = {}) => {
+const saveTfState = async (opts = {}) => {
   const { path, tfstate } = opts;
   await fs.writeFile(path, JSON.stringify(tfstate, null, '\t'));
 };
@@ -48,7 +48,7 @@ const destroy = async (opts = {}) => {
   );
 };
 
-const iterative_provider_tpl = () => {
+const iterativeProviderTpl = () => {
   return `
 terraform {
   required_providers {
@@ -62,28 +62,28 @@ provider "iterative" {}
 `;
 };
 
-const iterative_cml_runner_tpl = (opts = {}) => {
+const iterativeCmlRunnerTpl = (opts = {}) => {
   const {
     repo,
     token,
     driver,
     labels,
-    idle_timeout,
+    idleTimeout,
     cloud,
     region,
     name,
     single,
     type,
     gpu,
-    hdd_size,
-    ssh_private,
+    hddSize,
+    sshPrivate,
     spot,
-    spot_price,
-    startup_script
+    spotPrice,
+    startupScript
   } = opts;
 
   return `
-${iterative_provider_tpl()}
+${iterativeProviderTpl()}
 
 resource "iterative_cml_runner" "runner" {
   ${repo ? `repo = "${repo}"` : ''}
@@ -91,8 +91,8 @@ resource "iterative_cml_runner" "runner" {
   ${driver ? `driver = "${driver}"` : ''}
   ${labels ? `labels = "${labels}"` : ''}
   ${
-    typeof idle_timeout !== 'undefined' && idle_timeout >= 0
-      ? `idle_timeout = ${idle_timeout}`
+    typeof idleTimeout !== 'undefined' && idleTimeout >= 0
+      ? `idleTimeout = ${idleTimeout}`
       : ''
   }
   ${name ? `name = "${name}"` : ''}
@@ -101,16 +101,16 @@ resource "iterative_cml_runner" "runner" {
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
-  ${hdd_size ? `instance_hdd_size = ${hdd_size}` : ''}
-  ${ssh_private ? `ssh_private = "${ssh_private}"` : ''}
+  ${hddSize ? `instance_hddSize = ${hddSize}` : ''}
+  ${sshPrivate ? `sshPrivate = "${sshPrivate}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
-  ${spot_price ? `spot_price = ${spot_price}` : ''}
-  ${startup_script ? `startup_script = "${startup_script}"` : ''}
+  ${spotPrice ? `spotPrice = ${spotPrice}` : ''}
+  ${startupScript ? `startupScript = "${startupScript}"` : ''}
 }
 `;
 };
 
-const check_min_version = async () => {
+const checkMinVersion = async () => {
   const ver = await version();
   if (ltr(ver, MIN_TF_VER))
     throw new Error(
@@ -119,11 +119,11 @@ const check_min_version = async () => {
 };
 
 exports.version = version;
-exports.load_tfstate = load_tfstate;
-exports.save_tfstate = save_tfstate;
+exports.loadTfState = loadTfState;
+exports.saveTfState = saveTfState;
 exports.init = init;
 exports.apply = apply;
 exports.destroy = destroy;
-exports.iterative_provider_tpl = iterative_provider_tpl;
-exports.iterative_cml_runner_tpl = iterative_cml_runner_tpl;
-exports.check_min_version = check_min_version;
+exports.iterativeProviderTpl = iterativeProviderTpl;
+exports.iterativeCmlRunnerTpl = iterativeCmlRunnerTpl;
+exports.checkMinVersion = checkMinVersion;

@@ -12,7 +12,7 @@ const { GIT_REMOTE, GIT_USER_NAME, GIT_USER_EMAIL } = require('../src/cml');
 const run = async (opts) => {
   const globs = opts._.length ? opts._ : undefined;
   const cml = new CML(opts);
-  print((await cml.pr_create({ ...opts, globs })) || '');
+  print((await cml.prCreate({ ...opts, globs })) || '');
 };
 
 const opts = decamelize(

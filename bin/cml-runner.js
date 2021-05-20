@@ -41,17 +41,17 @@ const shutdown = async (opts) => {
 
   let { error, cloud } = opts;
   const { name, workdir = '' } = opts;
-  const tf_path = workdir;
+  const tfPath = workdir;
 
   console.log(
     JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
   );
   if (error) console.error(error);
 
-  const unregister_runner = async () => {
+  const unregisterRunner = async () => {
     try {
       console.log('Unregistering runner...');
-      await cml.unregister_runner({ name });
+      await cml.unregisterRunner({ name });
       console.log('\tSuccess');
     } catch (err) {
       console.error('\tFailed');
@@ -59,7 +59,7 @@ const shutdown = async (opts) => {
     }
   };
 
-  const shutdown_docker_machine = async () => {
+  const shutdownDockerMachine = async () => {
     console.log('docker-machine destroy...');
     console.log(
       'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
@@ -72,25 +72,25 @@ const shutdown = async (opts) => {
     }
   };
 
-  const shutdown_tf = async () => {
-    const { tf_resource } = opts;
+  const shutdownTf = async () => {
+    const { tfResource } = opts;
 
-    if (!tf_resource) {
+    if (!tfResource) {
       console.log(`\tNo TF resource found`);
       return;
     }
 
     try {
-      await tf.destroy({ dir: tf_path });
+      await tf.destroy({ dir: tfPath });
     } catch (err) {
       console.error(`\tFailed Terraform destroy: ${err.message}`);
       error = err;
     }
   };
 
-  const destroy_terraform = async () => {
+  const destroyTerraform = async () => {
     try {
-      console.log(await tf.destroy({ dir: tf_path }));
+      console.log(await tf.destroy({ dir: tfPath }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
       error = err;
@@ -98,90 +98,90 @@ const shutdown = async (opts) => {
   };
 
   if (cloud) {
-    await destroy_terraform();
+    await destroyTerraform();
   } else {
-    RUNNER_LAUNCHED && (await unregister_runner());
+    RUNNER_LAUNCHED && (await unregisterRunner());
 
     console.log(
       `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
     );
     await sleep(RUNNER_DESTROY_DELAY);
 
-    DOCKER_MACHINE && (await shutdown_docker_machine());
-    await shutdown_tf();
+    DOCKER_MACHINE && (await shutdownDockerMachine());
+    await shutdownTf();
   }
 
   process.exit(error ? 1 : 0);
 };
 
-const run_cloud = async (opts) => {
-  const { cloud_ssh_private_visible } = opts;
+const runCloud = async (opts) => {
+  const { cloudSshPrivateVisible } = opts;
 
-  const run_terraform = async (opts) => {
+  const runTerraform = async (opts) => {
     console.log('Terraform apply...');
 
     const { token, repo, driver } = cml;
     const {
       labels,
-      idle_timeout,
+      idleTimeout,
       name,
       single,
       cloud,
       cloud_region: region,
       cloud_type: type,
       cloud_gpu: gpu,
-      cloud_hdd_size: hdd_size,
-      cloud_ssh_private: ssh_private,
+      cloud_hddSize: hddSize,
+      cloud_sshPrivate: sshPrivate,
       cloud_spot: spot,
-      cloud_spot_price: spot_price,
-      cloud_startup_script: startup_script,
-      tf_file,
+      cloud_spotPrice: spotPrice,
+      cloud_startupScript: startupScript,
+      tfFile,
       workdir
     } = opts;
 
-    const tf_path = workdir;
-    const tf_main_path = join(tf_path, 'main.tf');
+    const tfPath = workdir;
+    const tfMainPath = join(tfPath, 'main.tf');
 
     let tpl;
-    if (tf_file) {
-      tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
+    if (tfFile) {
+      tpl = await fs.writeFile(tfMainPath, await fs.readFile(tfFile));
     } else {
       if (gpu === 'tesla')
         console.log(
           'GPU model "tesla" has been deprecated; please use "v100" instead.'
         );
-      tpl = tf.iterative_cml_runner_tpl({
+      tpl = tf.iterativeCmlRunnerTpl({
         repo,
         token,
         driver,
         labels,
-        idle_timeout,
+        idleTimeout,
         name,
         single,
         cloud,
         region,
         type,
         gpu: gpu === 'tesla' ? 'v100' : gpu,
-        hdd_size,
-        ssh_private,
+        hddSize,
+        sshPrivate,
         spot,
-        spot_price,
-        startup_script
+        spotPrice,
+        startupScript
       });
     }
 
-    await fs.writeFile(tf_main_path, tpl);
-    await tf.init({ dir: tf_path });
-    await tf.apply({ dir: tf_path });
+    await fs.writeFile(tfMainPath, tpl);
+    await tf.init({ dir: tfPath });
+    await tf.apply({ dir: tfPath });
 
-    const tfstate_path = join(tf_path, 'terraform.tfstate');
-    const tfstate = await tf.load_tfstate({ path: tfstate_path });
+    const tfStatePath = join(tfPath, 'terraform.tfstate');
+    const tfstate = await tf.loadTfState({ path: tfStatePath });
 
     return tfstate;
   };
 
   console.log('Deploying cloud runner plan...');
-  const tfstate = await run_terraform(opts);
+  const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
   for (let i = 0; i < resources.length; i++) {
     const resource = resources[i];
@@ -192,8 +192,8 @@ const run_cloud = async (opts) => {
       for (let j = 0; j < instances.length; j++) {
         const instance = instances[j];
 
-        if (!cloud_ssh_private_visible) {
-          instance.attributes.ssh_private = '[MASKED]';
+        if (!cloudSshPrivateVisible) {
+          instance.attributes.sshPrivate = '[MASKED]';
         }
 
         console.log(JSON.stringify(instance));
@@ -202,20 +202,20 @@ const run_cloud = async (opts) => {
   }
 };
 
-const run_local = async (opts) => {
+const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idle_timeout } = opts;
+  const { workdir, name, labels, single, idleTimeout } = opts;
 
-  const proc = await cml.start_runner({
+  const proc = await cml.startRunner({
     workdir,
     name,
     labels,
     single,
-    idle_timeout
+    idleTimeout
   });
 
-  const data_handler = (data) => {
-    const log = cml.parse_runner_log({ data });
+  const dataHandler = (data) => {
+    const log = cml.parseRunnerLog({ data });
     log && console.log(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
@@ -225,16 +225,16 @@ const run_local = async (opts) => {
       RUNNER_JOBS_RUNNING.pop();
     }
   };
-  proc.stderr.on('data', data_handler);
-  proc.stdout.on('data', data_handler);
+  proc.stderr.on('data', dataHandler);
+  proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
   proc.on('SIGINT', () => shutdown(opts));
   proc.on('SIGTERM', () => shutdown(opts));
   proc.on('SIGQUIT', () => shutdown(opts));
 
-  if (parseInt(idle_timeout) !== 0) {
+  if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
-      RUNNER_TIMEOUT_TIMER >= idle_timeout &&
+      RUNNER_TIMEOUT_TIMER >= idleTimeout &&
         shutdown(opts) &&
         clearInterval(watcher);
 
@@ -260,36 +260,36 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
-    tf_resource
+    tfResource
   } = opts;
 
   cml = new CML({ driver, repo, token });
 
-  await tf.check_min_version();
+  await tf.checkMinVersion();
 
   // prepare tf
-  if (tf_resource) {
-    const tf_path = workdir;
-    const { tf_resource } = opts;
+  if (tfResource) {
+    const tfPath = workdir;
+    const { tfResource } = opts;
 
-    await fs.mkdir(tf_path, { recursive: true });
-    const tf_main_path = join(tf_path, 'main.tf');
-    const tpl = tf.iterative_provider_tpl();
-    await fs.writeFile(tf_main_path, tpl);
-    await tf.init({ dir: tf_path });
-    await tf.apply({ dir: tf_path });
-    const path = join(tf_path, 'terraform.tfstate');
-    const tfstate = await tf.load_tfstate({ path });
+    await fs.mkdir(tfPath, { recursive: true });
+    const tfMainPath = join(tfPath, 'main.tf');
+    const tpl = tf.iterativeProviderTpl();
+    await fs.writeFile(tfMainPath, tpl);
+    await tf.init({ dir: tfPath });
+    await tf.apply({ dir: tfPath });
+    const path = join(tfPath, 'terraform.tfstate');
+    const tfstate = await tf.loadTfState({ path });
     tfstate.resources = [
-      JSON.parse(Buffer.from(tf_resource, 'base64').toString('utf-8'))
+      JSON.parse(Buffer.from(tfResource, 'base64').toString('utf-8'))
     ];
-    await tf.save_tfstate({ tfstate, path });
+    await tf.saveTfState({ tfstate, path });
   }
 
   // if (name !== NAME) {
-  await cml.repo_token_check();
+  await cml.repoTokenCheck();
 
-  if (await cml.runner_by_name({ name })) {
+  if (await cml.runnerByName({ name })) {
     if (!reuse)
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
@@ -298,7 +298,7 @@ const run = async (opts) => {
     process.exit(0);
   }
 
-  if (reuse && (await cml.runners_by_labels({ labels })).length > 0) {
+  if (reuse && (await cml.runnersByLabels({ labels })).length > 0) {
     console.log(`Reusing existing runners with the ${labels} labels...`);
     process.exit(0);
   }
@@ -308,8 +308,8 @@ const run = async (opts) => {
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
-  if (cloud) await run_cloud(opts);
-  else await run_local(opts);
+  if (cloud) await runCloud(opts);
+  else await runLocal(opts);
 };
 
 const opts = decamelize(
@@ -396,8 +396,8 @@ const opts = decamelize(
       'cloud-startup-script',
       'Run the provided Base64-encoded Linux shell script during the instance initialization'
     )
-    .default('tf_resource')
-    .hide('tf_resource')
+    .default('tfResource')
+    .hide('tfResource')
     .help('h').argv
 );
 

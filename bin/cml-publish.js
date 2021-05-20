@@ -4,7 +4,7 @@ const print = console.log;
 console.log = console.error;
 
 const fs = require('fs').promises;
-const pipe_args = require('../src/pipe-args');
+const pipeArgs = require('../src/pipe-args');
 const yargs = require('yargs');
 const decamelize = require('decamelize-keys');
 
@@ -28,8 +28,8 @@ const run = async (opts) => {
   else await fs.writeFile(file, output);
 };
 
-pipe_args.load('binary');
-const data = pipe_args.piped_arg();
+pipeArgs.load('binary');
+const data = pipeArgs.piped_arg();
 const opts = decamelize(
   yargs
     .strict()

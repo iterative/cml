@@ -1,8 +1,8 @@
-const { iterative_cml_runner_tpl } = require('./terraform');
+const { iterativeCmlRunnerTpl } = require('./terraform');
 
 describe('Terraform tests', () => {
   test('default options', async () => {
-    const output = iterative_cml_runner_tpl({});
+    const output = iterativeCmlRunnerTpl({});
     expect(output).toMatchInlineSnapshot(`
       "
 
@@ -40,22 +40,22 @@ describe('Terraform tests', () => {
   });
 
   test('basic settings', async () => {
-    const output = iterative_cml_runner_tpl({
+    const output = iterativeCmlRunnerTpl({
       repo: 'https://',
       token: 'abc',
       driver: 'gitlab',
       labels: 'mylabel',
-      idle_timeout: 300,
+      idleTimeout: 300,
       name: 'myrunner',
       single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
       gpu: 'mygputype',
-      hdd_size: 50,
-      ssh_private: 'myprivate',
+      hddSize: 50,
+      sshPrivate: 'myprivate',
       spot: true,
-      spot_price: '0.0001'
+      spotPrice: '0.0001'
     });
     expect(output).toMatchInlineSnapshot(`
       "
@@ -76,17 +76,17 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idle_timeout = 300
+        idleTimeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        ssh_private = \\"myprivate\\"
+        instance_hddSize = 50
+        sshPrivate = \\"myprivate\\"
         spot = true
-        spot_price = 0.0001
+        spotPrice = 0.0001
         
       }
       "
@@ -94,22 +94,22 @@ describe('Terraform tests', () => {
   });
 
   test('basic settings with runner forever', async () => {
-    const output = iterative_cml_runner_tpl({
+    const output = iterativeCmlRunnerTpl({
       repo: 'https://',
       token: 'abc',
       driver: 'gitlab',
       labels: 'mylabel',
-      idle_timeout: 0,
+      idleTimeout: 0,
       name: 'myrunner',
       single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
       gpu: 'mygputype',
-      hdd_size: 50,
-      ssh_private: 'myprivate',
+      hddSize: 50,
+      sshPrivate: 'myprivate',
       spot: true,
-      spot_price: '0.0001'
+      spotPrice: '0.0001'
     });
     expect(output).toMatchInlineSnapshot(`
       "
@@ -130,17 +130,17 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idle_timeout = 0
+        idleTimeout = 0
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        ssh_private = \\"myprivate\\"
+        instance_hddSize = 50
+        sshPrivate = \\"myprivate\\"
         spot = true
-        spot_price = 0.0001
+        spotPrice = 0.0001
         
       }
       "
@@ -148,23 +148,23 @@ describe('Terraform tests', () => {
   });
 
   test('Startup script', async () => {
-    const output = iterative_cml_runner_tpl({
+    const output = iterativeCmlRunnerTpl({
       repo: 'https://',
       token: 'abc',
       driver: 'gitlab',
       labels: 'mylabel',
-      idle_timeout: 300,
+      idleTimeout: 300,
       name: 'myrunner',
       single: true,
       cloud: 'aws',
       region: 'west',
       type: 'mymachinetype',
       gpu: 'mygputype',
-      hdd_size: 50,
-      ssh_private: 'myprivate',
+      hddSize: 50,
+      sshPrivate: 'myprivate',
       spot: true,
-      spot_price: '0.0001',
-      startup_script: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
+      spotPrice: '0.0001',
+      startupScript: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
     });
     expect(output).toMatchInlineSnapshot(`
       "
@@ -185,18 +185,18 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idle_timeout = 300
+        idleTimeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        ssh_private = \\"myprivate\\"
+        instance_hddSize = 50
+        sshPrivate = \\"myprivate\\"
         spot = true
-        spot_price = 0.0001
-        startup_script = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
+        spotPrice = 0.0001
+        startupScript = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
       }
       "
     `);

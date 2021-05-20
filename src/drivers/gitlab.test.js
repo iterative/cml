@@ -18,15 +18,15 @@ describe('Non Enviromental tests', () => {
 
   test('Comment', async () => {
     const report = '## Test comment';
-    const commit_sha = SHA;
+    const commitSha = SHA;
 
-    const { created_at } = await client.comment_create({ report, commit_sha });
+    const { createdAt } = await client.commentCreate({ report, commitSha });
 
-    expect(created_at).not.toBeUndefined();
+    expect(createdAt).not.toBeUndefined();
   });
 
   test('Check', async () => {
-    await expect(client.check_create()).rejects.toThrow(
+    await expect(client.checkCreate()).rejects.toThrow(
       'Gitlab does not support check!'
     );
   });
@@ -39,7 +39,7 @@ describe('Non Enviromental tests', () => {
   });
 
   test('Runner token', async () => {
-    const output = await client.runner_token();
+    const output = await client.runnerToken();
 
     expect(output.length).toBe(20);
   });

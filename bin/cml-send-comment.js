@@ -12,7 +12,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
-  await cml.comment_create({ ...opts, report });
+  await cml.commentCreate({ ...opts, report });
 };
 
 const opts = decamelize(

@@ -15,7 +15,7 @@ describe('Non Enviromental tests', () => {
     expect(client.repo).toBe(REPO);
     expect(client.token).toBe(TOKEN);
 
-    const { owner, repo } = client.owner_repo();
+    const { owner, repo } = client.ownerRepo();
     const parts = REPO.split('/');
     expect(owner).toBe(parts[parts.length - 2]);
     expect(repo).toBe(parts[parts.length - 1]);
@@ -23,9 +23,9 @@ describe('Non Enviromental tests', () => {
 
   test('Comment', async () => {
     const report = '## Test comment';
-    const commit_sha = SHA;
+    const commitSha = SHA;
 
-    await client.comment_create({ report, commit_sha });
+    await client.commentCreate({ report, commitSha });
   });
 
   test('Publish', async () => {
@@ -35,7 +35,7 @@ describe('Non Enviromental tests', () => {
   });
 
   test('Runner token', async () => {
-    const output = await client.runner_token();
+    const output = await client.runnerToken();
     expect(output.length).toBe(29);
   });
 });
