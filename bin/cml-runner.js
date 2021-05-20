@@ -146,6 +146,10 @@ const run_cloud = async (opts) => {
     if (tf_file) {
       tpl = await fs.writeFile(tf_main_path, await fs.readFile(tf_file));
     } else {
+      if (gpu === 'tesla')
+        console.log(
+          'GPU model "tesla" has been deprecated; please use "v100" instead.'
+        );
       tpl = tf.iterative_cml_runner_tpl({
         repo,
         token,
@@ -157,7 +161,7 @@ const run_cloud = async (opts) => {
         cloud,
         region,
         type,
-        gpu,
+        gpu: gpu.replace(/^tesla$/, 'v100'),
         hdd_size,
         ssh_private,
         spot,
@@ -366,7 +370,7 @@ const opts = decamelize(
     )
     .default('cloud-gpu')
     .describe('cloud-gpu', 'GPU type.')
-    .choices('cloud-gpu', ['nogpu', 'k80', 'tesla'])
+    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
     .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
     .default('cloud-hdd-size')
     .describe('cloud-hdd-size', 'HDD size in GB')
