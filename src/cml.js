@@ -276,35 +276,31 @@ class CML {
     if (branch_exists) {
       const prs = await driver.prs();
       const { url } =
-        prs.find((pr) => pr.source === source && pr.target === target) || {};
+        prs.find(
+          (pr) => source.endsWith(pr.source) && target.endsWith(pr.target)
+        ) || {};
 
       if (url) return render_pr(url);
     } else {
-      try {
-        await exec(`git config --local user.email "${user_email}"`);
-        await exec(`git config --local user.name "${user_name}"`);
+      await exec(`git config --local user.email "${user_email}"`);
+      await exec(`git config --local user.name "${user_name}"`);
 
-        if (CI) {
-          if (this.driver === GITLAB) {
-            const repo = new URL(this.repo);
-            repo.password = this.token;
-            repo.username = driver.user_name;
+      if (CI) {
+        if (this.driver === GITLAB) {
+          const repo = new URL(this.repo);
+          repo.password = this.token;
+          repo.username = driver.user_name;
 
-            await exec(`git remote rm ${remote}`);
-            await exec(`git remote add ${remote} "${repo.toString()}.git"`);
-          }
+          await exec(`git remote rm ${remote}`);
+          await exec(`git remote add ${remote} "${repo.toString()}.git"`);
         }
-
-        await exec(`git checkout -B ${target} ${sha}`);
-        await exec(`git checkout -b ${source}`);
-        await exec(`git add ${paths.join(' ')}`);
-        await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
-        await exec(`git push --set-upstream ${remote} ${source}`);
-        await exec(`git checkout -B ${target} ${sha}`);
-      } catch (err) {
-        await exec(`git checkout -B ${target} ${sha}`);
-        throw err;
       }
+
+      await exec(`git checkout -B ${target} ${sha}`);
+      await exec(`git checkout -b ${source}`);
+      await exec(`git add ${paths.join(' ')}`);
+      await exec(`git commit -m "CML PR for ${sha_short} [skip ci]"`);
+      await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
     const title = `CML PR for ${target} ${sha_short}`;
