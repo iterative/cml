@@ -161,7 +161,7 @@ const run_cloud = async (opts) => {
         cloud,
         region,
         type,
-        gpu: gpu.replace(/^tesla$/, 'v100'),
+        gpu: gpu === 'tesla' ? 'v100' : gpu,
         hdd_size,
         ssh_private,
         spot,
