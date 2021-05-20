@@ -12,10 +12,12 @@ class BitBucketCloud {
     this.token = token;
     this.repo = repo;
 
-    const { protocol, host, pathname } = new URL(this.repo);
-    this.repo_origin = `${protocol}//${host}`;
-    this.api = 'https://api.bitbucket.org/2.0';
-    this.project_path = encodeURIComponent(pathname.substring(1));
+    if (repo !== 'cml') {
+      const { protocol, host, pathname } = new URL(this.repo);
+      this.repo_origin = `${protocol}//${host}`;
+      this.api = 'https://api.bitbucket.org/2.0';
+      this.project_path = encodeURIComponent(pathname.substring(1));
+    }
   }
 
   async comment_create(opts = {}) {
