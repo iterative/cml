@@ -114,12 +114,11 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const driver = get_driver(this);
     const { title = '', md, native, gitlab_uploads, rm_watermark } = opts;
 
     let mime, uri;
     if (native || gitlab_uploads) {
-      ({ mime, uri } = await driver.upload(opts));
+      ({ mime, uri } = await get_driver(this).upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
     }
