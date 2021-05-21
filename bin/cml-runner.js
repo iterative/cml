@@ -395,6 +395,7 @@ const opts = yargs
   )
   .default('tf-resource')
   .hide('tf-resource')
+  .alias('tf-resource', 'tf_resource')
   .help('h').argv;
 
 run(opts).catch((error) => {
