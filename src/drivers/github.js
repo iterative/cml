@@ -19,6 +19,8 @@ const {
 } = process.env;
 
 const branch_name = (branch) => {
+  if (!branch) return;
+
   const parts = branch.split('/');
   return parts[parts.length - 1] || branch;
 };
