@@ -90,6 +90,6 @@
     "lint-staged": "^10.0.8",
     "prettier": "^2.1.1"
   },
-  "description": "<p align=\"center\">   <img src=\"imgs/title_strip_trim.png\" width=400> </p>",
+  "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "homepage": "https://github.com/iterative/cml#readme"
 }
