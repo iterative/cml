@@ -21,8 +21,7 @@ const {
 const branch_name = (branch) => {
   if (!branch) return;
 
-  const parts = branch.split('/');
-  return parts[parts.length - 1] || branch;
+  return branch.replace('/refs/heads/', '');
 };
 
 const owner_repo = (opts) => {
