@@ -5,7 +5,6 @@ const { homedir } = require('os');
 
 const fs = require('fs').promises;
 const yargs = require('yargs');
-const decamelize = require('decamelize-keys');
 
 const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
@@ -311,94 +310,92 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-const opts = decamelize(
-  yargs
-    .strict()
-    .usage(`Usage: $0`)
-    .default('labels', RUNNER_LABELS)
-    .describe(
-      'labels',
-      'One or more user-defined labels for this runner (delimited with commas)'
-    )
-    .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
-    .describe(
-      'idle-timeout',
-      'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
-    )
-    .default('name', RUNNER_NAME)
-    .describe('name', 'Name displayed in the repository once registered')
+const opts = yargs
+  .strict()
+  .usage(`Usage: $0`)
+  .default('labels', RUNNER_LABELS)
+  .describe(
+    'labels',
+    'One or more user-defined labels for this runner (delimited with commas)'
+  )
+  .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
+  .describe(
+    'idle-timeout',
+    'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
+  )
+  .default('name', RUNNER_NAME)
+  .describe('name', 'Name displayed in the repository once registered')
 
-    .boolean('single')
-    .default('single', RUNNER_SINGLE)
-    .describe('single', 'Exit after running a single job')
-    .boolean('reuse')
-    .default('reuse', RUNNER_REUSE)
-    .describe(
-      'reuse',
-      "Don't launch a new runner if an existing one has the same name or overlapping labels"
-    )
+  .boolean('single')
+  .default('single', RUNNER_SINGLE)
+  .describe('single', 'Exit after running a single job')
+  .boolean('reuse')
+  .default('reuse', RUNNER_REUSE)
+  .describe(
+    'reuse',
+    "Don't launch a new runner if an existing one has the same name or overlapping labels"
+  )
 
-    .default('driver', RUNNER_DRIVER)
-    .describe(
-      'driver',
-      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-    )
-    .choices('driver', ['github', 'gitlab'])
-    .default('repo', RUNNER_REPO)
-    .describe(
-      'repo',
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-    )
-    .default('token', REPO_TOKEN)
-    .describe(
-      'token',
-      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-    )
-    .default('cloud')
-    .describe('cloud', 'Cloud to deploy the runner')
-    .choices('cloud', ['aws', 'azure', 'kubernetes'])
-    .default('cloud-region', 'us-west')
-    .describe(
-      'cloud-region',
-      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-    )
-    .default('cloud-type')
-    .describe(
-      'cloud-type',
-      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-    )
-    .default('cloud-gpu')
-    .describe('cloud-gpu', 'GPU type.')
-    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
-    .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
-    .default('cloud-hdd-size')
-    .describe('cloud-hdd-size', 'HDD size in GB')
-    .default('cloud-ssh-private', '')
-    .describe(
-      'cloud-ssh-private',
-      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-    )
-    .boolean('cloud-ssh-private-visible')
-    .describe(
-      'cloud-ssh-private-visible',
-      'Show the private SSH key in the output with the rest of the instance properties (not recommended)'
-    )
-    .boolean('cloud-spot')
-    .describe('cloud-spot', 'Request a spot instance')
-    .default('cloud-spot-price', '-1')
-    .describe(
-      'cloud-spot-price',
-      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-    )
-    .default('cloud-startup-script', '')
-    .describe(
-      'cloud-startup-script',
-      'Run the provided Base64-encoded Linux shell script during the instance initialization'
-    )
-    .default('tf-resource')
-    .hide('tf-resource')
-    .help('h').argv
-);
+  .default('driver', RUNNER_DRIVER)
+  .describe(
+    'driver',
+    'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+  )
+  .choices('driver', ['github', 'gitlab'])
+  .default('repo', RUNNER_REPO)
+  .describe(
+    'repo',
+    'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+  )
+  .default('token', REPO_TOKEN)
+  .describe(
+    'token',
+    'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+  )
+  .default('cloud')
+  .describe('cloud', 'Cloud to deploy the runner')
+  .choices('cloud', ['aws', 'azure', 'kubernetes'])
+  .default('cloud-region', 'us-west')
+  .describe(
+    'cloud-region',
+    'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+  )
+  .default('cloud-type')
+  .describe(
+    'cloud-type',
+    'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+  )
+  .default('cloud-gpu')
+  .describe('cloud-gpu', 'GPU type.')
+  .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
+  .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
+  .default('cloud-hdd-size')
+  .describe('cloud-hdd-size', 'HDD size in GB')
+  .default('cloud-ssh-private', '')
+  .describe(
+    'cloud-ssh-private',
+    'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+  )
+  .boolean('cloud-ssh-private-visible')
+  .describe(
+    'cloud-ssh-private-visible',
+    'Show the private SSH key in the output with the rest of the instance properties (not recommended)'
+  )
+  .boolean('cloud-spot')
+  .describe('cloud-spot', 'Request a spot instance')
+  .default('cloud-spot-price', '-1')
+  .describe(
+    'cloud-spot-price',
+    'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+  )
+  .default('cloud-startup-script', '')
+  .describe(
+    'cloud-startup-script',
+    'Run the provided Base64-encoded Linux shell script during the instance initialization'
+  )
+  .default('tf-resource')
+  .hide('tf-resource')
+  .help('h').argv;
 
 run(opts).catch((error) => {
   shutdown({ ...opts, error });
