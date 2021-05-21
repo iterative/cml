@@ -21,7 +21,7 @@ const {
 const branch_name = (branch) => {
   if (!branch) return;
 
-  return branch.replace('/refs/heads/', '');
+  return branch.replace('refs/heads/', '');
 };
 
 const owner_repo = (opts) => {
