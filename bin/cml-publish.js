@@ -29,7 +29,7 @@ const run = async (opts) => {
 };
 
 pipeArgs.load('binary');
-const data = pipeArgs.piped_arg();
+const data = pipeArgs.pipedArg();
 const opts = decamelize(
   yargs
     .strict()

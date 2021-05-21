@@ -20,7 +20,10 @@ describe('Non Enviromental tests', () => {
     const report = '## Test comment';
     const commitSha = SHA;
 
-    const { createdAt } = await client.commentCreate({ report, commitSha });
+    const { created_at: createdAt } = await client.commentCreate({
+      report,
+      commitSha
+    });
 
     expect(createdAt).not.toBeUndefined();
   });

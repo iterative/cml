@@ -98,7 +98,7 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}`;
 
-    const { runnersToken } = await this.request({ endpoint });
+    const { runners_token: runnersToken } = await this.request({ endpoint });
 
     return runnersToken;
   }
@@ -129,7 +129,7 @@ class Gitlab {
   }
 
   async startRunner(opts) {
-    const { workdir, idleTimeout, single, labels, name } = opts;
+    const { workdir, idle_timeout: idleTimeout, single, labels, name } = opts;
 
     let gpu = true;
     try {
@@ -197,9 +197,13 @@ class Gitlab {
     body.append('title', title);
     body.append('description', description);
 
-    const { webUrl } = await this.request({ endpoint, method: 'POST', body });
+    const { web_url: url } = await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
 
-    return webUrl;
+    return url;
   }
 
   async prs(opts = {}) {
@@ -210,7 +214,7 @@ class Gitlab {
     const prs = await this.request({ endpoint, method: 'GET' });
 
     return prs.map((pr) => {
-      const { webUrl: url, source_branch: source, target_branch: target } = pr;
+      const { web_url: url, source_branch: source, target_branch: target } = pr;
       return {
         url,
         source,

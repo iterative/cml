@@ -60,7 +60,7 @@ describe('Github tests', () => {
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
 
-    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
+    await new CML({ repo: REPO }).commentCreate({ report, commit_sha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
@@ -69,7 +69,10 @@ describe('Github tests', () => {
       const report = '## Test comment';
       const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
+      await new CML({ repo: REPO }).commentCreate({
+        report,
+        commit_sha: commitSha
+      });
     } catch (err) {
       caughtErr = err.message;
     }
@@ -181,7 +184,7 @@ describe('Gitlab tests', () => {
 
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
-    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
+    await new CML({ repo: REPO }).commentCreate({ report, commit_sha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
@@ -190,7 +193,10 @@ describe('Gitlab tests', () => {
       const report = '## Test comment';
       const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
+      await new CML({ repo: REPO }).commentCreate({
+        report,
+        commit_sha: commitSha
+      });
     } catch (err) {
       caughtErr = err.message;
     }

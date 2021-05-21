@@ -7,8 +7,8 @@ const MIN_TF_VER = '0.14.0';
 const version = async () => {
   try {
     const output = await exec('terraform version -json');
-    const { terraformVersion } = JSON.parse(output);
-    return terraformVersion;
+    const { terraform_version: ver } = JSON.parse(output);
+    return ver;
   } catch (err) {
     const output = await exec('terraform version');
     const matches = output.match(/Terraform v(\d{1,2}\.\d{1,2}\.\d{1,2})/);
@@ -92,7 +92,7 @@ resource "iterative_cml_runner" "runner" {
   ${labels ? `labels = "${labels}"` : ''}
   ${
     typeof idleTimeout !== 'undefined' && idleTimeout >= 0
-      ? `idleTimeout = ${idleTimeout}`
+      ? `idle_timeout = ${idleTimeout}`
       : ''
   }
   ${name ? `name = "${name}"` : ''}
@@ -101,11 +101,11 @@ resource "iterative_cml_runner" "runner" {
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
-  ${hddSize ? `instance_hddSize = ${hddSize}` : ''}
-  ${sshPrivate ? `sshPrivate = "${sshPrivate}"` : ''}
+  ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
+  ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
-  ${spotPrice ? `spotPrice = ${spotPrice}` : ''}
-  ${startupScript ? `startupScript = "${startupScript}"` : ''}
+  ${spotPrice ? `spot_price = ${spotPrice}` : ''}
+  ${startupScript ? `startup_script = "${startupScript}"` : ''}
 }
 `;
 };

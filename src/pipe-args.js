@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports.piped = false;
-module.exports.piped_arg = () => {
+module.exports.pipedArg = () => {
   const { argv } = process;
 
   return this.piped ? argv[argv.length - 1] : undefined;

@@ -115,7 +115,7 @@ const shutdown = async (opts) => {
 };
 
 const runCloud = async (opts) => {
-  const { cloudSshPrivateVisible } = opts;
+  const { cloud_ssh_private_visible: cloudSshPrivateVisible } = opts;
 
   const runTerraform = async (opts) => {
     console.log('Terraform apply...');
@@ -123,18 +123,18 @@ const runCloud = async (opts) => {
     const { token, repo, driver } = cml;
     const {
       labels,
-      idleTimeout,
+      idle_timeout: idleTimeout,
       name,
       single,
       cloud,
       cloud_region: region,
       cloud_type: type,
       cloud_gpu: gpu,
-      cloud_hddSize: hddSize,
-      cloud_sshPrivate: sshPrivate,
+      cloud_hdd_size: hddSize,
+      cloud_ssh_private: sshPrivate,
       cloud_spot: spot,
-      cloud_spotPrice: spotPrice,
-      cloud_startupScript: startupScript,
+      cloud_spot_price: spotPrice,
+      cloud_startup_script: startupScript,
       tfFile,
       workdir
     } = opts;
@@ -204,14 +204,14 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout } = opts;
+  const { workdir, name, labels, single, idle_timeout: idleTimeout } = opts;
 
   const proc = await cml.startRunner({
     workdir,
     name,
     labels,
     single,
-    idleTimeout
+    idle_timeout: idleTimeout
   });
 
   const dataHandler = (data) => {
@@ -260,7 +260,7 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
-    tfResource
+    tf_resource: tfResource
   } = opts;
 
   cml = new CML({ driver, repo, token });
@@ -270,7 +270,6 @@ const run = async (opts) => {
   // prepare tf
   if (tfResource) {
     const tfPath = workdir;
-    const { tfResource } = opts;
 
     await fs.mkdir(tfPath, { recursive: true });
     const tfMainPath = join(tfPath, 'main.tf');
@@ -396,8 +395,8 @@ const opts = decamelize(
       'cloud-startup-script',
       'Run the provided Base64-encoded Linux shell script during the instance initialization'
     )
-    .default('tfResource')
-    .hide('tfResource')
+    .default('tf-resource')
+    .hide('tf-resource')
     .help('h').argv
 );
 

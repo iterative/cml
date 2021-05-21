@@ -42,7 +42,7 @@ const mimeType = async (opts) => {
 };
 
 const fetchUploadData = async (opts) => {
-  const { path, buffer, mimeType: mimeTypeIn } = opts;
+  const { path, buffer, mime_type: mimeTypeIn } = opts;
 
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
   const data = path ? fs.createReadStream(path) : buffer;

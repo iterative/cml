@@ -76,17 +76,17 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idleTimeout = 300
+        idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hddSize = 50
-        sshPrivate = \\"myprivate\\"
+        instance_hdd_size = 50
+        ssh_private = \\"myprivate\\"
         spot = true
-        spotPrice = 0.0001
+        spot_price = 0.0001
         
       }
       "
@@ -130,17 +130,17 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idleTimeout = 0
+        idle_timeout = 0
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hddSize = 50
-        sshPrivate = \\"myprivate\\"
+        instance_hdd_size = 50
+        ssh_private = \\"myprivate\\"
         spot = true
-        spotPrice = 0.0001
+        spot_price = 0.0001
         
       }
       "
@@ -185,18 +185,18 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
-        idleTimeout = 300
+        idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
         cloud = \\"aws\\"
         region = \\"west\\"
         instance_type = \\"mymachinetype\\"
         instance_gpu = \\"mygputype\\"
-        instance_hddSize = 50
-        sshPrivate = \\"myprivate\\"
+        instance_hdd_size = 50
+        ssh_private = \\"myprivate\\"
         spot = true
-        spotPrice = 0.0001
-        startupScript = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
+        spot_price = 0.0001
+        startup_script = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
       }
       "
     `);
