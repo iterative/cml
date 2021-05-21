@@ -30,7 +30,7 @@ const run = async (opts) => {
     name,
     description,
     title,
-    rm_watermark: rmWatermark
+    rmWatermark
   } = opts;
 
   // set credentials

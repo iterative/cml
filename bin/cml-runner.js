@@ -114,7 +114,7 @@ const shutdown = async (opts) => {
 };
 
 const runCloud = async (opts) => {
-  const { cloud_ssh_private_visible: cloudSshPrivateVisible } = opts;
+  const { cloudSshPrivateVisible } = opts;
 
   const runTerraform = async (opts) => {
     console.log('Terraform apply...');
@@ -122,18 +122,18 @@ const runCloud = async (opts) => {
     const { token, repo, driver } = cml;
     const {
       labels,
-      idle_timeout: idleTimeout,
+      idleTimeout,
       name,
       single,
       cloud,
-      cloud_region: region,
-      cloud_type: type,
-      cloud_gpu: gpu,
-      cloud_hdd_size: hddSize,
-      cloud_ssh_private: sshPrivate,
-      cloud_spot: spot,
-      cloud_spot_price: spotPrice,
-      cloud_startup_script: startupScript,
+      cloudRegion: region,
+      cloudType: type,
+      cloudGpu: gpu,
+      cloudHddSize: hddSize,
+      cloudSshPrivate: sshPrivate,
+      cloudSpot: spot,
+      cloudSpotPrice: spotPrice,
+      cloudStartupScript: startupScript,
       tfFile,
       workdir
     } = opts;
@@ -203,14 +203,14 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idle_timeout: idleTimeout } = opts;
+  const { workdir, name, labels, single, idleTimeout } = opts;
 
   const proc = await cml.startRunner({
     workdir,
     name,
     labels,
     single,
-    idle_timeout: idleTimeout
+    idleTimeout
   });
 
   const dataHandler = (data) => {
@@ -259,7 +259,7 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
-    tf_resource: tfResource
+    tfResource
   } = opts;
 
   cml = new CML({ driver, repo, token });

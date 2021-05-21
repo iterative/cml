@@ -92,8 +92,8 @@ class CML {
   async commentCreate(opts = {}) {
     const {
       report: userReport,
-      commit_sha: commitSha = await this.headSha(),
-      rm_watermark: rmWatermark
+      commitSha = await this.headSha(),
+      rmWatermark
     } = opts;
     const watermark = rmWatermark
       ? ''
@@ -108,19 +108,13 @@ class CML {
   }
 
   async checkCreate(opts = {}) {
-    const { head_sha: headSha = await this.headSha() } = opts;
+    const { headSha = await this.headSha() } = opts;
 
     return await getDriver(this).checkCreate({ ...opts, headSha });
   }
 
   async publish(opts = {}) {
-    const {
-      title = '',
-      md,
-      native,
-      gitlab_uploads: gitlabUploads,
-      rm_watermark: rmWatermark
-    } = opts;
+    const { title = '', md, native, gitlabUploads, rmWatermark } = opts;
 
     let mime, uri;
     if (native || gitlabUploads) {
@@ -239,8 +233,8 @@ class CML {
     const driver = getDriver(this);
     const {
       remote = GIT_REMOTE,
-      user_email: userEmail = GIT_USER_EMAIL,
-      user_name: userName = GIT_USER_NAME,
+      userEmail = GIT_USER_EMAIL,
+      userName = GIT_USER_NAME,
       globs = ['dvc.lock', '.gitignore'],
       md
     } = opts;

@@ -129,7 +129,7 @@ class Gitlab {
   }
 
   async startRunner(opts) {
-    const { workdir, idle_timeout: idleTimeout, single, labels, name } = opts;
+    const { workdir, idleTimeout, single, labels, name } = opts;
 
     let gpu = true;
     try {
