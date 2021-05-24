@@ -18,6 +18,12 @@ const {
   GITHUB_EVENT_NAME
 } = process.env;
 
+const branch_name = (branch) => {
+  if (!branch) return;
+
+  return branch.replace(/refs\/(head|tag)s\//, '');
+};
+
 const owner_repo = (opts) => {
   let owner, repo;
   const { uri } = opts;
@@ -276,8 +282,8 @@ class Github {
       } = pr;
       return {
         url,
-        source,
-        target
+        source: branch_name(source),
+        target: branch_name(target)
       };
     });
   }
@@ -290,7 +296,7 @@ class Github {
   }
 
   get branch() {
-    return GITHUB_REF;
+    return branch_name(GITHUB_REF);
   }
 
   get user_email() {
