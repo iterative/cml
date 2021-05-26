@@ -220,13 +220,7 @@ class CML {
   }
 
   async repo_token_check() {
-    try {
-      await this.runner_token();
-    } catch (err) {
-      throw new Error(
-        'REPO_TOKEN does not have enough permissions to access workflow API'
-      );
-    }
+    await this.runner_token();
   }
 
   async pr_create(opts = {}) {
