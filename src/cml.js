@@ -223,10 +223,10 @@ class CML {
     try {
       await this.runner_token();
     } catch (error) {
-      if (error.message === 'Bad credentials') 
-        error.message += ', REPO_TOKEN should be a personal access token'
-      throw error
-    }   
+      if (error.message === 'Bad credentials')
+        error.message += ', REPO_TOKEN should be a personal access token';
+      throw error;
+    }
   }
 
   async pr_create(opts = {}) {
