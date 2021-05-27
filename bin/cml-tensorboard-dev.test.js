@@ -1,18 +1,18 @@
 jest.setTimeout(200000);
 
-const { exec, is_proc_running, sleep } = require('../src/utils');
+const { exec, isProcRunning, sleep } = require('../src/utils');
 const CREDENTIALS =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
 
-const is_tb_running = async () => {
+const isTbRunning = async () => {
   await sleep(2);
-  const is_running = await is_proc_running({ name: 'tensorboard' });
+  const isRunning = await isProcRunning({ name: 'tensorboard' });
 
-  return is_running;
+  return isRunning;
 };
 
-const rm_tb_dev_experiment = async (tb_output) => {
-  const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tb_output)[1];
+const rmTbDevExperiment = async (tbOutput) => {
+  const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tbOutput)[1];
   await exec(`tensorboard dev delete --experiment_id ${id}`);
 };
 
@@ -53,10 +53,10 @@ describe('CML e2e', () => {
         --logdir logs --name '${name}' --description '${desc}'`
     );
 
-    const is_running = await is_tb_running();
-    await rm_tb_dev_experiment(output);
+    const isRunning = await isTbRunning();
+    await rmTbDevExperiment(output);
 
-    expect(is_running).toBe(true);
+    expect(isRunning).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.includes('cml=tb')).toBe(true);
   });
