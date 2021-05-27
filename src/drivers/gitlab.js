@@ -53,12 +53,19 @@ class Gitlab {
                 .version
             )
               return path;
-          } catch (error) {}
+          } catch (error) {
+            return error;
+          }
         })
     );
 
-    this._detected_base = possible_bases.find(Boolean);
-    if (!this._detected_base) throw new Error('GitLab API not found');
+    this._detected_base = possible_bases.find(
+      (base) => base.constructor !== Error
+    );
+    if (!this._detected_base) {
+      if (possible_bases.length) throw possible_bases[0];
+      else throw new Error('Invalid repository address');
+    }
 
     return this._detected_base;
   }
