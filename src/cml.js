@@ -74,7 +74,10 @@ class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
 
-    this.repo = uri_no_trailing_slash(repo || git_remote_url()).replace(/\.git$/, '');
+    this.repo = uri_no_trailing_slash(repo || git_remote_url()).replace(
+      /\.git$/,
+      ''
+    );
     this.token = token || infer_token();
     this.driver = driver || infer_driver({ repo: this.repo });
   }
