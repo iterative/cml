@@ -5,9 +5,26 @@ on:
 jobs:
   # check that CML container builds properly
   build-container:
-    if: contains(github.event.comment.body, '/tests')
+    if: startsWith(github.event.comment.body, '/tests')
     runs-on: [ubuntu-18.04]
     steps:
+      - name: React Seen
+        uses: actions/github-script@v2
+        with:
+          script: |
+            const perm = await github.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner, repo: context.repo.repo,
+              username: context.payload.comment.user.login})
+            if (!["admin", "write"].includes(perm.data.permission)){
+              github.reactions.createForIssueComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: context.payload.comment.id, content: "laugh"})
+              throw "Permission denied for user " + context.payload.comment.user.login
+            }
+            github.reactions.createForIssueComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              comment_id: context.payload.comment.id, content: "eyes"})
+          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
       - uses: actions/checkout@v2
       - name: Build & Publish test image
         run: |
@@ -110,9 +127,26 @@ jobs:
         run: |
           nvidia-smi
   chatbot:
-    if: contains(github.event.comment.body, '/cml-')
+    if: startsWith(github.event.comment.body, '/cml-')
     runs-on: [ubuntu-latest]
     steps:
+      - name: React Seen
+        uses: actions/github-script@v2
+        with:
+          script: |
+            const perm = await github.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner, repo: context.repo.repo,
+              username: context.payload.comment.user.login})
+            if (!["admin", "write"].includes(perm.data.permission)){
+              github.reactions.createForIssueComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                comment_id: context.payload.comment.id, content: "laugh"})
+              throw "Permission denied for user " + context.payload.comment.user.login
+            }
+            github.reactions.createForIssueComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              comment_id: context.payload.comment.id, content: "eyes"})
+          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
       - uses: actions/checkout@v2
       - name: chatops
         id: chatops
@@ -133,4 +167,4 @@ jobs:
         run: |
           npm ci
           sudo npm link
-          ${{steps.chatops.outputs.COMMAND}}
+          # ${{steps.chatops.outputs.COMMAND}}
