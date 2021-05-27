@@ -19,7 +19,7 @@ const exec = async (command) => {
   });
 };
 
-const mime_type = async (opts) => {
+const mimeType = async (opts) => {
   return new Promise((resolve, reject) => {
     const { path, buffer } = opts;
     const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
@@ -41,12 +41,12 @@ const mime_type = async (opts) => {
   });
 };
 
-const fetch_upload_data = async (opts) => {
-  const { path, buffer, mime_type: mime_type_in } = opts;
+const fetchUploadData = async (opts) => {
+  const { path, buffer, mimeType: mimeTypeIn } = opts;
 
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
   const data = path ? fs.createReadStream(path) : buffer;
-  const mime = mime_type_in || (await mime_type(opts));
+  const mime = mimeTypeIn || (await mimeType(opts));
 
   return { mime, size, data };
 };
@@ -55,7 +55,7 @@ const upload = async (opts) => {
   const { path } = opts;
   const endpoint = 'https://asset.cml.dev';
 
-  const { mime, size, data: body } = await fetch_upload_data(opts);
+  const { mime, size, data: body } = await fetchUploadData(opts);
   const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
 
   const headers = {
@@ -88,7 +88,7 @@ const sleep = (secs) => {
   });
 };
 
-const is_proc_running = async (opts) => {
+const isProcRunning = async (opts) => {
   const { name } = opts;
 
   const cmd = (() => {
@@ -113,18 +113,15 @@ const is_proc_running = async (opts) => {
   });
 };
 
-const ssh_public_from_private_rsa = (private_key) => {
-  const forge_private = forge.pki.privateKeyFromPem(private_key);
-  const forge_public = forge.pki.setRsaPublicKey(
-    forge_private.n,
-    forge_private.e
-  );
-  const ssh_public = forge.ssh.publicKeyToOpenSSH(forge_public);
+const sshPublicFromPrivateRsa = (privateKey) => {
+  const forgePrivate = forge.pki.privateKeyFromPem(privateKey);
+  const forgePublic = forge.pki.setRsaPublicKey(forgePrivate.n, forgePrivate.e);
+  const sshPublic = forge.ssh.publicKeyToOpenSSH(forgePublic);
 
-  return ssh_public;
+  return sshPublic;
 };
 
-const watermark_uri = (opts = {}) => {
+const watermarkUri = (opts = {}) => {
   const { uri, type } = opts;
   const url = new URL(uri);
   url.searchParams.append('cml', type);
@@ -144,8 +141,8 @@ const download = async (opts = {}) => {
   });
 };
 
-const ssh_connection = async (opts) => {
-  const { host, username, private_key: privateKey, max_tries = 5 } = opts;
+const sshConnection = async (opts) => {
+  const { host, username, privateKey, maxTries = 5 } = opts;
 
   const ssh = new NodeSSH();
 
@@ -159,7 +156,7 @@ const ssh_connection = async (opts) => {
       });
       break;
     } catch (err) {
-      if (max_tries === trials) throw err;
+      if (maxTries === trials) throw err;
       trials += 1;
       await sleep(10);
     }
@@ -169,12 +166,12 @@ const ssh_connection = async (opts) => {
 };
 
 exports.exec = exec;
-exports.fetch_upload_data = fetch_upload_data;
+exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
-exports.is_proc_running = is_proc_running;
-exports.ssh_public_from_private_rsa = ssh_public_from_private_rsa;
-exports.watermark_uri = watermark_uri;
+exports.isProcRunning = isProcRunning;
+exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
+exports.watermarkUri = watermarkUri;
 exports.download = download;
-exports.ssh_connection = ssh_connection;
+exports.sshConnection = sshConnection;

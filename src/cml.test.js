@@ -60,21 +60,21 @@ describe('Github tests', () => {
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
 
-    await new CML({ repo: REPO }).comment_create({ report, commit_sha: SHA });
+    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
-    let catched_err;
+    let caughtErr;
     try {
       const report = '## Test comment';
-      const commit_sha = 'invalid_sha';
+      const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).comment_create({ report, commit_sha });
+      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
     } catch (err) {
-      catched_err = err.message;
+      caughtErr = err.message;
     }
 
-    expect(catched_err).toBe('No commit found for SHA: invalid_sha');
+    expect(caughtErr).toBe('No commit found for SHA: invalid_sha');
   });
 });
 
@@ -108,7 +108,7 @@ describe('Gitlab tests', () => {
 
     const output = await new CML({ repo: REPO }).publish({
       path,
-      gitlab_uploads: true
+      gitlabUploads: true
     });
 
     expect(output.startsWith('https://')).toBe(true);
@@ -123,7 +123,7 @@ describe('Gitlab tests', () => {
       path,
       md: true,
       title,
-      gitlab_uploads: true
+      gitlabUploads: true
     });
 
     expect(output.startsWith('![](https://')).toBe(true);
@@ -139,7 +139,7 @@ describe('Gitlab tests', () => {
       path,
       md: true,
       title,
-      gitlab_uploads: true
+      gitlabUploads: true
     });
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
@@ -164,7 +164,7 @@ describe('Gitlab tests', () => {
   });
 
   test('Publish should fail with an invalid driver', async () => {
-    let catched_err;
+    let caughtErr;
     try {
       const path = `${__dirname}/../assets/logo.pdf`;
       await new CML({ repo: REPO, driver: 'invalid' }).publish({
@@ -173,28 +173,28 @@ describe('Gitlab tests', () => {
         native: true
       });
     } catch (err) {
-      catched_err = err.message;
+      caughtErr = err.message;
     }
 
-    expect(catched_err).not.toBeUndefined();
+    expect(caughtErr).not.toBeUndefined();
   });
 
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
-    await new CML({ repo: REPO }).comment_create({ report, commit_sha: SHA });
+    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
-    let catched_err;
+    let caughtErr;
     try {
       const report = '## Test comment';
-      const commit_sha = 'invalid_sha';
+      const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).comment_create({ report, commit_sha });
+      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
     } catch (err) {
-      catched_err = err.message;
+      caughtErr = err.message;
     }
 
-    expect(catched_err).toBe('Not Found');
+    expect(caughtErr).toBe('Not Found');
   });
 });
