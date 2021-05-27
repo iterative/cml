@@ -222,10 +222,10 @@ class CML {
   async repo_token_check() {
     try {
       await this.runner_token();
-    } catch (error) {
-      if (error.message === 'Bad credentials')
-        error.message += ', REPO_TOKEN should be a personal access token';
-      throw error;
+    } catch (err) {
+      if (err.message === 'Bad credentials')
+        err.message += ', REPO_TOKEN should be a personal access token';
+      throw err;
     }
   }
 
