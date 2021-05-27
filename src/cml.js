@@ -32,7 +32,7 @@ const git_remote_url = (opts = {}) => {
   const url = execSync(`git config --get remote.${remote}.url`).toString(
     'utf8'
   );
-  return strip_auth(git_url_parse(url).toString('https').replace('.git', ''));
+  return strip_auth(git_url_parse(url).toString('https'));
 };
 
 const infer_token = () => {
@@ -74,7 +74,7 @@ class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
 
-    this.repo = uri_no_trailing_slash(repo || git_remote_url());
+    this.repo = uri_no_trailing_slash(repo || git_remote_url()).replace(/\.git$/, '');
     this.token = token || infer_token();
     this.driver = driver || infer_driver({ repo: this.repo });
   }
