@@ -64,7 +64,7 @@ class Gitlab {
     );
     if (!this.detectedBase) {
       if (possibleBases.length) throw possibleBases[0];
-      else throw new Error('Invalid repository address');
+      throw new Error('Invalid repository address');
     }
 
     return this.detectedBase;
