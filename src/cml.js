@@ -226,9 +226,9 @@ class CML {
     try {
       await this.runnerToken();
     } catch (err) {
-      throw new Error(
-        'REPO_TOKEN does not have enough permissions to access workflow API'
-      );
+      if (err.message === 'Bad credentials')
+        err.message += ', REPO_TOKEN should be a personal access token';
+      throw err;
     }
   }
 
