@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="imgs/title_strip_trim.png" width=400>
+  <img src="https://static.iterative.ai/img/cml/title_strip_trim.png" width=400>
 </p>
 
 [![GHA](https://img.shields.io/github/v/tag/iterative/setup-cml?label=GitHub%20Actions&logo=GitHub)](https://github.com/iterative/setup-cml)
@@ -11,10 +11,10 @@ projects. Use it to automate parts of your development workflow, including model
 training and evaluation, comparing ML experiments across your project history,
 and monitoring changing datasets.
 
-![](imgs/github_cloud_case_lessshadow.png) _On every pull request, CML helps you
-automatically train and evaluate models, then generates a visual report with
-results and metrics. Above, an example report for a
-[neural style transfer model](https://github.com/iterative/cml_cloud_case)._
+![](https://static.iterative.ai/img/cml/github_cloud_case_lessshadow.png) _On
+every pull request, CML helps you automatically train and evaluate models, then
+generates a visual report with results and metrics. Above, an example report for
+a [neural style transfer model](https://github.com/iterative/cml_cloud_case)._
 
 We built CML with these principles in mind:
 
@@ -149,7 +149,7 @@ cml-publish graph.png --md >> report.md
 > [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
 > for this example to work.
 
-![](imgs/fork_project.png)
+![](https://static.iterative.ai/img/cml/fork_project.png)
 
 > :warning: The following steps can all be done in the GitHub browser interface.
 > However, to follow along with the commands, we recommend cloning your fork to
@@ -197,13 +197,13 @@ git push origin experiment
 5. In GitHub, open up a Pull Request to compare the `experiment` branch to
    `master`.
 
-![](imgs/make_pr.png)
+![](https://static.iterative.ai/img/cml/make_pr.png)
 
 Shortly, you should see a comment from `github-actions` appear in the Pull
 Request with your CML report. This is a result of the `cml-send-comment`
 function in your workflow.
 
-![](imgs/cml_first_report.png)
+![](https://static.iterative.ai/img/cml/first_report.png)
 
 This is the outline of the CML workflow:
 
@@ -223,7 +223,7 @@ downloaded from external sources. [DVC](https://dvc.org) is a common way to
 bring data to your CML runner. DVC also lets you visualize how metrics differ
 between commits to make reports like this:
 
-![](imgs/dvc_cml_long_report.png)
+![](https://static.iterative.ai/img/cml/dvc_long_report.png)
 
 The `.github/workflows/cml.yaml` file used to create this report is:
 

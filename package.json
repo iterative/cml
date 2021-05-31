@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -60,7 +60,6 @@
   "dependencies": {
     "@actions/core": "^1.2.5",
     "@actions/github": "^4.0.0",
-    "decamelize-keys": "^1.1.0",
     "form-data": "^3.0.0",
     "fs-extra": "^9.0.1",
     "git-url-parse": "^11.4.0",
@@ -91,6 +90,6 @@
     "lint-staged": "^10.0.8",
     "prettier": "^2.1.1"
   },
-  "description": "<p align=\"center\">   <img src=\"imgs/title_strip_trim.png\" width=400> </p>",
+  "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "homepage": "https://github.com/iterative/cml#readme"
 }
