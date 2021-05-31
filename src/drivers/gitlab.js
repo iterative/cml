@@ -37,7 +37,7 @@ class Gitlab {
   }
 
   async repoBase() {
-    if (this._detected_base) return this._detected_base;
+    if (this.detectedBase) return this.detectedBase;
 
     const { origin, pathname } = new URL(this.repo);
     const possibleBases = await Promise.all(
@@ -53,14 +53,21 @@ class Gitlab {
                 .version
             )
               return path;
-          } catch (error) {}
+          } catch (error) {
+            return error;
+          }
         })
     );
 
-    this._detected_base = possibleBases.find(Boolean);
-    if (!this._detected_base) throw new Error('GitLab API not found');
+    this.detectedBase = possibleBases.find(
+      (base) => base.constructor !== Error
+    );
+    if (!this.detectedBase) {
+      if (possibleBases.length) throw possibleBases[0];
+      throw new Error('Invalid repository address');
+    }
 
-    return this._detected_base;
+    return this.detectedBase;
   }
 
   async commentCreate(opts = {}) {
