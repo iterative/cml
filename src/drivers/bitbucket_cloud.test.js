@@ -13,12 +13,12 @@ describe('Non Enviromental tests', () => {
   });
   test('Comment', async () => {
     const report = '## Test comment';
-    const commit_sha = SHA;
+    const commitSha = SHA;
 
-    await client.comment_create({ report, commit_sha });
+    await client.commentCreate({ report, commitSha });
   });
   test('Check', async () => {
-    await expect(client.check_create()).rejects.toThrow(
+    await expect(client.checkCreate()).rejects.toThrow(
       'BitBucket Cloud does not support check!'
     );
   });
@@ -29,8 +29,8 @@ describe('Non Enviromental tests', () => {
     );
   });
   test('Runner token', async () => {
-    await expect(client.runner_token()).rejects.toThrow(
-      'BitBucket Cloud does not support runner_token!'
+    await expect(client.runnerToken()).rejects.toThrow(
+      'BitBucket Cloud does not support runnerToken!'
     );
   });
 });

@@ -58,7 +58,7 @@ ARG PYTHON_VERSION=3
 RUN add-apt-repository universe --yes \
  && apt-get update \
  && PYTHON_SUFFIX="$(sed --expression='s/3.*/3/g' --expression='s/2.*//g' <<< "${PYTHON_VERSION}")" \
- && apt-get install --yes --no-install-recommends python${PYTHON_VERSION} python${PYTHON_SUFFIX}{-pip,-setuptools} \
+ && apt-get install --yes --no-install-recommends python${PYTHON_VERSION} python${PYTHON_SUFFIX}{-pip,-setuptools,-dev} \
  && update-alternatives --install /usr/bin/python python${PYTHON_VERSION} $(which python${PYTHON_VERSION}) 10 \
  && python -m pip install pip --upgrade \
  && apt-get clean \

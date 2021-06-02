@@ -11,10 +11,22 @@ const { download, exec } = require('../utils');
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
-const owner_repo = (opts) => {
+const {
+  GITHUB_REPOSITORY,
+  GITHUB_SHA,
+  GITHUB_REF,
+  GITHUB_EVENT_NAME
+} = process.env;
+
+const branchName = (branch) => {
+  if (!branch) return;
+
+  return branch.replace(/refs\/(head|tag)s\//, '');
+};
+
+const ownerRepo = (opts) => {
   let owner, repo;
   const { uri } = opts;
-  const { GITHUB_REPOSITORY } = process.env;
 
   if (uri) {
     const { pathname } = new URL(uri);
@@ -29,16 +41,16 @@ const owner_repo = (opts) => {
 const octokit = (token, repo) => {
   if (!token) throw new Error('token not found');
 
-  const octokit_options = {};
+  const octokitOptions = {};
 
   if (!repo.includes('github.com')) {
     // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
     // as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
     const { host } = new url.URL(repo);
-    octokit_options.baseUrl = `https://${host}/api/v3`;
+    octokitOptions.baseUrl = `https://${host}/api/v3`;
   }
 
-  return github.getOctokit(token, octokit_options);
+  return github.getOctokit(token, octokitOptions);
 };
 
 class Github {
@@ -52,30 +64,30 @@ class Github {
     this.token = token;
   }
 
-  owner_repo(opts = {}) {
+  ownerRepo(opts = {}) {
     const { uri = this.repo } = opts;
-    return owner_repo({ uri });
+    return ownerRepo({ uri });
   }
 
-  async comment_create(opts = {}) {
-    const { report: body, commit_sha } = opts;
+  async commentCreate(opts = {}) {
+    const { report: body, commitSha } = opts;
 
-    const { url: commit_url } = await octokit(
+    const { url: commitUrl } = await octokit(
       this.token,
       this.repo
     ).repos.createCommitComment({
-      ...owner_repo({ uri: this.repo }),
+      ...ownerRepo({ uri: this.repo }),
       body,
-      commit_sha
+      commit_sha: commitSha
     });
 
-    return commit_url;
+    return commitUrl;
   }
 
-  async check_create(opts = {}) {
+  async checkCreate(opts = {}) {
     const {
       report,
-      head_sha,
+      headSha,
       title = CHECK_TITLE,
       started_at = new Date(),
       completed_at = new Date(),
@@ -85,8 +97,8 @@ class Github {
 
     const name = title;
     return await octokit(this.token, this.repo).checks.create({
-      ...owner_repo({ uri: this.repo }),
-      head_sha,
+      ...ownerRepo({ uri: this.repo }),
+      head_sha: headSha,
       started_at,
       completed_at,
       conclusion,
@@ -100,8 +112,8 @@ class Github {
     throw new Error('Github does not support publish!');
   }
 
-  async runner_token() {
-    const { owner, repo } = owner_repo({ uri: this.repo });
+  async runnerToken() {
+    const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
 
     if (typeof repo !== 'undefined') {
@@ -124,38 +136,38 @@ class Github {
     return token;
   }
 
-  async register_runner() {
-    throw new Error('Github does not support register_runner!');
+  async registerRunner() {
+    throw new Error('Github does not support registerRunner!');
   }
 
-  async unregister_runner(opts) {
+  async unregisterRunner(opts) {
     const { name } = opts;
-    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
-    const { id: runner_id } = await this.runner_by_name({ name });
+    const { id: runnerId } = await this.runnerByName({ name });
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runner_id
+        runnerId
       });
     } else {
       await actions.deleteSelfHostedRunnerFromOrg({
         org: owner,
-        runner_id
+        runnerId
       });
     }
   }
 
-  async start_runner(opts) {
+  async startRunner(opts) {
     const { workdir, single, name, labels } = opts;
 
     try {
-      const runner_cfg = resolve(workdir, '.runner');
+      const runnerCfg = resolve(workdir, '.runner');
 
       try {
-        await fs.unlink(runner_cfg);
+        await fs.unlink(runnerCfg);
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
         const ver = '2.274.2';
@@ -170,7 +182,7 @@ class Github {
         `${resolve(
           workdir,
           'config.sh'
-        )} --token "${await this.runner_token()}" --url "${
+        )} --token "${await this.runnerToken()}" --url "${
           this.repo
         }"  --name "${name}" --labels "${labels}" --work "${resolve(
           workdir,
@@ -186,8 +198,8 @@ class Github {
     }
   }
 
-  async get_runners(opts = {}) {
-    const { owner, repo } = owner_repo({ uri: this.repo });
+  async getRunners(opts = {}) {
+    const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
     let runners = [];
 
@@ -211,16 +223,16 @@ class Github {
     return runners;
   }
 
-  async runner_by_name(opts = {}) {
+  async runnerByName(opts = {}) {
     const { name } = opts;
-    const runners = await this.get_runners(opts);
+    const runners = await this.getRunners(opts);
     const runner = runners.filter((runner) => runner.name === name)[0];
     if (runner) return { id: runner.id, name: runner.name };
   }
 
-  async runners_by_labels(opts = {}) {
+  async runnersByLabels(opts = {}) {
     const { labels } = opts;
-    const runners = await this.get_runners(opts);
+    const runners = await this.getRunners(opts);
     return runners
       .filter((runner) =>
         labels
@@ -232,13 +244,13 @@ class Github {
       .map((runner) => ({ id: runner.id, name: runner.name }));
   }
 
-  async pr_create(opts = {}) {
+  async prCreate(opts = {}) {
     const { source: head, target: base, title, description: body } = opts;
-    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { owner, repo } = ownerRepo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { url }
+      data: { html_url: htmlUrl }
     } = await pulls.create({
       owner,
       repo,
@@ -248,12 +260,12 @@ class Github {
       body
     });
 
-    return url;
+    return htmlUrl;
   }
 
   async prs(opts = {}) {
     const { state = 'open' } = opts;
-    const { owner, repo } = owner_repo({ uri: this.repo });
+    const { owner, repo } = ownerRepo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
     const { data: prs } = await pulls.list({
@@ -264,23 +276,34 @@ class Github {
 
     return prs.map((pr) => {
       const {
-        url,
+        html_url: url,
         head: { ref: source },
         base: { ref: target }
       } = pr;
       return {
         url,
-        source,
-        target
+        source: branchName(source),
+        target: branchName(target)
       };
     });
   }
 
-  get user_email() {
+  get sha() {
+    if (GITHUB_EVENT_NAME === 'pull_request')
+      return github.context.payload.pull_request.head.sha;
+
+    return GITHUB_SHA;
+  }
+
+  get branch() {
+    return branchName(GITHUB_REF);
+  }
+
+  get userEmail() {
     return 'action@github.com';
   }
 
-  get user_name() {
+  get userName() {
     return 'GitHub Action';
   }
 }

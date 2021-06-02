@@ -9,11 +9,11 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const { exec, watermark_uri } = require('../src/utils');
+const { exec, watermarkUri } = require('../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
 
-const close_fd = (fd) => {
+const closeFd = (fd) => {
   try {
     fd.close();
   } catch (err) {
@@ -30,7 +30,7 @@ const run = async (opts) => {
     name,
     description,
     title,
-    'rm-watermark': rm_watermark
+    rmWatermark
   } = opts;
 
   // set credentials
@@ -40,21 +40,21 @@ const run = async (opts) => {
 
   // launch  tensorboard on background
   const help = await exec('tensorboard dev upload -h');
-  const extra_params_found =
+  const extraParamsFound =
     (name || description) && help.indexOf('--description') >= 0;
-  const extra_params = extra_params_found
+  const extraParams = extraParamsFound
     ? `--name "${name}" --description "${description}"`
     : '';
 
-  const command = `tensorboard dev upload --logdir ${logdir} ${extra_params}`;
-  const stdout_path = tempy.file({ extension: 'log' });
-  const stdout_fd = await fs.open(stdout_path, 'a');
-  const stderr_path = tempy.file({ extension: 'log' });
-  const stderr_fd = await fs.open(stderr_path, 'a');
+  const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
+  const stdoutPath = tempy.file({ extension: 'log' });
+  const stdoutFd = await fs.open(stdoutPath, 'a');
+  const stderrPath = tempy.file({ extension: 'log' });
+  const stderrFd = await fs.open(stderrPath, 'a');
   const proc = spawn(command, [], {
     detached: true,
     shell: true,
-    stdio: ['ignore', stdout_fd, stderr_fd]
+    stdio: ['ignore', stdoutFd, stderrFd]
   });
 
   proc.unref();
@@ -64,29 +64,29 @@ const run = async (opts) => {
 
   // reads stdout every 5 secs to find the tb uri
   setInterval(async () => {
-    const stdout_data = await fs.readFile(stdout_path, 'utf8');
+    const stdoutData = await fs.readFile(stdoutPath, 'utf8');
     const regex = /(https?:\/\/[^\s]+)/;
-    const matches = stdout_data.match(regex);
+    const matches = stdoutData.match(regex);
 
     if (matches.length) {
       let output = matches[0];
 
-      if (!rm_watermark) output = watermark_uri({ uri: output, type: 'tb' });
+      if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
 
       if (md) output = `[${title || name}](${output})`;
 
       if (!file) print(output);
       else await fs.appendFile(file, output);
 
-      close_fd(stdout_fd) && close_fd(stderr_fd);
+      closeFd(stdoutFd) && closeFd(stderrFd);
       process.exit(0);
     }
   }, 1 * 5 * 1000);
 
   // waits 1 min before dies
   setTimeout(async () => {
-    close_fd(stdout_fd) && close_fd(stderr_fd);
-    console.error(await fs.readFile(stderr_path, 'utf8'));
+    closeFd(stdoutFd) && closeFd(stderrFd);
+    console.error(await fs.readFile(stderrPath, 'utf8'));
     throw new Error('Tensorboard took too long! Canceled.');
   }, 1 * 60 * 1000);
 };

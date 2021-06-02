@@ -4,39 +4,32 @@ const print = console.log;
 console.log = console.error;
 
 const fs = require('fs').promises;
-const pipe_args = require('../src/pipe-args');
+const pipeArgs = require('../src/pipe-args');
 const yargs = require('yargs');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const run = async (opts) => {
-  const {
-    data,
-    file,
-    'gitlab-uploads': gitlab_uploads,
-    'rm-watermark': rm_watermark
-  } = opts;
+  const { data, file, repo, native } = opts;
 
   const path = opts._[0];
-  let buffer;
-  if (data) buffer = Buffer.from(data, 'binary');
+  const buffer = data ? Buffer.from(data, 'binary') : null;
 
-  const cml = new CML(opts);
+  const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
+
   const output = await cml.publish({
     ...opts,
     buffer,
-    path,
-    gitlab_uploads,
-    rm_watermark
+    path
   });
 
   if (!file) print(output);
   else await fs.writeFile(file, output);
 };
 
-pipe_args.load('binary');
-const data = pipe_args.piped_arg();
-const argv = yargs
+pipeArgs.load('binary');
+const data = pipeArgs.pipedArg();
+const opts = yargs
   .strict()
   .usage(`Usage: $0 <path to file>`)
   .describe('md', 'Output in markdown format [title || name](url).')
@@ -45,19 +38,19 @@ const argv = yargs
   .default('title')
   .describe('title', 'Markdown title [title](url) or ![](url title).')
   .alias('title', 't')
-  .boolean('gitlab-uploads')
-  .describe(
-    'gitlab-uploads',
-    'Uses GitLab uploads instead of CML storage. Use GitLab uploads to get around CML size limitations for hosting artifacts persistently. Only available for GitLab CI.'
-  )
-  .deprecateOption('gitlab-uploads', 'Use --native instead')
   .boolean('native')
   .describe(
     'native',
-    "Uses driver's native capabilities to upload assets instead of CML's storage."
+    "Uses driver's native capabilities to upload assets instead of CML's storage. Currently only available for GitLab CI."
   )
+  .alias('native', 'gitlab-uploads')
   .boolean('rm-watermark')
   .describe('rm-watermark', 'Avoid CML watermark.')
+  .default('mime-type')
+  .describe(
+    'mime-type',
+    'Specifies the mime-type. If not set guess it from the content.'
+  )
   .default('file')
   .describe(
     'file',
@@ -80,7 +73,7 @@ const argv = yargs
   .help('h')
   .demand(data ? 0 : 1).argv;
 
-run({ ...argv, data }).catch((e) => {
+run({ ...opts, data }).catch((e) => {
   console.error(e);
   process.exit(1);
 });

@@ -6,9 +6,15 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 
-const { fetch_upload_data, download, exec } = require('../utils');
+const { fetchUploadData, download, exec } = require('../utils');
 
-const { IN_DOCKER, GITLAB_USER_EMAIL, GITLAB_USER_NAME } = process.env;
+const {
+  IN_DOCKER,
+  CI_BUILD_REF_NAME,
+  CI_COMMIT_SHA,
+  GITLAB_USER_EMAIL,
+  GITLAB_USER_NAME
+} = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -21,20 +27,20 @@ class Gitlab {
     this.repo = repo;
   }
 
-  async project_path() {
-    const repo_base = await this.repo_base();
-    const project_path = encodeURIComponent(
-      this.repo.replace(repo_base, '').substr(1)
+  async projectPath() {
+    const repoBase = await this.repoBase();
+    const projectPath = encodeURIComponent(
+      this.repo.replace(repoBase, '').substr(1)
     );
 
-    return project_path;
+    return projectPath;
   }
 
-  async repo_base() {
-    if (this._detected_base) return this._detected_base;
+  async repoBase() {
+    if (this.detectedBase) return this.detectedBase;
 
     const { origin, pathname } = new URL(this.repo);
-    const possible_bases = await Promise.all(
+    const possibleBases = await Promise.all(
       pathname
         .split('/')
         .filter(Boolean)
@@ -47,21 +53,28 @@ class Gitlab {
                 .version
             )
               return path;
-          } catch (error) {}
+          } catch (error) {
+            return error;
+          }
         })
     );
 
-    this._detected_base = possible_bases.find(Boolean);
-    if (!this._detected_base) throw new Error('GitLab API not found');
+    this.detectedBase = possibleBases.find(
+      (base) => base.constructor !== Error
+    );
+    if (!this.detectedBase) {
+      if (possibleBases.length) throw possibleBases[0];
+      throw new Error('Invalid repository address');
+    }
 
-    return this._detected_base;
+    return this.detectedBase;
   }
 
-  async comment_create(opts = {}) {
-    const { commit_sha, report } = opts;
+  async commentCreate(opts = {}) {
+    const { commitSha, report } = opts;
 
-    const project_path = await this.project_path();
-    const endpoint = `/projects/${project_path}/repository/commits/${commit_sha}/comments`;
+    const projectPath = await this.projectPath();
+    const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
     const body = new URLSearchParams();
     body.append('note', report);
 
@@ -70,16 +83,16 @@ class Gitlab {
     return output;
   }
 
-  async check_create() {
+  async checkCreate() {
     throw new Error('Gitlab does not support check!');
   }
 
   async upload(opts = {}) {
     const { repo } = this;
 
-    const project_path = await this.project_path();
-    const endpoint = `/projects/${project_path}/uploads`;
-    const { size, mime, data } = await fetch_upload_data(opts);
+    const projectPath = await this.projectPath();
+    const endpoint = `/projects/${projectPath}/uploads`;
+    const { size, mime, data } = await fetchUploadData(opts);
     const body = new FormData();
     body.append('file', data);
 
@@ -88,19 +101,19 @@ class Gitlab {
     return { uri: `${repo}${url}`, mime, size };
   }
 
-  async runner_token() {
-    const project_path = await this.project_path();
-    const endpoint = `/projects/${project_path}`;
+  async runnerToken() {
+    const projectPath = await this.projectPath();
+    const endpoint = `/projects/${projectPath}`;
 
-    const { runners_token } = await this.request({ endpoint });
+    const { runners_token: runnersToken } = await this.request({ endpoint });
 
-    return runners_token;
+    return runnersToken;
   }
 
-  async register_runner(opts = {}) {
+  async registerRunner(opts = {}) {
     const { tags, name } = opts;
 
-    const token = await this.runner_token();
+    const token = await this.runnerToken();
     const endpoint = `/runners`;
     const body = new URLSearchParams();
     body.append('description', name);
@@ -113,17 +126,17 @@ class Gitlab {
     return await this.request({ endpoint, method: 'POST', body });
   }
 
-  async unregister_runner(opts = {}) {
+  async unregisterRunner(opts = {}) {
     const { name } = opts;
 
-    const { id } = await this.runner_by_name({ name });
+    const { id } = await this.runnerByName({ name });
     const endpoint = `/runners/${id}`;
 
     return await this.request({ endpoint, method: 'DELETE', raw: true });
   }
 
-  async start_runner(opts) {
-    const { workdir, idle_timeout, single, labels, name } = opts;
+  async startRunner(opts) {
+    const { workdir, idleTimeout, single, labels, name } = opts;
 
     let gpu = true;
     try {
@@ -142,14 +155,14 @@ class Gitlab {
       }
 
       const { protocol, host } = new URL(this.repo);
-      const { token } = await this.register_runner({ tags: labels, name });
+      const { token } = await this.registerRunner({ tags: labels, name });
       const command = `${bin} --log-format="json" run-single \
         --builds-dir "${workdir}" \
         --cache-dir "${workdir}" \
         --url "${protocol}//${host}" \
         --name "${name}" \
         --token "${token}" \
-        --wait-timeout ${idle_timeout} \
+        --wait-timeout ${idleTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "dvcorg/cml:latest" \
         --docker-runtime "${gpu ? 'nvidia' : ''}" \
@@ -161,7 +174,7 @@ class Gitlab {
     }
   }
 
-  async runner_by_name(opts = {}) {
+  async runnerByName(opts = {}) {
     const { name } = opts;
 
     const endpoint = `/runners?per_page=100`;
@@ -173,34 +186,38 @@ class Gitlab {
     if (runner) return { id: runner.id, name: runner.name };
   }
 
-  async runners_by_labels(opts = {}) {
+  async runnersByLabels(opts = {}) {
     const { labels } = opts;
     const endpoint = `/runners?per_page=100?tag_list=${labels}`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return runners.map((runner) => ({ id: runner.id, name: runner.name }));
   }
 
-  async pr_create(opts = {}) {
-    const { project_path } = this;
+  async prCreate(opts = {}) {
+    const projectPath = await this.projectPath();
     const { source, target, title, description } = opts;
 
-    const endpoint = `/projects/${project_path}/merge_requests`;
+    const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
     body.append('source_branch', source);
     body.append('target_branch', target);
     body.append('title', title);
     body.append('description', description);
 
-    const { web_url } = await this.request({ endpoint, method: 'POST', body });
+    const { web_url: url } = await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
 
-    return web_url;
+    return url;
   }
 
   async prs(opts = {}) {
-    const { project_path } = this;
+    const projectPath = await this.projectPath();
     const { state = 'opened' } = opts;
 
-    const endpoint = `/projects/${project_path}/merge_requests?state=${state}`;
+    const endpoint = `/projects/${projectPath}/merge_requests?state=${state}`;
     const prs = await this.request({ endpoint, method: 'GET' });
 
     return prs.map((pr) => {
@@ -219,7 +236,7 @@ class Gitlab {
     let { url } = opts;
 
     if (endpoint) {
-      url = `${await this.repo_base()}/api/${API_VER}${endpoint}`;
+      url = `${await this.repoBase()}/api/${API_VER}${endpoint}`;
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
@@ -232,11 +249,19 @@ class Gitlab {
     return await response.json();
   }
 
-  get user_email() {
+  get sha() {
+    return CI_COMMIT_SHA;
+  }
+
+  get branch() {
+    return CI_BUILD_REF_NAME;
+  }
+
+  get userEmail() {
     return GITLAB_USER_EMAIL;
   }
 
-  get user_name() {
+  get userName() {
     return GITLAB_USER_NAME;
   }
 }

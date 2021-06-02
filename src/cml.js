@@ -1,118 +1,134 @@
 const { execSync } = require('child_process');
-const git_url_parse = require('git-url-parse');
-const strip_auth = require('strip-url-auth');
-const git = require('simple-git/promise')('./');
+const gitUrlParse = require('git-url-parse');
+const stripAuth = require('strip-url-auth');
 const globby = require('globby');
+const git = require('simple-git/promise')('./');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermark_uri } = require('./utils');
+const { upload, exec, watermarkUri } = require('./utils');
 
-const uri_no_trailing_slash = (uri) => {
+const {
+  GITHUB_REPOSITORY,
+  CI_PROJECT_URL,
+  BITBUCKET_REPO_UUID,
+  CI
+} = process.env;
+
+const GIT_USER_NAME = 'Olivaw[bot]';
+const GIT_USER_EMAIL = 'olivaw@iterative.ai';
+const GIT_REMOTE = 'origin';
+const GITHUB = 'github';
+const GITLAB = 'gitlab';
+const BB = 'bitbucket';
+
+const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
 
-const repo_from_origin = () => {
-  const origin = execSync('git config --get remote.origin.url').toString(
+const gitRemoteUrl = (opts = {}) => {
+  const { remote = GIT_REMOTE } = opts;
+  const url = execSync(`git config --get remote.${remote}.url`).toString(
     'utf8'
   );
-  const uri = git_url_parse(origin).toString('https').replace('.git', '');
-  return strip_auth(uri);
+  return stripAuth(gitUrlParse(url).toString('https'));
 };
 
-const infer_driver = (opts = {}) => {
-  const { repo } = opts;
-  if (repo && repo.includes('github.com')) return 'github';
-  if (repo && repo.includes('gitlab.com')) return 'gitlab';
-  if (repo && repo.includes('bitbucket.com')) return 'bitbucket';
-
-  const {
-    GITHUB_REPOSITORY,
-    CI_PROJECT_URL,
-    BITBUCKET_REPO_UUID
-  } = process.env;
-  if (GITHUB_REPOSITORY) return 'github';
-  if (CI_PROJECT_URL) return 'gitlab';
-  if (BITBUCKET_REPO_UUID) return 'bitbucket';
-};
-
-const get_driver = (opts) => {
-  const { driver, repo, token } = opts;
-  if (!driver) throw new Error('driver not set');
-
-  if (driver === 'github') return new Github({ repo, token });
-  if (driver === 'gitlab') return new Gitlab({ repo, token });
-  if (driver === 'bitbucket') return new BitBucketCloud({ repo, token });
-
-  throw new Error(`driver ${driver} unknown!`);
-};
-
-const infer_token = () => {
+const inferToken = () => {
   const {
     REPO_TOKEN,
-    repo_token,
+    repo_token: repoToken,
     GITHUB_TOKEN,
     GITLAB_TOKEN,
     BITBUCKET_TOKEN
   } = process.env;
   return (
-    REPO_TOKEN || repo_token || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
+    REPO_TOKEN || repoToken || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
   );
+};
+
+const inferDriver = (opts = {}) => {
+  const { repo } = opts;
+  if (repo && repo.includes('github.com')) return GITHUB;
+  if (repo && repo.includes('gitlab.com')) return GITLAB;
+  if (repo && repo.includes('bitbucket.com')) return BB;
+
+  if (GITHUB_REPOSITORY) return GITHUB;
+  if (CI_PROJECT_URL) return GITLAB;
+  if (BITBUCKET_REPO_UUID) return BB;
+};
+
+const getDriver = (opts) => {
+  const { driver, repo, token } = opts;
+  if (!driver) throw new Error('driver not set');
+
+  if (driver === GITHUB) return new Github({ repo, token });
+  if (driver === GITLAB) return new Gitlab({ repo, token });
+  if (driver === BB) return new BitBucketCloud({ repo, token });
+
+  throw new Error(`driver ${driver} unknown!`);
 };
 
 class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
 
-    this.repo = uri_no_trailing_slash(repo || repo_from_origin());
-    this.token = token || infer_token();
-    this.driver = driver || infer_driver({ repo: this.repo });
+    this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
+      /\.git$/,
+      ''
+    );
+    this.token = token || inferToken();
+    this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async head_sha() {
-    if (process.env.GITHUB_EVENT_NAME === 'pull_request')
-      return require('@actions/github').context.payload.pull_request.head.sha;
-
-    return (await exec(`git rev-parse HEAD`)).replace(/(\r\n|\n|\r)/gm, '');
+  async headSha() {
+    const { sha } = getDriver(this);
+    return sha || (await exec(`git rev-parse HEAD`));
   }
 
-  async comment_create(opts = {}) {
-    const sha = await this.head_sha();
-    const { report: user_report, commit_sha = sha, rm_watermark } = opts;
-    const watermark = rm_watermark
+  async branch() {
+    const { branch } = getDriver(this);
+    return branch || (await exec(`git branch --show-current`));
+  }
+
+  async commentCreate(opts = {}) {
+    const {
+      report: userReport,
+      commitSha = await this.headSha(),
+      rmWatermark
+    } = opts;
+    const watermark = rmWatermark
       ? ''
       : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
-    const report = `${user_report}${watermark}`;
+    const report = `${userReport}${watermark}`;
 
-    return await get_driver(this).comment_create({
+    return await getDriver(this).commentCreate({
       ...opts,
       report,
-      commit_sha
+      commitSha
     });
   }
 
-  async check_create(opts = {}) {
-    const sha = await this.head_sha();
-    opts.head_sha = opts.head_sha || sha;
+  async checkCreate(opts = {}) {
+    const { headSha = await this.headSha() } = opts;
 
-    return await get_driver(this).check_create(opts);
+    return await getDriver(this).checkCreate({ ...opts, headSha });
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlab_uploads, rm_watermark } = opts;
+    const { title = '', md, native, gitlabUploads, rmWatermark } = opts;
 
     let mime, uri;
-    if (native || gitlab_uploads) {
-      const client = get_driver(this);
-      ({ mime, uri } = await client.upload(opts));
+    if (native || gitlabUploads) {
+      ({ mime, uri } = await getDriver(this).upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
     }
 
-    if (!rm_watermark) {
+    if (!rmWatermark) {
       const [, type] = mime.split('/');
-      uri = watermark_uri({ uri, type });
+      uri = watermarkUri({ uri, type });
     }
 
     if (md && mime.match('(image|video)/.*'))
@@ -123,11 +139,11 @@ class CML {
     return uri;
   }
 
-  async runner_token() {
-    return await get_driver(this).runner_token();
+  async runnerToken() {
+    return await getDriver(this).runnerToken();
   }
 
-  parse_runner_log(opts = {}) {
+  parseRunnerLog(opts = {}) {
     let { data } = opts;
     if (!data) return;
 
@@ -140,7 +156,7 @@ class CML {
         repo: this.repo
       };
 
-      if (this.driver === 'github') {
+      if (this.driver === GITHUB) {
         if (data.includes('Running job')) {
           log.job = '';
           log.status = 'job_started';
@@ -160,7 +176,7 @@ class CML {
         }
       }
 
-      if (this.driver === 'gitlab') {
+      if (this.driver === GITLAB) {
         const { msg, job } = JSON.parse(data);
 
         if (msg.endsWith('received')) {
@@ -186,61 +202,53 @@ class CML {
     }
   }
 
-  async start_runner(opts = {}) {
-    return await get_driver(this).start_runner(opts);
+  async startRunner(opts = {}) {
+    return await getDriver(this).startRunner(opts);
   }
 
-  async register_runner(opts = {}) {
-    return await get_driver(this).register_runner(opts);
+  async registerRunner(opts = {}) {
+    return await getDriver(this).registerRunner(opts);
   }
 
-  async unregister_runner(opts = {}) {
-    return await get_driver(this).unregister_runner(opts);
+  async unregisterRunner(opts = {}) {
+    return await getDriver(this).unregisterRunner(opts);
   }
 
-  async runner_by_name(opts = {}) {
-    return await get_driver(this).runner_by_name(opts);
+  async runnerByName(opts = {}) {
+    return await getDriver(this).runnerByName(opts);
   }
 
-  async runners_by_labels(opts = {}) {
-    return await get_driver(this).runners_by_labels(opts);
+  async runnersByLabels(opts = {}) {
+    return await getDriver(this).runnersByLabels(opts);
   }
 
-  async await_runner(opts = {}) {
-    const { name, max_tries = 100 } = opts;
-
-    let timer = 0;
-    return new Promise((resolve, reject) => {
-      const interval = setInterval(async () => {
-        const runner = await this.runner_by_name({ name });
-
-        if (runner) {
-          clearInterval(interval);
-          resolve(runner);
-        }
-
-        if (timer >= max_tries) {
-          clearInterval(interval);
-          reject(new Error('Waiting for runner expiration timeout'));
-        }
-
-        timer += 1;
-      }, 10 * 1000);
-    });
-  }
-
-  async repo_token_check() {
+  async repoTokenCheck() {
     try {
-      await this.runner_token();
+      await this.runnerToken();
     } catch (err) {
-      throw new Error(
-        'REPO_TOKEN does not have enough permissions to access workflow API'
-      );
+      if (err.message === 'Bad credentials')
+        err.message += ', REPO_TOKEN should be a personal access token';
+      throw err;
     }
   }
 
-  async pr_create(opts = {}) {
-    const { globs = ['dvc.lock', '.gitignore'], md } = opts;
+  async prCreate(opts = {}) {
+    const driver = getDriver(this);
+    const {
+      remote = GIT_REMOTE,
+      userEmail = GIT_USER_EMAIL,
+      userName = GIT_USER_NAME,
+      globs = ['dvc.lock', '.gitignore'],
+      md
+    } = opts;
+
+    const renderPr = (url) => {
+      if (md)
+        return `[CML's ${
+          this.driver === GITLAB ? 'Merge' : 'Pull'
+        } Request](${url})`;
+      return url;
+    };
 
     const { files } = await git.status();
     if (!files.length) {
@@ -248,83 +256,80 @@ class CML {
       return;
     }
 
-    const driver = get_driver(this);
     const paths = (await globby(globs)).filter((path) =>
-      files.map((item) => item.path).includes(path)
+      files.map((file) => file.path).includes(path)
     );
-
-    const render_pr = (url) => {
-      if (md)
-        return `[CML's ${
-          this.driver === 'gitlab' ? 'Merge' : 'Pull'
-        } Request](${url})`;
-      return url;
-    };
-
-    const sha = await exec(`git rev-parse HEAD`);
-    const sha_short = sha.substr(0, 7);
-    let target = await exec(`git branch --show-current`);
-    if (!target) {
-      if (this.driver === 'gitlab') {
-        target = await exec('echo $CI_BUILD_REF_NAME');
-      }
+    if (!paths.length) {
+      console.log('Input files are not affected. Nothing to do.');
+      return;
     }
-    const source = `${target}-cmlpr-${sha_short}`;
 
-    await exec(`git fetch origin`);
+    const sha = await this.headSha();
+    const shaShort = sha.substr(0, 8);
 
-    const branch_exists = (await exec(`git branch -r`)).includes(source);
-    if (branch_exists) {
+    const target = await this.branch();
+    const source = `${target}-cml-pr-${shaShort}`;
+
+    const branchExists = (
+      await exec(
+        `git ls-remote $(git config --get remote.${remote}.url) ${source}`
+      )
+    ).includes(source);
+
+    if (branchExists) {
       const prs = await driver.prs();
       const { url } =
-        prs.find((pr) => pr.source === source && pr.target === target) || {};
+        prs.find(
+          (pr) => source.endsWith(pr.source) && target.endsWith(pr.target)
+        ) || {};
 
-      if (url) return render_pr(url);
+      if (url) return renderPr(url);
     } else {
-      try {
-        await exec(`git config --local user.email "david@iterative.ai"`);
-        await exec(`git config --local user.name "cml-bot"`);
-        await exec('git config advice.addIgnoredFile false');
+      await exec(`git config --local user.email "${userEmail}"`);
+      await exec(`git config --local user.name "${userName}"`);
 
-        if (this.driver !== 'github') {
+      if (CI) {
+        if (this.driver === GITLAB) {
           const repo = new URL(this.repo);
           repo.password = this.token;
-          repo.username = driver.user_name;
+          repo.username = driver.userName;
 
-          await exec(`git remote rm origin`);
-          await exec(`git remote add origin "${repo.toString()}.git"`);
+          await exec(`git remote rm ${remote}`);
+          await exec(`git remote add ${remote} "${repo.toString()}.git"`);
         }
-
-        await exec(`git checkout -B ${target} ${sha}`);
-        await exec(`git checkout -b ${source}`);
-        await exec(`git add ${paths.join(' ')}`);
-        await exec(`git commit -m "CML [skip ci]"`);
-        await exec(`git push --set-upstream origin ${source}`);
-        await exec(`git checkout -B ${target} ${sha}`);
-      } catch (err) {
-        await exec(`git checkout -B ${target} ${sha}`);
-        throw err;
       }
+
+      await exec(`git checkout -B ${target} ${sha}`);
+      await exec(`git checkout -b ${source}`);
+      await exec(`git add ${paths.join(' ')}`);
+      await exec(`git commit -m "CML PR for ${shaShort} [skip ci]"`);
+      await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML commits ${target} ${sha_short}`;
+    const title = `CML PR for ${target} ${shaShort}`;
     const description = `
-  Automated commits for ${this.repo}/commit/${sha} created by CML.
+Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
 
-    const url = await driver.pr_create({
+    const url = await driver.prCreate({
       source,
       target,
       title,
       description
     });
 
-    return render_pr(url);
+    return renderPr(url);
   }
 
-  log_error(e) {
+  logError(e) {
     console.error(e.message);
   }
 }
 
-module.exports = CML;
+module.exports = {
+  CML,
+  GIT_USER_EMAIL,
+  GIT_USER_NAME,
+  GIT_REMOTE,
+  default: CML
+};

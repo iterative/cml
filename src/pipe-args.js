@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports.piped = false;
-module.exports.piped_arg = () => {
+module.exports.pipedArg = () => {
   const { argv } = process;
 
   return this.piped ? argv[argv.length - 1] : undefined;
@@ -24,6 +24,7 @@ module.exports.load = (format) => {
 
       chunks.push(buffer.slice(0, nbytes));
     } catch (err) {
+      if (err.code === 'EOF') break; // HACK: see nodejs/node#35997
       if (err.code !== 'EAGAIN') throw err;
     }
   }

@@ -5,26 +5,16 @@ console.log = console.error;
 const fs = require('fs').promises;
 const yargs = require('yargs');
 
-const CML = require('../src/cml');
+const CML = require('../src/cml').default;
 
 const run = async (opts) => {
-  const {
-    'commit-sha': sha,
-    'head-sha': head_sha,
-    'rm-watermark': rm_watermark
-  } = opts;
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
-
   const cml = new CML(opts);
-  await cml.comment_create({
-    report,
-    commit_sha: sha || head_sha,
-    rm_watermark
-  });
+  await cml.commentCreate({ ...opts, report });
 };
 
-const argv = yargs
+const opts = yargs
   .strict()
   .usage('Usage: $0 <path to markdown file>')
   .default('commit-sha')
@@ -32,9 +22,7 @@ const argv = yargs
     'commit-sha',
     'Commit SHA linked to this comment. Defaults to HEAD.'
   )
-  .default('head-sha')
-  .describe('head-sha', 'Commit SHA linked to this comment. Defaults to HEAD.')
-  .deprecateOption('head-sha', 'Use commit-sha instead')
+  .alias('commit-sha', 'head-sha')
   .boolean('rm-watermark')
   .describe(
     'rm-watermark',
@@ -56,7 +44,7 @@ const argv = yargs
   .help('h')
   .demand(1).argv;
 
-run(argv).catch((e) => {
+run(opts).catch((e) => {
   console.error(e);
   process.exit(1);
 });
