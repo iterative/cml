@@ -4,23 +4,27 @@ on:
     - cron: 0 0 * * *
   release:
     types: [published]
-  pull_request:
+  pull_request_target:
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
       - run: npm ci
       - run: npm run lint
   test:
     environment:
-      ${{ (github.event_name == 'pull_request' &&
+      ${{ (github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository) &&
       'test-external' || 'test-internal' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
       - uses: actions/setup-python@v2
       - run: pip install tensorboard
@@ -42,6 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
         with:
           registry-url: https://registry.npmjs.org
@@ -73,6 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
           fetch-depth: 0
       - name: Metadata
         id: metadata
