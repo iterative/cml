@@ -6,11 +6,14 @@ on:
     types: [published]
   pull_request_target:
 jobs:
-  lint:
+  authorize:
     environment:
       ${{ (github.event_name == 'pull_request_target' &&
       github.event.pull_request.head.repo.full_name != github.repository) &&
-      'test-external' || 'test-internal' }}
+      'external' || 'internal' }}
+    runs-on: ubuntu-latest
+  lint:
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -20,10 +23,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
   test:
-    environment:
-      ${{ (github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.full_name != github.repository) &&
-      'test-external' || 'test-internal' }}
+    needs: authorize
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
