@@ -4,7 +4,7 @@
 
 [![GHA](https://img.shields.io/github/v/tag/iterative/setup-cml?label=GitHub%20Actions&logo=GitHub)](https://github.com/iterative/setup-cml)
 [![npm](https://img.shields.io/npm/v/@dvcorg/cml?logo=npm)](https://www.npmjs.com/package/@dvcorg/cml)
-
+ 
 **What is CML?** Continuous Machine Learning (CML) is an open-source library for
 implementing continuous integration & delivery (CI/CD) in machine learning
 projects. Use it to automate parts of your development workflow, including model
