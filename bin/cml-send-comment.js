@@ -44,7 +44,7 @@ const opts = yargs
     'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
   )
   .default('driver')
-  .choices('driver', ['github', 'gitlab'])
+  .choices('driver', ['github', 'gitlab', 'bitbucket'])
   .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;

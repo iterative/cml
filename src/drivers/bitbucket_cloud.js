@@ -22,39 +22,62 @@ class BitBucketCloud {
 
   async commentCreate(opts = {}) {
     const { projectPath } = this;
-    const { commitSha, report } = opts;
+    const { commitSha, report, update, watermark } = opts;
 
-    // Make a comment in the commit
     const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
-    const commitBody = JSON.stringify({ content: { raw: report } });
-    const commitOutput = await this.request({
-      endpoint: commitEndpoint,
-      method: 'POST',
-      body: commitBody
-    });
+
+    const existingCommmit = (
+      await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
+    )
+      .filter(
+        (comment) =>
+          comment.content.raw && comment.content.raw.endsWith(watermark)
+      )
+      .sort((first, second) => first.id < second.id)
+      .pop();
+
+    const commitOutput = (
+      await this.request({
+        endpoint:
+          commitEndpoint +
+          (update && existingCommmit ? existingCommmit.id : ''),
+        method: update && existingCommmit ? 'PUT' : 'POST',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
 
     // Check for a corresponding PR. If it exists, also put the comment there.
-    const getPrEndpt = `/repositories/${projectPath}/commit/${commitSha}/pullrequests`;
-    const { values: prs } = await this.request({ endpoint: getPrEndpt });
+    let prs;
+    try {
+      const getPrEndpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests`;
+      prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
+    } catch (err) {
+      if (err.message !== 'Not Found Resource not found') throw err;
+    }
 
     if (prs && prs.length) {
       for (const pr of prs) {
-        try {
-          // Append a watermark to the report with a link to the commit
-          const commitLink = commitSha.substr(0, 7);
-          const longReport = `${commitLink}   \n${report}`;
-          const prBody = JSON.stringify({ content: { raw: longReport } });
+        // Append a watermark to the report with a link to the commit
+        const commitLink = commitSha.substr(0, 7);
+        const longReport = `${commitLink}   \n${report}`;
+        const prBody = JSON.stringify({ content: { raw: longReport } });
 
-          // Write a comment on the PR
-          const prEndpoint = `/repositories/${projectPath}/pullrequests/${pr.id}/comments`;
-          await this.request({
-            endpoint: prEndpoint,
-            method: 'POST',
-            body: prBody
-          });
-        } catch (err) {
-          console.debug(err.message);
-        }
+        // Write a comment on the PR
+        const prEndpoint = `/repositories/${projectPath}/pullrequests/${pr.id}/comments/`;
+        const existingPr = (
+          await this.paginatedRequest({ endpoint: prEndpoint, method: 'GET' })
+        )
+          .filter(
+            (comment) =>
+              comment.content.raw && comment.content.raw.endsWith(watermark)
+          )
+          .sort((first, second) => first.id < second.id)
+          .pop();
+        await this.request({
+          endpoint: prEndpoint + (update && existingPr ? existingPr.id : ''),
+          method: update && existingPr ? 'PUT' : 'POST',
+          body: prBody
+        });
       }
     }
 
@@ -150,14 +173,14 @@ class BitBucketCloud {
 
   async request(opts = {}) {
     const { token, api } = this;
-    const { endpoint, method = 'GET', body } = opts;
-
-    if (!endpoint) throw new Error('BitBucket Cloud API endpoint not found');
+    const { fullEndpoint, endpoint, method = 'GET', body } = opts;
+    if (!(endpoint || fullEndpoint))
+      throw new Error('BitBucket Cloud API endpoint not found');
     const headers = {
       'Content-Type': 'application/json',
       Authorization: 'Basic ' + `${token}`
     };
-    const url = `${api}${endpoint}`;
+    const url = fullEndpoint || `${api}${endpoint}`;
     const response = await fetch(url, { method, headers, body });
 
     if (response.status > 300) {
@@ -168,6 +191,22 @@ class BitBucketCloud {
     }
 
     return await response.json();
+  }
+
+  async paginatedRequest(opts = {}) {
+    const { method = 'GET', body } = opts;
+    const result = await this.request(opts);
+
+    if (result.next) {
+      const next = await this.paginatedRequest({
+        fullEndpoint: result.next,
+        method,
+        body
+      });
+      result.values.push(...next);
+    }
+
+    return result.values;
   }
 
   get sha() {

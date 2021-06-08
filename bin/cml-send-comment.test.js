@@ -21,6 +21,8 @@ describe('Comment integration tests', () => {
       Options:
         --version                 Show version number                        [boolean]
         --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
+        --update                  Update the last CML comment (if any) instead of
+                                  creating a new one                         [boolean]
         --rm-watermark            Avoid watermark. CML needs a watermark to be able to
                                   distinguish CML reports from other comments in order
                                   to provide extra functionality.            [boolean]
@@ -29,7 +31,7 @@ describe('Comment integration tests', () => {
         --token                   Personal access token to be used. If not specified
                                   is extracted from ENV REPO_TOKEN.
         --driver                  If not specify it infers it from the ENV.
-                                                         [choices: \\"github\\", \\"gitlab\\"]
+                                            [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
         -h                        Show help                                  [boolean]"
     `);
   });
