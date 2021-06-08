@@ -89,7 +89,7 @@ const shutdown = async (opts) => {
       if (RUNNER_JOBS_RUNNING.length) {
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
-            async (jobId) => await cml.pipelineRestart({ jobId })
+            async (job) => await cml.pipelineRestart({ jobId: job.id })
           )
         );
       }
@@ -218,7 +218,7 @@ const runLocal = async (opts) => {
     log && console.log(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push(log.job);
+      RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
       RUNNER_TIMEOUT_TIMER = 0;
     } else if (log && log.status === 'job_ended') {
       const { job } = log;
@@ -230,7 +230,7 @@ const runLocal = async (opts) => {
               .map((job) => job.id);
 
         RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
-          (id) => !jobs.includes(id)
+          (job) => !jobs.includes(job.id)
         );
       }
     }
@@ -251,6 +251,19 @@ const runLocal = async (opts) => {
 
       if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
     }, 1000);
+  }
+
+  if (cml.driver === 'github') {
+    const watcher = setInterval(() => {
+      RUNNER_JOBS_RUNNING.forEach((job) => {
+        const seventyTwoMinusFive = 72 * 60 * 60 * 1000 - 5 * 60 * 1000;
+        if (
+          new Date().getTime() - new Date(job.date).getTime() >
+          seventyTwoMinusFive
+        )
+          shutdown(opts) && clearInterval(watcher);
+      });
+    }, 60 * 1000);
   }
 
   RUNNER = proc;
