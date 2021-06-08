@@ -372,7 +372,6 @@ class Github {
         run_id
       });
     } catch (err) {
-      console.log(err);
       // HANDLES: Cannot cancel a workflow run that is completed.
     }
 
@@ -382,9 +381,7 @@ class Github {
         repo,
         run_id
       });
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   }
 
   get sha() {
