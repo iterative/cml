@@ -11,7 +11,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
-  await cml.commentCreate({ ...opts, report });
+  console.log(await cml.commentCreate({ ...opts, report }));
 };
 
 const opts = yargs
@@ -23,6 +23,11 @@ const opts = yargs
     'Commit SHA linked to this comment. Defaults to HEAD.'
   )
   .alias('commit-sha', 'head-sha')
+  .boolean('update')
+  .describe(
+    'update',
+    'Update the last CML comment (if any) instead of creating a new one'
+  )
   .boolean('rm-watermark')
   .describe(
     'rm-watermark',
