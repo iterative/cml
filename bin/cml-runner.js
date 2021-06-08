@@ -86,7 +86,6 @@ const shutdown = async (opts) => {
     await sleep(RUNNER_DESTROY_DELAY);
 
     try {
-      console.log('RUNNER_JOBS_RUNNING', RUNNER_JOBS_RUNNING);
       if (RUNNER_JOBS_RUNNING.length) {
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
