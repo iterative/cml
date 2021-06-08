@@ -22,6 +22,7 @@ const {
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
   RUNNER_REUSE = false,
+  RUNNER_RETRY = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   REPO_TOKEN
@@ -39,7 +40,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, workdir = '', tfResource } = opts;
+  const { name, workdir = '', tfResource, retry } = opts;
   const tfPath = workdir;
 
   console.log(
@@ -86,7 +87,7 @@ const shutdown = async (opts) => {
     await sleep(RUNNER_DESTROY_DELAY);
 
     try {
-      if (RUNNER_JOBS_RUNNING.length) {
+      if (retry && RUNNER_JOBS_RUNNING.length) {
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
             async (job) => await cml.pipelineRestart({ jobId: job.id })
@@ -203,7 +204,7 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout } = opts;
+  const { workdir, name, labels, single, idleTimeout, retry } = opts;
 
   const proc = await cml.startRunner({
     workdir,
@@ -253,7 +254,7 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  if (cml.driver === 'github') {
+  if (retry && cml.driver === 'github') {
     const watcher = setInterval(() => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         const seventyTwoMinusFive = 72 * 60 * 60 * 1000 - 5 * 60 * 1000;
@@ -351,6 +352,12 @@ const opts = yargs
   .default('name', RUNNER_NAME)
   .describe('name', 'Name displayed in the repository once registered')
 
+  .boolean('retry')
+  .default('retry', RUNNER_RETRY)
+  .describe(
+    'single',
+    'Automatically retries a run which jobs did not finish due to runner disposal or reached 72 hours in Github'
+  )
   .boolean('single')
   .default('single', RUNNER_SINGLE)
   .describe('single', 'Exit after running a single job')
