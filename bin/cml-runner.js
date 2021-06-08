@@ -355,7 +355,7 @@ const opts = yargs
   .boolean('retry')
   .default('retry', RUNNER_RETRY)
   .describe(
-    'single',
+    'retry',
     'Automatically retries a run which jobs did not finish due to runner disposal or reached 72 hours in Github'
   )
   .boolean('single')

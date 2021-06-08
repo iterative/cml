@@ -455,7 +455,10 @@ Options:
                                jobs before shutting down. Setting it to 0
                                disables automatic shutdown        [default: 300]
   --name                       Name displayed in the repository once registered
-                                                     [default: "cml-4wdd123kha"]
+                                                     [default: "cml-byujx1p0jz"]
+  --retry                      Automatically retries a run which jobs did not
+                               finish due to runner disposal or reached 72 hours
+                               in Github              [boolean] [default: false]
   --single                     Exit after running a single job
                                                       [boolean] [default: false]
   --reuse                      Don't launch a new runner if an existing one has
@@ -471,14 +474,15 @@ Options:
                                runner on the repository. If not specified, it
                                will be inferred from the environment
   --cloud                      Cloud to deploy the runner
-                                                       [choices: "aws", "azure"]
+                                         [choices: "aws", "azure", "kubernetes"]
   --cloud-region               Region where the instance is deployed. Choices:
                                [us-east, us-west, eu-west, eu-north]. Also
                                accepts native cloud regions [default: "us-west"]
   --cloud-type                 Instance type. Choices: [m, l, xl]. Also supports
                                native types like i.e. t2.micro
-  --cloud-gpu                  GPU type.      [choices: "nogpu", "k80", "tesla"]
-  --cloud-hdd-size             HDD size in GB.
+  --cloud-gpu                  GPU type.
+                                      [choices: "nogpu", "k80", "v100", "tesla"]
+  --cloud-hdd-size             HDD size in GB
   --cloud-ssh-private          Custom private RSA SSH key. If not provided an
                                automatically generated throwaway key will be
                                used                                [default: ""]
