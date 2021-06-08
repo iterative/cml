@@ -230,6 +230,30 @@ class Gitlab {
     });
   }
 
+  async pipelineRestart(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { jobId } = opts;
+
+    const {
+      pipeline: { id }
+    } = await this.request({
+      endpoint: `/projects/${projectPath}/jobs/${jobId}`
+    });
+
+    let status;
+    while (!status || status === 'running')
+      ({ status } = await this.request({
+        endpoint: `/projects/${projectPath}/pipelines/${id}/cancel`,
+        method: 'POST'
+      }));
+
+    while (status !== 'running')
+      ({ status } = await this.request({
+        endpoint: `/projects/${projectPath}/pipelines/${id}/retry`,
+        method: 'POST'
+      }));
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;

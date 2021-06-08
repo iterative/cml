@@ -17,7 +17,7 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_DESTROY_DELAY = 30,
+  RUNNER_DESTROY_DELAY = 10,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
@@ -28,10 +28,10 @@ const {
 } = process.env;
 
 let cml;
-let RUNNER_LAUNCHED = false;
+let RUNNER;
 let RUNNER_TIMEOUT_TIMER = 0;
 let RUNNER_SHUTTING_DOWN = false;
-const RUNNER_JOBS_RUNNING = [];
+let RUNNER_JOBS_RUNNING = [];
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -39,7 +39,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, workdir = '' } = opts;
+  const { name, workdir = '', tfResource } = opts;
   const tfPath = workdir;
 
   console.log(
@@ -49,7 +49,7 @@ const shutdown = async (opts) => {
 
   const unregisterRunner = async () => {
     try {
-      console.log('Unregistering runner...');
+      console.log(`Unregistering runner ${name}...`);
       await cml.unregisterRunner({ name });
       console.log('\tSuccess');
     } catch (err) {
@@ -61,28 +61,12 @@ const shutdown = async (opts) => {
   const shutdownDockerMachine = async () => {
     console.log('docker-machine destroy...');
     console.log(
-      'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
+      'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
       await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
     } catch (err) {
       console.error(`\tFailed shutting down docker machine: ${err.message}`);
-      error = err;
-    }
-  };
-
-  const shutdownTf = async () => {
-    const { tfResource } = opts;
-
-    if (!tfResource) {
-      console.log(`\tNo TF resource found`);
-      return;
-    }
-
-    try {
-      await tf.destroy({ dir: tfPath });
-    } catch (err) {
-      console.error(`\tFailed Terraform destroy: ${err.message}`);
       error = err;
     }
   };
@@ -99,17 +83,33 @@ const shutdown = async (opts) => {
   if (cloud) {
     await destroyTerraform();
   } else {
-    RUNNER_LAUNCHED && (await unregisterRunner());
-
-    console.log(
-      `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
-    );
     await sleep(RUNNER_DESTROY_DELAY);
 
+    try {
+      console.log('RUNNER_JOBS_RUNNING', RUNNER_JOBS_RUNNING);
+      if (RUNNER_JOBS_RUNNING.length) {
+        await Promise.all(
+          RUNNER_JOBS_RUNNING.map(
+            async (jobId) => await cml.pipelineRestart({ jobId })
+          )
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    RUNNER && (await unregisterRunner());
+
+    if (!tfResource) {
+      console.log(`\tNo TF resource found`);
+    } else {
+      await destroyTerraform();
+    }
+
     DOCKER_MACHINE && (await shutdownDockerMachine());
-    await shutdownTf();
   }
 
+  RUNNER && RUNNER.kill('SIGINT');
   process.exit(error ? 1 : 0);
 };
 
@@ -214,17 +214,29 @@ const runLocal = async (opts) => {
     idleTimeout
   });
 
-  const dataHandler = (data) => {
-    const log = cml.parseRunnerLog({ data });
+  const dataHandler = async (data) => {
+    const log = await cml.parseRunnerLog({ data });
     log && console.log(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push(1);
+      RUNNER_JOBS_RUNNING.push(log.job);
       RUNNER_TIMEOUT_TIMER = 0;
     } else if (log && log.status === 'job_ended') {
-      RUNNER_JOBS_RUNNING.pop();
+      const { job } = log;
+      if (!RUNNER_SHUTTING_DOWN) {
+        const jobs = job
+          ? [job]
+          : (await cml.pipelineJobs({ ids: RUNNER_JOBS_RUNNING }))
+              .filter((job) => job.status === 'completed')
+              .map((job) => job.id);
+
+        RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
+          (id) => !jobs.includes(id)
+        );
+      }
     }
   };
+
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
@@ -242,7 +254,7 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  RUNNER_LAUNCHED = true;
+  RUNNER = proc;
 };
 
 const run = async (opts) => {

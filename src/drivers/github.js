@@ -144,18 +144,18 @@ class Github {
     const { name } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
-    const { id: runnerId } = await this.runnerByName({ name });
+    const { id: runner_id } = await this.runnerByName({ name });
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runnerId
+        runner_id
       });
     } else {
       await actions.deleteSelfHostedRunnerFromOrg({
         org: owner,
-        runnerId
+        runner_id
       });
     }
   }
@@ -170,7 +170,7 @@ class Github {
         await fs.unlink(runnerCfg);
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
-        const ver = '2.274.2';
+        const ver = '2.278.0';
         const destination = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: destination });
@@ -226,7 +226,7 @@ class Github {
   async runnerByName(opts = {}) {
     const { name } = opts;
     const runners = await this.getRunners(opts);
-    const runner = runners.filter((runner) => runner.name === name)[0];
+    const runner = runners.find((runner) => runner.name === name);
     if (runner) return { id: runner.id, name: runner.name };
   }
 
@@ -286,6 +286,105 @@ class Github {
         target: branchName(target)
       };
     });
+  }
+
+  async pipelineJobs(opts = {}) {
+    const { ids } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    const jobs = await Promise.all(
+      ids.map(async (id) => {
+        const { data } = await actions.getJobForWorkflowRun({
+          owner,
+          repo,
+          job_id: id
+        });
+
+        return data;
+      })
+    );
+
+    return jobs.map((job) => {
+      const { id, started_at: date, run_id: runId, status } = job;
+      return { id, date, runId, status };
+    });
+  }
+
+  async job(opts = {}) {
+    const { time, status = 'queued' } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    const {
+      data: { workflow_runs: workflowRuns }
+    } = await actions.listWorkflowRunsForRepo({
+      owner,
+      repo,
+      status
+    });
+
+    let runJobs = await Promise.all(
+      workflowRuns.map(async (run) => {
+        const {
+          data: { jobs }
+        } = await actions.listJobsForWorkflowRun({
+          owner,
+          repo,
+          run_id: run.id,
+          status
+        });
+
+        return jobs;
+      })
+    );
+
+    runJobs = [].concat.apply([], runJobs).map((job) => {
+      const { id, started_at: date, run_id: runId } = job;
+      return { id, date, runId };
+    });
+
+    const job = runJobs.reduce((prev, curr) => {
+      const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
+      return diffTime(curr) < diffTime(prev) ? curr : prev;
+    });
+
+    return job;
+  }
+
+  async pipelineRestart(opts = {}) {
+    const { jobId: job_id } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    const {
+      data: { run_id }
+    } = await actions.getJobForWorkflowRun({
+      owner,
+      repo,
+      job_id
+    });
+
+    try {
+      await actions.cancelWorkflowRun({
+        owner,
+        repo,
+        run_id
+      });
+    } catch (err) {
+      console.log(err);
+      // HANDLES: Cannot cancel a workflow run that is completed.
+    }
+
+    try {
+      await actions.reRunWorkflow({
+        owner,
+        repo,
+        run_id
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   get sha() {

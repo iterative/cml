@@ -86,7 +86,7 @@ class BitBucketCloud {
   }
 
   async runnersByLabels(opts = {}) {
-    throw new Error('BitBucket Cloud does not support runner_by_labels!');
+    throw new Error('BitBucket Cloud does not support runnerByLabels!');
   }
 
   async prCreate(opts = {}) {
@@ -146,6 +146,10 @@ class BitBucketCloud {
         target
       };
     });
+  }
+
+  async pipelineRestart(opts = {}) {
+    throw new Error('BitBucket Cloud does not support workflowRestart!');
   }
 
   async request(opts = {}) {
