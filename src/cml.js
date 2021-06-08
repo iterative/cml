@@ -9,12 +9,8 @@ const Github = require('./drivers/github');
 const BitBucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const {
-  GITHUB_REPOSITORY,
-  CI_PROJECT_URL,
-  BITBUCKET_REPO_UUID,
-  CI
-} = process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
+  process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -96,8 +92,11 @@ class CML {
     const {
       report: userReport,
       commitSha = await this.headSha(),
-      rmWatermark
+      rmWatermark,
+      update
     } = opts;
+    if (rmWatermark && update)
+      throw new Error('watermarks are mandatory for updateable comments');
     const watermark = rmWatermark
       ? ''
       : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
@@ -106,7 +105,8 @@ class CML {
     return await getDriver(this).commentCreate({
       ...opts,
       report,
-      commitSha
+      commitSha,
+      watermark
     });
   }
 
