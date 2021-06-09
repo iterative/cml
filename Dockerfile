@@ -18,6 +18,7 @@ RUN apt-get update \
     apt-utils \
     apt-transport-https \
     ca-certificates \
+    iputils-ping \
     software-properties-common \
     pkg-config \
     curl \
