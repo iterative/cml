@@ -144,18 +144,18 @@ class Github {
     const { name } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
-    const { id: runner_id } = await this.runnerByName({ name });
+    const { id } = await this.runnerByName({ name });
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runner_id
+        runner_id: id
       });
     } else {
       await actions.deleteSelfHostedRunnerFromOrg({
         org: owner,
-        runner_id
+        runner_id: id
       });
     }
   }
