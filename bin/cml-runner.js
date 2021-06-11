@@ -192,7 +192,7 @@ const runCloud = async (opts) => {
         const instance = instances[j];
 
         if (!cloudSshPrivateVisible) {
-          instance.attributes.sshPrivate = '[MASKED]';
+          instance.attributes.ssh_private = '[MASKED]';
         }
 
         instance.attributes.token = '[MASKED]';
