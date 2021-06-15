@@ -79,7 +79,8 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     sshPrivate,
     spot,
     spotPrice,
-    startupScript
+    startupScript,
+    awsSecurityGroup
   } = opts;
 
   return `
@@ -106,6 +107,7 @@ resource "iterative_cml_runner" "runner" {
   ${spot ? `spot = ${spot}` : ''}
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
   ${startupScript ? `startup_script = "${startupScript}"` : ''}
+  ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
 }
 `;
 };
