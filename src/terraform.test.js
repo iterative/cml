@@ -34,6 +34,7 @@ describe('Terraform tests', () => {
         
         
         
+        
       }
       "
     `);
@@ -55,7 +56,8 @@ describe('Terraform tests', () => {
       hddSize: 50,
       sshPrivate: 'myprivate',
       spot: true,
-      spotPrice: '0.0001'
+      spotPrice: '0.0001',
+      awsSecurityGroup: 'mysg'
     });
     expect(output).toMatchInlineSnapshot(`
       "
@@ -88,6 +90,7 @@ describe('Terraform tests', () => {
         spot = true
         spot_price = 0.0001
         
+        aws_security_group = \\"mysg\\"
       }
       "
     `);
@@ -141,6 +144,7 @@ describe('Terraform tests', () => {
         ssh_private = \\"myprivate\\"
         spot = true
         spot_price = 0.0001
+        
         
       }
       "
@@ -197,6 +201,7 @@ describe('Terraform tests', () => {
         spot = true
         spot_price = 0.0001
         startup_script = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
+        
       }
       "
     `);

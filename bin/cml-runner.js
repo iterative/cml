@@ -134,6 +134,7 @@ const runCloud = async (opts) => {
       cloudSpot: spot,
       cloudSpotPrice: spotPrice,
       cloudStartupScript: startupScript,
+      cloudAwsSecurityGroup: awsSecurityGroup,
       tfFile,
       workdir
     } = opts;
@@ -165,7 +166,8 @@ const runCloud = async (opts) => {
         sshPrivate,
         spot,
         spotPrice,
-        startupScript
+        startupScript,
+        awsSecurityGroup
       });
     }
 
@@ -394,6 +396,8 @@ const opts = yargs
     'cloud-startup-script',
     'Run the provided Base64-encoded Linux shell script during the instance initialization'
   )
+  .default('cloud-aws-security-group', '')
+  .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
   .default('tf-resource')
   .hide('tf-resource')
   .alias('tf-resource', 'tf_resource')
