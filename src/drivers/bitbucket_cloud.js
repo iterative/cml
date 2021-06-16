@@ -29,10 +29,10 @@ class BitBucketCloud {
     const existingCommmit = (
       await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
     )
-      .filter(
-        (comment) =>
-          comment.content.raw && comment.content.raw.endsWith(watermark)
-      )
+      .filter((comment) => {
+        const { content: { raw = '' } = {} } = comment;
+        return raw.endsWith(watermark);
+      })
       .sort((first, second) => first.id < second.id)
       .pop();
 
@@ -71,10 +71,10 @@ class BitBucketCloud {
         const existingPr = (
           await this.paginatedRequest({ endpoint: prEndpoint, method: 'GET' })
         )
-          .filter(
-            (comment) =>
-              comment.content.raw && comment.content.raw.endsWith(watermark)
-          )
+          .filter((comment) => {
+            const { content: { raw = '' } = {} } = comment;
+            return raw.endsWith(watermark);
+          })
           .sort((first, second) => first.id < second.id)
           .pop();
         await this.request({

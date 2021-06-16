@@ -80,7 +80,10 @@ class Github {
         commit_sha: commitSha
       })
     )
-      .filter((comment) => comment.body && comment.body.endsWith(watermark))
+      .filter((comment) => {
+        const { body = '' } = comment;
+        return body.endsWith(watermark);
+      })
       .sort((first, second) => first.id < second.id)
       .pop();
 
