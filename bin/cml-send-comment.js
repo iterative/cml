@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const print = console.log;
 console.log = console.error;
 
 const fs = require('fs').promises;
@@ -11,7 +12,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
-  console.log(await cml.commentCreate({ ...opts, report }));
+  print(await cml.commentCreate({ ...opts, report }));
 };
 
 const opts = yargs
