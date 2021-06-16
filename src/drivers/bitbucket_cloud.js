@@ -52,7 +52,11 @@ class BitBucketCloud {
       const getPrEndpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests`;
       prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
     } catch (err) {
-      if (err.message !== 'Not Found Resource not found') throw err;
+      if (err.message === 'Not Found Resource not found')
+        console.warn(
+          "Can't create a pull request comment: the Pull Request Commit Links application has not been installed."
+        );
+      else throw err;
     }
 
     if (prs && prs.length) {
