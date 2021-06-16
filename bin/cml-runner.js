@@ -114,8 +114,6 @@ const shutdown = async (opts) => {
 };
 
 const runCloud = async (opts) => {
-  const { cloudSshPrivateVisible } = opts;
-
   const runTerraform = async (opts) => {
     console.log('Terraform apply...');
 
@@ -184,21 +182,31 @@ const runCloud = async (opts) => {
   console.log('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
-  for (let i = 0; i < resources.length; i++) {
-    const resource = resources[i];
-
+  for (const resource of resources) {
     if (resource.type.startsWith('iterative_')) {
-      const { instances } = resource;
-
-      for (let j = 0; j < instances.length; j++) {
-        const instance = instances[j];
-
-        if (!cloudSshPrivateVisible) {
-          instance.attributes.ssh_private = '[MASKED]';
-        }
-
-        instance.attributes.token = '[MASKED]';
-        console.log(JSON.stringify(instance));
+      for (const { attributes } of resource.instances) {
+        const nonSensitiveValues = {
+          awsSecurityGroup: attributes.aws_security_group,
+          cloud: attributes.cloud,
+          driver: attributes.driver,
+          id: attributes.id,
+          idleTimeout: attributes.idle_timeout,
+          image: attributes.image,
+          instanceGpu: attributes.instance_gpu,
+          instanceHddSize: attributes.instance_hdd_size,
+          instanceIp: attributes.instance_ip,
+          instanceLaunchTime: attributes.instance_launch_time,
+          instanceType: attributes.instance_type,
+          labels: attributes.labels,
+          name: attributes.name,
+          region: attributes.region,
+          repo: attributes.repo,
+          single: attributes.single,
+          spot: attributes.spot,
+          spotPrice: attributes.spot_price,
+          timeouts: attributes.timeouts
+        };
+        console.log(JSON.stringify(nonSensitiveValues));
       }
     }
   }
@@ -378,11 +386,6 @@ const opts = yargs
   .describe(
     'cloud-ssh-private',
     'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-  )
-  .boolean('cloud-ssh-private-visible')
-  .describe(
-    'cloud-ssh-private-visible',
-    'Show the private SSH key in the output with the rest of the instance properties (not recommended)'
   )
   .boolean('cloud-spot')
   .describe('cloud-spot', 'Request a spot instance')
