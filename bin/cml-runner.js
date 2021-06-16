@@ -184,21 +184,31 @@ const runCloud = async (opts) => {
   console.log('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
-  for (let i = 0; i < resources.length; i++) {
-    const resource = resources[i];
-
-    if (resource.type.startsWith('iterative_')) {
-      const { instances } = resource;
-
-      for (let j = 0; j < instances.length; j++) {
-        const instance = instances[j];
-
-        if (!cloudSshPrivateVisible) {
-          instance.attributes.ssh_private = '[MASKED]';
-        }
-
-        instance.attributes.token = '[MASKED]';
-        console.log(JSON.stringify(instance));
+  for (const resource of resources) {
+    if (resource.type.startsWith('iterative_')) {    
+      for (const { attributes } of resource.instances) {
+        const nonSenstiveValues = {
+            awsSecurityGroup: attributes.aws_security_group,
+            cloud: attributes.cloud,
+            driver: attributes.driver,
+            id: attributes.id,
+            idleTimeout: attributes.idle_timeout,
+            image: attributes.image,
+            instanceGpu: attributes.instance_gpu,
+            instanceHddSize: attributes.instance_hdd_size,
+            instanceIp: attributes.instance_ip,
+            instanceLaunchTime: attributes.instance_launch_time,
+            instanceType: attributes.instance_type,
+            labels: attributes.labels,
+            name: attributes.name,
+            region: attributes.region,
+            repo: attributes.repo,
+            single: attributes.single,
+            spot: attributes.spot,
+            spotPrice: attributes.spot_price,
+            timeouts: attributes.timeouts
+        };
+        console.log(JSON.stringify(nonSensitiveValues));
       }
     }
   }
