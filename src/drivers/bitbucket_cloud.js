@@ -201,18 +201,18 @@ class BitBucketCloud {
 
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
-    const result = await this.request(opts);
+    const {next, values} = await this.request(opts);
 
-    if (result.next) {
-      const next = await this.paginatedRequest({
-        url: result.next,
+    if (next) {
+      const nextValues = await this.paginatedRequest({
+        url: next,
         method,
         body
       });
-      result.values.push(...next);
+      values.push(...nextValues);
     }
 
-    return result.values;
+    return values;
   }
 
   get sha() {
