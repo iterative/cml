@@ -1,4 +1,4 @@
-jest.setTimeout(20000);
+jest.setTimeout(120000);
 const BitBucketCloud = require('./bitbucket_cloud');
 const {
   TEST_BBCLOUD_TOKEN: TOKEN,
