@@ -184,10 +184,11 @@ class BitBucketCloud {
       'Content-Type': 'application/json',
       Authorization: 'Basic ' + `${token}`
     };
-    const response = await fetch(
-      url || `${api}${endpoint}`,
-      { method, headers, body }
-    );
+    const response = await fetch(url || `${api}${endpoint}`, {
+      method,
+      headers,
+      body
+    });
 
     if (response.status > 300) {
       const {
@@ -201,7 +202,7 @@ class BitBucketCloud {
 
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
-    const {next, values} = await this.request(opts);
+    const { next, values } = await this.request(opts);
 
     if (next) {
       const nextValues = await this.paginatedRequest({

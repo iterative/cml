@@ -72,7 +72,7 @@ class Github {
   async commentCreate(opts = {}) {
     const { report: body, commitSha, update, watermark } = opts;
 
-    const {paginate, repos } = octokit(this.token, this.repo);
+    const { paginate, repos } = octokit(this.token, this.repo);
 
     const existing = Object.values(
       await paginate(repos.listCommentsForCommit, {
