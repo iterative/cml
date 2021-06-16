@@ -109,12 +109,14 @@ into a CML report.
 Below is a table of CML functions for writing markdown reports and delivering
 those reports to your CI system (GitHub Actions or GitLab CI).
 
-| Function                | Description                                                    | Inputs                                                    |
-| ----------------------- | -------------------------------------------------------------- | --------------------------------------------------------- |
-| `cml-send-comment`      | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`                       |
-| `cml-send-github-check` | Return CML report as a check in GitHub                         | `<path to report> --head-sha <sha>`                       |
-| `cml-publish`           | Publish an image for writing to CML report.                    | `<path to image> --title <image title> --md`              |
-| `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                        | `--logdir <path to logs> --title <experiment title> --md` |
+| Function                | Description                                                    | Inputs                                                      |
+| ----------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| `cml-runner`            | Starts a runner locally or in cloud providers                  | See [Arguments](https://github.com/iterative/cml#arguments) |
+| `cml-publish`           | Publish an image for writing to CML report.                    | `<path to image> --title <image title> --md`                |
+| `cml-send-comment`      | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`                         |
+| `cml-send-github-check` | Return CML report as a check in GitHub                         | `<path to report> --head-sha <sha>`                         |
+| `cml-pr`                | Create a pull request.                                         | TODO                                                        |
+| `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                        | `--logdir <path to logs> --title <experiment title> --md`   |
 
 ### Customizing your CML report
 
