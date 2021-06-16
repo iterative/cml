@@ -185,28 +185,28 @@ const runCloud = async (opts) => {
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
   for (const resource of resources) {
-    if (resource.type.startsWith('iterative_')) {    
+    if (resource.type.startsWith('iterative_')) {
       for (const { attributes } of resource.instances) {
         const nonSenstiveValues = {
-            awsSecurityGroup: attributes.aws_security_group,
-            cloud: attributes.cloud,
-            driver: attributes.driver,
-            id: attributes.id,
-            idleTimeout: attributes.idle_timeout,
-            image: attributes.image,
-            instanceGpu: attributes.instance_gpu,
-            instanceHddSize: attributes.instance_hdd_size,
-            instanceIp: attributes.instance_ip,
-            instanceLaunchTime: attributes.instance_launch_time,
-            instanceType: attributes.instance_type,
-            labels: attributes.labels,
-            name: attributes.name,
-            region: attributes.region,
-            repo: attributes.repo,
-            single: attributes.single,
-            spot: attributes.spot,
-            spotPrice: attributes.spot_price,
-            timeouts: attributes.timeouts
+          awsSecurityGroup: attributes.aws_security_group,
+          cloud: attributes.cloud,
+          driver: attributes.driver,
+          id: attributes.id,
+          idleTimeout: attributes.idle_timeout,
+          image: attributes.image,
+          instanceGpu: attributes.instance_gpu,
+          instanceHddSize: attributes.instance_hdd_size,
+          instanceIp: attributes.instance_ip,
+          instanceLaunchTime: attributes.instance_launch_time,
+          instanceType: attributes.instance_type,
+          labels: attributes.labels,
+          name: attributes.name,
+          region: attributes.region,
+          repo: attributes.repo,
+          single: attributes.single,
+          spot: attributes.spot,
+          spotPrice: attributes.spot_price,
+          timeouts: attributes.timeouts
         };
         console.log(JSON.stringify(nonSensitiveValues));
       }
