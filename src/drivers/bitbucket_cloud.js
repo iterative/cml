@@ -177,15 +177,17 @@ class BitBucketCloud {
 
   async request(opts = {}) {
     const { token, api } = this;
-    const { fullEndpoint, endpoint, method = 'GET', body } = opts;
-    if (!(endpoint || fullEndpoint))
+    const { url, endpoint, method = 'GET', body } = opts;
+    if (!(url || endpoint))
       throw new Error('BitBucket Cloud API endpoint not found');
     const headers = {
       'Content-Type': 'application/json',
       Authorization: 'Basic ' + `${token}`
     };
-    const url = fullEndpoint || `${api}${endpoint}`;
-    const response = await fetch(url, { method, headers, body });
+    const response = await fetch(
+      url || `${api}${endpoint}`,
+      { method, headers, body }
+    );
 
     if (response.status > 300) {
       const {
@@ -203,7 +205,7 @@ class BitBucketCloud {
 
     if (result.next) {
       const next = await this.paginatedRequest({
-        fullEndpoint: result.next,
+        url: result.next,
         method,
         body
       });
