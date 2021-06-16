@@ -72,10 +72,10 @@ class Github {
   async commentCreate(opts = {}) {
     const { report: body, commitSha, update, watermark } = opts;
 
-    const rest = octokit(this.token, this.repo);
+    const {paginate, repos } = octokit(this.token, this.repo);
 
     const existing = Object.values(
-      await rest.paginate(rest.repos.listCommentsForCommit, {
+      await paginate(repos.listCommentsForCommit, {
         ...ownerRepo({ uri: this.repo }),
         commit_sha: commitSha
       })
@@ -86,7 +86,7 @@ class Github {
 
     if (update && existing) {
       return (
-        await rest.repos.updateCommitComment({
+        await repos.updateCommitComment({
           ...ownerRepo({ uri: this.repo }),
           comment_id: existing.id,
           body
@@ -94,7 +94,7 @@ class Github {
       ).data.html_url;
     } else {
       return (
-        await rest.repos.createCommitComment({
+        await repos.createCommitComment({
           ...ownerRepo({ uri: this.repo }),
           commit_sha: commitSha,
           body
