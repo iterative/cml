@@ -375,13 +375,23 @@ class Github {
       // HANDLES: Cannot cancel a workflow run that is completed.
     }
 
-    try {
-      await actions.reRunWorkflow({
-        owner,
-        repo,
-        run_id
-      });
-    } catch (err) {}
+    const {
+      data: { status }
+    } = await actions.getWorkflowRun({
+      owner,
+      repo,
+      run_id
+    });
+
+    if (status !== 'queued') {
+      try {
+        await actions.reRunWorkflow({
+          owner,
+          repo,
+          run_id
+        });
+      } catch (err) {}
+    }
   }
 
   get sha() {
