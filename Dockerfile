@@ -1,8 +1,7 @@
 ARG BASE_IMAGE=ubuntu:20.04
 FROM ${BASE_IMAGE}
 
-# TODO: consider using iterative.ai or something else
-LABEL maintainer="dvcorg <support@cml.dev>"
+LABEL maintainer="CML <support@cml.dev>"
 
 # CONFIGURE NON-INTERACTIVE APT
 ENV DEBIAN_FRONTEND=noninteractive
