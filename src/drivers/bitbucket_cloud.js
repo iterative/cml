@@ -24,28 +24,6 @@ class BitBucketCloud {
     const { projectPath } = this;
     const { commitSha, report, update, watermark } = opts;
 
-    const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
-
-    const existingCommmit = (
-      await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
-    )
-      .filter((comment) => {
-        const { content: { raw = '' } = {} } = comment;
-        return raw.endsWith(watermark);
-      })
-      .sort((first, second) => first.id < second.id)
-      .pop();
-
-    const commitOutput = (
-      await this.request({
-        endpoint:
-          commitEndpoint +
-          (update && existingCommmit ? existingCommmit.id : ''),
-        method: update && existingCommmit ? 'PUT' : 'POST',
-        body: JSON.stringify({ content: { raw: report } })
-      })
-    ).links.html.href;
-
     // Check for a corresponding PR. If it exists, also put the comment there.
     let prs;
     try {
@@ -53,10 +31,8 @@ class BitBucketCloud {
       prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
     } catch (err) {
       if (err.message === 'Not Found Resource not found')
-        console.warn(
-          "Can't create a pull request comment: the Pull Request Commit Links application has not been installed."
-        );
-      else throw err;
+        err.message = 'Click \'Go to pull request\' on any commit details page to enable this API'
+      throw err;
     }
 
     if (prs && prs.length) {
@@ -85,7 +61,27 @@ class BitBucketCloud {
       }
     }
 
-    return commitOutput;
+        const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
+
+    const existingCommmit = (
+      await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
+    )
+      .filter((comment) => {
+        const { content: { raw = '' } = {} } = comment;
+        return raw.endsWith(watermark);
+      })
+      .sort((first, second) => first.id < second.id)
+      .pop();
+
+    return (
+      await this.request({
+        endpoint:
+          commitEndpoint +
+          (update && existingCommmit ? existingCommmit.id : ''),
+        method: update && existingCommmit ? 'PUT' : 'POST',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;    
   }
 
   async checkCreate() {
