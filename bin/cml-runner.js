@@ -387,6 +387,7 @@ const opts = yargs
     'cloud-ssh-private',
     'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
   )
+  .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
   .boolean('cloud-spot')
   .describe('cloud-spot', 'Request a spot instance')
   .default('cloud-spot-price', '-1')
