@@ -33,6 +33,7 @@ let RUNNER;
 let RUNNER_TIMEOUT_TIMER = 0;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_JOBS_RUNNING = [];
+const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -259,10 +260,9 @@ const runLocal = async (opts) => {
   if (retry && cml.driver === 'github') {
     const watcher = setInterval(() => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
-        const seventyTwoMinusFive = 72 * 60 * 60 * 1000 - 5 * 60 * 1000;
         if (
           new Date().getTime() - new Date(job.date).getTime() >
-          seventyTwoMinusFive
+          GH_5_MIN_TIMEOUT
         )
           shutdown(opts) && clearInterval(watcher);
       });
@@ -351,14 +351,14 @@ const opts = yargs
     'idle-timeout',
     'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
   )
-  .default('name', RUNNER_NAME)
-  .describe('name', 'Name displayed in the repository once registered')
-
+  .default('name')
+  .describe('name', 'Name displayed in the repository once registered cml-{ID}')
+  .coerce('name', (val) => val || RUNNER_NAME)
   .boolean('retry')
   .default('retry', RUNNER_RETRY)
   .describe(
     'retry',
-    'Automatically retries a run which jobs did not finish due to runner disposal or reached 72 hours in Github'
+    'Automatically retry jobs terminated due to runner disposal or timeout (72 hours on Github)'
   )
   .boolean('single')
   .default('single', RUNNER_SINGLE)

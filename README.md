@@ -457,10 +457,10 @@ Options:
                                jobs before shutting down. Setting it to 0
                                disables automatic shutdown        [default: 300]
   --name                       Name displayed in the repository once registered
-                                                     [default: "cml-byujx1p0jz"]
-  --retry                      Automatically retries a run which jobs did not
-                               finish due to runner disposal or reached 72 hours
-                               in Github              [boolean] [default: false]
+                               cml-{ID}
+  --retry                      Automatically retry jobs terminated due to runner
+                               disposal or timeout (72 hours on Github)
+                                                      [boolean] [default: false]
   --single                     Exit after running a single job
                                                       [boolean] [default: false]
   --reuse                      Don't launch a new runner if an existing one has
@@ -498,6 +498,7 @@ Options:
   --cloud-startup-script       Run the provided Base64-encoded Linux shell
                                script during the instance initialization
                                                                    [default: ""]
+  --cloud-aws-security-group   Specifies the security group in AWS [default: ""]
   -h                           Show help                               [boolean]
 ```
 
