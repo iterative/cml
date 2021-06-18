@@ -163,7 +163,7 @@ const runCloud = async (opts) => {
         type,
         gpu: gpu === 'tesla' ? 'v100' : gpu,
         hddSize,
-        sshPrivate,
+        sshPrivate.replace(/\n/g, '\\n'),
         spot,
         spotPrice,
         startupScript,
