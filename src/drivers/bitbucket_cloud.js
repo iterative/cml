@@ -31,7 +31,8 @@ class BitBucketCloud {
       prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
     } catch (err) {
       if (err.message === 'Not Found Resource not found')
-        err.message = 'Click \'Go to pull request\' on any commit details page to enable this API'
+        err.message =
+          "Click 'Go to pull request' on any commit details page to enable this API";
       throw err;
     }
 
@@ -61,7 +62,7 @@ class BitBucketCloud {
       }
     }
 
-        const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
+    const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
 
     const existingCommmit = (
       await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
@@ -81,7 +82,7 @@ class BitBucketCloud {
         method: update && existingCommmit ? 'PUT' : 'POST',
         body: JSON.stringify({ content: { raw: report } })
       })
-    ).links.html.href;    
+    ).links.html.href;
   }
 
   async checkCreate() {
