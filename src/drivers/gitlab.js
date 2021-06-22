@@ -71,7 +71,9 @@ class Gitlab {
   }
 
   async commentCreate(opts = {}) {
-    const { commitSha, report } = opts;
+    const { commitSha, report, update } = opts;
+
+    if (update) throw new Error('GitLab does not support comment updates!');
 
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const print = console.log;
 console.log = console.error;
 
 const fs = require('fs').promises;
@@ -11,7 +12,7 @@ const run = async (opts) => {
   const path = opts._[0];
   const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
-  await cml.commentCreate({ ...opts, report });
+  print(await cml.commentCreate({ ...opts, report }));
 };
 
 const opts = yargs
@@ -23,6 +24,11 @@ const opts = yargs
     'Commit SHA linked to this comment. Defaults to HEAD.'
   )
   .alias('commit-sha', 'head-sha')
+  .boolean('update')
+  .describe(
+    'update',
+    'Update the last CML comment (if any) instead of creating a new one'
+  )
   .boolean('rm-watermark')
   .describe(
     'rm-watermark',
@@ -36,10 +42,10 @@ const opts = yargs
   .default('token')
   .describe(
     'token',
-    'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
+    'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
   )
   .default('driver')
-  .choices('driver', ['github', 'gitlab'])
+  .choices('driver', ['github', 'gitlab', 'bitbucket'])
   .describe('driver', 'If not specify it infers it from the ENV.')
   .help('h')
   .demand(1).argv;

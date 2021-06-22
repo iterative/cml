@@ -70,18 +70,40 @@ class Github {
   }
 
   async commentCreate(opts = {}) {
-    const { report: body, commitSha } = opts;
+    const { report: body, commitSha, update, watermark } = opts;
 
-    const { url: commitUrl } = await octokit(
-      this.token,
-      this.repo
-    ).repos.createCommitComment({
-      ...ownerRepo({ uri: this.repo }),
-      body,
-      commit_sha: commitSha
-    });
+    const { paginate, repos } = octokit(this.token, this.repo);
 
-    return commitUrl;
+    const existing = Object.values(
+      await paginate(repos.listCommentsForCommit, {
+        ...ownerRepo({ uri: this.repo }),
+        commit_sha: commitSha
+      })
+    )
+      .filter((comment) => {
+        const { body = '' } = comment;
+        return body.endsWith(watermark);
+      })
+      .sort((first, second) => first.id < second.id)
+      .pop();
+
+    if (update && existing) {
+      return (
+        await repos.updateCommitComment({
+          ...ownerRepo({ uri: this.repo }),
+          comment_id: existing.id,
+          body
+        })
+      ).data.html_url;
+    } else {
+      return (
+        await repos.createCommitComment({
+          ...ownerRepo({ uri: this.repo }),
+          commit_sha: commitSha,
+          body
+        })
+      ).data.html_url;
+    }
   }
 
   async checkCreate(opts = {}) {
