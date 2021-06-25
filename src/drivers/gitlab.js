@@ -59,9 +59,7 @@ class Gitlab {
         })
     );
 
-    this.detectedBase = possibleBases.find(
-      (base) => typeof base === 'string'
-    );
+    this.detectedBase = possibleBases.find((base) => typeof base === 'string');
     if (!this.detectedBase) {
       if (possibleBases.length) throw possibleBases[0];
       throw new Error('Invalid repository address');
