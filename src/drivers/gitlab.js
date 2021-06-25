@@ -60,7 +60,7 @@ class Gitlab {
     );
 
     this.detectedBase = possibleBases.find(
-      (base) => base.constructor !== Error
+      (base) => typeof base === 'string'
     );
     if (!this.detectedBase) {
       if (possibleBases.length) throw possibleBases[0];
