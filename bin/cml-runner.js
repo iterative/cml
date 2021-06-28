@@ -275,7 +275,8 @@ const run = async (opts) => {
 
   cml = new CML({ driver, repo, token });
 
-  await tf.checkMinVersion();
+  if (cloud || tfResource)
+    await tf.checkMinVersion();
 
   // prepare tf
   if (tfResource) {
