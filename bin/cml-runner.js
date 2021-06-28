@@ -39,7 +39,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, workdir = '' } = opts;
+  const { name, tfResource, workdir = '' } = opts;
   const tfPath = workdir;
 
   console.log(
@@ -99,15 +99,15 @@ const shutdown = async (opts) => {
   if (cloud) {
     await destroyTerraform();
   } else {
-    RUNNER_LAUNCHED && (await unregisterRunner());
+    if (RUNNER_LAUNCHED) await unregisterRunner();
 
     console.log(
       `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
     );
     await sleep(RUNNER_DESTROY_DELAY);
 
-    DOCKER_MACHINE && (await shutdownDockerMachine());
-    await shutdownTf();
+    if (DOCKER_MACHINE) await shutdownDockerMachine();
+    if (tfResource) await shutdownTf();
   }
 
   process.exit(error ? 1 : 0);
