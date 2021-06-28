@@ -27,7 +27,7 @@ CML principles:
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and
   plots in each Git pull request. Rigorous engineering practices help your team
   make informed, data-driven decisions.
-- **No additional services.** Build your own ML platform using GitHub, GitLab,
+- **No additional services.** Build your own ML platform using GitLab, GitHub,
   or BitBucket. Optionally, use
   [cloud storage](#configuring-cloud-storage-providers) as well as either
   self-hosted or cloud runners (such as AWS EC2, Azure, or GCP). No databases,
@@ -42,13 +42,12 @@ for hands-on MLOps tutorials using CML!
 
 ## Table of contents
 
-1. [Setup](#setup)
+1. [Setup (GitLab, GitHub, BitBucket)](#setup)
 2. [Usage](#usage)
 3. [Getting started (tutorial)](#getting-started)
 4. [Using CML with DVC](#using-cml-with-dvc)
-5. [Using self-hosted runners](#using-self-hosted-runners)
-6. [Install CML as a package](#install-cml-as-a-package)
-7. [Example Projects](#see-also)
+5. [Advanced Setup (Self-hosted, local package)](#advanced-setup)
+6. [Example projects](#see-also)
 
 ## Setup
 
@@ -119,21 +118,21 @@ and CML set up on an Ubuntu LTS base with CUDA libraries and
 
 ### CML Functions
 
-CML provides a number of helper functions to help package the outputs of ML
-workflows (including numeric data and visualizations about model performance)
-into a CML report.
+CML provides a number of functions to help package the outputs of ML workflows
+(including numeric data and visualizations about model performance) into a CML
+report.
 
 Below is a table of CML functions for writing markdown reports and delivering
 those reports to your CI system (GitHub Actions or GitLab CI).
 
-| Function                | Description                                                    | Inputs                                                      |
-| ----------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
-| `cml-runner`            | Starts a runner locally or in cloud providers                  | See [Arguments](https://github.com/iterative/cml#arguments) |
-| `cml-publish`           | Publish an image for writing to CML report.                    | `<path to image> --title <image title> --md`                |
-| `cml-send-comment`      | Return CML report as a comment in your GitHub/GitLab workflow. | `<path to report> --head-sha <sha>`                         |
-| `cml-send-github-check` | Return CML report as a check in GitHub                         | `<path to report> --head-sha <sha>`                         |
-| `cml-pr`                | Create a pull request.                                         | TODO                                                        |
-| `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                        | `--logdir <path to logs> --title <experiment title> --md`   |
+| Function                | Description                                                      | Example Inputs                                              |
+| ----------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| `cml-runner`            | Launch a runner locally or hosted by a cloud provider            | See [Arguments](https://github.com/iterative/cml#arguments) |
+| `cml-publish`           | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
+| `cml-send-comment`      | Return CML report as a comment in your GitHub/GitLab workflow    | `<path to report> --head-sha <sha>`                         |
+| `cml-send-github-check` | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
+| `cml-pr`                | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
+| `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                          | `--logdir <path to logs> --title <experiment title> --md`   |
 
 #### CML Reports
 
@@ -160,7 +159,7 @@ report. For example, if `graph.png` is output by `python train.py`, run:
 cml-publish graph.png --md >> report.md
 ```
 
-## Getting Started
+### Getting Started
 
 1. Fork our
    [example project repository](https://github.com/iterative/example_cml).
@@ -214,13 +213,13 @@ git add . && git commit -m "modify forest depth"
 git push origin experiment
 ```
 
-5. In GitHub, open up a Pull Request to compare the `experiment` branch to
+5. In GitHub, open up a pull request to compare the `experiment` branch to
    `master`.
 
 ![](https://static.iterative.ai/img/cml/make_pr.png)
 
-Shortly, you should see a comment from `github-actions` appear in the Pull
-Request with your CML report. This is a result of the `cml-send-comment`
+Shortly, you should see a comment from `github-actions` appear in the pull
+request with your CML report. This is a result of the `cml-send-comment`
 function in your workflow.
 
 ![](https://static.iterative.ai/img/cml/first_report.png)
@@ -236,7 +235,7 @@ performance metrics and visualizations — in GitHub checks and comments. What
 kind of workflow you want to run, and want to put in your CML report, is up to
 you.
 
-## Using CML with DVC
+### Using CML with DVC
 
 In many ML projects, data isn't stored in a Git repository, but needs to be
 downloaded from external sources. [DVC](https://dvc.org) is a common way to
@@ -291,7 +290,7 @@ jobs:
 > :warning: If you're using DVC with cloud storage, take note of environment
 > variables for your storage format.
 
-### Configuring Cloud Storage Providers
+#### Configuring Cloud Storage Providers
 
 There are many
 [supported could storage providers](https://dvc.org/doc/command-reference/remote/modify#available-parameters-per-storage-type).
@@ -378,7 +377,9 @@ env:
 
 </details>
 
-## Setup: Self-hosted Runners
+## Advanced Setup
+
+### Self-hosted Runners
 
 GitHub Actions are run on GitHub-hosted runners by default. However, there are
 many great reasons to use your own runners: to take advantage of GPUs; to
@@ -389,7 +390,7 @@ data.
 > [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
 > to get started setting up your own self-hosted runner.
 
-### Allocating cloud resources with CML
+#### Allocating Cloud Compute Resources with CML
 
 When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
@@ -422,8 +423,8 @@ jobs:
           cml-runner \
               --cloud aws \
               --cloud-region us-west \
-              --cloud-type=t2.micro \
-              --labels=cml-runner
+              --cloud-type t2.micro \
+              --labels cml-runner
   model-training:
     needs: [deploy-runner]
     runs-on: [self-hosted, cml-runner]
@@ -446,10 +447,10 @@ instance in the `us-west` region. The `model-training` step then runs on the
 newly-launched instance.
 
 > :tada: **Note that you can use any container with this workflow!** While you
-> must [have CML and its dependencies set up](#install-cml-as-a-package) to use
-> functions such `cml-send-comment` from your instance, you can create your
-> favourite training environment in the cloud by pulling the Docker container of
-> your choice.
+> must [have CML and its dependencies set up](#local-package) to use functions
+> such `cml-send-comment` from your instance, you can create your favourite
+> training environment in the cloud by pulling the Docker container of your
+> choice.
 
 We like the CML container (`docker://dvcorg/cml`) because it comes loaded with
 Python, CUDA, `git`, `node` and other essentials for full-stack data science.
@@ -464,7 +465,7 @@ image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 For example, `docker://dvcorg/cml:0-dvc2-base1-gpu`, or
 `docker://ghcr.io/iterative/cml:0-dvc2-base1`.
 
-### Arguments
+#### Arguments
 
 The `cml-runner` function accepts the following arguments:
 
@@ -519,10 +520,10 @@ Options:
   -h                           Show help                               [boolean]
 ```
 
-### Environment variables
+#### Environment Variables
 
 > :warning: You will need to
-> [create a personal access token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
+> [create a personal access token (PAT)](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
 > with repository read/write access and workflow privileges. In the example
 > workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
 
@@ -533,24 +534,23 @@ compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 Please see our docs about
 [configuring cloud storage providers](#configuring-cloud-storage-providers).
 
-### On-premise (local) runners
+#### On-premise (Local) Runners
 
 This means using on-premise machines as self-hosted runners. The `cml-runner`
 function is used to set up a local self-hosted runner. On your local machine or
-on-premise GPU cluster, [install CML as a package](#install-cml-as-a-package)
-and then run:
+on-premise GPU cluster, [install CML as a package](#local-package) and then run:
 
 ```bash
 cml-runner \
     --repo $your_project_repository_url \
-    --token=$PERSONAL_ACCESS_TOKEN \
+    --token $PERSONAL_ACCESS_TOKEN \
     --labels tf \
     --idle-timeout 180
 ```
 
 Now your machine will be listening for workflows from your project repository.
 
-## Install CML as a package
+### Local Package
 
 In the examples above, CML is installed by the `setup-cml` action, or comes
 pre-installed in a custom Docker image pulled by a CI runner. You can also
@@ -572,11 +572,11 @@ npm install -g vega-cli vega-lite
 CML and Vega-Lite package installation require the NodeJS package manager
 (`npm`) which ships with NodeJS. Installation instructions are below.
 
-### Install NodeJS in GitHub
+#### Install NodeJS
 
-This is probably not necessary when using GitHub's default containers or one of
-CML's Docker containers. Self-hosted runners may need to use a set up action to
-install NodeJS:
+- **GitHub**: This is probably not necessary when using GitHub's default
+  containers or one of CML's Docker containers. Self-hosted runners may need to
+  use a set up action to install NodeJS:
 
 ```bash
 uses: actions/setup-node@v2
@@ -584,9 +584,7 @@ uses: actions/setup-node@v2
     node-version: '12'
 ```
 
-### Install NodeJS in GitLab
-
-GitLab requires direct installation of NodeJS:
+- **GitLab**: Requires direct installation.
 
 ```bash
 curl -sL https://deb.nodesource.com/setup_12.x | bash
@@ -602,4 +600,7 @@ These are some example projects using CML.
 - [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
 - [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
 - [CML with a small EC2 instance](https://github.com/iterative/cml-runner-base-case)
+  :key:
 - [CML with EC2 GPU](https://github.com/iterative/cml_cloud_case)
+
+:key: needs a [PAT](#environment-variables).
