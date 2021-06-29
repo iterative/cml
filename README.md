@@ -28,7 +28,7 @@ CML principles:
   plots in each Git pull request. Rigorous engineering practices help your team
   make informed, data-driven decisions.
 - **No additional services.** Build your own ML platform using GitLab, GitHub,
-  or BitBucket. Optionally, use
+  or Bitbucket. Optionally, use
   [cloud storage](#configuring-cloud-storage-providers) as well as either
   self-hosted or cloud runners (such as AWS EC2, Azure, or GCP). No databases,
   services or complex setup needed.
@@ -42,7 +42,7 @@ for hands-on MLOps tutorials using CML!
 
 ## Table of contents
 
-1. [Setup (GitLab, GitHub, BitBucket)](#setup)
+1. [Setup (GitLab, GitHub, Bitbucket)](#setup)
 2. [Usage](#usage)
 3. [Getting started (tutorial)](#getting-started)
 4. [Using CML with DVC](#using-cml-with-dvc)
