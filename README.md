@@ -82,6 +82,7 @@ jobs:
     runs-on: [ubuntu-latest]
     # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
     # container: docker://dvcorg/cml:0-dvc2-base1-gpu
+    # container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu
     steps:
       - uses: actions/checkout@v2
       # may need to setup NodeJS & Python3 on e.g. self-hosted
@@ -111,9 +112,10 @@ jobs:
 We helpfully provide CML and other useful libraries pre-installed on our
 [custom Docker images](https://github.com/iterative/cml/blob/master/Dockerfile).
 In the above example, uncommenting the field
-`container: docker://dvcorg/cml:0-dvc2-base1-gpu` will make the GitHub Actions
-runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
-and CML set up on an Ubuntu LTS base with CUDA libraries and
+`container: docker://dvcorg/cml:0-dvc2-base1-gpu` (or
+`container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu`) will make the
+GitHub Actions runner pull the CML Docker image. The image already has NodeJS,
+Python 3, DVC and CML set up on an Ubuntu LTS base with CUDA libraries and
 [Terraform](https://www.terraform.io) installed for convenience.
 
 ### CML Functions
@@ -252,7 +254,7 @@ on: [push]
 jobs:
   run:
     runs-on: [ubuntu-latest]
-    container: docker://dvcorg/cml:0-dvc2-base1
+    container: docker://ghcr.io/iterative/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v2
       - name: Train model
