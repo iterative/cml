@@ -51,26 +51,27 @@ for hands-on MLOps tutorials using CML!
 
 ## Setup
 
-You'll need a GitHub or GitLab account to begin. Users may wish to familiarize
-themselves with [Github Actions](https://help.github.com/en/actions) or
+You'll need a GitHub, GitLab, or Bitbucket account to begin. Users may wish to
+familiarize themselves with [Github Actions](https://help.github.com/en/actions)
+or
 [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration).
 Here, will discuss the GitHub use case.
 
 ### GitLab
 
 Please see our docs on
-[CML with GitLab](https://github.com/iterative/cml/wiki/CML-with-GitLab) and in
-particular the
+[CML with GitLab CI/CD](https://github.com/iterative/cml/wiki/CML-with-GitLab)
+and in particular the
 [personal access token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
 requirement.
 
-### Bitbucket Cloud
+### Bitbucket
 
 Please see our docs on
 [CML with Bitbucket Cloud](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).
 _Bitbucket Server support estimated to arrive by mid 2021._
 
-### GitHub Actions
+### GitHub
 
 The key file in any CML project is `.github/workflows/cml.yaml`:
 
@@ -114,8 +115,8 @@ We helpfully provide CML and other useful libraries pre-installed on our
 In the above example, uncommenting the field
 `container: docker://dvcorg/cml:0-dvc2-base1-gpu` (or
 `container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu`) will make the
-GitHub Actions runner pull the CML Docker image. The image already has NodeJS,
-Python 3, DVC and CML set up on an Ubuntu LTS base with CUDA libraries and
+runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
+and CML set up on an Ubuntu LTS base with CUDA libraries and
 [Terraform](https://www.terraform.io) installed for convenience.
 
 ### CML Functions
@@ -125,7 +126,7 @@ CML provides a number of functions to help package the outputs of ML workflows
 report.
 
 Below is a table of CML functions for writing markdown reports and delivering
-those reports to your CI system (GitHub Actions or GitLab CI).
+those reports to your CI system (GitHub Actions or GitLab CI/CD).
 
 | Function                | Description                                                      | Example Inputs                                              |
 | ----------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
