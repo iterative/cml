@@ -27,8 +27,8 @@ CML principles:
 - **Auto reports for ML experiments.** Auto-generate reports with metrics and
   plots in each Git pull request. Rigorous engineering practices help your team
   make informed, data-driven decisions.
-- **No additional services.** Build your own ML platform using GitLab, GitHub,
-  or Bitbucket. Optionally, use
+- **No additional services.** Build your own ML platform using GitLab,
+  Bitbucket, or GitHub. Optionally, use
   [cloud storage](#configuring-cloud-storage-providers) as well as either
   self-hosted or cloud runners (such as AWS EC2, Azure, or GCP). No databases,
   services or complex setup needed.
@@ -42,7 +42,7 @@ for hands-on MLOps tutorials using CML!
 
 ## Table of contents
 
-1. [Setup (GitLab, GitHub, Bitbucket)](#setup)
+1. [Setup (GitLab, Bitbucket, GitHub)](#setup)
 2. [Usage](#usage)
 3. [Getting started (tutorial)](#getting-started)
 4. [Using CML with DVC](#using-cml-with-dvc)
@@ -51,7 +51,7 @@ for hands-on MLOps tutorials using CML!
 
 ## Setup
 
-You'll need a GitHub, GitLab, or Bitbucket account to begin. Users may wish to
+You'll need a GitLab, Bitbucket, or GitHub account to begin. Users may wish to
 familiarize themselves with [Github Actions](https://help.github.com/en/actions)
 or
 [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration).
@@ -126,13 +126,13 @@ CML provides a number of functions to help package the outputs of ML workflows
 report.
 
 Below is a table of CML functions for writing markdown reports and delivering
-those reports to your CI system (GitHub Actions or GitLab CI/CD).
+those reports to your CI system (GitLab CI/CD or GitHub Actions).
 
 | Function                | Description                                                      | Example Inputs                                              |
 | ----------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | `cml-runner`            | Launch a runner locally or hosted by a cloud provider            | See [Arguments](https://github.com/iterative/cml#arguments) |
 | `cml-publish`           | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
-| `cml-send-comment`      | Return CML report as a comment in your GitHub/GitLab workflow    | `<path to report> --head-sha <sha>`                         |
+| `cml-send-comment`      | Return CML report as a comment in your GitLab/GitHub workflow    | `<path to report> --head-sha <sha>`                         |
 | `cml-send-github-check` | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
 | `cml-pr`                | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
 | `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                          | `--logdir <path to logs> --title <experiment title> --md`   |
