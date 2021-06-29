@@ -226,10 +226,11 @@ const runLocal = async (opts) => {
       RUNNER_TIMEOUT_TIMER = 0;
     } else if (log && log.status === 'job_ended') {
       const { job } = log;
+
       if (!RUNNER_SHUTTING_DOWN) {
         const jobs = job
           ? [job]
-          : (await cml.pipelineJobs({ ids: RUNNER_JOBS_RUNNING }))
+          : (await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING }))
               .filter((job) => job.status === 'completed')
               .map((job) => job.id);
 
