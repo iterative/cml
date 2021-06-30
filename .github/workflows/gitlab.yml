@@ -1,8 +1,5 @@
 name: GitLab
-on:
-  workflow_dispatch:
-  pull_request:
-  push:
+on: pull_request
 jobs:
   test:
     runs-on: ubuntu-latest
