@@ -185,14 +185,25 @@ class Gitlab {
       (runner) => runner.name === name || runner.description === name
     );
 
-    if (runner) return { id: runner.id, name: runner.name, busy: runner.active, online: runner.status === 'online' };
+    if (runner)
+      return {
+        id: runner.id,
+        name: runner.name,
+        busy: runner.active,
+        online: runner.status === 'online'
+      };
   }
 
   async runnersByLabels(opts = {}) {
     const { labels } = opts;
     const endpoint = `/runners?per_page=100?tag_list=${labels}`;
     const runners = await this.request({ endpoint, method: 'GET' });
-    return runners.map((runner) => ({ id: runner.id, name: runner.name, busy: runner.active, online: runner.status === 'online' }));
+    return runners.map((runner) => ({
+      id: runner.id,
+      name: runner.name,
+      busy: runner.active,
+      online: runner.status === 'online'
+    }));
   }
 
   async prCreate(opts = {}) {
