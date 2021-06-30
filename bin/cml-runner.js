@@ -307,7 +307,10 @@ const run = async (opts) => {
     process.exit(0);
   }
 
-  if (reuse && (await cml.runnersByLabels({ labels })).find((runner) => runner.online)) {
+  if (
+    reuse &&
+    (await cml.runnersByLabels({ labels })).find((runner) => runner.online)
+  ) {
     console.log(`Reusing existing online runners with the ${labels} labels...`);
     process.exit(0);
   }
