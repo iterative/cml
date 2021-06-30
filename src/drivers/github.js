@@ -225,19 +225,19 @@ class Github {
     const { actions } = octokit(this.token, this.repo);
     let runners = [];
 
-    if (typeof repo !== 'undefined') {
+    if (typeof repo === 'undefined') {
       ({
         data: { runners }
-      } = await actions.listSelfHostedRunnersForRepo({
-        owner,
-        repo,
+      } = await actions.listSelfHostedRunnersForOrg({
+        org: owner,
         per_page: 100
       }));
     } else {
       ({
         data: { runners }
-      } = await actions.listSelfHostedRunnersForOrg({
-        org: owner,
+      } = await actions.listSelfHostedRunnersForRepo({
+        owner,
+        repo,
         per_page: 100
       }));
     }
