@@ -72,12 +72,17 @@ const getDriver = (opts) => {
 
 class CML {
   constructor(opts = {}) {
+    let { repo } = opts;
     const { driver, repo, token } = opts;
-
-    this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
-      /\.git$/,
-      ''
-    );
+    
+    try {
+      if (!repo) repo = gitRemoteUrl()
+    } catch (err) {
+      err.message += ', you might need to manually specify the --repo option or install Git'
+      throw err
+    }
+    
+    this.repo = uriNoTrailingSlash(repo).replace(/\.git$/, '');
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
   }
