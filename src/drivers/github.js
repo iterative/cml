@@ -248,7 +248,7 @@ class Github {
   async runnerByName(opts = {}) {
     const { name } = opts;
     const runners = await this.getRunners(opts);
-    const runner = runners.filter((runner) => runner.name === name)[0];
+    const runner = runners.find((runner) => runner.name === name);
     if (runner) return { id: runner.id, name: runner.name, busy: runner.busy, online: runner.status === 'online' };
   }
 
