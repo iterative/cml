@@ -11,8 +11,12 @@ const { download, exec } = require('../utils');
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
-const { GITHUB_REPOSITORY, GITHUB_SHA, GITHUB_REF, GITHUB_EVENT_NAME } =
-  process.env;
+const {
+  GITHUB_REPOSITORY,
+  GITHUB_SHA,
+  GITHUB_REF,
+  GITHUB_EVENT_NAME
+} = process.env;
 
 const branchName = (branch) => {
   if (!branch) return;
