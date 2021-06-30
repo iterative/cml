@@ -249,7 +249,7 @@ class Github {
     const { name } = opts;
     const runners = await this.getRunners(opts);
     const runner = runners.filter((runner) => runner.name === name)[0];
-    if (runner) return { id: runner.id, name: runner.name };
+    if (runner) return { id: runner.id, name: runner.name, busy: runner.busy, online: runner.status === 'online' };
   }
 
   async runnersByLabels(opts = {}) {
@@ -263,7 +263,7 @@ class Github {
             runner.labels.map(({ name }) => name).includes(label)
           )
       )
-      .map((runner) => ({ id: runner.id, name: runner.name }));
+      .map((runner) => ({ id: runner.id, name: runner.name, busy: runner.busy, online: runner.status === 'online' }));
   }
 
   async prCreate(opts = {}) {
