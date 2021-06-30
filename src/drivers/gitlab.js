@@ -181,9 +181,9 @@ class Gitlab {
 
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
-    const runner = runners.filter(
+    const runner = runners.find(
       (runner) => runner.name === name || runner.description === name
-    )[0];
+    );
 
     if (runner) return { id: runner.id, name: runner.name, busy: runner.active, online: runner.status === 'online' };
   }
