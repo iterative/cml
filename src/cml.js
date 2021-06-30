@@ -299,7 +299,7 @@ class CML {
         }
       }
 
-      await exec(`git fetch`);
+      await exec(`git fetch origin ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
