@@ -9,12 +9,8 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const {
-  GITHUB_REPOSITORY,
-  CI_PROJECT_URL,
-  BITBUCKET_REPO_UUID,
-  CI
-} = process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
+  process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
