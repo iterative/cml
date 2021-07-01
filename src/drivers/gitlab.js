@@ -182,7 +182,7 @@ class Gitlab {
     return await Promise.all(
       runners.map(async ({ id, name, description, active, online }) => ({
         id,
-        name: name || description,
+        name: description,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
