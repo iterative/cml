@@ -176,34 +176,20 @@ class Gitlab {
     }
   }
 
-  async runnerByName(opts = {}) {
-    const { name } = opts;
-
+  async getRunners(opts = {}) {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
-    const runner = runners.find(
-      (runner) => runner.name === name || runner.description === name
+    return await Promise.all(
+      runners.map(async ({ id, name, description, active, online }) => ({
+        id,
+        name: name || description,
+        labels: (
+          await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
+        ).tag_list,
+        online,
+        busy: active && online
+      }))
     );
-
-    if (runner)
-      return {
-        id: runner.id,
-        name: runner.name,
-        busy: runner.active,
-        online: runner.status === 'online'
-      };
-  }
-
-  async runnersByLabels(opts = {}) {
-    const { labels } = opts;
-    const endpoint = `/runners?per_page=100?tag_list=${labels}`;
-    const runners = await this.request({ endpoint, method: 'GET' });
-    return runners.map((runner) => ({
-      id: runner.id,
-      name: runner.name,
-      busy: runner.active,
-      online: runner.status === 'online'
-    }));
   }
 
   async prCreate(opts = {}) {

@@ -222,59 +222,27 @@ class Github {
 
   async getRunners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
-    let runners = [];
+    const { paginate, actions } = octokit(this.token, this.repo);
 
+    let runners;
     if (typeof repo === 'undefined') {
-      ({
-        data: { runners }
-      } = await actions.listSelfHostedRunnersForOrg({
-        org: owner,
-        per_page: 100
-      }));
+      runners = await paginate(actions.listSelfHostedRunnersForOrg, {
+        org: owner
+      });
     } else {
-      ({
-        data: { runners }
-      } = await actions.listSelfHostedRunnersForRepo({
+      runners = await paginate(actions.listSelfHostedRunnersForRepo, {
         owner,
-        repo,
-        per_page: 100
-      }));
+        repo
+      });
     }
 
-    return runners;
-  }
-
-  async runnerByName(opts = {}) {
-    const { name } = opts;
-    const runners = await this.getRunners(opts);
-    const runner = runners.find((runner) => runner.name === name);
-    if (runner)
-      return {
-        id: runner.id,
-        name: runner.name,
-        busy: runner.busy,
-        online: runner.status === 'online'
-      };
-  }
-
-  async runnersByLabels(opts = {}) {
-    const { labels } = opts;
-    const runners = await this.getRunners(opts);
-    return runners
-      .filter((runner) =>
-        labels
-          .split(',')
-          .every((label) =>
-            runner.labels.map(({ name }) => name).includes(label)
-          )
-      )
-      .map((runner) => ({
-        id: runner.id,
-        name: runner.name,
-        busy: runner.busy,
-        online: runner.status === 'online'
-      }));
+    return runners.map(({ id, name, busy, status, labels }) => ({
+      id,
+      name,
+      labels: labels.map(({ name }) => name),
+      online: status === 'online',
+      busy
+    }));
   }
 
   async prCreate(opts = {}) {
