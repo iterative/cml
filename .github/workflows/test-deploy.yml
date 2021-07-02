@@ -82,6 +82,9 @@ jobs:
             python: 3.8
             cuda: 11.0.3
             cudnn: 8
+          - latest: true  # update the values below after introducing a new major version
+            base: 1
+            dvc: 2
     steps:
       - uses: actions/checkout@v2
         with:
@@ -109,11 +112,18 @@ jobs:
           echo ::set-output name=cml_version::$cml_version
           if [[ ${{ matrix.gpu }} == true ]]; then
             echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
-            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu
+            tag="${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu"
           else
             echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
-            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
+            tag="${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}"
           fi
+          
+          echo ::set-output name=tag::"$(
+            for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
+              [[ "${{ matrix.latest }}" == "true" ]] && echo "$registry/cml:latest"
+              echo "$registry/cml:$tag"
+            done
+          )"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
         with:
@@ -140,10 +150,7 @@ jobs:
             'schedule' }}
           context: ./
           file: ./Dockerfile
-          tags: |
-            docker.io/dvcorg/cml:${{ steps.metadata.outputs.tag }}
-            docker.io/iterativeai/cml:${{ steps.metadata.outputs.tag }}
-            ghcr.io/iterative/cml:${{ steps.metadata.outputs.tag }}
+          tags: ${{ steps.metadata.outputs.tags }}
           build-args: |
             CML_VERSION=${{ steps.metadata.outputs.cml_version }}
             DVC_VERSION=${{ matrix.dvc }}
