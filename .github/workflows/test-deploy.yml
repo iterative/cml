@@ -82,7 +82,7 @@ jobs:
             python: 3.8
             cuda: 11.0.3
             cudnn: 8
-          - latest: true  # update the values below after introducing a new major version
+          - latest: true # update the values below after introducing a new major version
             base: 1
             dvc: 2
     steps:
@@ -110,19 +110,19 @@ jobs:
           )')
           echo ::set-output name=cache_tag::${cml_version}-${dvc_version}-${{ matrix.base }}-${{ matrix.gpu }}
           echo ::set-output name=cml_version::$cml_version
+          tag=${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
           if [[ ${{ matrix.gpu }} == true ]]; then
             echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
-            tag="${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu"
+            tag=${tag}-gpu
           else
             echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
-            tag="${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}"
           fi
-          
-          echo ::set-output name=tag::"$(
+
+          echo ::set-output name=tags::"$(
             for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
-              [[ "${{ matrix.latest }}" == "true" ]] && echo "$registry/cml:latest"
-              echo "$registry/cml:$tag"
-            done | sed 's/\n/%0A/g'
+              [[ "${{ matrix.latest }}" == "true" ]] && echo "${registry}/cml:latest"
+              echo "${registry}/cml:${tag}"
+            done | tr '\n' ',' | head -c-1
           )"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
