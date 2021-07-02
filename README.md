@@ -7,12 +7,12 @@
 
 **What is CML?** Continuous Machine Learning (CML) is an open-source CLI tool
 for implementing continuous integration & delivery (CI/CD) with a focus on
-MLOps. Use it to automate parts of development workflows — including machine
-provisioning; model training and evaluation; comparing ML experiments across
+MLOps. Use it to automate development workflows — including machine
+provisioning, model training and evaluation, comparing ML experiments across
 project history, and monitoring changing datasets.
 
-For example, on every pull request CML can help to automatically train and
-evaluate models, then generate a visual report with results and metrics.
+CML can help train and evaluate models — and then generate a visual report with
+results and metrics — automatically on every pull request.
 
 ![](https://static.iterative.ai/img/cml/github_cloud_case_lessshadow.png) _An
 example report for a
@@ -40,9 +40,9 @@ CML principles:
 [YouTube video series](https://www.youtube.com/playlist?list=PL7WG7YrwYcnDBDuCkFbcyjnZQrdskFsBz)
 for hands-on MLOps tutorials using CML!
 
-## Table of contents
+## Table of Contents
 
-1. [Setup (GitLab, Bitbucket, GitHub)](#setup)
+1. [Setup (GitLab, GitHub, Bitbucket)](#setup)
 2. [Usage](#usage)
 3. [Getting started (tutorial)](#getting-started)
 4. [Using CML with DVC](#using-cml-with-dvc)
@@ -51,7 +51,7 @@ for hands-on MLOps tutorials using CML!
 
 ## Setup
 
-You'll need a GitLab, Bitbucket, or GitHub account to begin. Users may wish to
+You'll need a GitLab, GitHub, or Bitbucket account to begin. Users may wish to
 familiarize themselves with [Github Actions](https://help.github.com/en/actions)
 or
 [GitLab CI/CD](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration).
@@ -126,7 +126,7 @@ CML provides a number of functions to help package the outputs of ML workflows
 report.
 
 Below is a table of CML functions for writing markdown reports and delivering
-those reports to your CI system (GitLab CI/CD or GitHub Actions).
+those reports to your CI system.
 
 | Function                | Description                                                      | Example Inputs                                              |
 | ----------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
@@ -454,6 +454,8 @@ newly-launched instance.
 > such `cml-send-comment` from your instance, you can create your favourite
 > training environment in the cloud by pulling the Docker container of your
 > choice.
+
+#### Docker Images
 
 We like the CML container (`docker://dvcorg/cml`) because it comes loaded with
 Python, CUDA, `git`, `node` and other essentials for full-stack data science.
