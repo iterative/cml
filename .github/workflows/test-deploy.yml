@@ -142,6 +142,7 @@ jobs:
           file: ./Dockerfile
           tags: |
             docker.io/dvcorg/cml:${{ steps.metadata.outputs.tag }}
+            docker.io/iterativeai/cml:${{ steps.metadata.outputs.tag }}
             ghcr.io/iterative/cml:${{ steps.metadata.outputs.tag }}
           build-args: |
             CML_VERSION=${{ steps.metadata.outputs.cml_version }}
