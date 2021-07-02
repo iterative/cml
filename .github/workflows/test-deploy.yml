@@ -122,7 +122,7 @@ jobs:
             for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
               [[ "${{ matrix.latest }}" == "true" ]] && echo "$registry/cml:latest"
               echo "$registry/cml:$tag"
-            done
+            done | sed 's/\n/%0A/g'
           )"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
