@@ -215,7 +215,8 @@ class CML {
   }
 
   async unregisterRunner(opts = {}) {
-    return await getDriver(this).unregisterRunner(opts);
+    const { id: runnerId } = await this.runnerByName(opts);
+    return await getDriver(this).unregisterRunner({ runnerId, ...opts });
   }
 
   async getRunners(opts = {}) {

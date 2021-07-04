@@ -127,10 +127,8 @@ class Gitlab {
   }
 
   async unregisterRunner(opts = {}) {
-    const { name } = opts;
-
-    const { id } = await this.runnerByName({ name });
-    const endpoint = `/runners/${id}`;
+    const { runnerId } = opts;
+    const endpoint = `/runners/${runnerId}`;
 
     return await this.request({ endpoint, method: 'DELETE', raw: true });
   }
