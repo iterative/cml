@@ -6,7 +6,7 @@ const git = require('simple-git/promise')('./');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
-const BitBucketCloud = require('./drivers/bitbucket_cloud');
+const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
 const {
@@ -65,7 +65,7 @@ const getDriver = (opts) => {
 
   if (driver === GITHUB) return new Github({ repo, token });
   if (driver === GITLAB) return new Gitlab({ repo, token });
-  if (driver === BB) return new BitBucketCloud({ repo, token });
+  if (driver === BB) return new BitbucketCloud({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
 };

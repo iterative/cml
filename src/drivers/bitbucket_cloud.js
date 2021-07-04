@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const { URL } = require('url');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
-class BitBucketCloud {
+class BitbucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
 
@@ -86,31 +86,31 @@ class BitBucketCloud {
   }
 
   async checkCreate() {
-    throw new Error('BitBucket Cloud does not support check!');
+    throw new Error('Bitbucket Cloud does not support check!');
   }
 
   async upload(opts = {}) {
-    throw new Error('BitBucket Cloud does not support upload!');
+    throw new Error('Bitbucket Cloud does not support upload!');
   }
 
   async runnerToken() {
-    throw new Error('BitBucket Cloud does not support runnerToken!');
+    throw new Error('Bitbucket Cloud does not support runnerToken!');
   }
 
   async registerRunner(opts = {}) {
-    throw new Error('BitBucket Cloud does not support registerRunner!');
+    throw new Error('Bitbucket Cloud does not support registerRunner!');
   }
 
   async unregisterRunner(opts = {}) {
-    throw new Error('BitBucket Cloud does not support unregisterRunner!');
+    throw new Error('Bitbucket Cloud does not support unregisterRunner!');
   }
 
   async runnerByName(opts = {}) {
-    throw new Error('BitBucket Cloud does not support runnerByName!');
+    throw new Error('Bitbucket Cloud does not support runnerByName!');
   }
 
   async runnersByLabels(opts = {}) {
-    throw new Error('BitBucket Cloud does not support runner_by_labels!');
+    throw new Error('Bitbucket Cloud does not support runner_by_labels!');
   }
 
   async prCreate(opts = {}) {
@@ -176,7 +176,7 @@ class BitBucketCloud {
     const { token, api } = this;
     const { url, endpoint, method = 'GET', body } = opts;
     if (!(url || endpoint))
-      throw new Error('BitBucket Cloud API endpoint not found');
+      throw new Error('Bitbucket Cloud API endpoint not found');
     const headers = {
       'Content-Type': 'application/json',
       Authorization: 'Basic ' + `${token}`
@@ -226,4 +226,4 @@ class BitBucketCloud {
   get userName() {}
 }
 
-module.exports = BitBucketCloud;
+module.exports = BitbucketCloud;
