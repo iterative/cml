@@ -6,7 +6,7 @@ const git = require('simple-git/promise')('./');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
-const BitBucketCloud = require('./drivers/bitbucket_cloud');
+const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
 const {
@@ -65,7 +65,7 @@ const getDriver = (opts) => {
 
   if (driver === GITHUB) return new Github({ repo, token });
   if (driver === GITLAB) return new Gitlab({ repo, token });
-  if (driver === BB) return new BitBucketCloud({ repo, token });
+  if (driver === BB) return new BitbucketCloud({ repo, token });
 
   throw new Error(`driver ${driver} unknown!`);
 };
@@ -96,8 +96,11 @@ class CML {
     const {
       report: userReport,
       commitSha = await this.headSha(),
-      rmWatermark
+      rmWatermark,
+      update
     } = opts;
+    if (rmWatermark && update)
+      throw new Error('watermarks are mandatory for updateable comments');
     const watermark = rmWatermark
       ? ''
       : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
@@ -106,7 +109,8 @@ class CML {
     return await getDriver(this).commentCreate({
       ...opts,
       report,
-      commitSha
+      commitSha,
+      watermark
     });
   }
 
@@ -209,15 +213,26 @@ class CML {
   }
 
   async unregisterRunner(opts = {}) {
-    return await getDriver(this).unregisterRunner(opts);
+    const { id: runnerId } = await this.runnerByName(opts);
+    return await getDriver(this).unregisterRunner({ runnerId, ...opts });
+  }
+
+  async getRunners(opts = {}) {
+    return await getDriver(this).getRunners(opts);
   }
 
   async runnerByName(opts = {}) {
-    return await getDriver(this).runnerByName(opts);
+    const { name } = opts;
+    const runners = await this.getRunners(opts);
+    return runners.find((runner) => runner.name === name);
   }
 
   async runnersByLabels(opts = {}) {
-    return await getDriver(this).runnersByLabels(opts);
+    const { labels } = opts;
+    const runners = await this.getRunners(opts);
+    return runners.filter((runner) =>
+      labels.split(',').every((label) => runner.labels.includes(label))
+    );
   }
 
   async repoTokenCheck() {
@@ -297,6 +312,7 @@ class CML {
         }
       }
 
+      await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);

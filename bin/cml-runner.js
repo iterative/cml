@@ -50,6 +50,8 @@ const shutdown = async (opts) => {
   if (error) console.error(error);
 
   const unregisterRunner = async () => {
+    if (!RUNNER) return;
+
     try {
       console.log(`Unregistering runner ${name}...`);
       await cml.unregisterRunner({ name });
@@ -60,7 +62,23 @@ const shutdown = async (opts) => {
     }
   };
 
-  const shutdownDockerMachine = async () => {
+  const retryWorkflows = async () => {
+    try {
+      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
+        await Promise.all(
+          RUNNER_JOBS_RUNNING.map(
+            async (job) => await cml.pipelineRestart({ jobId: job.id })
+          )
+        );
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const destroyDockerMachine = async () => {
+    if (!DOCKER_MACHINE) return;
+
     console.log('docker-machine destroy...');
     console.log(
       'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
@@ -74,6 +92,8 @@ const shutdown = async (opts) => {
   };
 
   const destroyTerraform = async () => {
+    if (!tfResource) return;
+
     try {
       console.log(await tf.destroy({ dir: tfPath }));
     } catch (err) {
@@ -85,38 +105,20 @@ const shutdown = async (opts) => {
   if (cloud) {
     await destroyTerraform();
   } else {
-    await sleep(RUNNER_DESTROY_DELAY);
+    await unregisterRunner();
+    await retryWorkflows();
 
-    try {
-      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
-        await Promise.all(
-          RUNNER_JOBS_RUNNING.map(
-            async (job) => await cml.pipelineRestart({ jobId: job.id })
-          )
-        );
-      }
-    } catch (err) {
-      console.log(err);
-    }
+    if (DOCKER_MACHINE || tfResource) await sleep(RUNNER_DESTROY_DELAY);
+    await destroyDockerMachine();
+    await destroyTerraform();
 
-    RUNNER && (await unregisterRunner());
-
-    if (!tfResource) {
-      console.log(`\tNo TF resource found`);
-    } else {
-      await destroyTerraform();
-    }
-
-    DOCKER_MACHINE && (await shutdownDockerMachine());
+    RUNNER && RUNNER.kill('SIGINT');
   }
 
-  RUNNER && RUNNER.kill('SIGINT');
   process.exit(error ? 1 : 0);
 };
 
 const runCloud = async (opts) => {
-  const { cloudSshPrivateVisible } = opts;
-
   const runTerraform = async (opts) => {
     console.log('Terraform apply...');
 
@@ -185,21 +187,31 @@ const runCloud = async (opts) => {
   console.log('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
-  for (let i = 0; i < resources.length; i++) {
-    const resource = resources[i];
-
+  for (const resource of resources) {
     if (resource.type.startsWith('iterative_')) {
-      const { instances } = resource;
-
-      for (let j = 0; j < instances.length; j++) {
-        const instance = instances[j];
-
-        if (!cloudSshPrivateVisible) {
-          instance.attributes.ssh_private = '[MASKED]';
-        }
-
-        instance.attributes.token = '[MASKED]';
-        console.log(JSON.stringify(instance));
+      for (const { attributes } of resource.instances) {
+        const nonSensitiveValues = {
+          awsSecurityGroup: attributes.aws_security_group,
+          cloud: attributes.cloud,
+          driver: attributes.driver,
+          id: attributes.id,
+          idleTimeout: attributes.idle_timeout,
+          image: attributes.image,
+          instanceGpu: attributes.instance_gpu,
+          instanceHddSize: attributes.instance_hdd_size,
+          instanceIp: attributes.instance_ip,
+          instanceLaunchTime: attributes.instance_launch_time,
+          instanceType: attributes.instance_type,
+          labels: attributes.labels,
+          name: attributes.name,
+          region: attributes.region,
+          repo: attributes.repo,
+          single: attributes.single,
+          spot: attributes.spot,
+          spotPrice: attributes.spot_price,
+          timeouts: attributes.timeouts
+        };
+        console.log(JSON.stringify(nonSensitiveValues));
       }
     }
   }
@@ -293,7 +305,7 @@ const run = async (opts) => {
 
   cml = new CML({ driver, repo, token });
 
-  await tf.checkMinVersion();
+  if (cloud || tfResource) await tf.checkMinVersion();
 
   // prepare tf
   if (tfResource) {
@@ -325,8 +337,11 @@ const run = async (opts) => {
     process.exit(0);
   }
 
-  if (reuse && (await cml.runnersByLabels({ labels })).length > 0) {
-    console.log(`Reusing existing runners with the ${labels} labels...`);
+  if (
+    reuse &&
+    (await cml.runnersByLabels({ labels })).find((runner) => runner.online)
+  ) {
+    console.log(`Reusing existing online runners with the ${labels} labels...`);
     process.exit(0);
   }
 
@@ -411,11 +426,7 @@ const opts = yargs
     'cloud-ssh-private',
     'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
   )
-  .boolean('cloud-ssh-private-visible')
-  .describe(
-    'cloud-ssh-private-visible',
-    'Show the private SSH key in the output with the rest of the instance properties (not recommended)'
-  )
+  .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
   .boolean('cloud-spot')
   .describe('cloud-spot', 'Request a spot instance')
   .default('cloud-spot-price', '-1')

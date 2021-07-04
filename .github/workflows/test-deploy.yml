@@ -1,7 +1,7 @@
 name: Test & Deploy
 on:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 1 * * 6 # Sat 01:00
   release:
     types: [published]
   pull_request_target:
@@ -46,7 +46,7 @@ jobs:
           TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
           TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
           TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
-          TEST_BBCLOUD_SHA: 9bb9131ce0af294fe1c6eedca1f2bce3983e80bd
+          TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
   packages:
     needs: [lint, test]
     runs-on: ubuntu-latest

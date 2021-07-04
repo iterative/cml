@@ -15,6 +15,7 @@ const {
   GITHUB_REPOSITORY,
   GITHUB_SHA,
   GITHUB_REF,
+  GITHUB_HEAD_REF,
   GITHUB_EVENT_NAME
 } = process.env;
 
@@ -70,18 +71,40 @@ class Github {
   }
 
   async commentCreate(opts = {}) {
-    const { report: body, commitSha } = opts;
+    const { report: body, commitSha, update, watermark } = opts;
 
-    const { url: commitUrl } = await octokit(
-      this.token,
-      this.repo
-    ).repos.createCommitComment({
-      ...ownerRepo({ uri: this.repo }),
-      body,
-      commit_sha: commitSha
-    });
+    const { paginate, repos } = octokit(this.token, this.repo);
 
-    return commitUrl;
+    const existing = Object.values(
+      await paginate(repos.listCommentsForCommit, {
+        ...ownerRepo({ uri: this.repo }),
+        commit_sha: commitSha
+      })
+    )
+      .filter((comment) => {
+        const { body = '' } = comment;
+        return body.endsWith(watermark);
+      })
+      .sort((first, second) => first.id < second.id)
+      .pop();
+
+    if (update && existing) {
+      return (
+        await repos.updateCommitComment({
+          ...ownerRepo({ uri: this.repo }),
+          comment_id: existing.id,
+          body
+        })
+      ).data.html_url;
+    } else {
+      return (
+        await repos.createCommitComment({
+          ...ownerRepo({ uri: this.repo }),
+          commit_sha: commitSha,
+          body
+        })
+      ).data.html_url;
+    }
   }
 
   async checkCreate(opts = {}) {
@@ -141,21 +164,20 @@ class Github {
   }
 
   async unregisterRunner(opts) {
-    const { name } = opts;
+    const { runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
-    const { id } = await this.runnerByName({ name });
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
         owner,
         repo,
-        runner_id: id
+        runner_id: runnerId
       });
     } else {
       await actions.deleteSelfHostedRunnerFromOrg({
         org: owner,
-        runner_id: id
+        runner_id: runnerId
       });
     }
   }
@@ -200,48 +222,27 @@ class Github {
 
   async getRunners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
-    let runners = [];
+    const { paginate, actions } = octokit(this.token, this.repo);
 
-    if (typeof repo !== 'undefined') {
-      ({
-        data: { runners }
-      } = await actions.listSelfHostedRunnersForRepo({
-        owner,
-        repo,
-        per_page: 100
-      }));
+    let runners;
+    if (typeof repo === 'undefined') {
+      runners = await paginate(actions.listSelfHostedRunnersForOrg, {
+        org: owner
+      });
     } else {
-      ({
-        data: { runners }
-      } = await actions.listSelfHostedRunnersForOrg({
-        org: owner,
-        per_page: 100
-      }));
+      runners = await paginate(actions.listSelfHostedRunnersForRepo, {
+        owner,
+        repo
+      });
     }
 
-    return runners;
-  }
-
-  async runnerByName(opts = {}) {
-    const { name } = opts;
-    const runners = await this.getRunners(opts);
-    const runner = runners.find((runner) => runner.name === name);
-    if (runner) return { id: runner.id, name: runner.name };
-  }
-
-  async runnersByLabels(opts = {}) {
-    const { labels } = opts;
-    const runners = await this.getRunners(opts);
-    return runners
-      .filter((runner) =>
-        labels
-          .split(',')
-          .every((label) =>
-            runner.labels.map(({ name }) => name).includes(label)
-          )
-      )
-      .map((runner) => ({ id: runner.id, name: runner.name }));
+    return runners.map(({ id, name, busy, status, labels }) => ({
+      id,
+      name,
+      labels: labels.map(({ name }) => name),
+      online: status === 'online',
+      busy
+    }));
   }
 
   async prCreate(opts = {}) {
@@ -402,7 +403,7 @@ class Github {
   }
 
   get branch() {
-    return branchName(GITHUB_REF);
+    return branchName(GITHUB_HEAD_REF || GITHUB_REF);
   }
 
   get userEmail() {

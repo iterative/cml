@@ -1,12 +1,12 @@
-jest.setTimeout(20000);
-const BitBucketCloud = require('./bitbucket_cloud');
+jest.setTimeout(120000);
+const BitbucketCloud = require('./bitbucket_cloud');
 const {
   TEST_BBCLOUD_TOKEN: TOKEN,
   TEST_BBCLOUD_REPO: REPO,
   TEST_BBCLOUD_SHA: SHA
 } = process.env;
 describe('Non Enviromental tests', () => {
-  const client = new BitBucketCloud({ repo: REPO, token: TOKEN });
+  const client = new BitbucketCloud({ repo: REPO, token: TOKEN });
   test('test repo and token', async () => {
     expect(client.repo).toBe(REPO);
     expect(client.token).toBe(TOKEN);
@@ -19,18 +19,18 @@ describe('Non Enviromental tests', () => {
   });
   test('Check', async () => {
     await expect(client.checkCreate()).rejects.toThrow(
-      'BitBucket Cloud does not support check!'
+      'Bitbucket Cloud does not support check!'
     );
   });
   test('Publish', async () => {
     const path = `${__dirname}/../../assets/logo.png`;
     await expect(client.upload({ path })).rejects.toThrow(
-      'BitBucket Cloud does not support upload!'
+      'Bitbucket Cloud does not support upload!'
     );
   });
   test('Runner token', async () => {
     await expect(client.runnerToken()).rejects.toThrow(
-      'BitBucket Cloud does not support runnerToken!'
+      'Bitbucket Cloud does not support runnerToken!'
     );
   });
 });

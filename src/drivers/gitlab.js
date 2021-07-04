@@ -59,9 +59,7 @@ class Gitlab {
         })
     );
 
-    this.detectedBase = possibleBases.find(
-      (base) => base.constructor !== Error
-    );
+    this.detectedBase = possibleBases.find((base) => typeof base === 'string');
     if (!this.detectedBase) {
       if (possibleBases.length) throw possibleBases[0];
       throw new Error('Invalid repository address');
@@ -71,7 +69,9 @@ class Gitlab {
   }
 
   async commentCreate(opts = {}) {
-    const { commitSha, report } = opts;
+    const { commitSha, report, update } = opts;
+
+    if (update) throw new Error('GitLab does not support comment updates!');
 
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
@@ -127,10 +127,8 @@ class Gitlab {
   }
 
   async unregisterRunner(opts = {}) {
-    const { name } = opts;
-
-    const { id } = await this.runnerByName({ name });
-    const endpoint = `/runners/${id}`;
+    const { runnerId } = opts;
+    const endpoint = `/runners/${runnerId}`;
 
     return await this.request({ endpoint, method: 'DELETE', raw: true });
   }
@@ -174,23 +172,20 @@ class Gitlab {
     }
   }
 
-  async runnerByName(opts = {}) {
-    const { name } = opts;
-
+  async getRunners(opts = {}) {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
-    const runner = runners.filter(
-      (runner) => runner.name === name || runner.description === name
-    )[0];
-
-    if (runner) return { id: runner.id, name: runner.name };
-  }
-
-  async runnersByLabels(opts = {}) {
-    const { labels } = opts;
-    const endpoint = `/runners?per_page=100?tag_list=${labels}`;
-    const runners = await this.request({ endpoint, method: 'GET' });
-    return runners.map((runner) => ({ id: runner.id, name: runner.name }));
+    return await Promise.all(
+      runners.map(async ({ id, name, description, active, online }) => ({
+        id,
+        name: description,
+        labels: (
+          await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
+        ).tag_list,
+        online,
+        busy: active && online
+      }))
+    );
   }
 
   async prCreate(opts = {}) {

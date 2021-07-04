@@ -4,10 +4,7 @@ module.exports = {
     commonjs: true,
     es6: true
   },
-  extends: [
-    'standard',
-    'prettier'
-  ],
+  extends: ['standard', 'prettier'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
@@ -15,15 +12,13 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018
   },
-  ignorePatterns: ['assets/',  'dist/', 'node_modules/'],
+  ignorePatterns: ['assets/', 'dist/', 'node_modules/'],
   rules: {
-    'camelcase': [1, {'properties': 'never'}],
+    camelcase: [1, { properties: 'never' }],
     'prettier/prettier': 'error'
   },
-  plugins: [
-    'prettier'
-  ],
+  plugins: ['prettier'],
   env: {
     jest: true
   }
-}
+};
