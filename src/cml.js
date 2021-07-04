@@ -218,12 +218,22 @@ class CML {
     return await getDriver(this).unregisterRunner(opts);
   }
 
+  async getRunners(opts = {}) {
+    return await getDriver(this).getRunners(opts);
+  }
+
   async runnerByName(opts = {}) {
-    return await getDriver(this).runnerByName(opts);
+    const { name } = opts;
+    const runners = await this.getRunners(opts);
+    return runners.find((runner) => runner.name === name);
   }
 
   async runnersByLabels(opts = {}) {
-    return await getDriver(this).runnersByLabels(opts);
+    const { labels } = opts;
+    const runners = await this.getRunners(opts);
+    return runners.filter((runner) =>
+      labels.split(',').every((label) => runner.labels.includes(label))
+    );
   }
 
   async repoTokenCheck() {
