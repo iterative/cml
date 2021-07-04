@@ -22,7 +22,7 @@ const {
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
   RUNNER_REUSE = false,
-  RUNNER_RETRY = false,
+  RUNNER_NO_RETRY = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   REPO_TOKEN
@@ -41,7 +41,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   let { error, cloud } = opts;
-  const { name, workdir = '', tfResource, retry } = opts;
+  const { name, workdir = '', tfResource, noRetry } = opts;
   const tfPath = workdir;
 
   console.log(
@@ -88,7 +88,7 @@ const shutdown = async (opts) => {
     await sleep(RUNNER_DESTROY_DELAY);
 
     try {
-      if (retry && RUNNER_JOBS_RUNNING.length) {
+      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
             async (job) => await cml.pipelineRestart({ jobId: job.id })
@@ -207,7 +207,7 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, retry } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
 
   const proc = await cml.startRunner({
     workdir,
@@ -258,7 +258,7 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  if (retry && cml.driver === 'github') {
+  if (!noRetry && cml.driver === 'github') {
     const watcher = setInterval(() => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         if (
@@ -355,11 +355,11 @@ const opts = yargs
   .default('name')
   .describe('name', 'Name displayed in the repository once registered cml-{ID}')
   .coerce('name', (val) => val || RUNNER_NAME)
-  .boolean('retry')
-  .default('retry', RUNNER_RETRY)
+  .boolean('no-retry')
+  .default('no-retry', RUNNER_NO_RETRY)
   .describe(
-    'retry',
-    'Automatically retry jobs terminated due to runner disposal or timeout (72 hours on Github)'
+    'no-retry',
+    'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
   )
   .boolean('single')
   .default('single', RUNNER_SINGLE)
