@@ -15,6 +15,7 @@ const {
   GITHUB_REPOSITORY,
   GITHUB_SHA,
   GITHUB_REF,
+  GITHUB_HEAD_REF,
   GITHUB_EVENT_NAME
 } = process.env;
 
@@ -297,7 +298,7 @@ class Github {
   }
 
   get branch() {
-    return branchName(GITHUB_REF);
+    return branchName(GITHUB_HEAD_REF || GITHUB_REF);
   }
 
   get userEmail() {
