@@ -245,12 +245,6 @@ class Github {
     }));
   }
 
-  async runnerByName(opts = {}) {
-    const { name } = opts;
-    const runners = await this.getRunners(opts);
-    return runners.find((runner) => runner.name === name);
-  }
-
   async prCreate(opts = {}) {
     const { source: head, target: base, title, description: body } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
