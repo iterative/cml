@@ -475,54 +475,55 @@ For example, `docker://dvcorg/cml:0-dvc2-base1-gpu`, or
 The `cml-runner` function accepts the following arguments:
 
 ```
-Usage: cml-runner.js
+Usage: cml-runner
 
 Options:
-  --version                    Show version number                     [boolean]
-  --labels                     One or more user-defined labels for this runner
-                               (delimited with commas)          [default: "cml"]
-  --idle-timeout               Time in seconds for the runner to be waiting for
-                               jobs before shutting down. Setting it to 0
-                               disables automatic shutdown        [default: 300]
-  --name                       Name displayed in the repository once registered
-                                                     [default: "cml-4wdd123kha"]
-  --single                     Exit after running a single job
+  --version                   Show version number                      [boolean]
+  --labels                    One or more user-defined labels for this runner
+                              (delimited with commas)           [default: "cml"]
+  --idle-timeout              Time in seconds for the runner to be waiting for
+                              jobs before shutting down. Setting it to 0
+                              disables automatic shutdown         [default: 300]
+  --name                      Name displayed in the repository once registered
+                              cml-{ID}
+  --no-retry                  Do not restart workflow terminated due to instance
+                              disposal or GitHub Actions timeout
                                                       [boolean] [default: false]
-  --reuse                      Don't launch a new runner if an existing one has
-                               the same name or overlapping labels
+  --single                    Exit after running a single job
                                                       [boolean] [default: false]
-  --driver                     Platform where the repository is hosted. If not
-                               specified, it will be inferred from the
-                               environment         [choices: "github", "gitlab"]
-  --repo                       Repository to be used for registering the runner.
-                               If not specified, it will be inferred from the
-                               environment
-  --token                      Personal access token to register a self-hosted
-                               runner on the repository. If not specified, it
-                               will be inferred from the environment
-  --cloud                      Cloud to deploy the runner
-                                                       [choices: "aws", "azure"]
-  --cloud-region               Region where the instance is deployed. Choices:
-                               [us-east, us-west, eu-west, eu-north]. Also
-                               accepts native cloud regions [default: "us-west"]
-  --cloud-type                 Instance type. Choices: [m, l, xl]. Also supports
-                               native types like i.e. t2.micro
-  --cloud-gpu                  GPU type.      [choices: "nogpu", "k80", "tesla"]
-  --cloud-hdd-size             HDD size in GB.
-  --cloud-ssh-private          Custom private RSA SSH key. If not provided an
-                               automatically generated throwaway key will be
-                               used                                [default: ""]
-  --cloud-ssh-private-visible  Show the private SSH key in the output with the
-                               rest of the instance properties (not recommended)
-                                                                       [boolean]
-  --cloud-spot                 Request a spot instance                 [boolean]
-  --cloud-spot-price           Maximum spot instance bidding price in USD.
-                               Defaults to the current spot bidding price
-                                                                 [default: "-1"]
-  --cloud-startup-script       Run the provided Base64-encoded Linux shell
-                               script during the instance initialization
+  --reuse                     Don't launch a new runner if an existing one has
+                              the same name or overlapping labels
+                                                      [boolean] [default: false]
+  --driver                    Platform where the repository is hosted. If not
+                              specified, it will be inferred from the
+                              environment          [choices: "github", "gitlab"]
+  --repo                      Repository to be used for registering the runner.
+                              If not specified, it will be inferred from the
+                              environment
+  --token                     Personal access token to register a self-hosted
+                              runner on the repository. If not specified, it
+                              will be inferred from the environment
+  --cloud                     Cloud to deploy the runner
+                                         [choices: "aws", "azure", "kubernetes"]
+  --cloud-region              Region where the instance is deployed. Choices:
+                              [us-east, us-west, eu-west, eu-north]. Also
+                              accepts native cloud regions  [default: "us-west"]
+  --cloud-type                Instance type. Choices: [m, l, xl]. Also supports
+                              native types like i.e. t2.micro
+  --cloud-gpu                 GPU type.
+                                      [choices: "nogpu", "k80", "v100", "tesla"]
+  --cloud-hdd-size            HDD size in GB
+  --cloud-ssh-private         Custom private RSA SSH key. If not provided an
+                              automatically generated throwaway key will be used
                                                                    [default: ""]
-  -h                           Show help                               [boolean]
+  --cloud-spot                Request a spot instance                  [boolean]
+  --cloud-spot-price          Maximum spot instance bidding price in USD.
+                              Defaults to the current spot bidding price
+                                                                 [default: "-1"]
+  --cloud-startup-script      Run the provided Base64-encoded Linux shell script
+                              during the instance initialization   [default: ""]
+  --cloud-aws-security-group  Specifies the security group in AWS  [default: ""]
+  -h                          Show help                                [boolean]
 ```
 
 #### Environment Variables

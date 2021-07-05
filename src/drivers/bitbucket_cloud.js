@@ -168,6 +168,10 @@ class BitbucketCloud {
     });
   }
 
+  async pipelineRestart(opts = {}) {
+    throw new Error('BitBucket Cloud does not support workflowRestart!');
+  }
+
   async request(opts = {}) {
     const { token, api } = this;
     const { url, endpoint, method = 'GET', body } = opts;

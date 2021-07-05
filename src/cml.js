@@ -147,59 +147,57 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  parseRunnerLog(opts = {}) {
+  async parseRunnerLog(opts = {}) {
     let { data } = opts;
     if (!data) return;
+
+    const date = new Date();
 
     try {
       data = data.toString('utf8');
 
       let log = {
         level: 'info',
-        time: new Date().toISOString(),
+        date: date.toISOString(),
         repo: this.repo
       };
 
       if (this.driver === GITHUB) {
         if (data.includes('Running job')) {
-          log.job = '';
+          const { id } = await getDriver(this).job({ time: date.getTime() });
+          log.job = id;
           log.status = 'job_started';
-          return log;
         } else if (
           data.includes('Job') &&
           data.includes('completed with result')
         ) {
           log.job = '';
           log.status = 'job_ended';
-          log.success = data.endsWith('Succeeded');
+          log.success = data.includes('Succeeded');
           log.level = log.success ? 'info' : 'error';
-          return log;
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
-          return log;
         }
+        return log;
       }
 
       if (this.driver === GITLAB) {
         const { msg, job } = JSON.parse(data);
+        log = { ...log, job };
 
         if (msg.endsWith('received')) {
-          log = { ...log, job };
           log.status = 'job_started';
-          return log;
         } else if (
           msg.startsWith('Job failed') ||
           msg.startsWith('Job succeeded')
         ) {
-          log = { ...log, job };
           log.status = 'job_ended';
           log.success = !msg.startsWith('Job failed');
           log.level = log.success ? 'info' : 'error';
-          return log;
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
-          return log;
         }
+        return log;
       }
     } catch (err) {
       console.log(`Failed parsing log: ${err.message}`);
@@ -335,6 +333,14 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
     });
 
     return renderPr(url);
+  }
+
+  async pipelineRestart(opts) {
+    return await getDriver(this).pipelineRestart(opts);
+  }
+
+  async pipelineJobs(opts) {
+    return await getDriver(this).pipelineJobs(opts);
   }
 
   logError(e) {

@@ -1,7 +1,7 @@
 name: Test & Deploy
 on:
   schedule:
-    - cron: 0 1 * * 6  # Sat 01:00
+    - cron: 0 1 * * 6 # Sat 01:00
   release:
     types: [published]
   pull_request_target:

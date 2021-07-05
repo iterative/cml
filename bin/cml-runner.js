@@ -17,97 +17,97 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_DESTROY_DELAY = 30,
+  RUNNER_DESTROY_DELAY = 20,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
   RUNNER_REUSE = false,
+  RUNNER_NO_RETRY = false,
   RUNNER_DRIVER,
   RUNNER_REPO,
   REPO_TOKEN
 } = process.env;
 
 let cml;
-let RUNNER_LAUNCHED = false;
+let RUNNER;
 let RUNNER_TIMEOUT_TIMER = 0;
 let RUNNER_SHUTTING_DOWN = false;
-const RUNNER_JOBS_RUNNING = [];
+let RUNNER_JOBS_RUNNING = [];
+const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
-
   RUNNER_SHUTTING_DOWN = true;
 
-  let { error, cloud } = opts;
-  const { name, tfResource, workdir = '' } = opts;
+  const { error, cloud } = opts;
+  const { name, workdir = '', tfResource, noRetry } = opts;
   const tfPath = workdir;
 
-  console.log(
-    JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
-  );
-  if (error) console.error(error);
-
   const unregisterRunner = async () => {
+    if (!RUNNER) return;
+
     try {
-      console.log('Unregistering runner...');
+      console.log(`Unregistering runner ${name}...`);
+      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
       console.log('\tSuccess');
     } catch (err) {
-      console.error('\tFailed');
-      error = err;
+      console.error(`\tFailed: ${err.message}`);
     }
   };
 
-  const shutdownDockerMachine = async () => {
+  const retryWorkflows = async () => {
+    try {
+      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
+        await Promise.all(
+          RUNNER_JOBS_RUNNING.map(
+            async (job) => await cml.pipelineRestart({ jobId: job.id })
+          )
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const destroyDockerMachine = async () => {
+    if (!DOCKER_MACHINE) return;
+
     console.log('docker-machine destroy...');
     console.log(
-      'Docker machine is deprecated and this will be removed!! Check how to deploy using our tf provider.'
+      'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
       await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
     } catch (err) {
       console.error(`\tFailed shutting down docker machine: ${err.message}`);
-      error = err;
-    }
-  };
-
-  const shutdownTf = async () => {
-    const { tfResource } = opts;
-
-    if (!tfResource) {
-      console.log(`\tNo TF resource found`);
-      return;
-    }
-
-    try {
-      await tf.destroy({ dir: tfPath });
-    } catch (err) {
-      console.error(`\tFailed Terraform destroy: ${err.message}`);
-      error = err;
     }
   };
 
   const destroyTerraform = async () => {
+    if (!tfResource) return;
+
     try {
       console.log(await tf.destroy({ dir: tfPath }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
-      error = err;
     }
   };
+
+  console.log(
+    JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
+  );
+  if (error) console.error(error);
+  await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
     await destroyTerraform();
   } else {
-    if (RUNNER_LAUNCHED) await unregisterRunner();
+    await unregisterRunner();
+    await retryWorkflows();
 
-    console.log(
-      `\tDestroy scheduled: ${RUNNER_DESTROY_DELAY} seconds remaining.`
-    );
-    await sleep(RUNNER_DESTROY_DELAY);
-
-    if (DOCKER_MACHINE) await shutdownDockerMachine();
-    if (tfResource) await shutdownTf();
+    await destroyDockerMachine();
+    await destroyTerraform();
   }
 
   process.exit(error ? 1 : 0);
@@ -214,7 +214,7 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
 
   const proc = await cml.startRunner({
     workdir,
@@ -224,17 +224,30 @@ const runLocal = async (opts) => {
     idleTimeout
   });
 
-  const dataHandler = (data) => {
-    const log = cml.parseRunnerLog({ data });
+  const dataHandler = async (data) => {
+    const log = await cml.parseRunnerLog({ data });
     log && console.log(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push(1);
+      RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
       RUNNER_TIMEOUT_TIMER = 0;
     } else if (log && log.status === 'job_ended') {
-      RUNNER_JOBS_RUNNING.pop();
+      const { job } = log;
+
+      if (!RUNNER_SHUTTING_DOWN) {
+        const jobs = job
+          ? [job]
+          : (await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING }))
+              .filter((job) => job.status === 'completed')
+              .map((job) => job.id);
+
+        RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
+          (job) => !jobs.includes(job.id)
+        );
+      }
     }
   };
+
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
@@ -252,7 +265,19 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  RUNNER_LAUNCHED = true;
+  if (!noRetry && cml.driver === 'github') {
+    const watcher = setInterval(() => {
+      RUNNER_JOBS_RUNNING.forEach((job) => {
+        if (
+          new Date().getTime() - new Date(job.date).getTime() >
+          GH_5_MIN_TIMEOUT
+        )
+          shutdown(opts) && clearInterval(watcher);
+      });
+    }, 60 * 1000);
+  }
+
+  RUNNER = proc;
 };
 
 const run = async (opts) => {
@@ -337,9 +362,15 @@ const opts = yargs
     'idle-timeout',
     'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
   )
-  .default('name', RUNNER_NAME)
-  .describe('name', 'Name displayed in the repository once registered')
-
+  .default('name')
+  .describe('name', 'Name displayed in the repository once registered cml-{ID}')
+  .coerce('name', (val) => val || RUNNER_NAME)
+  .boolean('no-retry')
+  .default('no-retry', RUNNER_NO_RETRY)
+  .describe(
+    'no-retry',
+    'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+  )
   .boolean('single')
   .default('single', RUNNER_SINGLE)
   .describe('single', 'Exit after running a single job')
