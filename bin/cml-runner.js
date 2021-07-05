@@ -17,7 +17,7 @@ const {
 
   RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
   RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_DESTROY_DELAY = 10,
+  RUNNER_DESTROY_DELAY = 15,
   RUNNER_LABELS = 'cml',
   RUNNER_NAME = NAME,
   RUNNER_SINGLE = false,
@@ -37,28 +37,22 @@ const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
-
   RUNNER_SHUTTING_DOWN = true;
 
-  let { error, cloud } = opts;
+  const { error, cloud } = opts;
   const { name, workdir = '', tfResource, noRetry } = opts;
   const tfPath = workdir;
-
-  console.log(
-    JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
-  );
-  if (error) console.error(error);
 
   const unregisterRunner = async () => {
     if (!RUNNER) return;
 
     try {
       console.log(`Unregistering runner ${name}...`);
+      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
       console.log('\tSuccess');
     } catch (err) {
-      console.error('\tFailed');
-      error = err;
+      console.error(`\tFailed: ${err.message}`);
     }
   };
 
@@ -72,7 +66,7 @@ const shutdown = async (opts) => {
         );
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
@@ -87,7 +81,6 @@ const shutdown = async (opts) => {
       await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
     } catch (err) {
       console.error(`\tFailed shutting down docker machine: ${err.message}`);
-      error = err;
     }
   };
 
@@ -98,9 +91,14 @@ const shutdown = async (opts) => {
       console.log(await tf.destroy({ dir: tfPath }));
     } catch (err) {
       console.error(`\tFailed destroying terraform: ${err.message}`);
-      error = err;
     }
   };
+
+  console.log(
+    JSON.stringify({ level: error ? 'error' : 'info', status: 'terminated' })
+  );
+  if (error) console.error(error);
+  await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
     await destroyTerraform();
@@ -108,11 +106,8 @@ const shutdown = async (opts) => {
     await unregisterRunner();
     await retryWorkflows();
 
-    if (DOCKER_MACHINE || tfResource) await sleep(RUNNER_DESTROY_DELAY);
     await destroyDockerMachine();
     await destroyTerraform();
-
-    RUNNER && RUNNER.kill('SIGINT');
   }
 
   process.exit(error ? 1 : 0);
