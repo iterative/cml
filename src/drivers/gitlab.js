@@ -246,10 +246,12 @@ class Gitlab {
       endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
     });
 
-    jobs.forEach((job) =>
-      this.request({
-        endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
-        method: 'POST'
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
       })
     );
   }
