@@ -48,7 +48,7 @@ const shutdown = async (opts) => {
 
     try {
       console.log(`Unregistering runner ${name}...`);
-      // RUNNER && RUNNER.kill('SIGINT');
+      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
       console.log('\tSuccess');
     } catch (err) {
