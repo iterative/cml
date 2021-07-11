@@ -241,7 +241,8 @@ class Github {
       name,
       labels: labels.map(({ name }) => name),
       online: status === 'online',
-      busy
+      busy,
+      status
     }));
   }
 

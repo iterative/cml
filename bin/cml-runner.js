@@ -251,13 +251,11 @@ const runLocal = async (opts) => {
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
-  proc.on('SIGINT', () => shutdown(opts));
-  proc.on('SIGTERM', () => shutdown(opts));
-  proc.on('SIGQUIT', () => shutdown(opts));
+  proc.on('disconnect', () => shutdown(opts));
 
-  if (parseInt(idleTimeout) !== 0) {
+  if (cml.driver === 'github' && parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
-      RUNNER_TIMEOUT_TIMER >= idleTimeout &&
+      RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown(opts) &&
         clearInterval(watcher);
 
@@ -265,8 +263,8 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  if (!noRetry && cml.driver === 'github') {
-    const watcher = setInterval(() => {
+  if (cml.driver === 'github' && !noRetry) {
+    const watcher = setInterval(async () => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         if (
           new Date().getTime() - new Date(job.date).getTime() >
@@ -274,6 +272,11 @@ const runLocal = async (opts) => {
         )
           shutdown(opts) && clearInterval(watcher);
       });
+
+      const runner = await cml.runnerByName({ name: name });
+      if (runner && runner.status && runner.status.toLowerCase() === 'idle') {
+        RUNNER_JOBS_RUNNING = [];
+      }
     }, 60 * 1000);
   }
 
