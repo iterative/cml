@@ -242,11 +242,18 @@ class Gitlab {
         method: 'POST'
       }));
 
-    while (status !== 'running')
-      ({ status } = await this.request({
-        endpoint: `/projects/${projectPath}/pipelines/${id}/retry`,
-        method: 'POST'
-      }));
+    const jobs = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    });
+
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
+      })
+    );
   }
 
   async request(opts = {}) {
