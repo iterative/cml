@@ -68,7 +68,7 @@ const run = async (opts) => {
     const regex = /(https?:\/\/[^\s]+)/;
     const matches = stdoutData.match(regex);
 
-    if (matches.length) {
+    if (matches && matches.length) {
       let output = matches[0];
 
       if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
