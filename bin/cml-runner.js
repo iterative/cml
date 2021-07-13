@@ -403,7 +403,7 @@ const opts = yargs
   )
   .default('cloud')
   .describe('cloud', 'Cloud to deploy the runner')
-  .choices('cloud', ['aws', 'azure', 'kubernetes'])
+  .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
   .default('cloud-region', 'us-west')
   .describe(
     'cloud-region',
