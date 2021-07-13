@@ -4,6 +4,8 @@ const { resolve } = require('path');
 const fs = require('fs').promises;
 
 const github = require('@actions/github');
+const { Octokit } = require('@octokit/rest');
+const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 
 const { download, exec } = require('../utils');
@@ -42,7 +44,19 @@ const ownerRepo = (opts) => {
 const octokit = (token, repo) => {
   if (!token) throw new Error('token not found');
 
-  const octokitOptions = {};
+  const throttleHandler = (retryAfter, options) => {
+    if (options.request.retryCount <= 5) {
+      console.log(`Retrying after ${retryAfter} seconds!`);
+      return true;
+    }
+  };
+  const octokitOptions = {
+    auth: token,
+    throttle: {
+      onRateLimit: throttleHandler,
+      onAbuseLimit: throttleHandler
+    }
+  };
 
   if (!repo.includes('github.com')) {
     // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
@@ -51,7 +65,8 @@ const octokit = (token, repo) => {
     octokitOptions.baseUrl = `https://${host}/api/v3`;
   }
 
-  return github.getOctokit(token, octokitOptions);
+  const MyOctokit = Octokit.plugin(throttling);
+  return new MyOctokit(octokitOptions);
 };
 
 class Github {
@@ -220,19 +235,21 @@ class Github {
     }
   }
 
-  async getRunners(opts = {}) {
+  async runners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { paginate, actions } = octokit(this.token, this.repo);
 
     let runners;
     if (typeof repo === 'undefined') {
       runners = await paginate(actions.listSelfHostedRunnersForOrg, {
-        org: owner
+        org: owner,
+        per_page: 100
       });
     } else {
       runners = await paginate(actions.listSelfHostedRunnersForRepo, {
         owner,
-        repo
+        repo,
+        per_page: 100
       });
     }
 

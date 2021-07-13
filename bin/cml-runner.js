@@ -323,7 +323,9 @@ const run = async (opts) => {
   // if (name !== NAME) {
   await cml.repoTokenCheck();
 
-  if (await cml.runnerByName({ name })) {
+  const runners = await cml.runners();
+  const runner = await cml.runnerByName({ name, runners });
+  if (runner) {
     if (!reuse)
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
@@ -334,7 +336,9 @@ const run = async (opts) => {
 
   if (
     reuse &&
-    (await cml.runnersByLabels({ labels })).find((runner) => runner.online)
+    (await cml.runnersByLabels({ labels, runners })).find(
+      (runner) => runner.online
+    )
   ) {
     console.log(`Reusing existing online runners with the ${labels} labels...`);
     process.exit(0);

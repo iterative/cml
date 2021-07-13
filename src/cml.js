@@ -217,19 +217,23 @@ class CML {
     return await getDriver(this).unregisterRunner({ runnerId, ...opts });
   }
 
-  async getRunners(opts = {}) {
-    return await getDriver(this).getRunners(opts);
+  async runners(opts = {}) {
+    return await getDriver(this).runners(opts);
   }
 
   async runnerByName(opts = {}) {
-    const { name } = opts;
-    const runners = await this.getRunners(opts);
+    let { name, runners } = opts;
+
+    if (!runners) runners = await this.runners(opts);
+
     return runners.find((runner) => runner.name === name);
   }
 
   async runnersByLabels(opts = {}) {
-    const { labels } = opts;
-    const runners = await this.getRunners(opts);
+    let { labels, runners } = opts;
+
+    if (!runners) runners = await this.runners(opts);
+
     return runners.filter((runner) =>
       labels.split(',').every((label) => runner.labels.includes(label))
     );
