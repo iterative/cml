@@ -176,14 +176,15 @@ class Gitlab {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return await Promise.all(
-      runners.map(async ({ id, name, description, active, online }) => ({
+      runners.map(async ({ id, description, active, online, status }) => ({
         id,
         name: description,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
         online,
-        busy: active && online
+        busy: active && online,
+        status
       }))
     );
   }
