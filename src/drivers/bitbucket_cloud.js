@@ -105,8 +105,8 @@ class BitbucketCloud {
     throw new Error('Bitbucket Cloud does not support unregisterRunner!');
   }
 
-  async getRunners(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support getRunners!');
+  async runners(opts = {}) {
+    throw new Error('Bitbucket Cloud does not support runners!');
   }
 
   async prCreate(opts = {}) {
