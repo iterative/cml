@@ -224,6 +224,8 @@ const runLocal = async (opts) => {
     idleTimeout
   });
 
+  console.log(proc);
+
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
     log && console.log(JSON.stringify(log));
@@ -274,6 +276,7 @@ const runLocal = async (opts) => {
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
   proc.on('disconnect', () => shutdown(opts));
+  proc.on('exit', () => shutdown(opts));
 
   if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
