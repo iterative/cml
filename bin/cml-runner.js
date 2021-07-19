@@ -234,12 +234,34 @@ const runLocal = async (opts) => {
     } else if (log && log.status === 'job_ended') {
       const { job } = log;
 
+      const waitCompletedPipelineJobs = () => {
+        return new Promise((resolve, reject) => {
+          try {
+            if (RUNNER_JOBS_RUNNING.length === 1) {
+              resolve([RUNNER_JOBS_RUNNING[0].id]);
+              return;
+            }
+
+            const watcher = setInterval(async () => {
+              const jobs = (
+                await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING })
+              )
+                .filter((job) => job.status === 'completed')
+                .map((job) => job.id);
+
+              if (jobs.length) {
+                resolve(jobs);
+                clearInterval(watcher);
+              }
+            }, 5 * 1000);
+          } catch (err) {
+            reject(err);
+          }
+        });
+      };
+
       if (!RUNNER_SHUTTING_DOWN) {
-        const jobs = job
-          ? [job]
-          : (await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING }))
-              .filter((job) => job.status === 'completed')
-              .map((job) => job.id);
+        const jobs = job ? [job] : await waitCompletedPipelineJobs();
 
         RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
           (job) => !jobs.includes(job.id)
@@ -253,7 +275,7 @@ const runLocal = async (opts) => {
   proc.on('uncaughtException', () => shutdown(opts));
   proc.on('disconnect', () => shutdown(opts));
 
-  if (cml.driver === 'github' && parseInt(idleTimeout) !== 0) {
+  if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown(opts) &&
@@ -263,7 +285,7 @@ const runLocal = async (opts) => {
     }, 1000);
   }
 
-  if (cml.driver === 'github' && !noRetry) {
+  if (!noRetry && cml.driver === 'github') {
     const watcher = setInterval(async () => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         if (
@@ -272,11 +294,6 @@ const runLocal = async (opts) => {
         )
           shutdown(opts) && clearInterval(watcher);
       });
-
-      const runner = await cml.runnerByName({ name: name });
-      if (runner && runner.status && runner.status.toLowerCase() === 'idle') {
-        RUNNER_JOBS_RUNNING = [];
-      }
     }, 60 * 1000);
   }
 
