@@ -6,7 +6,7 @@ const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
 
 const exec = async (command) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     require('child_process').exec(
       command,
       { ...process.env },
