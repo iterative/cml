@@ -197,6 +197,10 @@ class BitbucketCloud {
     return await response.json();
   }
 
+  async pipelineJobs(opts = {}) {
+    throw new Error('Not implemented');
+  }
+
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
     const { next, values } = await this.request(opts);

@@ -256,6 +256,10 @@ class Gitlab {
     );
   }
 
+  async pipelineJobs(opts = {}) {
+    throw new Error('Not implemented');
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
