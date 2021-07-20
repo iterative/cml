@@ -5,6 +5,7 @@ const { homedir } = require('os');
 
 const fs = require('fs').promises;
 const yargs = require('yargs');
+const { SpotNotifier } = require('ec2-spot-notification');
 
 const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
@@ -214,7 +215,7 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry, cloud } = opts;
 
   const proc = await cml.startRunner({
     workdir,
@@ -223,8 +224,6 @@ const runLocal = async (opts) => {
     single,
     idleTimeout
   });
-
-  console.log(proc);
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
@@ -277,6 +276,12 @@ const runLocal = async (opts) => {
   proc.on('uncaughtException', () => shutdown(opts));
   proc.on('disconnect', () => shutdown(opts));
   proc.on('exit', () => shutdown(opts));
+
+  if (cloud === 'aws') {
+    await SpotNotifier.instanceId();
+    SpotNotifier.on('termination', () => shutdown(opts));
+    SpotNotifier.start();
+  }
 
   if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
