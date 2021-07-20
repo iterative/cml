@@ -294,7 +294,7 @@ const runLocal = async (opts) => {
   }
 
   if (!noRetry && cml.driver === 'github') {
-    const watcher = setInterval(async () => {
+    const watcher = setInterval(() => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         if (
           new Date().getTime() - new Date(job.date).getTime() >
