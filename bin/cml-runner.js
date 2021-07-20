@@ -277,12 +277,14 @@ const runLocal = async (opts) => {
   proc.on('disconnect', () => shutdown(opts));
   proc.on('exit', () => shutdown(opts));
 
-  try {
-    console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
-    SpotNotifier.on('termination', () => shutdown(opts));
-    SpotNotifier.start();
-  } catch (err) {
-    console.log('SpotNotifier can not be started.');
+  if (!noRetry) {
+    try {
+      console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
+      SpotNotifier.on('termination', () => shutdown(opts));
+      SpotNotifier.start();
+    } catch (err) {
+      console.log('SpotNotifier can not be started.');
+    }
   }
 
   if (parseInt(idleTimeout) !== 0) {
