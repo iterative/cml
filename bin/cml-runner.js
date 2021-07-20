@@ -215,7 +215,7 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   console.log(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, noRetry, cloud } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
 
   const proc = await cml.startRunner({
     workdir,
@@ -277,10 +277,12 @@ const runLocal = async (opts) => {
   proc.on('disconnect', () => shutdown(opts));
   proc.on('exit', () => shutdown(opts));
 
-  if (cloud === 'aws') {
-    await SpotNotifier.instanceId();
+  try {
+    console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
     SpotNotifier.on('termination', () => shutdown(opts));
     SpotNotifier.start();
+  } catch (err) {
+    console.log('SpotNotifier can not be started.');
   }
 
   if (parseInt(idleTimeout) !== 0) {
