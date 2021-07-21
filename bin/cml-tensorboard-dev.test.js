@@ -1,6 +1,10 @@
 jest.setTimeout(200000);
 
+const fs = require('fs').promises;
+const tempy = require('tempy');
 const { exec, isProcRunning, sleep } = require('../src/utils');
+const { tbLink } = require('./cml-tensorboard-dev');
+
 const CREDENTIALS =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
 
@@ -15,6 +19,38 @@ const rmTbDevExperiment = async (tbOutput) => {
   const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tbOutput)[1];
   await exec(`tensorboard dev delete --experiment_id ${id}`);
 };
+
+describe('tbLink', () => {
+  test('timeout without result throws exception', async () => {
+    const stdout = tempy.file({ extension: 'log' });
+    const stderror = tempy.file({ extension: 'log' });
+    const message = 'there is an error';
+    let error;
+
+    await fs.writeFile(stdout, 'nothing');
+    await fs.writeFile(stderror, message);
+
+    try {
+      await tbLink({ stdout, stderror });
+    } catch (err) {
+      error = err;
+    }
+
+    expect(error.message).toBe(`Tensorboard took too long. ${message}`);
+  });
+
+  test('valid url is returned', async () => {
+    const stdout = tempy.file({ extension: 'log' });
+    const stderror = tempy.file({ extension: 'log' });
+    const message = 'https://iterative.ai';
+
+    await fs.writeFile(stdout, message);
+    await fs.writeFile(stderror, '');
+
+    const link = await tbLink({ stderror, stdout });
+    expect(link).toBe(`${message}/?cml=tb`);
+  });
+});
 
 describe('CML e2e', () => {
   test('cml-tensorboard-dev.js -h', async () => {
@@ -59,5 +95,13 @@ describe('CML e2e', () => {
     expect(isRunning).toBe(true);
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.includes('cml=tb')).toBe(true);
+  });
+
+  test('cml-tensorboard-dev.js invalid creds', async () => {
+    const output = await exec(
+      `node ./bin/cml-tensorboard-dev.js --credentials 'invalid'`
+    );
+
+    expect(output.includes('json.decoder.JSONDecodeError')).toBe(true);
   });
 });
