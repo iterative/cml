@@ -98,10 +98,10 @@ describe('CML e2e', () => {
   });
 
   test('cml-tensorboard-dev.js invalid creds', async () => {
-    const output = await exec(
-      `node ./bin/cml-tensorboard-dev.js --credentials 'invalid'`
-    );
-
-    expect(output.includes('json.decoder.JSONDecodeError')).toBe(true);
+    try {
+      await exec(`node ./bin/cml-tensorboard-dev.js --credentials 'invalid'`);
+    } catch (err) {
+      expect(err.message.includes('json.decoder.JSONDecodeError')).toBe(true);
+    }
   });
 });
