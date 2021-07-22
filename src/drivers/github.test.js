@@ -1,4 +1,4 @@
-jest.setTimeout(40000);
+jest.setTimeout(80000);
 
 const GithubClient = require('./github');
 

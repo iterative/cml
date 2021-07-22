@@ -172,11 +172,11 @@ class Gitlab {
     }
   }
 
-  async getRunners(opts = {}) {
+  async runners(opts = {}) {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return await Promise.all(
-      runners.map(async ({ id, name, description, active, online }) => ({
+      runners.map(async ({ id, description, active, online }) => ({
         id,
         name: description,
         labels: (
@@ -242,11 +242,22 @@ class Gitlab {
         method: 'POST'
       }));
 
-    while (status !== 'running')
-      ({ status } = await this.request({
-        endpoint: `/projects/${projectPath}/pipelines/${id}/retry`,
-        method: 'POST'
-      }));
+    const jobs = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    });
+
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
+      })
+    );
+  }
+
+  async pipelineJobs(opts = {}) {
+    throw new Error('Not implemented');
   }
 
   async request(opts = {}) {

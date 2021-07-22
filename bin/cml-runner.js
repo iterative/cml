@@ -5,6 +5,7 @@ const { homedir } = require('os');
 
 const fs = require('fs').promises;
 const yargs = require('yargs');
+const { SpotNotifier } = require('ec2-spot-notification');
 
 const { exec, randid, sleep } = require('../src/utils');
 const tf = require('../src/terraform');
@@ -234,12 +235,34 @@ const runLocal = async (opts) => {
     } else if (log && log.status === 'job_ended') {
       const { job } = log;
 
+      const waitCompletedPipelineJobs = () => {
+        return new Promise((resolve, reject) => {
+          try {
+            if (RUNNER_JOBS_RUNNING.length === 1) {
+              resolve([RUNNER_JOBS_RUNNING[0].id]);
+              return;
+            }
+
+            const watcher = setInterval(async () => {
+              const jobs = (
+                await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING })
+              )
+                .filter((job) => job.status === 'completed')
+                .map((job) => job.id);
+
+              if (jobs.length) {
+                resolve(jobs);
+                clearInterval(watcher);
+              }
+            }, 5 * 1000);
+          } catch (err) {
+            reject(err);
+          }
+        });
+      };
+
       if (!RUNNER_SHUTTING_DOWN) {
-        const jobs = job
-          ? [job]
-          : (await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING }))
-              .filter((job) => job.status === 'completed')
-              .map((job) => job.id);
+        const jobs = job ? [job] : await waitCompletedPipelineJobs();
 
         RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
           (job) => !jobs.includes(job.id)
@@ -251,13 +274,22 @@ const runLocal = async (opts) => {
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () => shutdown(opts));
-  proc.on('SIGINT', () => shutdown(opts));
-  proc.on('SIGTERM', () => shutdown(opts));
-  proc.on('SIGQUIT', () => shutdown(opts));
+  proc.on('disconnect', () => shutdown(opts));
+  proc.on('exit', () => shutdown(opts));
+
+  if (!noRetry) {
+    try {
+      console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
+      SpotNotifier.on('termination', () => shutdown(opts));
+      SpotNotifier.start();
+    } catch (err) {
+      console.log('SpotNotifier can not be started.');
+    }
+  }
 
   if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
-      RUNNER_TIMEOUT_TIMER >= idleTimeout &&
+      RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown(opts) &&
         clearInterval(watcher);
 
@@ -323,7 +355,9 @@ const run = async (opts) => {
   // if (name !== NAME) {
   await cml.repoTokenCheck();
 
-  if (await cml.runnerByName({ name })) {
+  const runners = await cml.runners();
+  const runner = await cml.runnerByName({ name, runners });
+  if (runner) {
     if (!reuse)
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
@@ -334,7 +368,9 @@ const run = async (opts) => {
 
   if (
     reuse &&
-    (await cml.runnersByLabels({ labels })).find((runner) => runner.online)
+    (await cml.runnersByLabels({ labels, runners })).find(
+      (runner) => runner.online
+    )
   ) {
     console.log(`Reusing existing online runners with the ${labels} labels...`);
     process.exit(0);
@@ -399,7 +435,7 @@ const opts = yargs
   )
   .default('cloud')
   .describe('cloud', 'Cloud to deploy the runner')
-  .choices('cloud', ['aws', 'azure', 'kubernetes'])
+  .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
   .default('cloud-region', 'us-west')
   .describe(
     'cloud-region',

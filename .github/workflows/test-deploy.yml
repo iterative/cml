@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
           TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
-          TEST_GITHUB_SHA: 62edc8b3f46a60b3fe1e5c08fd3e0046d350ee29
+          TEST_GITHUB_SHA: 0cd16da26e35f8e5d57b2549a97e22618abf08f6
           TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
           TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
           TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
@@ -82,6 +82,9 @@ jobs:
             python: 3.8
             cuda: 11.0.3
             cudnn: 8
+          - latest: true # update the values below after introducing a new major version
+            base: 1
+            dvc: 2
     steps:
       - uses: actions/checkout@v2
         with:
@@ -107,13 +110,20 @@ jobs:
           )')
           echo ::set-output name=cache_tag::${cml_version}-${dvc_version}-${{ matrix.base }}-${{ matrix.gpu }}
           echo ::set-output name=cml_version::$cml_version
+          tag=${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
           if [[ ${{ matrix.gpu }} == true ]]; then
             echo ::set-output name=base::nvidia/cuda:${{ matrix.cuda }}-cudnn${{ matrix.cudnn }}-runtime-ubuntu${{ matrix.ubuntu }}
-            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}-gpu
+            tag=${tag}-gpu
           else
             echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
-            echo ::set-output name=tag::${cml_version//.*/}-dvc${{ matrix.dvc }}-base${{ matrix.base }}
           fi
+
+          echo ::set-output name=tags::"$(
+            for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
+              [[ "${{ matrix.latest }}" == "true" ]] && echo "${registry}/cml:latest"
+              echo "${registry}/cml:${tag}"
+            done | tr '\n' ',' | head -c-1
+          )"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
         with:
@@ -140,9 +150,7 @@ jobs:
             'schedule' }}
           context: ./
           file: ./Dockerfile
-          tags: |
-            docker.io/dvcorg/cml:${{ steps.metadata.outputs.tag }}
-            ghcr.io/iterative/cml:${{ steps.metadata.outputs.tag }}
+          tags: ${{ steps.metadata.outputs.tags }}
           build-args: |
             CML_VERSION=${{ steps.metadata.outputs.cml_version }}
             DVC_VERSION=${{ matrix.dvc }}
