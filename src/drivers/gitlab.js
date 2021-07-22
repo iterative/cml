@@ -140,7 +140,11 @@ class Gitlab {
     try {
       await exec('nvidia-smi');
     } catch (err) {
-      gpu = false;
+      try {
+        await exec('cuda-smi');
+      } catch (err) {
+        gpu = false;
+      }
     }
 
     try {
