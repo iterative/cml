@@ -80,7 +80,7 @@ name: your-workflow-name
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
     # container: docker://iterativeai/cml:0-dvc2-base1-gpu
     # container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu
@@ -189,7 +189,7 @@ name: model-training
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -254,7 +254,7 @@ name: model-training
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     container: docker://ghcr.io/iterative/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v2
@@ -413,7 +413,7 @@ name: Train-in-the-cloud
 on: [push]
 jobs:
   deploy-runner:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
@@ -428,8 +428,8 @@ jobs:
               --cloud-region us-west \
               --cloud-type t2.micro \
               --labels cml-runner
-  model-training:
-    needs: [deploy-runner]
+  train-model:
+    needs: deploy-runner
     runs-on: [self-hosted, cml-runner]
     container: docker://iterativeai/cml:0-dvc2-base1-gpu
     steps:
