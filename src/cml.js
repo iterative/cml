@@ -201,6 +201,7 @@ class CML {
       }
     } catch (err) {
       console.log(`Failed parsing log: ${err.message}`);
+      console.log(`Original log bytes, as Base64: ${data.toString('base64')}`);
     }
   }
 
