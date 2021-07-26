@@ -120,7 +120,13 @@ jobs:
 
           echo ::set-output name=tags::"$(
             for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
-              [[ "${{ matrix.latest }}" == "true" ]] && echo "${registry}/cml:latest"
+              if [[ "${{ matrix.latest }}" == "true" ]]; then
+                if [[ "${{ matrix.gpu }}" == "true" ]]; then
+                  echo "${registry}/cml:latest-gpu"
+                else
+                  echo "${registry}/cml:latest"
+                fi
+              fi
               echo "${registry}/cml:${tag}"
             done | tr '\n' ',' | head -c-1
           )"
