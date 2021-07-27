@@ -16,7 +16,7 @@ test_runner:
   tags:
     - cml-runner-gpu
   script:
-    - sudo pip install tensorboard
+    - pip install tensorboard
 
     - npm ci
     - npm run lint
