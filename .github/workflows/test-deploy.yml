@@ -128,7 +128,7 @@ jobs:
                 fi
               fi
               echo "${registry}/cml:${tag}"
-            done | tr '\n' ',' | head -c-1
+            done | head -c-1
           )"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
@@ -156,7 +156,8 @@ jobs:
             'schedule' }}
           context: ./
           file: ./Dockerfile
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: |
+            ${{ steps.metadata.outputs.tags }}
           build-args: |
             CML_VERSION=${{ steps.metadata.outputs.cml_version }}
             DVC_VERSION=${{ matrix.dvc }}
