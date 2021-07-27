@@ -1,4 +1,9 @@
-const { exec, upload, sshPublicFromPrivateRsa } = require('./utils');
+const {
+  exec,
+  upload,
+  sshPublicFromPrivateRsa,
+  proxyAgent
+} = require('./utils');
 
 describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
@@ -43,5 +48,20 @@ describe('Other tests', () => {
     const expected =
       'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwMFO1qTq68Uao1TU6W+911SWZN+mce+OTodS5mne0vMiWm7AFJuaxMKzL1NGeXOAUY+oeTAE7NCyi56mqEo3R8kOvwYbIQKmz27lzL0ZniI9UkYkE9aFslvTgou6cqcJO6S8GMNnJLLXbmX37zGUgZyuTAuot885WHqKyW0Pg/zplBNIPBRA+yhQG8z17dj8VwixoE7KgRiNK9CN5Yz/2TRlsHLan9LH9vHSK477bj+jPtbII4V5ZP5Du/70Seb1fe3648DVpg4mjDmLrQkW/rtNanKMVLw3bD9VroeLe3PW91nLq+noOuljPETtxxrhGagE28U6igPTmIQYczrpz ';
     expect(publicKey).toBe(expected);
+  });
+
+  describe('proxyAgent', () => {
+    const { http_proxy, https_proxy } = process.env;
+    process.env.http_proxy = 'https://www.example1.com';
+    expect(proxyAgent().proxy.host).toBe('www.example1.com');
+
+    // https_proxy overrides http_proxy
+    process.env.https_proxy = 'https://www.example2.com';
+    expect(proxyAgent().proxy.host).toBe('www.example2.com');
+
+    const url = 'https://www.example.com';
+    expect(proxyAgent({ url: `${url}` }).proxy.host).toBe('www.example.com');
+
+    process.env = { ...process.env, http_proxy, https_proxy };
   });
 });

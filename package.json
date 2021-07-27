@@ -68,6 +68,7 @@
     "fs-extra": "^9.0.1",
     "git-url-parse": "^11.4.0",
     "globby": "^11.0.3",
+    "https-proxy-agent": "^5.0.0",
     "js-base64": "^3.5.2",
     "mmmagic": "^0.5.3",
     "node-fetch": "^2.6.0",
@@ -92,8 +93,13 @@
     "husky": "^4.2.3",
     "jest": "^24.9.0",
     "lint-staged": "^10.0.8",
-    "prettier": "^2.1.1"
+    "prettier": "^2.1.1",
+    "transparent-proxy": "^1.8.5"
   },
   "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
-  "homepage": "https://github.com/iterative/cml#readme"
+  "homepage": "https://github.com/iterative/cml#readme",
+  "jest": {
+    "globalSetup": "./tests/setup.js",
+    "globalTeardown": "./tests/teardown.js"
+  }
 }

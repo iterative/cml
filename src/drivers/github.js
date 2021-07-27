@@ -8,7 +8,7 @@ const { Octokit } = require('@octokit/rest');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 
-const { download, exec } = require('../utils');
+const { download, exec, proxyAgent } = require('../utils');
 
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
@@ -51,6 +51,7 @@ const octokit = (token, repo) => {
     }
   };
   const octokitOptions = {
+    request: { agent: proxyAgent() },
     auth: token,
     throttle: {
       onRateLimit: throttleHandler,

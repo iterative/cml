@@ -6,7 +6,7 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 
-const { fetchUploadData, download, exec } = require('../utils');
+const { fetchUploadData, download, exec, proxyAgent } = require('../utils');
 
 const {
   IN_DOCKER,
@@ -271,7 +271,12 @@ class Gitlab {
     if (!url) throw new Error('Gitlab API endpoint not found');
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
-    const response = await fetch(url, { method, headers, body });
+    const response = await fetch(url, {
+      method,
+      headers,
+      body,
+      agent: proxyAgent()
+    });
 
     if (response.status > 300) throw new Error(response.statusText);
     if (raw) return response;

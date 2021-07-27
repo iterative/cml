@@ -540,6 +540,11 @@ compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
 Please see our docs about
 [configuring cloud storage providers](#configuring-cloud-storage-providers).
 
+#### Proxy support
+
+CML support proxy via known environment variables `http_proxy` and
+`https_proxy`.
+
 #### On-premise (Local) Runners
 
 This means using on-premise machines as self-hosted runners. The `cml-runner`
