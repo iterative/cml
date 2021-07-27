@@ -6,7 +6,7 @@ jobs:
   # check that CML container builds properly
   build-container:
     if: startsWith(github.event.comment.body, '/tests')
-    runs-on: [ubuntu-18.04]
+    runs-on: ubuntu-18.04
     steps:
       - name: React Seen
         uses: actions/github-script@v2
@@ -49,7 +49,7 @@ jobs:
   # test container all CML features, vega and actions with issues in the past
   check-container:
     needs: build-container
-    runs-on: [ubuntu-18.04]
+    runs-on: ubuntu-18.04
     container: dvcorg/cml-test
     steps:
       - uses: actions/checkout@v2
@@ -128,7 +128,7 @@ jobs:
           nvidia-smi
   chatbot:
     if: startsWith(github.event.comment.body, '/cml-')
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: React Seen
         uses: actions/github-script@v2

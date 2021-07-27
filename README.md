@@ -80,9 +80,9 @@ name: your-workflow-name
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
-    # container: docker://dvcorg/cml:0-dvc2-base1-gpu
+    # container: docker://iterativeai/cml:0-dvc2-base1-gpu
     # container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu
     steps:
       - uses: actions/checkout@v2
@@ -113,7 +113,7 @@ jobs:
 We helpfully provide CML and other useful libraries pre-installed on our
 [custom Docker images](https://github.com/iterative/cml/blob/master/Dockerfile).
 In the above example, uncommenting the field
-`container: docker://dvcorg/cml:0-dvc2-base1-gpu` (or
+`container: docker://iterativeai/cml:0-dvc2-base1-gpu` (or
 `container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu`) will make the
 runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
 and CML set up on an Ubuntu LTS base with CUDA libraries and
@@ -189,7 +189,7 @@ name: model-training
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -254,7 +254,7 @@ name: model-training
 on: [push]
 jobs:
   run:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     container: docker://ghcr.io/iterative/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v2
@@ -413,7 +413,7 @@ name: Train-in-the-cloud
 on: [push]
 jobs:
   deploy-runner:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: iterative/setup-cml@v1
       - uses: actions/checkout@v2
@@ -428,10 +428,10 @@ jobs:
               --cloud-region us-west \
               --cloud-type t2.micro \
               --labels cml-runner
-  model-training:
-    needs: [deploy-runner]
+  train-model:
+    needs: deploy-runner
     runs-on: [self-hosted, cml-runner]
-    container: docker://dvcorg/cml:0-dvc2-base1-gpu
+    container: docker://iterativeai/cml:0-dvc2-base1-gpu
     steps:
       - uses: actions/checkout@v2
       - name: Train model
@@ -457,17 +457,18 @@ newly-launched instance.
 
 #### Docker Images
 
-We like the CML container (`docker://dvcorg/cml`) because it comes loaded with
-Python, CUDA, `git`, `node` and other essentials for full-stack data science.
-Different versions of these essentials are available from different `dvcorg/cml`
-image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
+We like the CML container (`docker://iterativeai/cml`) because it comes loaded
+with Python, CUDA, `git`, `node` and other essentials for full-stack data
+science. Different versions of these essentials are available from different
+`iterativeai/cml` image tags. The tag convention is
+`{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 
 | `{BASE_VER}` | Software included (`-gpu`)                      |
 | ------------ | ----------------------------------------------- |
 | 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7)   |
 | 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.0.3, CuDNN 8) |
 
-For example, `docker://dvcorg/cml:0-dvc2-base1-gpu`, or
+For example, `docker://iterativeai/cml:0-dvc2-base1-gpu`, or
 `docker://ghcr.io/iterative/cml:0-dvc2-base1`.
 
 #### Arguments
