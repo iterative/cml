@@ -152,9 +152,7 @@ jobs:
           password: ${{ github.token }}
       - uses: docker/build-push-action@v2
         with:
-          push:
-            ${{ github.event_name == 'release' || github.event_name ==
-            'schedule' }}
+          push: true
           context: ./
           file: ./Dockerfile
           tags: |
