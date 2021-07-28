@@ -155,7 +155,6 @@ class CML {
 
     try {
       data = data.toString('utf8');
-      // console.log(data);
 
       let log = {
         level: 'info',
