@@ -298,7 +298,7 @@ const runLocal = async (opts) => {
   if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
-        shutdown({ ...opts, reason: 'timeout' }) &&
+        shutdown({ ...opts, reason: `timeout:${idleTimeout}` }) &&
         clearInterval(watcher);
 
       if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
