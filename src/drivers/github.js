@@ -226,7 +226,7 @@ class Github {
         `${resolve(
           workdir,
           'config.sh'
-        )} --token "${await this.runnerToken()}" --url "${
+        )} --unattended  --token "${await this.runnerToken()}" --url "${
           this.repo
         }"  --name "${name}" --labels "${labels}" --work "${resolve(
           workdir,
