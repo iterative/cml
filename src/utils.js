@@ -167,8 +167,8 @@ const sshConnection = async (opts) => {
 };
 
 const proxyAgent = (opts = {}) => {
-  const { https_proxy, http_proxy } = process.env;
-  const { url = https_proxy || http_proxy } = opts;
+  const { https_proxy: httpsProxy, http_proxy: httpProxy } = process.env;
+  const { url = httpsProxy || httpProxy } = opts;
 
   if (!url) return;
   return new HttpsProxyAgent(url);
