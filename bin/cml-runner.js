@@ -281,7 +281,7 @@ const runLocal = async (opts) => {
     shutdown({ ...opts, why: 'proc_uncaughtException' })
   );
   proc.on('disconnect', () => shutdown({ ...opts, why: 'proc_disconnect' }));
-  proc.on('exit', () => shutdown({ ...opts, why: 'proc_exit' }));
+  // proc.on('exit', () => shutdown({ ...opts, why: 'proc_exit' }));
 
   if (!noRetry) {
     try {
