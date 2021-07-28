@@ -155,7 +155,7 @@ class CML {
 
     try {
       data = data.toString('utf8');
-      console.log(data);
+      // console.log(data);
 
       let log = {
         level: 'info',
@@ -179,7 +179,9 @@ class CML {
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
         }
-        return log;
+
+        const [, message] = data.split(/[A-Z]:\s/);
+        return { ...log, message: (message || data).replace(/\n/g, '') };
       }
 
       if (this.driver === GITLAB) {
