@@ -208,13 +208,15 @@ class Github {
         await fs.unlink(runnerCfg);
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
-        const { tag_name: ver } = (
+        const { tag_name: ver } = await (
           await fetch(
             'https://api.github.com/repos/actions/runner/releases/latest'
           )
         ).json();
         const destination = resolve(workdir, 'actions-runner.tar.gz');
-        const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
+        const url = `https://github.com/actions/runner/releases/download/${ver}/actions-runner-${arch}-${ver.substring(
+          1
+        )}.tar.gz`;
         await download({ url, path: destination });
         await tar.extract({ file: destination, cwd: workdir });
         await exec(`chmod -R 777 ${workdir}`);
