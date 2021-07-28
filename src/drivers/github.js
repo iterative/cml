@@ -2,6 +2,7 @@ const url = require('url');
 const { spawn } = require('child_process');
 const { resolve } = require('path');
 const fs = require('fs').promises;
+const fetch = require('node-fetch');
 
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
@@ -207,7 +208,11 @@ class Github {
         await fs.unlink(runnerCfg);
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
-        const ver = 'v2.279.0';
+        const { tag_name: ver } = (
+          await fetch(
+            'https://api.github.com/repos/actions/runner/releases/latest'
+          )
+        ).json();
         const destination = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: destination });
