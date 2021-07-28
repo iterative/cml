@@ -312,7 +312,8 @@ const runLocal = async (opts) => {
           new Date().getTime() - new Date(job.date).getTime() >
           GH_5_MIN_TIMEOUT
         )
-          shutdown({ ...opts, reason: `timeout:72` }) && clearInterval(watcher);
+          shutdown({ ...opts, reason: 'timeout:72h' }) &&
+            clearInterval(watcher);
       });
     }, 60 * 1000);
   }
