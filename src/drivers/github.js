@@ -207,7 +207,7 @@ class Github {
         await fs.unlink(runnerCfg);
       } catch (e) {
         const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
-        const ver = '2.278.0';
+        const ver = 'v2.279.0';
         const destination = resolve(workdir, 'actions-runner.tar.gz');
         const url = `https://github.com/actions/runner/releases/download/v${ver}/actions-runner-${arch}-${ver}.tar.gz`;
         await download({ url, path: destination });

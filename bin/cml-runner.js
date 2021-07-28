@@ -41,7 +41,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const { name, workdir = '', tfResource, noRetry, why } = opts;
+  const { name, workdir = '', tfResource, noRetry, reason } = opts;
   const tfPath = workdir;
 
   const unregisterRunner = async () => {
@@ -100,7 +100,7 @@ const shutdown = async (opts) => {
     JSON.stringify({
       level: error ? 'error' : 'info',
       status: 'terminated',
-      why
+      reason
     })
   );
   await sleep(RUNNER_DESTROY_DELAY);
@@ -278,16 +278,16 @@ const runLocal = async (opts) => {
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('uncaughtException', () =>
-    shutdown({ ...opts, why: 'proc_uncaughtException' })
+    shutdown({ ...opts, reason: 'proc_uncaughtException' })
   );
-  proc.on('disconnect', () => shutdown({ ...opts, why: 'proc_disconnect' }));
-  // proc.on('exit', () => shutdown({ ...opts, why: 'proc_exit' }));
+  proc.on('disconnect', () => shutdown({ ...opts, reason: 'proc_disconnect' }));
+  proc.on('exit', () => shutdown({ ...opts, reason: 'proc_exit' }));
 
   if (!noRetry) {
     try {
       console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
       SpotNotifier.on('termination', () =>
-        shutdown({ ...opts, why: 'spot_termination' })
+        shutdown({ ...opts, reason: 'spot_termination' })
       );
       SpotNotifier.start();
     } catch (err) {
@@ -298,7 +298,7 @@ const runLocal = async (opts) => {
   if (parseInt(idleTimeout) !== 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
-        shutdown({ ...opts, why: 'timeout' }) &&
+        shutdown({ ...opts, reason: 'timeout' }) &&
         clearInterval(watcher);
 
       if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
@@ -312,7 +312,7 @@ const runLocal = async (opts) => {
           new Date().getTime() - new Date(job.date).getTime() >
           GH_5_MIN_TIMEOUT
         )
-          shutdown({ ...opts, why: '72timeout' }) && clearInterval(watcher);
+          shutdown({ ...opts, reason: '72timeout' }) && clearInterval(watcher);
       });
     }, 60 * 1000);
   }
@@ -321,9 +321,9 @@ const runLocal = async (opts) => {
 };
 
 const run = async (opts) => {
-  process.on('SIGTERM', () => shutdown({ ...opts, why: 'SIGTERM' }));
-  process.on('SIGINT', () => shutdown({ ...opts, why: 'SIGINT' }));
-  process.on('SIGQUIT', () => shutdown({ ...opts, why: 'SIGQUIT' }));
+  process.on('SIGTERM', () => shutdown({ ...opts, reason: 'SIGTERM' }));
+  process.on('SIGINT', () => shutdown({ ...opts, reason: 'SIGINT' }));
+  process.on('SIGQUIT', () => shutdown({ ...opts, reason: 'SIGQUIT' }));
 
   opts.workdir = RUNNER_PATH;
   const {
