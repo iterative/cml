@@ -43,10 +43,14 @@ describe('CML e2e', () => {
     `);
   });
 
-  test('cml-tensorboard-dev.js --md returns md and after command TB is still up', async () => {
+  test.skip('cml-tensorboard-dev.js --md returns md and after command TB is still up', async () => {
     const name = 'My experiment';
     const desc = 'Test experiment';
     const title = 'go to the experiment';
+    console.log(`node ./bin/cml-tensorboard-dev.js --credentials '${CREDENTIALS}' \
+    --md --title '${title}' \
+    --logdir logs --name '${name}' --description '${desc}'`);
+
     const output = await exec(
       `node ./bin/cml-tensorboard-dev.js --credentials '${CREDENTIALS}' \
         --md --title '${title}' \

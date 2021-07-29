@@ -10,7 +10,9 @@ const startProxy = () => {
   );
 };
 const stopProxy = () => {
+  console.log('Teardown Jest. Stoping Proxy...');
   global.proxyTestsServer.close();
+  global.proxyTestsServer.unref();
 };
 
 module.exports = {

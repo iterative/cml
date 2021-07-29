@@ -64,6 +64,7 @@ const run = async (opts) => {
 
   // reads stdout every 5 secs to find the tb uri
   setInterval(async () => {
+    console.log('1sec');
     const stdoutData = await fs.readFile(stdoutPath, 'utf8');
     const regex = /(https?:\/\/[^\s]+)/;
     const matches = stdoutData.match(regex);
@@ -85,6 +86,7 @@ const run = async (opts) => {
 
   // waits 1 min before dies
   setTimeout(async () => {
+    console.log('here');
     closeFd(stdoutFd) && closeFd(stderrFd);
     console.error(await fs.readFile(stderrPath, 'utf8'));
     throw new Error('Tensorboard took too long! Canceled.');
