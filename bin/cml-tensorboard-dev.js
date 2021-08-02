@@ -86,7 +86,6 @@ const run = async (opts) => {
 
   // waits 1 min before dies
   setTimeout(async () => {
-    console.log('here');
     closeFd(stdoutFd) && closeFd(stderrFd);
     console.error(await fs.readFile(stderrPath, 'utf8'));
     throw new Error('Tensorboard took too long! Canceled.');
