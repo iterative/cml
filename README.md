@@ -140,9 +140,12 @@ those reports to your CI system.
 #### CML Reports
 
 The `cml-send-comment` command can be used to post reports. CML reports are
-written in [GitHub Flavored Markdown](https://github.github.com/gfm). That means
-they can contain images, tables, formatted text, HTML blocks, code snippets and
-more — really, what you put in a CML report is up to you. Some examples:
+written in markdown ([GitHub](https://github.github.com/gfm),
+[GitLab](https://docs.gitlab.com/ee/user/markdown.html), or
+[Bitbucket](https://confluence.atlassian.com/bitbucketserver/markdown-syntax-guide-776639995.html)
+flavors). That means they can contain images, tables, formatted text, HTML
+blocks, code snippets and more — really, what you put in a CML report is up to
+you. Some examples:
 
 :spiral_notepad: **Text** Write to your report using whatever method you prefer.
 For example, copy the contents of a text file containing the results of ML model
