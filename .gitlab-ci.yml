@@ -16,12 +16,7 @@ test_runner:
   tags:
     - cml-runner-gpu
   script:
-    - sudo update-alternatives --install /usr/bin/python python $(which python3)
-      10
-    - sudo apt-get update && sudo apt-get install -y python-pip python3-pip
-    - sudo pip install --upgrade pip
-    - sudo pip install --upgrade setuptools
-    - sudo pip install tensorboard
+    - pip install tensorboard
 
     - npm ci
     - npm run lint
