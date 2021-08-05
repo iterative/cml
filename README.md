@@ -20,7 +20,7 @@ example report for a
 
 CML principles:
 
-- **[GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) for data
+- **[GitFlow](https://nvie.com/posts/a-successful-git-branching-model) for data
   science.** Use GitLab or GitHub to manage ML experiments, track who trained ML
   models or modified data and when. Codify data and models with
   [DVC](#using-cml-with-dvc) instead of pushing to a Git repo.
@@ -30,7 +30,7 @@ CML principles:
 - **No additional services.** Build your own ML platform using GitLab,
   Bitbucket, or GitHub. Optionally, use
   [cloud storage](#configuring-cloud-storage-providers) as well as either
-  self-hosted or cloud runners (such as AWS EC2, Azure, or GCP). No databases,
+  self-hosted or cloud runners (such as AWS EC2 or Azure). No databases,
   services or complex setup needed.
 
 :question: Need help? Just want to chat about continuous integration for ML?
@@ -140,10 +140,12 @@ those reports to your CI system.
 #### CML Reports
 
 The `cml-send-comment` command can be used to post reports. CML reports are
-written in [GitHub Flavored Markdown](https://github.github.com/gfm/). That
-means they can contain images, tables, formatted text, HTML blocks, code
-snippets and more — really, what you put in a CML report is up to you. Some
-examples:
+written in markdown ([GitHub](https://github.github.com/gfm),
+[GitLab](https://docs.gitlab.com/ee/user/markdown.html), or
+[Bitbucket](https://confluence.atlassian.com/bitbucketserver/markdown-syntax-guide-776639995.html)
+flavors). That means they can contain images, tables, formatted text, HTML
+blocks, code snippets and more — really, what you put in a CML report is up to
+you. Some examples:
 
 :spiral_notepad: **Text** Write to your report using whatever method you prefer.
 For example, copy the contents of a text file containing the results of ML model
@@ -314,6 +316,9 @@ env:
 
 > :point_right: `AWS_SESSION_TOKEN` is optional.
 
+> :point_right: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` can also be used
+> by `cml-runner` to launch EC2 instances. See [Environment Variables].
+
 </details>
 
 <details>
@@ -397,7 +402,8 @@ data.
 
 When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
-instances on your AWS or Azure account (GCP support is forthcoming!).
+instances on your AWS or Azure account (GCP & Kubernetes support is
+forthcoming!).
 
 For example, the following workflow deploys a `t2.micro` instance on AWS EC2 and
 trains a model on the instance. After the job runs, the instance automatically
@@ -407,6 +413,11 @@ You might notice that this workflow is quite similar to the
 [basic use case](#usage) above. The only addition is `cml-runner` and a few
 environment variables for passing your cloud service credentials to the
 workflow.
+
+Note that `cml-runner` will also automatically restart your jobs (whether from a
+[GitHub Actions 72-hour timeout](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration#usage-limits)
+or a
+[AWS EC2 spot instance interruption](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html)).
 
 ```yaml
 name: Train-in-the-cloud
@@ -447,7 +458,8 @@ jobs:
 
 In the workflow above, the `deploy-runner` step launches an EC2 `t2-micro`
 instance in the `us-west` region. The `model-training` step then runs on the
-newly-launched instance.
+newly-launched instance. See [Environment Variables] below for details on the
+`secrets` required.
 
 > :tada: **Note that you can use any container with this workflow!** While you
 > must [have CML and its dependencies set up](#local-package) to use functions
@@ -536,10 +548,11 @@ Options:
 
 Note that you will also need to provide access credentials for your cloud
 compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
-`AWS_SECRET_ACCESS_KEY` are required to deploy EC2 instances.
+`AWS_SECRET_ACCESS_KEY` (with privileges to create & destroy EC2 instances) are
+required.
 
-Please see our docs about
-[configuring cloud storage providers](#configuring-cloud-storage-providers).
+For AWS, the same credentials can also be used for
+[configuring cloud storage](#configuring-cloud-storage-providers).
 
 #### On-premise (Local) Runners
 
