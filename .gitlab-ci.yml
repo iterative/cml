@@ -5,7 +5,7 @@ stages:
 deploy_job:
   stage: deploy
   when: always
-  image: dvcorg/cml:0-dvc2-base1-gpu
+  image: iterativeai/cml:0-dvc2-base1-gpu
   script:
     - cml-runner --cloud aws --cloud-region us-west --cloud-type g2.2xlarge
       --cloud-spot --labels=cml-runner-gpu
@@ -16,12 +16,7 @@ test_runner:
   tags:
     - cml-runner-gpu
   script:
-    - sudo update-alternatives --install /usr/bin/python python $(which python3)
-      10
-    - sudo apt-get update && sudo apt-get install -y python-pip python3-pip
-    - sudo pip install --upgrade pip
-    - sudo pip install --upgrade setuptools
-    - sudo pip install tensorboard
+    - pip install tensorboard
 
     - npm ci
     - npm run lint
@@ -34,7 +29,7 @@ test_container:
   when: on_success
   tags:
     - cml-runner-gpu
-  image: dvcorg/cml:0-dvc2-base1-gpu
+  image: iterativeai/cml:0-dvc2-base1-gpu
   script:
     - dvc --version
     - pip install tensorboard

@@ -178,7 +178,9 @@ class CML {
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
         }
-        return log;
+
+        const [, message] = data.split(/[A-Z]:\s/);
+        return { ...log, message: (message || data).replace(/\n/g, '') };
       }
 
       if (this.driver === GITLAB) {
@@ -201,6 +203,7 @@ class CML {
       }
     } catch (err) {
       console.log(`Failed parsing log: ${err.message}`);
+      console.log(`Original log bytes, as Base64: ${data.toString('base64')}`);
     }
   }
 

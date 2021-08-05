@@ -140,7 +140,11 @@ class Gitlab {
     try {
       await exec('nvidia-smi');
     } catch (err) {
-      gpu = false;
+      try {
+        await exec('cuda-smi');
+      } catch (err) {
+        gpu = false;
+      }
     }
 
     try {
@@ -162,7 +166,7 @@ class Gitlab {
         --token "${token}" \
         --wait-timeout ${idleTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
-        --docker-image "dvcorg/cml:latest" \
+        --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
         --docker-runtime "${gpu ? 'nvidia' : ''}" \
         ${single ? '--max-builds 1' : ''}`;
 
