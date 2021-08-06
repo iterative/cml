@@ -118,12 +118,19 @@ jobs:
             echo ::set-output name=base::ubuntu:${{ matrix.ubuntu }}
           fi
 
-          echo ::set-output name=tags::"$(
+          TAGS="$(
             for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
-              [[ "${{ matrix.latest }}" == "true" ]] && echo "${registry}/cml:latest"
+              if [[ "${{ matrix.latest }}" == "true" ]]; then
+                if [[ "${{ matrix.gpu }}" == "true" ]]; then
+                  echo "${registry}/cml:latest-gpu"
+                else
+                  echo "${registry}/cml:latest"
+                fi
+              fi
               echo "${registry}/cml:${tag}"
-            done | tr '\n' ',' | head -c-1
+            done | head -c-1
           )"
+          echo ::set-output name=tags::"${TAGS//$'\n'/'%0A'}"
       - uses: docker/setup-buildx-action@v1
       - uses: actions/cache@v2
         with:
@@ -150,7 +157,8 @@ jobs:
             'schedule' }}
           context: ./
           file: ./Dockerfile
-          tags: ${{ steps.metadata.outputs.tags }}
+          tags: |
+            ${{ steps.metadata.outputs.tags }}
           build-args: |
             CML_VERSION=${{ steps.metadata.outputs.cml_version }}
             DVC_VERSION=${{ matrix.dvc }}

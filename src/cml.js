@@ -9,12 +9,8 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const {
-  GITHUB_REPOSITORY,
-  CI_PROJECT_URL,
-  BITBUCKET_REPO_UUID,
-  CI
-} = process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
+  process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -178,7 +174,9 @@ class CML {
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
         }
-        return log;
+
+        const [, message] = data.split(/[A-Z]:\s/);
+        return { ...log, message: (message || data).replace(/\n/g, '') };
       }
 
       if (this.driver === GITLAB) {
@@ -201,6 +199,7 @@ class CML {
       }
     } catch (err) {
       console.log(`Failed parsing log: ${err.message}`);
+      console.log(`Original log bytes, as Base64: ${data.toString('base64')}`);
     }
   }
 
