@@ -83,7 +83,6 @@ describe('CML e2e', () => {
     const name = 'My experiment';
     const desc = 'Test experiment';
     const title = 'go to the experiment';
-
     const output = await exec(
       `node ./bin/cml-tensorboard-dev.js --credentials '${CREDENTIALS}' \
         --md --title '${title}' \
