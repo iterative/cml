@@ -51,7 +51,7 @@ describe('Other tests', () => {
   });
 
   describe('proxyAgent', () => {
-    const { http_proxy, https_proxy } = process.env;
+    const { http_proxy: httpProxy, https_proxy: httpsProxy } = process.env;
     process.env.http_proxy = 'https://www.example1.com';
     expect(proxyAgent().proxy.host).toBe('www.example1.com');
 
@@ -62,6 +62,10 @@ describe('Other tests', () => {
     const url = 'https://www.example.com';
     expect(proxyAgent({ url: `${url}` }).proxy.host).toBe('www.example.com');
 
-    process.env = { ...process.env, http_proxy, https_proxy };
+    process.env = {
+      ...process.env,
+      http_proxy: httpProxy,
+      https_proxy: httpsProxy
+    };
   });
 });
