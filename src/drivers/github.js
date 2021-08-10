@@ -260,13 +260,40 @@ class Github {
       });
     }
 
-    return runners.map(({ id, name, busy, status, labels }) => ({
+    return runners.map((runner) => this.parseRunner(runner));
+  }
+
+  async runnerById(opts = {}) {
+    const { id } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    let runner;
+    if (typeof repo === 'undefined') {
+      runner = await actions.getSelfHostedRunnerForOrg({
+        org: owner,
+        runner_id: id
+      });
+    } else {
+      runner = await actions.getSelfHostedRunnerForRepo({
+        owner,
+        repo,
+        runner_id: id
+      });
+    }
+
+    return this.parseRunner(runner);
+  }
+
+  parseRunner(runner) {
+    const { id, name, busy, status, labels } = runner;
+    return {
       id,
       name,
       labels: labels.map(({ name }) => name),
       online: status === 'online',
       busy
-    }));
+    };
   }
 
   async prCreate(opts = {}) {

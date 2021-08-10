@@ -31,10 +31,12 @@ const {
 
 let cml;
 let RUNNER;
+let RUNNER_ID;
 let RUNNER_TIMEOUT_TIMER = 0;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_JOBS_RUNNING = [];
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
+const isCLI = require.main === module;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -170,6 +172,7 @@ const runCloud = async (opts) => {
         spot,
         spotPrice,
         startupScript,
+
         awsSecurityGroup
       });
     }
@@ -247,6 +250,7 @@ const runLocal = async (opts) => {
               return;
             }
 
+            let tries = 6;
             const watcher = setInterval(async () => {
               const jobs = (
                 await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING })
@@ -258,7 +262,12 @@ const runLocal = async (opts) => {
                 resolve(jobs);
                 clearInterval(watcher);
               }
-            }, 5 * 1000);
+
+              tries--;
+              if (tries === 0) {
+                resolve([RUNNER_JOBS_RUNNING[0].id]);
+              }
+            }, 10 * 1000);
           } catch (err) {
             reject(err);
           }
@@ -306,19 +315,35 @@ const runLocal = async (opts) => {
   }
 
   if (!noRetry && cml.driver === 'github') {
-    const watcher = setInterval(() => {
+    const watcherSeventyTwo = setInterval(() => {
       RUNNER_JOBS_RUNNING.forEach((job) => {
         if (
           new Date().getTime() - new Date(job.date).getTime() >
           GH_5_MIN_TIMEOUT
         )
           shutdown({ ...opts, reason: 'timeout:72h' }) &&
-            clearInterval(watcher);
+            clearInterval(watcherSeventyTwo);
       });
     }, 60 * 1000);
+
+    // every half and hour check if runner has jobs but runner is idle to avoid infinite run
+    const watcherRunnerIdle = setInterval(async () => {
+      if (parseInt(idleTimeout) !== 0 && RUNNER_JOBS_RUNNING.length > 0) {
+        const { busy } = await cml.runnerById({ id: RUNNER_ID });
+
+        if (!busy) {
+          shutdown({
+            ...opts,
+            reason: `Runner with pending jobs is idle!`,
+            noRetry: true
+          }) && clearInterval(watcherRunnerIdle);
+        }
+      }
+    }, 10 * 1000);
   }
 
   RUNNER = proc;
+  ({ id: RUNNER_ID } = await cml.runnerByName({ name }));
 };
 
 const run = async (opts) => {
@@ -394,98 +419,103 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-const opts = yargs
-  .strict()
-  .usage(`Usage: $0`)
-  .default('labels', RUNNER_LABELS)
-  .describe(
-    'labels',
-    'One or more user-defined labels for this runner (delimited with commas)'
-  )
-  .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
-  .describe(
-    'idle-timeout',
-    'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
-  )
-  .default('name')
-  .describe('name', 'Name displayed in the repository once registered cml-{ID}')
-  .coerce('name', (val) => val || RUNNER_NAME)
-  .boolean('no-retry')
-  .default('no-retry', RUNNER_NO_RETRY)
-  .describe(
-    'no-retry',
-    'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
-  )
-  .boolean('single')
-  .default('single', RUNNER_SINGLE)
-  .describe('single', 'Exit after running a single job')
-  .boolean('reuse')
-  .default('reuse', RUNNER_REUSE)
-  .describe(
-    'reuse',
-    "Don't launch a new runner if an existing one has the same name or overlapping labels"
-  )
+if (isCLI) {
+  const opts = yargs
+    .strict()
+    .usage(`Usage: $0`)
+    .default('labels', RUNNER_LABELS)
+    .describe(
+      'labels',
+      'One or more user-defined labels for this runner (delimited with commas)'
+    )
+    .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
+    .describe(
+      'idle-timeout',
+      'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
+    )
+    .default('name')
+    .describe(
+      'name',
+      'Name displayed in the repository once registered cml-{ID}'
+    )
+    .coerce('name', (val) => val || RUNNER_NAME)
+    .boolean('no-retry')
+    .default('no-retry', RUNNER_NO_RETRY)
+    .describe(
+      'no-retry',
+      'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+    )
+    .boolean('single')
+    .default('single', RUNNER_SINGLE)
+    .describe('single', 'Exit after running a single job')
+    .boolean('reuse')
+    .default('reuse', RUNNER_REUSE)
+    .describe(
+      'reuse',
+      "Don't launch a new runner if an existing one has the same name or overlapping labels"
+    )
 
-  .default('driver', RUNNER_DRIVER)
-  .describe(
-    'driver',
-    'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-  )
-  .choices('driver', ['github', 'gitlab'])
-  .default('repo', RUNNER_REPO)
-  .describe(
-    'repo',
-    'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-  )
-  .default('token', REPO_TOKEN)
-  .describe(
-    'token',
-    'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-  )
-  .default('cloud')
-  .describe('cloud', 'Cloud to deploy the runner')
-  .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
-  .default('cloud-region', 'us-west')
-  .describe(
-    'cloud-region',
-    'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-  )
-  .default('cloud-type')
-  .describe(
-    'cloud-type',
-    'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-  )
-  .default('cloud-gpu')
-  .describe('cloud-gpu', 'GPU type.')
-  .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
-  .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
-  .default('cloud-hdd-size')
-  .describe('cloud-hdd-size', 'HDD size in GB')
-  .default('cloud-ssh-private', '')
-  .describe(
-    'cloud-ssh-private',
-    'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-  )
-  .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
-  .boolean('cloud-spot')
-  .describe('cloud-spot', 'Request a spot instance')
-  .default('cloud-spot-price', '-1')
-  .describe(
-    'cloud-spot-price',
-    'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-  )
-  .default('cloud-startup-script', '')
-  .describe(
-    'cloud-startup-script',
-    'Run the provided Base64-encoded Linux shell script during the instance initialization'
-  )
-  .default('cloud-aws-security-group', '')
-  .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
-  .default('tf-resource')
-  .hide('tf-resource')
-  .alias('tf-resource', 'tf_resource')
-  .help('h').argv;
+    .default('driver', RUNNER_DRIVER)
+    .describe(
+      'driver',
+      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+    )
+    .choices('driver', ['github', 'gitlab'])
+    .default('repo', RUNNER_REPO)
+    .describe(
+      'repo',
+      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+    )
+    .default('token', REPO_TOKEN)
+    .describe(
+      'token',
+      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+    )
+    .default('cloud')
+    .describe('cloud', 'Cloud to deploy the runner')
+    .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
+    .default('cloud-region', 'us-west')
+    .describe(
+      'cloud-region',
+      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+    )
+    .default('cloud-type')
+    .describe(
+      'cloud-type',
+      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+    )
+    .default('cloud-gpu')
+    .describe('cloud-gpu', 'GPU type.')
+    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
+    .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
+    .default('cloud-hdd-size')
+    .describe('cloud-hdd-size', 'HDD size in GB')
+    .default('cloud-ssh-private', '')
+    .describe(
+      'cloud-ssh-private',
+      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+    )
+    .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
+    .boolean('cloud-spot')
+    .describe('cloud-spot', 'Request a spot instance')
+    .default('cloud-spot-price', '-1')
+    .describe(
+      'cloud-spot-price',
+      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+    )
+    .default('cloud-startup-script', '')
+    .describe(
+      'cloud-startup-script',
+      'Run the provided Base64-encoded Linux shell script during the instance initialization'
+    )
+    .default('cloud-aws-security-group', '')
+    .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
+    .default('tf-resource')
+    .hide('tf-resource')
+    .alias('tf-resource', 'tf_resource')
+    .help('h').argv;
 
-run(opts).catch((error) => {
-  shutdown({ ...opts, error });
-});
+  run(opts).catch((error) => {
+    shutdown({ ...opts, error });
+  });
+}

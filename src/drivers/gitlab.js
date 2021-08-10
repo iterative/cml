@@ -212,6 +212,10 @@ class Gitlab {
     return url;
   }
 
+  async runnerById(opts = {}) {
+    throw new Error('Not yet implemented');
+  }
+
   async prs(opts = {}) {
     const projectPath = await this.projectPath();
     const { state = 'opened' } = opts;

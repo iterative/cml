@@ -12,6 +12,7 @@ const tempy = require('tempy');
 const { exec, watermarkUri } = require('../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
+const isCLI = require.main === module;
 
 const closeFd = (fd) => {
   try {
@@ -19,6 +20,32 @@ const closeFd = (fd) => {
   } catch (err) {
     console.error(err.message);
   }
+};
+
+const tbLink = (opts = {}) => {
+  const { stdout, stderror, title, name, rmWatermark, md } = opts;
+
+  return new Promise((resolve, reject) => {
+    const parserWatcher = setInterval(async () => {
+      const data = await fs.readFile(stdout, 'utf8');
+      const urls = data.match(/(https?:\/\/[^\s]+)/) || [];
+
+      if (urls.length) {
+        let [output] = urls;
+
+        if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
+        if (md) output = `[${title || name}](${output})`;
+
+        resolve(output);
+        clearInterval(parserWatcher);
+      }
+    }, 1 * 5 * 1000);
+
+    setTimeout(async () => {
+      const error = await fs.readFile(stderror, 'utf8');
+      reject(new Error(`Tensorboard took too long. ${error}`));
+    }, 1 * 60 * 1000);
+  });
 };
 
 const run = async (opts) => {
@@ -45,12 +72,13 @@ const run = async (opts) => {
   const extraParams = extraParamsFound
     ? `--name "${name}" --description "${description}"`
     : '';
-
   const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
+
   const stdoutPath = tempy.file({ extension: 'log' });
   const stdoutFd = await fs.open(stdoutPath, 'a');
   const stderrPath = tempy.file({ extension: 'log' });
   const stderrFd = await fs.open(stderrPath, 'a');
+
   const proc = spawn(command, [], {
     detached: true,
     shell: true,
@@ -58,76 +86,72 @@ const run = async (opts) => {
   });
 
   proc.unref();
-  proc.on('exit', (code) => {
-    throw new Error(`Tensorboard process exited with code ${code}`);
+  proc.on('exit', async (code) => {
+    if (code) {
+      const error = await fs.readFile(stderrPath, 'utf8');
+      print(`Tensorboard failed with error: ${error}`);
+    }
+    process.exit(code);
   });
 
-  // reads stdout every 5 secs to find the tb uri
-  setInterval(async () => {
-    const stdoutData = await fs.readFile(stdoutPath, 'utf8');
-    const regex = /(https?:\/\/[^\s]+)/;
-    const matches = stdoutData.match(regex);
+  const url = await tbLink({
+    stdout: stdoutPath,
+    stderror: stderrPath,
+    title,
+    name,
+    rmWatermark,
+    md
+  });
+  if (!file) print(url);
+  else await fs.appendFile(file, url);
 
-    if (matches.length) {
-      let output = matches[0];
-
-      if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
-
-      if (md) output = `[${title || name}](${output})`;
-
-      if (!file) print(output);
-      else await fs.appendFile(file, output);
-
-      closeFd(stdoutFd) && closeFd(stderrFd);
-      process.exit(0);
-    }
-  }, 1 * 5 * 1000);
-
-  // waits 1 min before dies
-  setTimeout(async () => {
-    closeFd(stdoutFd) && closeFd(stderrFd);
-    console.error(await fs.readFile(stderrPath, 'utf8'));
-    throw new Error('Tensorboard took too long! Canceled.');
-  }, 1 * 60 * 1000);
+  closeFd(stdoutFd) && closeFd(stderrFd);
+  process.exit(0);
 };
 
-const argv = yargs
-  .strict()
-  .usage(`Usage: $0`)
-  .default('credentials')
-  .describe(
-    'credentials',
-    'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
-  )
-  .alias('credentials', 'c')
-  .default('logdir')
-  .describe('logdir', 'Directory containing the logs to process.')
-  .default('name')
-  .describe('name', 'Tensorboard experiment title. Max 100 characters.')
-  .default('description')
-  .describe(
-    'description',
-    'Tensorboard experiment description. Markdown format. Max 600 characters.'
-  )
-  .default('plugins')
-  .boolean('md')
-  .describe('md', 'Output as markdown [title || name](url).')
-  .default('title')
-  .describe(
-    'title',
-    'Markdown title, if not specified, param name will be used.'
-  )
-  .alias('title', 't')
-  .default('file')
-  .describe(
-    'file',
-    'Append the output to the given file. Create it if does not exist.'
-  )
-  .describe('rm-watermark', 'Avoid CML watermark.')
-  .alias('file', 'f')
-  .help('h').argv;
+if (isCLI) {
+  const argv = yargs
+    .strict()
+    .usage(`Usage: $0`)
+    .default('credentials')
+    .describe(
+      'credentials',
+      'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+    )
+    .alias('credentials', 'c')
+    .default('logdir')
+    .describe('logdir', 'Directory containing the logs to process.')
+    .default('name')
+    .describe('name', 'Tensorboard experiment title. Max 100 characters.')
+    .default('description')
+    .describe(
+      'description',
+      'Tensorboard experiment description. Markdown format. Max 600 characters.'
+    )
+    .default('plugins')
+    .boolean('md')
+    .describe('md', 'Output as markdown [title || name](url).')
+    .default('title')
+    .describe(
+      'title',
+      'Markdown title, if not specified, param name will be used.'
+    )
+    .alias('title', 't')
+    .default('file')
+    .describe(
+      'file',
+      'Append the output to the given file. Create it if does not exist.'
+    )
+    .describe('rm-watermark', 'Avoid CML watermark.')
+    .alias('file', 'f')
+    .help('h').argv;
 
-run(argv).catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+  run(argv).catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  tbLink
+};

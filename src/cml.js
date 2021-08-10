@@ -9,12 +9,8 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const {
-  GITHUB_REPOSITORY,
-  CI_PROJECT_URL,
-  BITBUCKET_REPO_UUID,
-  CI
-} = process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
+  process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -171,7 +167,6 @@ class CML {
           data.includes('Job') &&
           data.includes('completed with result')
         ) {
-          log.job = '';
           log.status = 'job_ended';
           log.success = data.includes('Succeeded');
           log.level = log.success ? 'info' : 'error';
@@ -230,6 +225,10 @@ class CML {
     if (!runners) runners = await this.runners(opts);
 
     return runners.find((runner) => runner.name === name);
+  }
+
+  async runnerById(opts = {}) {
+    return await getDriver(this).runnerById(opts);
   }
 
   async runnersByLabels(opts = {}) {
