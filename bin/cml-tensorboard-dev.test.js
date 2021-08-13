@@ -19,7 +19,7 @@ const rmTbDevExperiment = async (tbOutput) => {
 };
 
 describe('tbLink', () => {
-  test.skip('timeout without result throws exception', async () => {
+  test('timeout without result throws exception', async () => {
     const stdout = tempy.file({ extension: 'log' });
     const stderror = tempy.file({ extension: 'log' });
     const message = 'there is an error';
@@ -37,7 +37,7 @@ describe('tbLink', () => {
     expect(error.message).toBe(`Tensorboard took too long. ${message}`);
   });
 
-  test('valid url is returned', async () => {
+  test.skip('valid url is returned', async () => {
     const stdout = tempy.file({ extension: 'log' });
     const stderror = tempy.file({ extension: 'log' });
     const message = 'https://iterative.ai';
@@ -95,7 +95,7 @@ describe('CML e2e', () => {
     expect(output.includes('cml=tb')).toBe(true);
   });
 
-  test.skip('cml-tensorboard-dev.js invalid creds', async () => {
+  test('cml-tensorboard-dev.js invalid creds', async () => {
     try {
       await exec(`node ./bin/cml-tensorboard-dev.js --credentials 'invalid'`);
     } catch (err) {
