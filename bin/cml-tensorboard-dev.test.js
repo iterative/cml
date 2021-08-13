@@ -18,7 +18,7 @@ const rmTbDevExperiment = async (tbOutput) => {
   await exec(`tensorboard dev delete --experiment_id ${id}`);
 };
 
-describe('tbLink', () => {
+describe.skip('tbLink', () => {
   test('timeout without result throws exception', async () => {
     const stdout = tempy.file({ extension: 'log' });
     const stderror = tempy.file({ extension: 'log' });
