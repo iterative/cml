@@ -1,5 +1,3 @@
-jest.setTimeout(200000);
-
 const fs = require('fs');
 const { exec } = require('../src/utils');
 

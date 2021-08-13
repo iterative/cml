@@ -1,7 +1,5 @@
 const CML = require('../src/cml').default;
 
-jest.setTimeout(60000);
-
 describe('Github tests', () => {
   const OLD_ENV = process.env;
 
