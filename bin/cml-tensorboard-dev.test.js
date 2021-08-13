@@ -19,7 +19,7 @@ const rmTbDevExperiment = async (tbOutput) => {
 };
 
 describe('tbLink', () => {
-  test('timeout without result throws exception', async () => {
+  test.skip('timeout without result throws exception', async () => {
     const stdout = tempy.file({ extension: 'log' });
     const stderror = tempy.file({ extension: 'log' });
     const message = 'there is an error';
