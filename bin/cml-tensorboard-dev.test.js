@@ -18,7 +18,7 @@ const rmTbDevExperiment = async (tbOutput) => {
   await exec(`tensorboard dev delete --experiment_id ${id}`);
 };
 
-describe.skip('tbLink', () => {
+describe('tbLink', () => {
   test('timeout without result throws exception', async () => {
     const stdout = tempy.file({ extension: 'log' });
     const stderror = tempy.file({ extension: 'log' });
@@ -77,7 +77,7 @@ describe('CML e2e', () => {
     `);
   });
 
-  test.skip('cml-tensorboard-dev.js --md returns md and after command TB is still up', async () => {
+  test('cml-tensorboard-dev.js --md returns md and after command TB is still up', async () => {
     const name = 'My experiment';
     const desc = 'Test experiment';
     const title = 'go to the experiment';
@@ -95,7 +95,7 @@ describe('CML e2e', () => {
     expect(output.includes('cml=tb')).toBe(true);
   });
 
-  test.skip('cml-tensorboard-dev.js invalid creds', async () => {
+  test('cml-tensorboard-dev.js invalid creds', async () => {
     try {
       await exec(`node ./bin/cml-tensorboard-dev.js --credentials 'invalid'`);
     } catch (err) {
