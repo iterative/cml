@@ -1,5 +1,3 @@
-jest.setTimeout(200000);
-
 const fs = require('fs').promises;
 const tempy = require('tempy');
 const { exec, isProcRunning, sleep } = require('../src/utils');
@@ -31,7 +29,7 @@ describe('tbLink', () => {
     await fs.writeFile(stderror, message);
 
     try {
-      await tbLink({ stdout, stderror });
+      await tbLink({ stdout, stderror, timeout: 5 });
     } catch (err) {
       error = err;
     }
@@ -47,7 +45,7 @@ describe('tbLink', () => {
     await fs.writeFile(stdout, message);
     await fs.writeFile(stderror, '');
 
-    const link = await tbLink({ stderror, stdout });
+    const link = await tbLink({ stderror, stdout, timeout: 5 });
     expect(link).toBe(`${message}/?cml=tb`);
   });
 });
