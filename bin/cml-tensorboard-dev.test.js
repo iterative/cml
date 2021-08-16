@@ -1,5 +1,3 @@
-jest.setTimeout(200000);
-
 const fs = require('fs').promises;
 const tempy = require('tempy');
 const { exec, isProcRunning, sleep } = require('../src/utils');
