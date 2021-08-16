@@ -99,6 +99,7 @@
   "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "homepage": "https://github.com/iterative/cml#readme",
   "jest": {
-    "testTimeout": 600000
+    "globalSetup": "./tests/setup.js",
+    "globalTeardown": "./tests/teardown.js"
   }
 }
