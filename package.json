@@ -41,7 +41,7 @@
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
@@ -90,10 +90,13 @@
     "eslint-plugin-promise": "^4.3.1",
     "eslint-plugin-standard": "^4.1.0",
     "husky": "^4.3.8",
-    "jest": "^24.9.0",
+    "jest": "^27.0.6",
     "lint-staged": "^10.5.4",
     "prettier": "^2.3.2"
   },
   "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
-  "homepage": "https://github.com/iterative/cml#readme"
+  "homepage": "https://github.com/iterative/cml#readme",
+  "jest": {
+    "testTimeout": 600000
+  }
 }

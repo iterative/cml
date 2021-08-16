@@ -9,7 +9,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const { exec, watermarkUri } = require('../src/utils');
+const { exec, watermarkUri, sleep } = require('../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
 const isCLI = require.main === module;
@@ -22,30 +22,30 @@ const closeFd = (fd) => {
   }
 };
 
-const tbLink = (opts = {}) => {
-  const { stdout, stderror, title, name, rmWatermark, md } = opts;
+const tbLink = async (opts = {}) => {
+  const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
 
-  return new Promise((resolve, reject) => {
-    const parserWatcher = setInterval(async () => {
-      const data = await fs.readFile(stdout, 'utf8');
-      const urls = data.match(/(https?:\/\/[^\s]+)/) || [];
+  let chrono = 0;
+  const chronoStep = 2;
+  while (chrono < timeout) {
+    const data = await fs.readFile(stdout, 'utf8');
+    const urls = data.match(/(https?:\/\/[^\s]+)/) || [];
 
-      if (urls.length) {
-        let [output] = urls;
+    if (urls.length) {
+      let [output] = urls;
 
-        if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
-        if (md) output = `[${title || name}](${output})`;
+      if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
+      if (md) output = `[${title || name}](${output})`;
 
-        resolve(output);
-        clearInterval(parserWatcher);
-      }
-    }, 1 * 5 * 1000);
+      return output;
+    }
 
-    setTimeout(async () => {
-      const error = await fs.readFile(stderror, 'utf8');
-      reject(new Error(`Tensorboard took too long. ${error}`));
-    }, 1 * 60 * 1000);
-  });
+    await sleep(chronoStep);
+    chrono = chrono + chronoStep;
+  }
+
+  const error = await fs.readFile(stderror, 'utf8');
+  throw new Error(`Tensorboard took too long. ${error}`);
 };
 
 const run = async (opts) => {

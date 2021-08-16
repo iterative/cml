@@ -1,5 +1,3 @@
-jest.setTimeout(20000);
-
 const GitlabClient = require('./gitlab');
 
 const {
