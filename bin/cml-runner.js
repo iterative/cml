@@ -405,7 +405,7 @@ const opts = yargs
   .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
   .describe(
     'idle-timeout',
-    'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to -1 disables automatic shutdown'
+    'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
   )
   .default('name')
   .describe('name', 'Name displayed in the repository once registered cml-{ID}')
