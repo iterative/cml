@@ -295,7 +295,7 @@ const runLocal = async (opts) => {
     }
   }
 
-  if (parseInt(idleTimeout) !== 0) {
+  if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` }) &&
@@ -405,7 +405,7 @@ const opts = yargs
   .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
   .describe(
     'idle-timeout',
-    'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
+    'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to -1 disables automatic shutdown'
   )
   .default('name')
   .describe('name', 'Name displayed in the repository once registered cml-{ID}')
