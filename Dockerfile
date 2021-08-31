@@ -101,4 +101,4 @@ WORKDIR ${RUNNER_PATH}
 
 # COMMAND
 ENV IN_DOCKER=1
-CMD ["cml"]
+ENTRYPOINT ["/usr/bin/cml"]
