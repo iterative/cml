@@ -38,6 +38,7 @@ Options:
   --token                     Personal access token to register a self-hosted
                               runner on the repository. If not specified, it
                               will be inferred from the environment
+                                                              [default: \\"infer\\"]
   --cloud                     Cloud to deploy the runner
                                   [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
   --cloud-region              Region where the instance is deployed. Choices:

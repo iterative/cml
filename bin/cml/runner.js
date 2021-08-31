@@ -94,7 +94,7 @@ const shutdown = async (opts) => {
   };
 
   if (error) winston.error(error);
-  winston.info(
+  console.log(
     JSON.stringify({
       level: error ? 'error' : 'info',
       status: 'terminated',
@@ -451,7 +451,8 @@ exports.builder = (yargs) =>
       'repo',
       'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
     )
-    .default('token', REPO_TOKEN)
+    .default('token', 'infer')
+    .coerce('token', (val) => (val === 'infer' ? REPO_TOKEN : val))
     .describe(
       'token',
       'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
