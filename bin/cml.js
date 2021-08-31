@@ -32,8 +32,8 @@ const runPlugin = async ({ $0: executable, command }) => {
     const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
     process.exit(await pseudoexec(path, parameters));
   } catch (error) {
-    winston.debug(error);
     yargs.showHelp();
+    winston.debug(error);
   }
 };
 
