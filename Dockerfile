@@ -103,3 +103,7 @@ WORKDIR ${RUNNER_PATH}
 ENV IN_DOCKER=1
 ENTRYPOINT ["/bin/bash", "-c", "basename \"$0\" | grep -qE '^sh|bash$' && exec bash \"$@\" || exec cml \"$0\" \"$@\""]
 CMD [""]
+
+# Smart entrypoint that understands both commands like bash or /bin/sh but defults to cml; also works for GitLab CI/CD
+# https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96e186dc8c81327895c5c772def4a3992ca/shells/bash.go#L18-37
+# https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96e186dc8c81327895c5c772def4a3992ca/shells/bash.go#L288
