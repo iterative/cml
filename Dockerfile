@@ -101,4 +101,5 @@ WORKDIR ${RUNNER_PATH}
 
 # COMMAND
 ENV IN_DOCKER=1
-CMD ["cml"]
+ENTRYPOINT ["/bin/bash", "-c", "basename \"$0\" | grep -qE '^sh|bash$' && exec bash \"$@\" || exec cml \"$0\" \"$@\""]
+CMD [""]
