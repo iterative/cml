@@ -49,7 +49,8 @@ const handleError = (message, error) => {
 
 const options = {
   log: {
-    describe: 'Maximum log level',
+    type: 'string',
+    description: 'Maximum log level',
     coerce: (value) => configureLogger(value) && value,
     choices: ['error', 'warn', 'info', 'debug'],
     default: 'info'

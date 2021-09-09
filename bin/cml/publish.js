@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const kebabcaseKeys = require('kebabcase-keys');
 const pipeArgs = require('../../src/pipe-args');
 
 const CML = require('../../src/cml').default;
@@ -7,7 +8,7 @@ pipeArgs.load('binary');
 const data = pipeArgs.pipedArg(); // HACK: see yargs/yargs#1312
 
 exports.command = data ? 'publish' : 'publish <asset>';
-exports.desc = 'Upload an image to build a report';
+exports.description = 'Upload an image to build a report';
 
 exports.handler = async (opts) => {
   const { file, repo, native } = opts;
@@ -26,43 +27,50 @@ exports.handler = async (opts) => {
   else await fs.writeFile(file, output);
 };
 
-exports.builder = (yargs) =>
-  yargs
-    .describe('md', 'Output in markdown format [title || name](url).')
-    .boolean('md')
-    .describe('md', 'Output in markdown format [title || name](url).')
-    .default('title')
-    .describe('title', 'Markdown title [title](url) or ![](url title).')
-    .alias('title', 't')
-    .boolean('native')
-    .describe(
-      'native',
+exports.builder = kebabcaseKeys({
+  md: {
+    type: 'boolean',
+    description: 'Output in markdown format [title || name](url).'
+  },
+  title: {
+    type: 'string',
+    alias: 't',
+    description: 'Markdown title [title](url) or ![](url title).'
+  },
+  native: {
+    type: 'boolean',
+    alias: 'gitlab-uploads',
+    description:
       "Uses driver's native capabilities to upload assets instead of CML's storage. Currently only available for GitLab CI."
-    )
-    .alias('native', 'gitlab-uploads')
-    .boolean('rm-watermark')
-    .describe('rm-watermark', 'Avoid CML watermark.')
-    .default('mime-type')
-    .describe(
-      'mime-type',
+  },
+  rmWatermark: {
+    type: 'boolean',
+    description: 'Avoid CML watermark.'
+  },
+  mimeType: {
+    type: 'string',
+    description:
       'Specifies the mime-type. If not set guess it from the content.'
-    )
-    .default('file')
-    .describe(
-      'file',
+  },
+  file: {
+    type: 'string',
+    alias: 'f',
+    description:
       'Append the output to the given file. Create it if does not exist.'
-    )
-    .alias('file', 'f')
-    .default('repo')
-    .describe(
-      'repo',
+  },
+  repo: {
+    type: 'string',
+    description:
       'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-    )
-    .default('token')
-    .describe(
-      'token',
+  },
+  token: {
+    type: 'string',
+    description:
       'Personal access token to be used. If not specified, extracted from ENV REPO_TOKEN, GITLAB_TOKEN, GITHUB_TOKEN, or BITBUCKET_TOKEN.'
-    )
-    .default('driver')
-    .choices('driver', ['github', 'gitlab'])
-    .describe('driver', 'If not specify it infers it from the ENV.');
+  },
+  driver: {
+    type: 'string',
+    choices: ['github', 'gitlab'],
+    description: 'If not specify it infers it from the ENV.'
+  }
+});

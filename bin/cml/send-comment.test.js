@@ -22,19 +22,20 @@ Options:
   --help                    Show help                                  [boolean]
   --version                 Show version number                        [boolean]
   --log                     Maximum log level
-                   [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+          [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
   --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
+                                                                        [string]
   --update                  Update the last CML comment (if any) instead of
                             creating a new one                         [boolean]
   --rm-watermark            Avoid watermark. CML needs a watermark to be able to
                             distinguish CML reports from other comments in order
                             to provide extra functionality.            [boolean]
   --repo                    Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.
+                            extracted from the CI ENV.                  [string]
   --token                   Personal access token to be used. If not specified
-                            is extracted from ENV REPO_TOKEN.
+                            is extracted from ENV REPO_TOKEN.           [string]
   --driver                  If not specify it infers it from the ENV.
-                                      [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
+                             [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
 `);
   });
 
