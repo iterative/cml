@@ -70,6 +70,7 @@
     "git-url-parse": "^11.6.0",
     "globby": "^11.0.4",
     "js-base64": "^3.7.0",
+    "kebabcase-keys": "^1.0.0",
     "mmmagic": "^0.5.3",
     "node-fetch": "^2.6.2",
     "node-forge": "^0.10.0",

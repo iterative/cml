@@ -49,12 +49,31 @@ const handleError = (message, error) => {
 
 const options = {
   log: {
-    describe: 'Maximum log level',
+    type: 'string',
+    description: 'Maximum log level',
     coerce: (value) => configureLogger(value) && value,
     choices: ['error', 'warn', 'info', 'debug'],
     default: 'info'
   }
 };
+
+const legacyEnvironmentVariables = {
+  TB_CREDENTIALS: 'CML_CREDENTIALS',
+  DOCKER_MACHINE: 'CML_DOCKER_MACHINE',
+  RUNNER_IDLE_TIMEOUT: 'CML_IDLE_TIMEOUT',
+  RUNNER_LABELS: 'CML_LABELS',
+  RUNNER_NAME: 'CML_NAME',
+  RUNNER_SINGLE: 'CML_SINGLE',
+  RUNNER_REUSE: 'CML_REUSE',
+  RUNNER_NO_RETRY: 'CML_NO_RETRY',
+  RUNNER_DRIVER: 'CML_DRIVER',
+  RUNNER_REPO: 'CML_REPO',
+  RUNNER_PATH: 'CML_PATH'
+};
+
+for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
+  if (process.env[oldName]) process.env[newName] = process.env[oldName];
+}
 
 yargs
   .fail(handleError)
