@@ -16,9 +16,8 @@ Options:
                    [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
   --labels                    One or more user-defined labels for this runner
                               (delimited with commas)           [default: \\"cml\\"]
-  --idle-timeout              Time in seconds for the runner to be waiting for
-                              jobs before shutting down. Setting it to 0
-                              disables automatic shutdown         [default: 300]
+  --idle-timeout              Seconds to wait for jobs before shutting down. Set
+                              to -1 to disable timeout            [default: 300]
   --name                      Name displayed in the repository once registered
                               cml-{ID}
   --no-retry                  Do not restart workflow terminated due to instance
