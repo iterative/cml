@@ -293,7 +293,7 @@ const runLocal = async (opts) => {
     }
   }
 
-  if (parseInt(idleTimeout) !== 0) {
+  if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` }) &&
@@ -416,7 +416,7 @@ exports.builder = (yargs) =>
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
     .describe(
       'idle-timeout',
-      'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
+      'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
     )
     .default('name')
     .describe(
