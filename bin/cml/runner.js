@@ -1,15 +1,13 @@
-#!/usr/bin/env node
-
 const { join } = require('path');
 const { homedir } = require('os');
 
 const fs = require('fs').promises;
-const yargs = require('yargs');
 const { SpotNotifier } = require('ec2-spot-notification');
 
-const { exec, randid, sleep } = require('../src/utils');
-const tf = require('../src/terraform');
-const CML = require('../src/cml').default;
+const winston = require('winston');
+const CML = require('../../src/cml').default;
+const { exec, randid, sleep } = require('../../src/utils');
+const tf = require('../../src/terraform');
 
 const NAME = `cml-${randid()}`;
 const WORKDIR_BASE = `${homedir()}/.cml`;
@@ -48,12 +46,12 @@ const shutdown = async (opts) => {
     if (!RUNNER) return;
 
     try {
-      console.log(`Unregistering runner ${name}...`);
+      winston.info(`Unregistering runner ${name}...`);
       RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
-      console.log('\tSuccess');
+      winston.info('\tSuccess');
     } catch (err) {
-      console.error(`\tFailed: ${err.message}`);
+      winston.error(`\tFailed: ${err.message}`);
     }
   };
 
@@ -67,21 +65,21 @@ const shutdown = async (opts) => {
         );
       }
     } catch (err) {
-      console.error(err);
+      winston.error(err);
     }
   };
 
   const destroyDockerMachine = async () => {
     if (!DOCKER_MACHINE) return;
 
-    console.log('docker-machine destroy...');
-    console.log(
+    winston.info('docker-machine destroy...');
+    winston.warning(
       'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
       await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
     } catch (err) {
-      console.error(`\tFailed shutting down docker machine: ${err.message}`);
+      winston.error(`\tFailed shutting down docker machine: ${err.message}`);
     }
   };
 
@@ -89,13 +87,13 @@ const shutdown = async (opts) => {
     if (!tfResource) return;
 
     try {
-      console.log(await tf.destroy({ dir: tfPath }));
+      winston.debug(await tf.destroy({ dir: tfPath }));
     } catch (err) {
-      console.error(`\tFailed destroying terraform: ${err.message}`);
+      winston.error(`\tFailed destroying terraform: ${err.message}`);
     }
   };
 
-  if (error) console.log(error);
+  if (error) winston.error(error);
   console.log(
     JSON.stringify({
       level: error ? 'error' : 'info',
@@ -120,7 +118,7 @@ const shutdown = async (opts) => {
 
 const runCloud = async (opts) => {
   const runTerraform = async (opts) => {
-    console.log('Terraform apply...');
+    winston.info('Terraform apply...');
 
     const { token, repo, driver } = cml;
     const {
@@ -150,7 +148,7 @@ const runCloud = async (opts) => {
       tpl = await fs.writeFile(tfMainPath, await fs.readFile(tfFile));
     } else {
       if (gpu === 'tesla')
-        console.log(
+        winston.warn(
           'GPU model "tesla" has been deprecated; please use "v100" instead.'
         );
       tpl = tf.iterativeCmlRunnerTpl({
@@ -184,7 +182,7 @@ const runCloud = async (opts) => {
     return tfstate;
   };
 
-  console.log('Deploying cloud runner plan...');
+  winston.info('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
   for (const resource of resources) {
@@ -211,14 +209,14 @@ const runCloud = async (opts) => {
           spotPrice: attributes.spot_price,
           timeouts: attributes.timeouts
         };
-        console.log(JSON.stringify(nonSensitiveValues));
+        winston.info(JSON.stringify(nonSensitiveValues));
       }
     }
   }
 };
 
 const runLocal = async (opts) => {
-  console.log(`Launching ${cml.driver} runner`);
+  winston.info(`Launching ${cml.driver} runner`);
   const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
 
   const proc = await cml.startRunner({
@@ -231,7 +229,7 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
-    log && console.log(JSON.stringify(log));
+    log && winston.debug(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
       RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
@@ -285,13 +283,13 @@ const runLocal = async (opts) => {
 
   if (!noRetry) {
     try {
-      console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
+      winston.info(`EC2 id ${await SpotNotifier.instanceId()}`);
       SpotNotifier.on('termination', () =>
         shutdown({ ...opts, reason: 'spot_termination' })
       );
       SpotNotifier.start();
     } catch (err) {
-      console.log('SpotNotifier can not be started.');
+      winston.warn('SpotNotifier can not be started.');
     }
   }
 
@@ -371,7 +369,7 @@ const run = async (opts) => {
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
       );
-    console.log(`Reusing existing runner named ${name}...`);
+    winston.info(`Reusing existing runner named ${name}...`);
     process.exit(0);
   }
 
@@ -381,12 +379,14 @@ const run = async (opts) => {
       (runner) => runner.online
     )
   ) {
-    console.log(`Reusing existing online runners with the ${labels} labels...`);
+    winston.info(
+      `Reusing existing online runners with the ${labels} labels...`
+    );
     process.exit(0);
   }
 
   try {
-    console.log(`Preparing workdir ${workdir}...`);
+    winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
@@ -394,98 +394,108 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-const opts = yargs
-  .strict()
-  .usage(`Usage: $0`)
-  .default('labels', RUNNER_LABELS)
-  .describe(
-    'labels',
-    'One or more user-defined labels for this runner (delimited with commas)'
-  )
-  .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
-  .describe(
-    'idle-timeout',
-    'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
-  )
-  .default('name')
-  .describe('name', 'Name displayed in the repository once registered cml-{ID}')
-  .coerce('name', (val) => val || RUNNER_NAME)
-  .boolean('no-retry')
-  .default('no-retry', RUNNER_NO_RETRY)
-  .describe(
-    'no-retry',
-    'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
-  )
-  .boolean('single')
-  .default('single', RUNNER_SINGLE)
-  .describe('single', 'Exit after running a single job')
-  .boolean('reuse')
-  .default('reuse', RUNNER_REUSE)
-  .describe(
-    'reuse',
-    "Don't launch a new runner if an existing one has the same name or overlapping labels"
-  )
+exports.command = 'runner';
+exports.desc = 'Launch and register a self-hosted runner';
 
-  .default('driver', RUNNER_DRIVER)
-  .describe(
-    'driver',
-    'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-  )
-  .choices('driver', ['github', 'gitlab'])
-  .default('repo', RUNNER_REPO)
-  .describe(
-    'repo',
-    'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-  )
-  .default('token', REPO_TOKEN)
-  .describe(
-    'token',
-    'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-  )
-  .default('cloud')
-  .describe('cloud', 'Cloud to deploy the runner')
-  .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
-  .default('cloud-region', 'us-west')
-  .describe(
-    'cloud-region',
-    'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-  )
-  .default('cloud-type')
-  .describe(
-    'cloud-type',
-    'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-  )
-  .default('cloud-gpu')
-  .describe('cloud-gpu', 'GPU type.')
-  .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
-  .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
-  .default('cloud-hdd-size')
-  .describe('cloud-hdd-size', 'HDD size in GB')
-  .default('cloud-ssh-private', '')
-  .describe(
-    'cloud-ssh-private',
-    'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-  )
-  .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
-  .boolean('cloud-spot')
-  .describe('cloud-spot', 'Request a spot instance')
-  .default('cloud-spot-price', '-1')
-  .describe(
-    'cloud-spot-price',
-    'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-  )
-  .default('cloud-startup-script', '')
-  .describe(
-    'cloud-startup-script',
-    'Run the provided Base64-encoded Linux shell script during the instance initialization'
-  )
-  .default('cloud-aws-security-group', '')
-  .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
-  .default('tf-resource')
-  .hide('tf-resource')
-  .alias('tf-resource', 'tf_resource')
-  .help('h').argv;
+exports.handler = async (opts) => {
+  try {
+    await run(opts);
+  } catch (error) {
+    await shutdown({ ...opts, error });
+    throw error;
+  }
+};
 
-run(opts).catch((error) => {
-  shutdown({ ...opts, error });
-});
+exports.builder = (yargs) =>
+  yargs
+    .default('labels', RUNNER_LABELS)
+    .describe(
+      'labels',
+      'One or more user-defined labels for this runner (delimited with commas)'
+    )
+    .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
+    .describe(
+      'idle-timeout',
+      'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
+    )
+    .default('name')
+    .describe(
+      'name',
+      'Name displayed in the repository once registered cml-{ID}'
+    )
+    .coerce('name', (val) => val || RUNNER_NAME)
+    .boolean('no-retry')
+    .default('no-retry', RUNNER_NO_RETRY)
+    .describe(
+      'no-retry',
+      'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+    )
+    .boolean('single')
+    .default('single', RUNNER_SINGLE)
+    .describe('single', 'Exit after running a single job')
+    .boolean('reuse')
+    .default('reuse', RUNNER_REUSE)
+    .describe(
+      'reuse',
+      "Don't launch a new runner if an existing one has the same name or overlapping labels"
+    )
+
+    .default('driver', RUNNER_DRIVER)
+    .describe(
+      'driver',
+      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+    )
+    .choices('driver', ['github', 'gitlab'])
+    .default('repo', RUNNER_REPO)
+    .describe(
+      'repo',
+      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+    )
+    .default('token', 'infer')
+    .coerce('token', (val) => (val === 'infer' ? REPO_TOKEN : val))
+    .describe(
+      'token',
+      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+    )
+    .default('cloud')
+    .describe('cloud', 'Cloud to deploy the runner')
+    .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
+    .default('cloud-region', 'us-west')
+    .describe(
+      'cloud-region',
+      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+    )
+    .default('cloud-type')
+    .describe(
+      'cloud-type',
+      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+    )
+    .default('cloud-gpu')
+    .describe('cloud-gpu', 'GPU type.')
+    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
+    .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
+    .default('cloud-hdd-size')
+    .describe('cloud-hdd-size', 'HDD size in GB')
+    .default('cloud-ssh-private', '')
+    .describe(
+      'cloud-ssh-private',
+      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+    )
+    .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
+    .boolean('cloud-spot')
+    .describe('cloud-spot', 'Request a spot instance')
+    .default('cloud-spot-price', '-1')
+    .describe(
+      'cloud-spot-price',
+      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+    )
+    .default('cloud-startup-script', '')
+    .describe(
+      'cloud-startup-script',
+      'Run the provided Base64-encoded Linux shell script during the instance initialization'
+    )
+    .default('cloud-aws-security-group', '')
+    .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
+    .default('tf-resource')
+    .hide('tf-resource')
+    .alias('tf-resource', 'tf_resource');

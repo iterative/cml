@@ -9,6 +9,7 @@ const { Octokit } = require('@octokit/rest');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 
+const winston = require('winston');
 const { download, exec } = require('../utils');
 
 const CHECK_TITLE = 'CML Report';
@@ -47,7 +48,7 @@ const octokit = (token, repo) => {
 
   const throttleHandler = (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      console.log(`Retrying after ${retryAfter} seconds!`);
+      winston.log(`Retrying after ${retryAfter} seconds!`);
       return true;
     }
   };

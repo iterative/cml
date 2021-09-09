@@ -101,4 +101,9 @@ WORKDIR ${RUNNER_PATH}
 
 # COMMAND
 ENV IN_DOCKER=1
-CMD ["cml-runner"]
+# Smart entrypoint understands commands like `bash` or `/bin/sh` but defaults to `cml`;
+# also works for GitLab CI/CD
+# https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96/shells/bash.go#L18-37
+# https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96/shells/bash.go#L288
+ENTRYPOINT ["/bin/bash", "-c", "which -- \"$0\" &>/dev/null && exec \"$0\" \"$@\" || exec cml \"$0\" \"$@\""]
+CMD ["--help"]
