@@ -516,24 +516,7 @@ exports.builder = kebabcaseKeys({
     description: 'Specifies the security group in AWS'
   },
   tfResource: {
-    hide: true,
+    hidden: true,
     alias: 'tf_resource'
-  },
-  destroyDelay: {
-    type: 'number',
-    default: 20,
-    hidden: true,
-    description: 'Destroy delay'
-  },
-  dockerMachine: {
-    type: 'string',
-    hidden: true,
-    description: 'Legacy docker-machine environment variable'
-  },
-  workdir: {
-    type: 'string',
-    hidden: true,
-    alias: 'path',
-    description: 'Runner working directory'
   }
 });
