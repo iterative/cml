@@ -42,7 +42,7 @@
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
-    "test": "jest",
+    "test": "jest --forceExit",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
