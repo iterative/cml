@@ -53,7 +53,6 @@ describe('Github tests', () => {
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
-    console.log(output);
     expect(output.includes('cml=pdf')).toBe(true);
   });
 
