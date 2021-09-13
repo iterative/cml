@@ -554,6 +554,11 @@ required.
 For AWS, the same credentials can also be used for
 [configuring cloud storage](#configuring-cloud-storage-providers).
 
+#### Proxy support
+
+CML support proxy via known environment variables `http_proxy` and
+`https_proxy`.
+
 #### On-premise (Local) Runners
 
 This means using on-premise machines as self-hosted runners. The `cml-runner`

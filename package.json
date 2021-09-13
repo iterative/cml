@@ -42,7 +42,7 @@
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
-    "test": "jest",
+    "test": "jest --forceExit",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
@@ -69,6 +69,7 @@
     "fs-extra": "^9.1.0",
     "git-url-parse": "^11.6.0",
     "globby": "^11.0.4",
+    "https-proxy-agent": "^5.0.0",
     "js-base64": "^3.7.0",
     "mmmagic": "^0.5.3",
     "node-fetch": "^2.6.2",
@@ -96,11 +97,14 @@
     "husky": "^4.3.8",
     "jest": "^27.1.1",
     "lint-staged": "^10.5.4",
-    "prettier": "^2.4.0"
+    "prettier": "^2.4.0",
+    "transparent-proxy": "^1.8.5"
   },
   "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "homepage": "https://github.com/iterative/cml#readme",
   "jest": {
+    "globalSetup": "./tests/setup.js",
+    "globalTeardown": "./tests/teardown.js",
     "testTimeout": 600000
   }
 }
