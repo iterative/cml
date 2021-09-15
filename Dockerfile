@@ -105,5 +105,5 @@ ENV IN_DOCKER=1
 # also works for GitLab CI/CD
 # https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96/shells/bash.go#L18-37
 # https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96/shells/bash.go#L288
-ENTRYPOINT ["/bin/bash", "-c", "which -- \"$0\" &>/dev/null && exec \"$0\" \"$@\" || exec cml \"$0\" \"$@\""]
+ENTRYPOINT ["/bin/bash", "-c", "echo \"$0\" | grep -qE '^(pr|publish|runner|send-(comment|github-check)|tensorboard-dev|--?\w.*)$' && exec cml \"$0\" \"$@\" || exec \"$0\" \"$@\""]
 CMD ["--help"]
