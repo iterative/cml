@@ -81,9 +81,8 @@ on: [push]
 jobs:
   run:
     runs-on: ubuntu-latest
-    # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
-    # container: docker://iterativeai/cml:0-dvc2-base1-gpu
-    # container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu
+    # optionally use a convenient Ubuntu LTS + DVC + CML image
+    # container: docker://ghcr.io/iterative/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v2
       # may need to setup NodeJS & Python3 on e.g. self-hosted
@@ -113,11 +112,9 @@ jobs:
 We helpfully provide CML and other useful libraries pre-installed on our
 [custom Docker images](https://github.com/iterative/cml/blob/master/Dockerfile).
 In the above example, uncommenting the field
-`container: docker://iterativeai/cml:0-dvc2-base1-gpu` (or
-`container: docker://ghcr.io/iterative/cml:0-dvc2-base1-gpu`) will make the
-runner pull the CML Docker image. The image already has NodeJS, Python 3, DVC
-and CML set up on an Ubuntu LTS base with CUDA libraries and
-[Terraform](https://www.terraform.io) installed for convenience.
+`container: docker://ghcr.io/iterative/cml:0-dvc2-base1`) will make the runner
+pull the CML Docker image. The image already has NodeJS, Python 3, DVC and CML
+set up on an Ubuntu LTS base for convenience.
 
 ### CML Functions
 
@@ -387,12 +384,11 @@ env:
 
 ## Advanced Setup
 
-### Self-hosted Runners
+### Self-hosted (On-premise or Cloud) Runners
 
 GitHub Actions are run on GitHub-hosted runners by default. However, there are
-many great reasons to use your own runners: to take advantage of GPUs; to
-orchestrate your team's shared computing resources, or to access on-premise
-data.
+many great reasons to use your own runners: to take advantage of GPUs,
+orchestrate your team's shared computing resources, or train in the cloud.
 
 > :point_up: **Tip!** Check out the
 > [official GitHub documentation](https://help.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners)
@@ -402,12 +398,11 @@ data.
 
 When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
-instances on your AWS or Azure account (GCP & Kubernetes support is
-forthcoming!).
+instances on AWS, Azure, GCP, or Kubernetes.
 
-For example, the following workflow deploys a `t2.micro` instance on AWS EC2 and
-trains a model on the instance. After the job runs, the instance automatically
-shuts down.
+For example, the following workflow deploys a `p2.xlarge` instance on AWS EC2
+and trains a model on the instance. After the job runs, the instance
+automatically shuts down.
 
 You might notice that this workflow is quite similar to the
 [basic use case](#usage) above. The only addition is `cml-runner` and a few
@@ -435,14 +430,17 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           cml-runner \
-              --cloud aws \
-              --cloud-region us-west \
-              --cloud-type t2.micro \
-              --labels cml-runner
+            --cloud=aws \
+            --cloud-region=us-west \
+            --cloud-type=p2.xlarge \
+            --labels=cml-gpu
   train-model:
     needs: deploy-runner
-    runs-on: [self-hosted, cml-runner]
-    container: docker://iterativeai/cml:0-dvc2-base1-gpu
+    runs-on: [self-hosted, cml-gpu]
+    timeout-minutes: 4320 # 72h
+    container:
+      image: docker://iterativeai/cml:0-dvc2-base1-gpu
+      options: --gpus all
     steps:
       - uses: actions/checkout@v2
       - name: Train model
@@ -456,24 +454,21 @@ jobs:
           cml-send-comment report.md
 ```
 
-In the workflow above, the `deploy-runner` step launches an EC2 `t2-micro`
+In the workflow above, the `deploy-runner` step launches an EC2 `p2.xlarge`
 instance in the `us-west` region. The `model-training` step then runs on the
 newly-launched instance. See [Environment Variables] below for details on the
 `secrets` required.
 
-> :tada: **Note that you can use any container with this workflow!** While you
-> must [have CML and its dependencies set up](#local-package) to use functions
-> such `cml-send-comment` from your instance, you can create your favourite
-> training environment in the cloud by pulling the Docker container of your
-> choice.
+> :tada: **Note that jobs can use any Docker container!** To use functions such
+> as `cml-send-comment` from a job, the only requirement is to
+> [have CML installed](#local-package).
 
 #### Docker Images
 
-We like the CML container (`docker://iterativeai/cml`) because it comes loaded
-with Python, CUDA, `git`, `node` and other essentials for full-stack data
-science. Different versions of these essentials are available from different
-`iterativeai/cml` image tags. The tag convention is
-`{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
+The CML Docker image (`docker://iterativeai/cml`) comes loaded with Python,
+CUDA, `git`, `node` and other essentials for full-stack data science. Different
+versions of these essentials are available from different `iterativeai/cml`
+image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 
 | `{BASE_VER}` | Software included (`-gpu`)                      |
 | ------------ | ----------------------------------------------- |
@@ -488,55 +483,54 @@ For example, `docker://iterativeai/cml:0-dvc2-base1-gpu`, or
 The `cml-runner` function accepts the following arguments:
 
 ```
-Usage: cml-runner
-
-Options:
-  --version                   Show version number                      [boolean]
-  --labels                    One or more user-defined labels for this runner
-                              (delimited with commas)           [default: "cml"]
-  --idle-timeout              Time in seconds for the runner to be waiting for
-                              jobs before shutting down. Setting it to 0
-                              disables automatic shutdown         [default: 300]
-  --name                      Name displayed in the repository once registered
-                              cml-{ID}
-  --no-retry                  Do not restart workflow terminated due to instance
-                              disposal or GitHub Actions timeout
-                                                      [boolean] [default: false]
-  --single                    Exit after running a single job
-                                                      [boolean] [default: false]
-  --reuse                     Don't launch a new runner if an existing one has
-                              the same name or overlapping labels
-                                                      [boolean] [default: false]
-  --driver                    Platform where the repository is hosted. If not
-                              specified, it will be inferred from the
-                              environment          [choices: "github", "gitlab"]
-  --repo                      Repository to be used for registering the runner.
-                              If not specified, it will be inferred from the
-                              environment
-  --token                     Personal access token to register a self-hosted
-                              runner on the repository. If not specified, it
-                              will be inferred from the environment
-  --cloud                     Cloud to deploy the runner
-                                         [choices: "aws", "azure", "kubernetes"]
-  --cloud-region              Region where the instance is deployed. Choices:
-                              [us-east, us-west, eu-west, eu-north]. Also
-                              accepts native cloud regions  [default: "us-west"]
-  --cloud-type                Instance type. Choices: [m, l, xl]. Also supports
-                              native types like i.e. t2.micro
-  --cloud-gpu                 GPU type.
-                                      [choices: "nogpu", "k80", "v100", "tesla"]
-  --cloud-hdd-size            HDD size in GB
-  --cloud-ssh-private         Custom private RSA SSH key. If not provided an
-                              automatically generated throwaway key will be used
-                                                                   [default: ""]
-  --cloud-spot                Request a spot instance                  [boolean]
-  --cloud-spot-price          Maximum spot instance bidding price in USD.
-                              Defaults to the current spot bidding price
-                                                                 [default: "-1"]
-  --cloud-startup-script      Run the provided Base64-encoded Linux shell script
-                              during the instance initialization   [default: ""]
-  --cloud-aws-security-group  Specifies the security group in AWS  [default: ""]
-  -h                          Show help                                [boolean]
+--help                      Show help                                [boolean]
+--version                   Show version number                      [boolean]
+--log                       Maximum log level
+                 [choices: "error", "warn", "info", "debug"] [default: "info"]
+--labels                    One or more user-defined labels for this runner
+                            (delimited with commas)           [default: "cml"]
+--idle-timeout              Seconds to wait for jobs before shutting down. Set
+                            to -1 to disable timeout            [default: 300]
+--name                      Name displayed in the repository once registered
+                            cml-{ID}
+--no-retry                  Do not restart workflow terminated due to instance
+                            disposal or GitHub Actions timeout
+                                                    [boolean] [default: false]
+--single                    Exit after running a single job
+                                                    [boolean] [default: false]
+--reuse                     Don't launch a new runner if an existing one has
+                            the same name or overlapping labels
+                                                    [boolean] [default: false]
+--driver                    Platform where the repository is hosted. If not
+                            specified, it will be inferred from the
+                            environment          [choices: "github", "gitlab"]
+--repo                      Repository to be used for registering the runner.
+                            If not specified, it will be inferred from the
+                            environment
+--token                     Personal access token to register a self-hosted
+                            runner on the repository. If not specified, it
+                            will be inferred from the environment
+                                                            [default: "infer"]
+--cloud                     Cloud to deploy the runner
+                                [choices: "aws", "azure", "gcp", "kubernetes"]
+--cloud-region              Region where the instance is deployed. Choices:
+                            [us-east, us-west, eu-west, eu-north]. Also
+                            accepts native cloud regions  [default: "us-west"]
+--cloud-type                Instance type. Choices: [m, l, xl]. Also supports
+                            native types like i.e. t2.micro
+--cloud-gpu                 GPU type.
+                                    [choices: "nogpu", "k80", "v100", "tesla"]
+--cloud-hdd-size            HDD size in GB
+--cloud-ssh-private         Custom private RSA SSH key. If not provided an
+                            automatically generated throwaway key will be used
+                                                                 [default: ""]
+--cloud-spot                Request a spot instance                  [boolean]
+--cloud-spot-price          Maximum spot instance bidding price in USD.
+                            Defaults to the current spot bidding price
+                                                               [default: "-1"]
+--cloud-startup-script      Run the provided Base64-encoded Linux shell script
+                            during the instance initialization   [default: ""]
+--cloud-aws-security-group  Specifies the security group in AWS  [default: ""]
 ```
 
 #### Environment Variables
@@ -546,10 +540,10 @@ Options:
 > with repository read/write access and workflow privileges. In the example
 > workflow, this token is stored as `PERSONAL_ACCESS_TOKEN`.
 
-Note that you will also need to provide access credentials for your cloud
-compute resources as secrets. In the above example, `AWS_ACCESS_KEY_ID` and
-`AWS_SECRET_ACCESS_KEY` (with privileges to create & destroy EC2 instances) are
-required.
+:information_source: If using the `--cloud` option, you will also need to
+provide access credentials of your cloud compute resources as secrets. In the
+above example, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (with privileges
+to create & destroy EC2 instances) are required.
 
 For AWS, the same credentials can also be used for
 [configuring cloud storage](#configuring-cloud-storage-providers).
@@ -562,18 +556,18 @@ CML support proxy via known environment variables `http_proxy` and
 #### On-premise (Local) Runners
 
 This means using on-premise machines as self-hosted runners. The `cml-runner`
-function is used to set up a local self-hosted runner. On your local machine or
+function is used to set up a local self-hosted runner. On a local machine or
 on-premise GPU cluster, [install CML as a package](#local-package) and then run:
 
 ```bash
 cml-runner \
-    --repo $your_project_repository_url \
-    --token $PERSONAL_ACCESS_TOKEN \
-    --labels tf \
-    --idle-timeout 180
+  --repo=$your_project_repository_url \
+  --token=$PERSONAL_ACCESS_TOKEN \
+  --labels="local,runner" \
+  --idle-timeout=180
 ```
 
-Now your machine will be listening for workflows from your project repository.
+The machine will listen for workflows from your project repository.
 
 ### Local Package
 
