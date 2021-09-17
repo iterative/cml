@@ -1,15 +1,13 @@
-#!/usr/bin/env node
-
 const { join } = require('path');
 const { homedir } = require('os');
 
 const fs = require('fs').promises;
-const yargs = require('yargs');
 const { SpotNotifier } = require('ec2-spot-notification');
 
-const { exec, randid, sleep } = require('../src/utils');
-const tf = require('../src/terraform');
-const CML = require('../src/cml').default;
+const winston = require('winston');
+const CML = require('../../src/cml').default;
+const { exec, randid, sleep } = require('../../src/utils');
+const tf = require('../../src/terraform');
 
 const NAME = `cml-${randid()}`;
 const WORKDIR_BASE = `${homedir()}/.cml`;
@@ -36,7 +34,6 @@ let RUNNER_TIMEOUT_TIMER = 0;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_JOBS_RUNNING = [];
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
-const isCLI = require.main === module;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -50,12 +47,12 @@ const shutdown = async (opts) => {
     if (!RUNNER) return;
 
     try {
-      console.log(`Unregistering runner ${name}...`);
+      winston.info(`Unregistering runner ${name}...`);
       RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
-      console.log('\tSuccess');
+      winston.info('\tSuccess');
     } catch (err) {
-      console.error(`\tFailed: ${err.message}`);
+      winston.error(`\tFailed: ${err.message}`);
     }
   };
 
@@ -69,21 +66,21 @@ const shutdown = async (opts) => {
         );
       }
     } catch (err) {
-      console.error(err);
+      winston.error(err);
     }
   };
 
   const destroyDockerMachine = async () => {
     if (!DOCKER_MACHINE) return;
 
-    console.log('docker-machine destroy...');
-    console.log(
+    winston.info('docker-machine destroy...');
+    winston.warning(
       'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
       await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
     } catch (err) {
-      console.error(`\tFailed shutting down docker machine: ${err.message}`);
+      winston.error(`\tFailed shutting down docker machine: ${err.message}`);
     }
   };
 
@@ -91,13 +88,13 @@ const shutdown = async (opts) => {
     if (!tfResource) return;
 
     try {
-      console.log(await tf.destroy({ dir: tfPath }));
+      winston.debug(await tf.destroy({ dir: tfPath }));
     } catch (err) {
-      console.error(`\tFailed destroying terraform: ${err.message}`);
+      winston.error(`\tFailed destroying terraform: ${err.message}`);
     }
   };
 
-  if (error) console.log(error);
+  if (error) winston.error(error);
   console.log(
     JSON.stringify({
       level: error ? 'error' : 'info',
@@ -122,7 +119,7 @@ const shutdown = async (opts) => {
 
 const runCloud = async (opts) => {
   const runTerraform = async (opts) => {
-    console.log('Terraform apply...');
+    winston.info('Terraform apply...');
 
     const { token, repo, driver } = cml;
     const {
@@ -152,7 +149,7 @@ const runCloud = async (opts) => {
       tpl = await fs.writeFile(tfMainPath, await fs.readFile(tfFile));
     } else {
       if (gpu === 'tesla')
-        console.log(
+        winston.warn(
           'GPU model "tesla" has been deprecated; please use "v100" instead.'
         );
       tpl = tf.iterativeCmlRunnerTpl({
@@ -172,7 +169,6 @@ const runCloud = async (opts) => {
         spot,
         spotPrice,
         startupScript,
-
         awsSecurityGroup
       });
     }
@@ -187,7 +183,7 @@ const runCloud = async (opts) => {
     return tfstate;
   };
 
-  console.log('Deploying cloud runner plan...');
+  winston.info('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
   for (const resource of resources) {
@@ -214,14 +210,14 @@ const runCloud = async (opts) => {
           spotPrice: attributes.spot_price,
           timeouts: attributes.timeouts
         };
-        console.log(JSON.stringify(nonSensitiveValues));
+        winston.info(JSON.stringify(nonSensitiveValues));
       }
     }
   }
 };
 
 const runLocal = async (opts) => {
-  console.log(`Launching ${cml.driver} runner`);
+  winston.info(`Launching ${cml.driver} runner`);
   const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
 
   const proc = await cml.startRunner({
@@ -234,7 +230,7 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
-    log && console.log(JSON.stringify(log));
+    log && winston.debug(JSON.stringify(log));
 
     if (log && log.status === 'job_started') {
       RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
@@ -294,17 +290,17 @@ const runLocal = async (opts) => {
 
   if (!noRetry) {
     try {
-      console.log(`EC2 id ${await SpotNotifier.instanceId()}`);
+      winston.info(`EC2 id ${await SpotNotifier.instanceId()}`);
       SpotNotifier.on('termination', () =>
         shutdown({ ...opts, reason: 'spot_termination' })
       );
       SpotNotifier.start();
     } catch (err) {
-      console.log('SpotNotifier can not be started.');
+      winston.warn('SpotNotifier can not be started.');
     }
   }
 
-  if (parseInt(idleTimeout) !== 0) {
+  if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(() => {
       RUNNER_TIMEOUT_TIMER > idleTimeout &&
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` }) &&
@@ -396,7 +392,7 @@ const run = async (opts) => {
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
       );
-    console.log(`Reusing existing runner named ${name}...`);
+    winston.info(`Reusing existing runner named ${name}...`);
     process.exit(0);
   }
 
@@ -406,12 +402,14 @@ const run = async (opts) => {
       (runner) => runner.online
     )
   ) {
-    console.log(`Reusing existing online runners with the ${labels} labels...`);
+    winston.info(
+      `Reusing existing online runners with the ${labels} labels...`
+    );
     process.exit(0);
   }
 
   try {
-    console.log(`Preparing workdir ${workdir}...`);
+    winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
   } catch (err) {}
 
@@ -419,10 +417,20 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-if (isCLI) {
-  const opts = yargs
-    .strict()
-    .usage(`Usage: $0`)
+exports.command = 'runner';
+exports.desc = 'Launch and register a self-hosted runner';
+
+exports.handler = async (opts) => {
+  try {
+    await run(opts);
+  } catch (error) {
+    await shutdown({ ...opts, error });
+    throw error;
+  }
+};
+
+exports.builder = (yargs) =>
+  yargs
     .default('labels', RUNNER_LABELS)
     .describe(
       'labels',
@@ -431,7 +439,7 @@ if (isCLI) {
     .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
     .describe(
       'idle-timeout',
-      'Time in seconds for the runner to be waiting for jobs before shutting down. Setting it to 0 disables automatic shutdown'
+      'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
     )
     .default('name')
     .describe(
@@ -466,7 +474,8 @@ if (isCLI) {
       'repo',
       'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
     )
-    .default('token', REPO_TOKEN)
+    .default('token', 'infer')
+    .coerce('token', (val) => (val === 'infer' ? REPO_TOKEN : val))
     .describe(
       'token',
       'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
@@ -512,10 +521,4 @@ if (isCLI) {
     .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
     .default('tf-resource')
     .hide('tf-resource')
-    .alias('tf-resource', 'tf_resource')
-    .help('h').argv;
-
-  run(opts).catch((error) => {
-    shutdown({ ...opts, error });
-  });
-}
+    .alias('tf-resource', 'tf_resource');

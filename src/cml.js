@@ -4,6 +4,8 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git/promise')('./');
 
+const winston = require('winston');
+
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
@@ -197,8 +199,8 @@ class CML {
         return log;
       }
     } catch (err) {
-      console.log(`Failed parsing log: ${err.message}`);
-      console.log(`Original log bytes, as Base64: ${data.toString('base64')}`);
+      winston.warn(`Failed parsing log: ${err.message}`);
+      winston.warn(`Original log bytes, as Base64: ${data.toString('base64')}`);
     }
   }
 
@@ -271,7 +273,7 @@ class CML {
 
     const { files } = await git.status();
     if (!files.length) {
-      console.log('No files changed. Nothing to do.');
+      winston.warn('No files changed. Nothing to do.');
       return;
     }
 
@@ -279,7 +281,7 @@ class CML {
       files.map((file) => file.path).includes(path)
     );
     if (!paths.length) {
-      console.log('Input files are not affected. Nothing to do.');
+      winston.warn('Input files are not affected. Nothing to do.');
       return;
     }
 
@@ -350,7 +352,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 
   logError(e) {
-    console.error(e.message);
+    winston.error(e.message);
   }
 }
 

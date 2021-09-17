@@ -9,7 +9,8 @@ const { Octokit } = require('@octokit/rest');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 
-const { download, exec } = require('../utils');
+const { download, exec, proxyAgent } = require('../utils');
+const winston = require('winston');
 
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
@@ -47,11 +48,12 @@ const octokit = (token, repo) => {
 
   const throttleHandler = (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      console.log(`Retrying after ${retryAfter} seconds!`);
+      winston.log(`Retrying after ${retryAfter} seconds!`);
       return true;
     }
   };
   const octokitOptions = {
+    request: { agent: proxyAgent() },
     auth: token,
     throttle: {
       onRateLimit: throttleHandler,

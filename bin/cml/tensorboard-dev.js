@@ -1,54 +1,51 @@
-#!/usr/bin/env node
-
-const print = console.log;
-console.log = console.error;
-
-const yargs = require('yargs');
 const fs = require('fs').promises;
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const { exec, watermarkUri } = require('../src/utils');
+const winston = require('winston');
+const { exec, watermarkUri, sleep } = require('../../src/utils');
 
 const { TB_CREDENTIALS } = process.env;
-const isCLI = require.main === module;
 
 const closeFd = (fd) => {
   try {
     fd.close();
   } catch (err) {
-    console.error(err.message);
+    winston.error(err.message);
   }
 };
 
-const tbLink = (opts = {}) => {
-  const { stdout, stderror, title, name, rmWatermark, md } = opts;
+exports.tbLink = async (opts = {}) => {
+  const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
 
-  return new Promise((resolve, reject) => {
-    const parserWatcher = setInterval(async () => {
-      const data = await fs.readFile(stdout, 'utf8');
-      const urls = data.match(/(https?:\/\/[^\s]+)/) || [];
+  let chrono = 0;
+  const chronoStep = 2;
+  while (chrono < timeout) {
+    const data = await fs.readFile(stdout, 'utf8');
+    const urls = data.match(/(https?:\/\/[^\s]+)/) || [];
 
-      if (urls.length) {
-        let [output] = urls;
+    if (urls.length) {
+      let [output] = urls;
 
-        if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
-        if (md) output = `[${title || name}](${output})`;
+      if (!rmWatermark) output = watermarkUri({ uri: output, type: 'tb' });
+      if (md) output = `[${title || name}](${output})`;
 
-        resolve(output);
-        clearInterval(parserWatcher);
-      }
-    }, 1 * 5 * 1000);
+      return output;
+    }
 
-    setTimeout(async () => {
-      const error = await fs.readFile(stderror, 'utf8');
-      reject(new Error(`Tensorboard took too long. ${error}`));
-    }, 1 * 60 * 1000);
-  });
+    await sleep(chronoStep);
+    chrono = chrono + chronoStep;
+  }
+
+  const error = await fs.readFile(stderror, 'utf8');
+  throw new Error(`Tensorboard took too long. ${error}`);
 };
 
-const run = async (opts) => {
+exports.command = 'tensorboard-dev';
+exports.desc = 'Get a tensorboard link';
+
+exports.handler = async (opts) => {
   const {
     md,
     file,
@@ -89,12 +86,12 @@ const run = async (opts) => {
   proc.on('exit', async (code) => {
     if (code) {
       const error = await fs.readFile(stderrPath, 'utf8');
-      print(`Tensorboard failed with error: ${error}`);
+      winston.error(`Tensorboard failed with error: ${error}`);
     }
     process.exit(code);
   });
 
-  const url = await tbLink({
+  const url = await exports.tbLink({
     stdout: stdoutPath,
     stderror: stderrPath,
     title,
@@ -102,17 +99,15 @@ const run = async (opts) => {
     rmWatermark,
     md
   });
-  if (!file) print(url);
+  if (!file) console.log(url);
   else await fs.appendFile(file, url);
 
   closeFd(stdoutFd) && closeFd(stderrFd);
   process.exit(0);
 };
 
-if (isCLI) {
-  const argv = yargs
-    .strict()
-    .usage(`Usage: $0`)
+exports.builder = (yargs) =>
+  yargs
     .default('credentials')
     .describe(
       'credentials',
@@ -143,15 +138,4 @@ if (isCLI) {
       'Append the output to the given file. Create it if does not exist.'
     )
     .describe('rm-watermark', 'Avoid CML watermark.')
-    .alias('file', 'f')
-    .help('h').argv;
-
-  run(argv).catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
-}
-
-module.exports = {
-  tbLink
-};
+    .alias('file', 'f');
