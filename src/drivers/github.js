@@ -230,13 +230,13 @@ class Github {
           'config.sh'
         )} --unattended  --token "${await this.runnerToken()}" --url "${
           this.repo
-        }"  --name "${name}" --labels "${labels}" --work "${resolve(
+        }" --name "${name}" --labels "${labels}" --work "${resolve(
           workdir,
           '_work'
-        )}"`
+        )}" ${single ? ' --ephemeral' : ''}`
       );
 
-      return spawn(resolve(workdir, 'run.sh') + (single ? ' --once' : ''), {
+      return spawn(resolve(workdir, 'run.sh'), {
         shell: true
       });
     } catch (err) {
