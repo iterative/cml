@@ -26,7 +26,11 @@ jobs:
       - run: npm run lint
   test:
     needs: authorize
-    runs-on: ubuntu-latest
+    name: test-${{ matrix.system }}
+    strategy:
+      matrix:
+        system: [ubuntu, macos, windows]
+    runs-on: ${{ matrix.system }}-latest
     steps:
       - uses: actions/checkout@v2
         with:
