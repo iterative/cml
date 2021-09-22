@@ -229,7 +229,7 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
-    log && winston.info("runner log", log);
+    log && winston.info('runner log', log);
 
     if (log && log.status === 'job_started') {
       RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
