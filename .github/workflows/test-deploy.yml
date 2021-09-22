@@ -27,11 +27,7 @@ jobs:
       - run: npm run lint
   test:
     needs: authorize
-    name: test-${{ matrix.system }}
-    strategy:
-      matrix:
-        system: [ubuntu, macos, windows]
-    runs-on: ${{ matrix.system }}-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -52,6 +48,19 @@ jobs:
           TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
           TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
           TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
+  test-os:
+    needs: authorize
+    name: test-${{ matrix.system }}
+    strategy:
+      matrix:
+        system: [ubuntu, macos, windows]
+    runs-on: ${{ matrix.system }}-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - if: matrix.system == 'windows'
+        uses: actions/setup-node@v2
       - run: |
           npm i -g
           cml --version
@@ -60,7 +69,7 @@ jobs:
           cml pr --version
           cml-pr --version
   packages:
-    needs: [lint, test]
+    needs: [lint, test, test-os]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
