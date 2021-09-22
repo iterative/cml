@@ -5,6 +5,7 @@ on:
   release:
     types: [published]
   pull_request_target:
+  workflow_dispatch:
 jobs:
   authorize:
     environment:
