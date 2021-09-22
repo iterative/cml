@@ -1,6 +1,8 @@
 const fetch = require('node-fetch');
 const { URL } = require('url');
 
+const { proxyAgent } = require('../utils');
+
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
 class BitbucketCloud {
   constructor(opts = {}) {
@@ -181,10 +183,12 @@ class BitbucketCloud {
       'Content-Type': 'application/json',
       Authorization: 'Basic ' + `${token}`
     };
+
     const response = await fetch(url || `${api}${endpoint}`, {
       method,
       headers,
-      body
+      body,
+      agent: proxyAgent()
     });
 
     if (response.status > 300) {

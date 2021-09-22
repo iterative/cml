@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.6.3",
+  "version": "0.7.1",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -42,7 +42,7 @@
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
-    "test": "jest",
+    "test": "jest --forceExit",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
@@ -69,10 +69,11 @@
     "fs-extra": "^9.1.0",
     "git-url-parse": "^11.6.0",
     "globby": "^11.0.4",
-    "js-base64": "^3.7.0",
+    "https-proxy-agent": "^5.0.0",
+    "js-base64": "^3.7.1",
     "kebabcase-keys": "^1.0.0",
     "mmmagic": "^0.5.3",
-    "node-fetch": "^2.6.2",
+    "node-fetch": "^2.6.4",
     "node-forge": "^0.10.0",
     "node-ssh": "^11.1.1",
     "pseudoexec": "^0.1.4",
@@ -95,13 +96,16 @@
     "eslint-plugin-promise": "^4.3.1",
     "eslint-plugin-standard": "^4.1.0",
     "husky": "^4.3.8",
-    "jest": "^27.1.1",
+    "jest": "^27.2.1",
     "lint-staged": "^10.5.4",
-    "prettier": "^2.4.0"
+    "prettier": "^2.4.1",
+    "transparent-proxy": "^1.8.7"
   },
   "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "homepage": "https://github.com/iterative/cml#readme",
   "jest": {
+    "globalSetup": "./tests/setup.js",
+    "globalTeardown": "./tests/teardown.js",
     "testTimeout": 600000
   }
 }

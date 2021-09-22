@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const HttpsProxyAgent = require('https-proxy-agent');
 const fs = require('fs');
 const PATH = require('path');
 const mmm = require('mmmagic');
@@ -165,6 +166,14 @@ const sshConnection = async (opts) => {
   return ssh;
 };
 
+const proxyAgent = (opts = {}) => {
+  const { https_proxy: httpsProxy, http_proxy: httpProxy } = process.env;
+  const { url = httpsProxy || httpProxy } = opts;
+
+  if (!url) return;
+  return new HttpsProxyAgent(url);
+};
+
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;
@@ -175,3 +184,4 @@ exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
 exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
+exports.proxyAgent = proxyAgent;
