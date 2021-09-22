@@ -67,7 +67,6 @@ jobs:
           cml runner --version
           cml publish --version
           cml pr --version
-          cml-pr --version
   packages:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
