@@ -100,7 +100,7 @@ WORKDIR ${CML_RUNNER_PATH}
 
 # SET SPECIFIC ENVIRONMENT VARIABLES
 ENV IN_DOCKER=1
-ENV RUNNER_ALLOW_RUNASROOT=1 # passed directly to GitHub runners
+ENV RUNNER_ALLOW_RUNASROOT=1
 
 # DEFINE ENTRY POINT AND COMMAND
 # Smart entrypoint understands commands like `bash` or `/bin/sh` but defaults to `cml`;
