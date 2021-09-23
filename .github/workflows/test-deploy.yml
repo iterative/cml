@@ -67,6 +67,10 @@ jobs:
           cml runner --version
           cml publish --version
           cml pr --version
+      - if: matrix.system != 'windows'
+        run: |
+          cml-runner --version
+          cml-publish --version
           cml-pr --version
   packages:
     needs: [lint, test, test-os]
