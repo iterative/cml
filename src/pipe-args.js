@@ -25,7 +25,13 @@ module.exports.load = (format) => {
       chunks.push(buffer.slice(0, nbytes));
     } catch (err) {
       if (err.code === 'EOF') break; // HACK: see nodejs/node#35997
-      if (err.code === 'EAGAIN') break;
+      if (err.code === 'EAGAIN') {
+        if (process.platform === 'darwin') {
+          continue;
+        } else {
+          break;
+        }
+      }
       throw err;
     }
   }

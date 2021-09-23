@@ -7,8 +7,6 @@ const tempy = require('tempy');
 const winston = require('winston');
 const { exec, watermarkUri, sleep } = require('../../src/utils');
 
-const { TB_CREDENTIALS } = process.env;
-
 const closeFd = (fd) => {
   try {
     fd.close();
@@ -50,7 +48,7 @@ exports.handler = async (opts) => {
   const {
     md,
     file,
-    credentials = TB_CREDENTIALS,
+    credentials,
     logdir,
     name,
     description,
@@ -107,43 +105,47 @@ exports.handler = async (opts) => {
   process.exit(0);
 };
 
-exports.builder = kebabcaseKeys({
-  credentials: {
-    type: 'string',
-    alias: 'c',
-    description:
-      'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
-  },
-  logdir: {
-    type: 'string',
-    description: 'Directory containing the logs to process.'
-  },
-  name: {
-    type: 'string',
-    description: 'Tensorboard experiment title. Max 100 characters.'
-  },
-  description: {
-    type: 'string',
-    description:
-      'Tensorboard experiment description. Markdown format. Max 600 characters.'
-  },
-  md: {
-    type: 'boolean',
-    description: 'Output as markdown [title || name](url).'
-  },
-  title: {
-    type: 'string',
-    alias: 't',
-    description: 'Markdown title, if not specified, param name will be used.'
-  },
-  file: {
-    type: 'string',
-    alias: 'f',
-    description:
-      'Append the output to the given file. Create it if does not exist.'
-  },
-  rmWatermark: {
-    type: 'boolean',
-    description: 'Avoid CML watermark.'
-  }
-});
+exports.builder = (yargs) =>
+  yargs.env('CML_TENSORBOARD_DEV').options(
+    kebabcaseKeys({
+      credentials: {
+        type: 'string',
+        alias: 'c',
+        description:
+          'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+      },
+      logdir: {
+        type: 'string',
+        description: 'Directory containing the logs to process.'
+      },
+      name: {
+        type: 'string',
+        description: 'Tensorboard experiment title. Max 100 characters.'
+      },
+      description: {
+        type: 'string',
+        description:
+          'Tensorboard experiment description. Markdown format. Max 600 characters.'
+      },
+      md: {
+        type: 'boolean',
+        description: 'Output as markdown [title || name](url).'
+      },
+      title: {
+        type: 'string',
+        alias: 't',
+        description:
+          'Markdown title, if not specified, param name will be used.'
+      },
+      file: {
+        type: 'string',
+        alias: 'f',
+        description:
+          'Append the output to the given file. Create it if does not exist.'
+      },
+      rmWatermark: {
+        type: 'boolean',
+        description: 'Avoid CML watermark.'
+      }
+    })
+  );

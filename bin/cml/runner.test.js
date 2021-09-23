@@ -22,11 +22,9 @@ Options:
                                                     [string] [default: cml-{ID}]
   --no-retry                  Do not restart workflow terminated due to instance
                               disposal or GitHub Actions timeout       [boolean]
-  --single                    Exit after running a single job
-                                                      [boolean] [default: false]
+  --single                    Exit after running a single job          [boolean]
   --reuse                     Don't launch a new runner if an existing one has
-                              the same name or overlapping labels
-                                                      [boolean] [default: false]
+                              the same name or overlapping labels      [boolean]
   --driver                    Platform where the repository is hosted. If not
                               specified, it will be inferred from the
                               environment [string] [choices: \\"github\\", \\"gitlab\\"]
@@ -35,8 +33,7 @@ Options:
                               environment                               [string]
   --token                     Personal access token to register a self-hosted
                               runner on the repository. If not specified, it
-                              will be inferred from the environment
-                                                         [string] [default: ***]
+                              will be inferred from the environment     [string]
   --cloud                     Cloud to deploy the runner
                          [string] [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
   --cloud-region              Region where the instance is deployed. Choices:

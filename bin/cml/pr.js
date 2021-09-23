@@ -12,39 +12,42 @@ exports.handler = async (opts) => {
   if (link) console.log(link);
 };
 
-exports.builder = kebabcaseKeys({
-  md: {
-    type: 'boolean',
-    description: 'Output in markdown format [](url).'
-  },
-  remote: {
-    type: 'string',
-    default: GIT_REMOTE,
-    description: 'Sets git remote.'
-  },
-  userEmail: {
-    type: 'string',
-    default: GIT_USER_EMAIL,
-    description: 'Sets git user email.'
-  },
-  userName: {
-    type: 'string',
-    default: GIT_USER_NAME,
-    description: 'Sets git user name.'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab'],
-    description: 'If not specify it infers it from the ENV.'
-  }
-});
+exports.builder = (yargs) =>
+  yargs.env('CML_PR').options(
+    kebabcaseKeys({
+      md: {
+        type: 'boolean',
+        description: 'Output in markdown format [](url).'
+      },
+      remote: {
+        type: 'string',
+        default: GIT_REMOTE,
+        description: 'Sets git remote.'
+      },
+      userEmail: {
+        type: 'string',
+        default: GIT_USER_EMAIL,
+        description: 'Sets git user email.'
+      },
+      userName: {
+        type: 'string',
+        default: GIT_USER_NAME,
+        description: 'Sets git user name.'
+      },
+      repo: {
+        type: 'string',
+        description:
+          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
+      },
+      driver: {
+        type: 'string',
+        choices: ['github', 'gitlab'],
+        description: 'If not specify it infers it from the ENV.'
+      }
+    })
+  );

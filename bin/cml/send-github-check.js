@@ -12,38 +12,41 @@ exports.handler = async (opts) => {
   await cml.checkCreate({ ...opts, report });
 };
 
-exports.builder = kebabcaseKeys({
-  commitSha: {
-    type: 'string',
-    alias: 'head-sha',
-    description: 'Commit SHA linked to this comment. Defaults to HEAD.'
-  },
-  conclusion: {
-    type: 'string',
-    choices: [
-      'success',
-      'failure',
-      'neutral',
-      'cancelled',
-      'skipped',
-      'timed_out'
-    ],
-    default: 'success',
-    description: 'Sets the conclusion status of the check.'
-  },
-  title: {
-    type: 'string',
-    default: 'CML Report',
-    description: 'Sets title of the check.'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
-  }
-});
+exports.builder = (yargs) =>
+  yargs.env('CML_SEND_GITHUB_CHECK').options(
+    kebabcaseKeys({
+      commitSha: {
+        type: 'string',
+        alias: 'head-sha',
+        description: 'Commit SHA linked to this comment. Defaults to HEAD.'
+      },
+      conclusion: {
+        type: 'string',
+        choices: [
+          'success',
+          'failure',
+          'neutral',
+          'cancelled',
+          'skipped',
+          'timed_out'
+        ],
+        default: 'success',
+        description: 'Sets the conclusion status of the check.'
+      },
+      title: {
+        type: 'string',
+        default: 'CML Report',
+        description: 'Sets title of the check.'
+      },
+      repo: {
+        type: 'string',
+        description:
+          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
+      }
+    })
+  );
