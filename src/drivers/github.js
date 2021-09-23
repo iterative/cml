@@ -48,7 +48,7 @@ const octokit = (token, repo) => {
 
   const throttleHandler = (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      winston.log(`Retrying after ${retryAfter} seconds!`);
+      winston.info(`Retrying after ${retryAfter} seconds!`);
       return true;
     }
   };
