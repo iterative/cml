@@ -99,7 +99,7 @@ const shutdown = async (opts) => {
     winston.info('runner status', { reason, status: 'terminated' });
   }
 
-  winston.info(`waiting ${RUNNER_DESTROY_DELAY} before exiting...`);
+  winston.info(`waiting ${RUNNER_DESTROY_DELAY} seconds before exiting...`);
   await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
