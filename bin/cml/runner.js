@@ -18,7 +18,7 @@ const {
   RUNNER_IDLE_TIMEOUT = 5 * 60,
   RUNNER_DESTROY_DELAY = 20,
   RUNNER_LABELS = 'cml',
-  RUNNER_NAME = NAME,
+  RUNNER_NAME: DEPRECATED_RUNNER_NAME,
   RUNNER_SINGLE = false,
   RUNNER_REUSE = false,
   RUNNER_NO_RETRY = false,
@@ -26,6 +26,14 @@ const {
   RUNNER_REPO,
   REPO_TOKEN
 } = process.env;
+
+const RUNNER_NAME = NAME;
+
+if (DEPRECATED_RUNNER_NAME) {
+  winston.warn(
+    `the RUNNER_NAME environment variable is set to '${DEPRECATED_RUNNER_NAME}' and that might not be what you intended, see also https://github.com/iterative/cml/issues/738`
+  );
+}
 
 let cml;
 let RUNNER;
