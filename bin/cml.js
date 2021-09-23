@@ -14,7 +14,10 @@ const configureLogger = (level) => {
           winston.format.colorize({ all: true }),
           winston.format.simple()
         )
-      : winston.format.json(),
+      : winston.format.combine(
+          winston.format.errors({ stack: true }),
+          winston.format.json()
+        ),
     transports: [
       new winston.transports.Console({
         handleExceptions: true,
