@@ -388,6 +388,11 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
+  if (process.env.RUNNER_NAME) {
+    winston.warn(
+      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
+    );
+  }
   try {
     await run(opts);
   } catch (error) {
@@ -396,126 +401,129 @@ exports.handler = async (opts) => {
   }
 };
 
-exports.builder = kebabcaseKeys({
-  labels: {
-    type: 'string',
-    default: 'cml',
-    description:
-      'One or more user-defined labels for this runner (delimited with commas)'
-  },
-  idleTimeout: {
-    type: 'number',
-    default: 5 * 60,
-    description:
-      'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
-  },
-  name: {
-    type: 'string',
-    default: `cml-${randid()}`,
-    defaultDescription: 'cml-{ID}',
-    description: 'Name displayed in the repository once registered'
-  },
-  noRetry: {
-    type: 'boolean',
-    description:
-      'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
-  },
-  single: {
-    type: 'boolean',
-    description: 'Exit after running a single job'
-  },
-  reuse: {
-    type: 'boolean',
-    description:
-      "Don't launch a new runner if an existing one has the same name or overlapping labels"
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab'],
-    description:
-      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-  },
-  cloud: {
-    type: 'string',
-    choices: ['aws', 'azure', 'gcp', 'kubernetes'],
-    description: 'Cloud to deploy the runner'
-  },
-  cloudRegion: {
-    type: 'string',
-    default: 'us-west',
-    description:
-      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-  },
-  cloudType: {
-    type: 'string',
-    description:
-      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-  },
-  cloudGpu: {
-    type: 'string',
-    choices: ['nogpu', 'k80', 'v100', 'tesla'],
-    coerce: (val) => (val === 'nogpu' ? null : val),
-    description: 'GPU type.'
-  },
-  cloudHddSize: {
-    type: 'number',
-    description: 'HDD size in GB'
-  },
-  cloudSshPrivate: {
-    type: 'string',
-    coerce: (val) => val.replace(/\n/g, '\\n'),
-    description:
-      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-  },
-  cloudSpot: {
-    type: 'boolean',
-    description: 'Request a spot instance'
-  },
-  cloudSpotPrice: {
-    type: 'number',
-    default: -1,
-    description:
-      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-  },
-  cloudStartupScript: {
-    type: 'string',
-    description:
-      'Run the provided Base64-encoded Linux shell script during the instance initialization'
-  },
-  cloudAwsSecurityGroup: {
-    type: 'string',
-    default: '',
-    description: 'Specifies the security group in AWS'
-  },
-  tfResource: {
-    hidden: true,
-    alias: 'tf_resource'
-  },
-  destroyDelay: {
-    type: 'number',
-    default: 20,
-    hidden: true,
-    description: 'Destroy delay'
-  },
-  dockerMachine: {
-    type: 'string',
-    hidden: true,
-    description: 'Legacy docker-machine environment variable'
-  },
-  workdir: {
-    type: 'string',
-    hidden: true,
-    alias: 'path',
-    description: 'Runner working directory'
-  }
-});
+exports.builder = (yargs) =>
+  yargs.env('CML_RUNNER').options(
+    kebabcaseKeys({
+      labels: {
+        type: 'string',
+        default: 'cml',
+        description:
+          'One or more user-defined labels for this runner (delimited with commas)'
+      },
+      idleTimeout: {
+        type: 'number',
+        default: 5 * 60,
+        description:
+          'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
+      },
+      name: {
+        type: 'string',
+        default: `cml-${randid()}`,
+        defaultDescription: 'cml-{ID}',
+        description: 'Name displayed in the repository once registered'
+      },
+      noRetry: {
+        type: 'boolean',
+        description:
+          'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+      },
+      single: {
+        type: 'boolean',
+        description: 'Exit after running a single job'
+      },
+      reuse: {
+        type: 'boolean',
+        description:
+          "Don't launch a new runner if an existing one has the same name or overlapping labels"
+      },
+      driver: {
+        type: 'string',
+        choices: ['github', 'gitlab'],
+        description:
+          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+      },
+      repo: {
+        type: 'string',
+        description:
+          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+      },
+      cloud: {
+        type: 'string',
+        choices: ['aws', 'azure', 'gcp', 'kubernetes'],
+        description: 'Cloud to deploy the runner'
+      },
+      cloudRegion: {
+        type: 'string',
+        default: 'us-west',
+        description:
+          'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+      },
+      cloudType: {
+        type: 'string',
+        description:
+          'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+      },
+      cloudGpu: {
+        type: 'string',
+        choices: ['nogpu', 'k80', 'v100', 'tesla'],
+        coerce: (val) => (val === 'nogpu' ? null : val),
+        description: 'GPU type.'
+      },
+      cloudHddSize: {
+        type: 'number',
+        description: 'HDD size in GB'
+      },
+      cloudSshPrivate: {
+        type: 'string',
+        coerce: (val) => val.replace(/\n/g, '\\n'),
+        description:
+          'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+      },
+      cloudSpot: {
+        type: 'boolean',
+        description: 'Request a spot instance'
+      },
+      cloudSpotPrice: {
+        type: 'number',
+        default: -1,
+        description:
+          'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+      },
+      cloudStartupScript: {
+        type: 'string',
+        description:
+          'Run the provided Base64-encoded Linux shell script during the instance initialization'
+      },
+      cloudAwsSecurityGroup: {
+        type: 'string',
+        default: '',
+        description: 'Specifies the security group in AWS'
+      },
+      tfResource: {
+        hidden: true,
+        alias: 'tf_resource'
+      },
+      destroyDelay: {
+        type: 'number',
+        default: 20,
+        hidden: true,
+        description: 'Destroy delay'
+      },
+      dockerMachine: {
+        type: 'string',
+        hidden: true,
+        description: 'Legacy docker-machine environment variable'
+      },
+      workdir: {
+        type: 'string',
+        hidden: true,
+        alias: 'path',
+        description: 'Runner working directory'
+      }
+    })
+  );
