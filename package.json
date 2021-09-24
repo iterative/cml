@@ -71,6 +71,7 @@
     "globby": "^11.0.4",
     "https-proxy-agent": "^5.0.0",
     "js-base64": "^3.7.1",
+    "kebabcase-keys": "^1.0.0",
     "mmmagic": "^0.5.3",
     "node-fetch": "^2.6.4",
     "node-forge": "^0.10.0",

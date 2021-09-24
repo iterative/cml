@@ -21,7 +21,7 @@ Options:
   --help     Show help                                                 [boolean]
   --version  Show version number                                       [boolean]
   --log      Maximum log level
-                   [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]"
+          [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]"
 `);
   });
 });

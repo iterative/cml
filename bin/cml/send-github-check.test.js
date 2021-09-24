@@ -42,15 +42,18 @@ Options:
   --help                    Show help                                  [boolean]
   --version                 Show version number                        [boolean]
   --log                     Maximum log level
-                   [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+          [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
   --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
-  --title                   Sets title of the check.     [default: \\"CML Report\\"]
+                                                                        [string]
+  --conclusion              Sets the conclusion status of the check.
+     [string] [choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
+                                               \\"timed_out\\"] [default: \\"success\\"]
+  --title                   Sets title of the check.
+                                                [string] [default: \\"CML Report\\"]
   --repo                    Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.
+                            extracted from the CI ENV.                  [string]
   --token                   Personal access token to be used. If not specified
-                            in extracted from ENV REPO_TOKEN.
-  --conclusion[choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
-                \\"timed_out\\"] [default: Sets the conclusion status of the check.]"
+                            in extracted from ENV REPO_TOKEN.           [string]"
 `);
   });
 });
