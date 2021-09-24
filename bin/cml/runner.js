@@ -1,31 +1,13 @@
 const { join } = require('path');
 const { homedir } = require('os');
-
 const fs = require('fs').promises;
 const { SpotNotifier } = require('ec2-spot-notification');
+const kebabcaseKeys = require('kebabcase-keys');
 
 const winston = require('winston');
 const CML = require('../../src/cml').default;
 const { exec, randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
-
-const NAME = `cml-${randid()}`;
-const WORKDIR_BASE = `${homedir()}/.cml`;
-const {
-  DOCKER_MACHINE, // DEPRECATED
-
-  RUNNER_PATH = `${WORKDIR_BASE}/${NAME}`,
-  RUNNER_IDLE_TIMEOUT = 5 * 60,
-  RUNNER_DESTROY_DELAY = 20,
-  RUNNER_LABELS = 'cml',
-  RUNNER_NAME = NAME,
-  RUNNER_SINGLE = false,
-  RUNNER_REUSE = false,
-  RUNNER_NO_RETRY = false,
-  RUNNER_DRIVER,
-  RUNNER_REPO,
-  REPO_TOKEN
-} = process.env;
 
 let cml;
 let RUNNER;
@@ -40,7 +22,15 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const { name, workdir = '', tfResource, noRetry, reason } = opts;
+  const {
+    name,
+    workdir = '',
+    tfResource,
+    noRetry,
+    reason,
+    destroyDelay,
+    dockerMachine
+  } = opts;
   const tfPath = workdir;
 
   const unregisterRunner = async () => {
@@ -71,14 +61,14 @@ const shutdown = async (opts) => {
   };
 
   const destroyDockerMachine = async () => {
-    if (!DOCKER_MACHINE) return;
+    if (!dockerMachine) return;
 
     winston.info('docker-machine destroy...');
     winston.warning(
       'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
-      await exec(`echo y | docker-machine rm ${DOCKER_MACHINE}`);
+      await exec(`echo y | docker-machine rm ${dockerMachine}`);
     } catch (err) {
       winston.error(`\tFailed shutting down docker machine: ${err.message}`);
     }
@@ -94,15 +84,14 @@ const shutdown = async (opts) => {
     }
   };
 
-  if (error) winston.error(error);
-  console.log(
-    JSON.stringify({
-      level: error ? 'error' : 'info',
-      status: 'terminated',
-      reason
-    })
-  );
-  await sleep(RUNNER_DESTROY_DELAY);
+  if (error) {
+    winston.error(error, { reason, status: 'terminated' });
+  } else {
+    winston.info('runner status', { reason, status: 'terminated' });
+  }
+
+  winston.info(`waiting ${destroyDelay} seconds before exiting...`);
+  await sleep(destroyDelay);
 
   if (cloud) {
     await destroyTerraform();
@@ -230,7 +219,7 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
-    log && winston.info('runner log', log);
+    log && winston.info('runner status', log);
 
     if (log && log.status === 'job_started') {
       RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
@@ -347,17 +336,17 @@ const run = async (opts) => {
   process.on('SIGINT', () => shutdown({ ...opts, reason: 'SIGINT' }));
   process.on('SIGQUIT', () => shutdown({ ...opts, reason: 'SIGQUIT' }));
 
-  opts.workdir = RUNNER_PATH;
+  opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
     driver,
     repo,
     token,
     cloud,
-    workdir,
     labels,
     name,
     reuse,
-    tfResource
+    tfResource,
+    workdir
   } = opts;
 
   cml = new CML({ driver, repo, token });
@@ -418,9 +407,14 @@ const run = async (opts) => {
 };
 
 exports.command = 'runner';
-exports.desc = 'Launch and register a self-hosted runner';
+exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
+  if (process.env.RUNNER_NAME) {
+    winston.warn(
+      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
+    );
+  }
   try {
     await run(opts);
   } catch (error) {
@@ -430,95 +424,128 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs
-    .default('labels', RUNNER_LABELS)
-    .describe(
-      'labels',
-      'One or more user-defined labels for this runner (delimited with commas)'
-    )
-    .default('idle-timeout', RUNNER_IDLE_TIMEOUT)
-    .describe(
-      'idle-timeout',
-      'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
-    )
-    .default('name')
-    .describe(
-      'name',
-      'Name displayed in the repository once registered cml-{ID}'
-    )
-    .coerce('name', (val) => val || RUNNER_NAME)
-    .boolean('no-retry')
-    .default('no-retry', RUNNER_NO_RETRY)
-    .describe(
-      'no-retry',
-      'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
-    )
-    .boolean('single')
-    .default('single', RUNNER_SINGLE)
-    .describe('single', 'Exit after running a single job')
-    .boolean('reuse')
-    .default('reuse', RUNNER_REUSE)
-    .describe(
-      'reuse',
-      "Don't launch a new runner if an existing one has the same name or overlapping labels"
-    )
-
-    .default('driver', RUNNER_DRIVER)
-    .describe(
-      'driver',
-      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-    )
-    .choices('driver', ['github', 'gitlab'])
-    .default('repo', RUNNER_REPO)
-    .describe(
-      'repo',
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-    )
-    .default('token', 'infer')
-    .coerce('token', (val) => (val === 'infer' ? REPO_TOKEN : val))
-    .describe(
-      'token',
-      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-    )
-    .default('cloud')
-    .describe('cloud', 'Cloud to deploy the runner')
-    .choices('cloud', ['aws', 'azure', 'gcp', 'kubernetes'])
-    .default('cloud-region', 'us-west')
-    .describe(
-      'cloud-region',
-      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-    )
-    .default('cloud-type')
-    .describe(
-      'cloud-type',
-      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-    )
-    .default('cloud-gpu')
-    .describe('cloud-gpu', 'GPU type.')
-    .choices('cloud-gpu', ['nogpu', 'k80', 'v100', 'tesla'])
-    .coerce('cloud-gpu-type', (val) => (val === 'nogpu' ? null : val))
-    .default('cloud-hdd-size')
-    .describe('cloud-hdd-size', 'HDD size in GB')
-    .default('cloud-ssh-private', '')
-    .describe(
-      'cloud-ssh-private',
-      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-    )
-    .coerce('cloud-ssh-private', (val) => val.replace(/\n/g, '\\n'))
-    .boolean('cloud-spot')
-    .describe('cloud-spot', 'Request a spot instance')
-    .default('cloud-spot-price', '-1')
-    .describe(
-      'cloud-spot-price',
-      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-    )
-    .default('cloud-startup-script', '')
-    .describe(
-      'cloud-startup-script',
-      'Run the provided Base64-encoded Linux shell script during the instance initialization'
-    )
-    .default('cloud-aws-security-group', '')
-    .describe('cloud-aws-security-group', 'Specifies the security group in AWS')
-    .default('tf-resource')
-    .hide('tf-resource')
-    .alias('tf-resource', 'tf_resource');
+  yargs.env('CML_RUNNER').options(
+    kebabcaseKeys({
+      labels: {
+        type: 'string',
+        default: 'cml',
+        description:
+          'One or more user-defined labels for this runner (delimited with commas)'
+      },
+      idleTimeout: {
+        type: 'number',
+        default: 5 * 60,
+        description:
+          'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
+      },
+      name: {
+        type: 'string',
+        default: `cml-${randid()}`,
+        defaultDescription: 'cml-{ID}',
+        description: 'Name displayed in the repository once registered'
+      },
+      noRetry: {
+        type: 'boolean',
+        description:
+          'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+      },
+      single: {
+        type: 'boolean',
+        description: 'Exit after running a single job'
+      },
+      reuse: {
+        type: 'boolean',
+        description:
+          "Don't launch a new runner if an existing one has the same name or overlapping labels"
+      },
+      driver: {
+        type: 'string',
+        choices: ['github', 'gitlab'],
+        description:
+          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+      },
+      repo: {
+        type: 'string',
+        description:
+          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+      },
+      cloud: {
+        type: 'string',
+        choices: ['aws', 'azure', 'gcp', 'kubernetes'],
+        description: 'Cloud to deploy the runner'
+      },
+      cloudRegion: {
+        type: 'string',
+        default: 'us-west',
+        description:
+          'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+      },
+      cloudType: {
+        type: 'string',
+        description:
+          'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+      },
+      cloudGpu: {
+        type: 'string',
+        choices: ['nogpu', 'k80', 'v100', 'tesla'],
+        coerce: (val) => (val === 'nogpu' ? null : val),
+        description: 'GPU type.'
+      },
+      cloudHddSize: {
+        type: 'number',
+        description: 'HDD size in GB'
+      },
+      cloudSshPrivate: {
+        type: 'string',
+        coerce: (val) => val && val.replace(/\n/g, '\\n'),
+        description:
+          'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+      },
+      cloudSpot: {
+        type: 'boolean',
+        description: 'Request a spot instance'
+      },
+      cloudSpotPrice: {
+        type: 'number',
+        default: -1,
+        description:
+          'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+      },
+      cloudStartupScript: {
+        type: 'string',
+        description:
+          'Run the provided Base64-encoded Linux shell script during the instance initialization'
+      },
+      cloudAwsSecurityGroup: {
+        type: 'string',
+        default: '',
+        description: 'Specifies the security group in AWS'
+      },
+      tfResource: {
+        hidden: true,
+        alias: 'tf_resource'
+      },
+      destroyDelay: {
+        type: 'number',
+        default: 20,
+        hidden: true,
+        description: 'Destroy delay'
+      },
+      dockerMachine: {
+        type: 'string',
+        hidden: true,
+        description: 'Legacy docker-machine environment variable'
+      },
+      workdir: {
+        type: 'string',
+        hidden: true,
+        alias: 'path',
+        description: 'Runner working directory'
+      }
+    })
+  );

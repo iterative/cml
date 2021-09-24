@@ -91,16 +91,18 @@ RUN add-apt-repository universe --yes \
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/* \
  && npm config set user 0 \
- && npm install --global canvas vega vega-cli vega-lite
+ && npm install --global canvas@2 vega@5 vega-cli@5 vega-lite@4
 
 # CONFIGURE RUNNER PATH
-ENV RUNNER_PATH=/home/runner
-ENV RUNNER_ALLOW_RUNASROOT=1
-RUN mkdir ${RUNNER_PATH}
-WORKDIR ${RUNNER_PATH}
+ENV CML_RUNNER_PATH=/home/runner
+RUN mkdir ${CML_RUNNER_PATH}
+WORKDIR ${CML_RUNNER_PATH}
 
-# COMMAND
+# SET SPECIFIC ENVIRONMENT VARIABLES
 ENV IN_DOCKER=1
+ENV RUNNER_ALLOW_RUNASROOT=1
+
+# DEFINE ENTRY POINT AND COMMAND
 # Smart entrypoint understands commands like `bash` or `/bin/sh` but defaults to `cml`;
 # also works for GitLab CI/CD
 # https://gitlab.com/gitlab-org/gitlab-runner/-/blob/4c42e96/shells/bash.go#L18-37

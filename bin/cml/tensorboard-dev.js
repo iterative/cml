@@ -1,12 +1,11 @@
 const fs = require('fs').promises;
+const kebabcaseKeys = require('kebabcase-keys');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
 const winston = require('winston');
 const { exec, watermarkUri, sleep } = require('../../src/utils');
-
-const { TB_CREDENTIALS } = process.env;
 
 const closeFd = (fd) => {
   try {
@@ -43,13 +42,13 @@ exports.tbLink = async (opts = {}) => {
 };
 
 exports.command = 'tensorboard-dev';
-exports.desc = 'Get a tensorboard link';
+exports.description = 'Get a tensorboard link';
 
 exports.handler = async (opts) => {
   const {
     md,
     file,
-    credentials = TB_CREDENTIALS,
+    credentials,
     logdir,
     name,
     description,
@@ -107,35 +106,47 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs
-    .default('credentials')
-    .describe(
-      'credentials',
-      'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
-    )
-    .alias('credentials', 'c')
-    .default('logdir')
-    .describe('logdir', 'Directory containing the logs to process.')
-    .default('name')
-    .describe('name', 'Tensorboard experiment title. Max 100 characters.')
-    .default('description')
-    .describe(
-      'description',
-      'Tensorboard experiment description. Markdown format. Max 600 characters.'
-    )
-    .default('plugins')
-    .boolean('md')
-    .describe('md', 'Output as markdown [title || name](url).')
-    .default('title')
-    .describe(
-      'title',
-      'Markdown title, if not specified, param name will be used.'
-    )
-    .alias('title', 't')
-    .default('file')
-    .describe(
-      'file',
-      'Append the output to the given file. Create it if does not exist.'
-    )
-    .describe('rm-watermark', 'Avoid CML watermark.')
-    .alias('file', 'f');
+  yargs.env('CML_TENSORBOARD_DEV').options(
+    kebabcaseKeys({
+      credentials: {
+        type: 'string',
+        alias: 'c',
+        required: true,
+        description:
+          'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+      },
+      logdir: {
+        type: 'string',
+        description: 'Directory containing the logs to process.'
+      },
+      name: {
+        type: 'string',
+        description: 'Tensorboard experiment title. Max 100 characters.'
+      },
+      description: {
+        type: 'string',
+        description:
+          'Tensorboard experiment description. Markdown format. Max 600 characters.'
+      },
+      md: {
+        type: 'boolean',
+        description: 'Output as markdown [title || name](url).'
+      },
+      title: {
+        type: 'string',
+        alias: 't',
+        description:
+          'Markdown title, if not specified, param name will be used.'
+      },
+      file: {
+        type: 'string',
+        alias: 'f',
+        description:
+          'Append the output to the given file. Create it if does not exist.'
+      },
+      rmWatermark: {
+        type: 'boolean',
+        description: 'Avoid CML watermark.'
+      }
+    })
+  );

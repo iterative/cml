@@ -1,9 +1,10 @@
 const fs = require('fs').promises;
+const kebabcaseKeys = require('kebabcase-keys');
 
 const CML = require('../../src/cml').default;
 
 exports.command = 'send-comment <markdown file>';
-exports.desc = 'Comment on a commit';
+exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
   const path = opts.markdownfile;
@@ -13,33 +14,37 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs
-    .default('commit-sha')
-    .describe(
-      'commit-sha',
-      'Commit SHA linked to this comment. Defaults to HEAD.'
-    )
-    .alias('commit-sha', 'head-sha')
-    .boolean('update')
-    .describe(
-      'update',
-      'Update the last CML comment (if any) instead of creating a new one'
-    )
-    .boolean('rm-watermark')
-    .describe(
-      'rm-watermark',
-      'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
-    )
-    .default('repo')
-    .describe(
-      'repo',
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-    )
-    .default('token')
-    .describe(
-      'token',
-      'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-    )
-    .default('driver')
-    .choices('driver', ['github', 'gitlab', 'bitbucket'])
-    .describe('driver', 'If not specify it infers it from the ENV.');
+  yargs.env('CML_SEND_COMMENT').options(
+    kebabcaseKeys({
+      commitSha: {
+        type: 'string',
+        alias: 'head-sha',
+        description: 'Commit SHA linked to this comment. Defaults to HEAD.'
+      },
+      update: {
+        type: 'boolean',
+        description:
+          'Update the last CML comment (if any) instead of creating a new one'
+      },
+      rmWatermark: {
+        type: 'boolean',
+        description:
+          'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
+      },
+      repo: {
+        type: 'string',
+        description:
+          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
+      },
+      driver: {
+        type: 'string',
+        choices: ['github', 'gitlab', 'bitbucket'],
+        description: 'If not specify it infers it from the ENV.'
+      }
+    })
+  );
