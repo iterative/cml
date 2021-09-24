@@ -101,7 +101,7 @@ resource "iterative_cml_runner" "runner" {
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
-  ${gpu || gpu === 'nogpu' ? `instance_gpu = "${gpu}"` : ''}
+  ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
   ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
