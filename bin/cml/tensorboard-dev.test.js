@@ -67,7 +67,7 @@ Options:
   -c, --credentials   TB credentials as json. Usually found at
                       ~/.config/tensorboard/credentials/uploader-creds.json. If
                       not specified will look for the json at the env variable
-                      TB_CREDENTIALS.                                   [string]
+                      TB_CREDENTIALS.                        [string] [required]
       --logdir        Directory containing the logs to process.         [string]
       --name          Tensorboard experiment title. Max 100 characters. [string]
       --description   Tensorboard experiment description. Markdown format. Max

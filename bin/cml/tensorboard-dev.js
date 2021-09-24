@@ -111,6 +111,7 @@ exports.builder = (yargs) =>
       credentials: {
         type: 'string',
         alias: 'c',
+        required: true,
         description:
           'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
       },

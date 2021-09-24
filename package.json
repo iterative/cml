@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "author": {
     "name": "DVC",
     "url": "http://cml.dev"
@@ -62,20 +62,21 @@
   "dependencies": {
     "@actions/core": "^1.5.0",
     "@actions/github": "^4.0.0",
+    "@octokit/core": "^3.5.1",
     "@octokit/plugin-throttling": "^3.5.2",
-    "@octokit/rest": "^18.10.0",
+    "@octokit/rest": "^18.11.0",
     "ec2-spot-notification": "^2.0.3",
     "form-data": "^3.0.1",
     "fs-extra": "^9.1.0",
     "git-url-parse": "^11.6.0",
     "globby": "^11.0.4",
     "https-proxy-agent": "^5.0.0",
-    "js-base64": "^3.7.1",
+    "js-base64": "^3.7.2",
     "kebabcase-keys": "^1.0.0",
     "mmmagic": "^0.5.3",
-    "node-fetch": "^2.6.4",
+    "node-fetch": "^2.6.5",
     "node-forge": "^0.10.0",
-    "node-ssh": "^11.1.1",
+    "node-ssh": "^12.0.0",
     "pseudoexec": "^0.1.4",
     "semver": "^7.3.5",
     "simple-git": "^2.45.1",
@@ -84,7 +85,7 @@
     "tempy": "^0.6.0",
     "which": "^2.0.2",
     "winston": "^3.3.3",
-    "yargs": "^17.1.1"
+    "yargs": "^17.2.0"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
