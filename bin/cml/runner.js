@@ -83,15 +83,14 @@ const shutdown = async (opts) => {
     }
   };
 
-  if (error) winston.error(error);
-  console.log(
-    JSON.stringify({
-      level: error ? 'error' : 'info',
-      status: 'terminated',
-      reason
-    })
-  );
-  await sleep(destroyDelay);
+  if (error) {
+    winston.error(error, { reason, status: 'terminated' });
+  } else {
+    winston.info('runner status', { reason, status: 'terminated' });
+  }
+
+  winston.info(`waiting ${RUNNER_DESTROY_DELAY} seconds before exiting...`);
+  await sleep(RUNNER_DESTROY_DELAY);
 
   if (cloud) {
     await destroyTerraform();
@@ -219,7 +218,7 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const log = await cml.parseRunnerLog({ data });
-    log && winston.info('runner log', log);
+    log && winston.info('runner status', log);
 
     if (log && log.status === 'job_started') {
       RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });

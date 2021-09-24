@@ -20,6 +20,7 @@ const configureLogger = (level) => {
         ),
     transports: [
       new winston.transports.Console({
+        stderrLevels: Object.keys(winston.config.npm.levels),
         handleExceptions: true,
         handleRejections: true,
         level
