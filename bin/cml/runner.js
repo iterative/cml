@@ -469,7 +469,7 @@ exports.builder = (yargs) =>
       },
       cloudGpu: {
         type: 'string',
-        choices: ['nogpu', 'k80', 'v100', 'tesla'],
+        choices: ['nogpu', 'k80', 'v100', 'tesla', null],
         coerce: (val) => (val === 'nogpu' ? null : val),
         description: 'GPU type.'
       },
