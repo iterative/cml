@@ -30,7 +30,6 @@ const configureLogger = (level) => {
 };
 
 const runPlugin = async ({ $0: executable, command }) => {
-  winston.info('runPlugin func');
   try {
     if (command === undefined) throw new Error('no command');
     const path = which.sync(`${basename(executable)}-${command}`);
