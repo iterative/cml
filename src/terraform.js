@@ -48,13 +48,9 @@ const destroy = async (opts = {}) => {
   );
 };
 
-const mapCloudMetadata = (strMap) => {
-  const templateBuilder = [''];
-  for (const key in strMap) {
-    templateBuilder.push(`${key} = "${strMap[key]}"`);
-  }
-  return templateBuilder.join('\n   ') + '\n  ';
-};
+const mapCloudMetadata = (metadata) =>
+  Object.entries(metadata).map(([key, value]) => `${key} = "${value || ''}"`);
+
 const iterativeProviderTpl = () => {
   return `
 terraform {
@@ -109,7 +105,6 @@ resource "iterative_cml_runner" "runner" {
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
-  ${metadata ? `metadata = {${mapCloudMetadata(metadata)}}` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
   ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
@@ -117,6 +112,11 @@ resource "iterative_cml_runner" "runner" {
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
   ${startupScript ? `startup_script = "${startupScript}"` : ''}
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
+  ${
+    metadata
+      ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
+      : ''
+  }
 }
 `;
   return template;
