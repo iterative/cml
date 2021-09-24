@@ -119,7 +119,6 @@ resource "iterative_cml_runner" "runner" {
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
 }
 `;
-  console.log(template);
   return template;
 };
 
