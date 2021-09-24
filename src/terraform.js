@@ -48,6 +48,19 @@ const destroy = async (opts = {}) => {
   );
 };
 
+const mapCloudMetadata = (strMap) => {
+  return (
+    '\n   ' +
+    strMap
+      .map((kv) => {
+        const tmpArr = kv.split('=');
+        tmpArr[1] = `"${tmpArr[1]}"`;
+        return tmpArr.join(' = ');
+      })
+      .join('\n   ') +
+    '\n  '
+  );
+};
 const iterativeProviderTpl = () => {
   return `
 terraform {
@@ -74,6 +87,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     name,
     single,
     type,
+    metadata,
     gpu,
     hddSize,
     sshPrivate,
@@ -83,7 +97,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     awsSecurityGroup
   } = opts;
 
-  return `
+  const template = `
 ${iterativeProviderTpl()}
 
 resource "iterative_cml_runner" "runner" {
@@ -101,6 +115,7 @@ resource "iterative_cml_runner" "runner" {
   ${cloud ? `cloud = "${cloud}"` : ''}
   ${region ? `region = "${region}"` : ''}
   ${type ? `instance_type = "${type}"` : ''}
+  ${metadata ? `metadata = {${mapCloudMetadata(metadata)}}` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
   ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
@@ -110,6 +125,7 @@ resource "iterative_cml_runner" "runner" {
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
 }
 `;
+  return template;
 };
 
 const checkMinVersion = async () => {

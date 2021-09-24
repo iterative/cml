@@ -118,6 +118,7 @@ const runCloud = async (opts) => {
       cloud,
       cloudRegion: region,
       cloudType: type,
+      cloudMetadata: metadata,
       cloudGpu: gpu,
       cloudHddSize: hddSize,
       cloudSshPrivate: sshPrivate,
@@ -151,6 +152,7 @@ const runCloud = async (opts) => {
         cloud,
         region,
         type,
+        metadata,
         gpu: gpu === 'tesla' ? 'v100' : gpu,
         hddSize,
         sshPrivate,
@@ -190,6 +192,7 @@ const runCloud = async (opts) => {
           instanceLaunchTime: attributes.instance_launch_time,
           instanceType: attributes.instance_type,
           labels: attributes.labels,
+          metadata: attributes.metadata,
           name: attributes.name,
           region: attributes.region,
           repo: attributes.repo,
@@ -466,6 +469,11 @@ exports.builder = (yargs) =>
         type: 'string',
         description:
           'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+      },
+      cloudMetadata: {
+        type: 'array',
+        description:
+          'Key Value pairs to associate cml-runner instance on the provider i.e. tags/labels "key=value"'
       },
       cloudGpu: {
         type: 'string',
