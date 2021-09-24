@@ -49,17 +49,11 @@ const destroy = async (opts = {}) => {
 };
 
 const mapCloudMetadata = (strMap) => {
-  return (
-    '\n   ' +
-    strMap
-      .map((kv) => {
-        const tmpArr = kv.split('=');
-        tmpArr[1] = `"${tmpArr[1]}"`;
-        return tmpArr.join(' = ');
-      })
-      .join('\n   ') +
-    '\n  '
-  );
+  const templateBuilder = [''];
+  for (const key in strMap) {
+    templateBuilder.push(`${key} = "${strMap[key]}"`);
+  }
+  return templateBuilder.join('\n   ') + '\n  ';
 };
 const iterativeProviderTpl = () => {
   return `
@@ -125,6 +119,7 @@ resource "iterative_cml_runner" "runner" {
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
 }
 `;
+  console.log(template);
   return template;
 };
 

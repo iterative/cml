@@ -472,6 +472,14 @@ exports.builder = (yargs) =>
       },
       cloudMetadata: {
         type: 'array',
+        string: true,
+        coerce: (items) => {
+          const keyValuePairs = items.map((item) => [
+            ...item.split(/=(.+)/),
+            null
+          ]);
+          return Object.fromEntries(keyValuePairs);
+        },
         description:
           'Key Value pairs to associate cml-runner instance on the provider i.e. tags/labels "key=value"'
       },
