@@ -89,8 +89,8 @@ const shutdown = async (opts) => {
     winston.info('runner status', { reason, status: 'terminated' });
   }
 
-  winston.info(`waiting ${RUNNER_DESTROY_DELAY} seconds before exiting...`);
-  await sleep(RUNNER_DESTROY_DELAY);
+  winston.info(`waiting ${destroyDelay} seconds before exiting...`);
+  await sleep(destroyDelay);
 
   if (cloud) {
     await destroyTerraform();
