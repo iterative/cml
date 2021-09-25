@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { URL } = require('url');
 
@@ -92,7 +93,19 @@ class BitbucketCloud {
   }
 
   async upload(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support upload!');
+    // https://bitbucket.org/atlassian/bitbucket-upload-file
+    const { projectPath } = this;
+    const { size, mime, data } = await fetchUploadData(opts);
+    
+    const hash = crypto.createHash('sha256').update(data).digest('hex');
+    
+    const body = new FormData();
+    body.append('files[]', data, hash);
+
+    const endpoint = `/repositories/${projectPath}/downloads`;
+    const { url } = await this.request({ endpoint, method: 'POST', body });
+
+    return { uri: `${endpoint}/${hash}`, mime, size };
   }
 
   async runnerToken() {
@@ -181,7 +194,7 @@ class BitbucketCloud {
       throw new Error('Bitbucket Cloud API endpoint not found');
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: 'Basic ' + `${token}`
+      Authorization: `Basic ${token}`
     };
 
     const response = await fetch(url || `${api}${endpoint}`, {
