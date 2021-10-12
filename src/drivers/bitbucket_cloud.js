@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const { URL } = require('url');
-
-const { proxyAgent } = require('../utils');
+const ProxyAgent = require('proxy-agent');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
 class BitbucketCloud {
@@ -188,7 +187,7 @@ class BitbucketCloud {
       method,
       headers,
       body,
-      agent: proxyAgent()
+      agent: new ProxyAgent()
     });
 
     if (response.status > 300) {
