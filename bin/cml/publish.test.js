@@ -15,6 +15,8 @@ Options:
       --version                   Show version number                  [boolean]
       --log                       Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+      --token                     Repository access token
+                                                  [string] [default: $CML_TOKEN]
       --md                        Output in markdown format [title ||
                                   name](url).                          [boolean]
   -t, --title                     Markdown title [title](url) or ![](url title).
@@ -30,10 +32,6 @@ Options:
       --repo                      Specifies the repo to be used. If not
                                   specified is extracted from the CI ENV.
                                                                         [string]
-      --token                     Personal access token to be used. If not
-                                  specified, extracted from ENV REPO_TOKEN,
-                                  GITLAB_TOKEN, GITHUB_TOKEN, or
-                                  BITBUCKET_TOKEN.                      [string]
       --driver                    If not specify it infers it from the ENV.
                                           [string] [choices: \\"github\\", \\"gitlab\\"]"
 `);

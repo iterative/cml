@@ -34,16 +34,8 @@ const gitRemoteUrl = (opts = {}) => {
 };
 
 const inferToken = () => {
-  const {
-    REPO_TOKEN,
-    repo_token: repoToken,
-    GITHUB_TOKEN,
-    GITLAB_TOKEN,
-    BITBUCKET_TOKEN
-  } = process.env;
-  return (
-    REPO_TOKEN || repoToken || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
-  );
+  const { GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN } = process.env;
+  return GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN;
 };
 
 const inferDriver = (opts = {}) => {

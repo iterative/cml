@@ -23,6 +23,8 @@ Options:
   --version                 Show version number                        [boolean]
   --log                     Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+  --token                   Repository access token
+                                                  [string] [default: $CML_TOKEN]
   --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
                                                                         [string]
   --update                  Update the last CML comment (if any) instead of
@@ -32,8 +34,6 @@ Options:
                             to provide extra functionality.            [boolean]
   --repo                    Specifies the repo to be used. If not specified is
                             extracted from the CI ENV.                  [string]
-  --token                   Personal access token to be used. If not specified
-                            is extracted from ENV REPO_TOKEN.           [string]
   --driver                  If not specify it infers it from the ENV.
                              [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
 `);

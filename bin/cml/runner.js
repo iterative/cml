@@ -446,11 +446,6 @@ exports.builder = (yargs) =>
         description:
           'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
       },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-      },
       cloud: {
         type: 'string',
         choices: ['aws', 'azure', 'gcp', 'kubernetes'],

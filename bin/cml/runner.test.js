@@ -14,6 +14,8 @@ Options:
   --version                   Show version number                      [boolean]
   --log                       Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+  --token                     Repository access token
+                                                  [string] [default: $CML_TOKEN]
   --labels                    One or more user-defined labels for this runner
                               (delimited with commas)  [string] [default: \\"cml\\"]
   --idle-timeout              Seconds to wait for jobs before shutting down. Set
@@ -31,9 +33,6 @@ Options:
   --repo                      Repository to be used for registering the runner.
                               If not specified, it will be inferred from the
                               environment                               [string]
-  --token                     Personal access token to register a self-hosted
-                              runner on the repository. If not specified, it
-                              will be inferred from the environment     [string]
   --cloud                     Cloud to deploy the runner
                          [string] [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
   --cloud-region              Region where the instance is deployed. Choices:

@@ -58,6 +58,11 @@ const options = {
     coerce: (value) => configureLogger(value) && value,
     choices: ['error', 'warn', 'info', 'debug'],
     default: 'info'
+  },
+  token: {
+    type: 'string',
+    defaultDescription: '$CML_TOKEN',
+    description: 'Repository access token'
   }
 };
 
@@ -71,19 +76,22 @@ const legacyEnvironmentVariables = {
   RUNNER_NO_RETRY: 'CML_RUNNER_NO_RETRY',
   RUNNER_DRIVER: 'CML_RUNNER_DRIVER',
   RUNNER_REPO: 'CML_RUNNER_REPO',
-  RUNNER_PATH: 'CML_RUNNER_PATH'
+  RUNNER_PATH: 'CML_RUNNER_PATH',
+  REPO_TOKEN: 'CML_TOKEN',
+  repo_token: 'CML_TOKEN'
 };
 
 for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
-  if (process.env[oldName]) process.env[newName] = process.env[oldName];
+  if (process.env[oldName] && !process.env[newName])
+    process.env[newName] = process.env[oldName];
 }
 
 yargs
   .fail(handleError)
   .env('CML')
   .options(options)
-  .commandDir('./cml', { exclude: /\.test\.js$/ })
   .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
+  .commandDir('./cml', { exclude: /\.test\.js$/ })
   .recommendCommands()
   .demandCommand()
   .strict()

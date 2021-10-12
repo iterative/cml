@@ -64,6 +64,7 @@ Options:
       --version       Show version number                              [boolean]
       --log           Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+      --token         Repository access token     [string] [default: $CML_TOKEN]
   -c, --credentials   TB credentials as json. Usually found at
                       ~/.config/tensorboard/credentials/uploader-creds.json. If
                       not specified will look for the json at the env variable

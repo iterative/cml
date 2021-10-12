@@ -43,6 +43,8 @@ Options:
   --version                 Show version number                        [boolean]
   --log                     Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+  --token                   Repository access token
+                                                  [string] [default: $CML_TOKEN]
   --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
                                                                         [string]
   --conclusion              Sets the conclusion status of the check.
@@ -51,9 +53,7 @@ Options:
   --title                   Sets title of the check.
                                                 [string] [default: \\"CML Report\\"]
   --repo                    Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.                  [string]
-  --token                   Personal access token to be used. If not specified
-                            in extracted from ENV REPO_TOKEN.           [string]"
+                            extracted from the CI ENV.                  [string]"
 `);
   });
 });

@@ -39,11 +39,6 @@ exports.builder = (yargs) =>
         description:
           'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
       },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
-      },
       driver: {
         type: 'string',
         choices: ['github', 'gitlab'],
