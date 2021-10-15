@@ -5,8 +5,9 @@ const { spawn } = require('child_process');
 const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
+const ProxyAgent = require('proxy-agent');
 
-const { fetchUploadData, download, exec, proxyAgent } = require('../utils');
+const { fetchUploadData, download, exec } = require('../utils');
 
 const {
   IN_DOCKER,
@@ -279,9 +280,8 @@ class Gitlab {
       method,
       headers,
       body,
-      agent: proxyAgent()
+      agent: new ProxyAgent()
     });
-
     if (response.status > 300) throw new Error(response.statusText);
     if (raw) return response;
 
