@@ -42,6 +42,9 @@ Options:
                                                    [string] [default: \\"us-west\\"]
   --cloud-type                Instance type. Choices: [m, l, xl]. Also supports
                               native types like i.e. t2.micro           [string]
+  --cloud-metadata            Key Value pairs to associate cml-runner instance
+                              on the provider i.e. tags/labels \\"key=value\\"
+                                                                         [array]
   --cloud-gpu                 GPU type.
                              [string] [choices: \\"nogpu\\", \\"k80\\", \\"v100\\", \\"tesla\\"]
   --cloud-hdd-size            HDD size in GB                            [number]
