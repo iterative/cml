@@ -48,6 +48,9 @@ const destroy = async (opts = {}) => {
   );
 };
 
+const mapCloudMetadata = (metadata) =>
+  Object.entries(metadata).map(([key, value]) => `${key} = "${value || ''}"`);
+
 const iterativeProviderTpl = () => {
   return `
 terraform {
@@ -74,6 +77,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     name,
     single,
     type,
+    metadata,
     gpu,
     hddSize,
     sshPrivate,
@@ -83,7 +87,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     awsSecurityGroup
   } = opts;
 
-  return `
+  const template = `
 ${iterativeProviderTpl()}
 
 resource "iterative_cml_runner" "runner" {
@@ -108,8 +112,14 @@ resource "iterative_cml_runner" "runner" {
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
   ${startupScript ? `startup_script = "${startupScript}"` : ''}
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
+  ${
+    metadata
+      ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
+      : ''
+  }
 }
 `;
+  return template;
 };
 
 const checkMinVersion = async () => {
