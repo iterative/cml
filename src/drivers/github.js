@@ -8,8 +8,9 @@ const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
+const ProxyAgent = require('proxy-agent');
 
-const { download, exec, proxyAgent } = require('../utils');
+const { download, exec } = require('../utils');
 const winston = require('winston');
 
 const CHECK_TITLE = 'CML Report';
@@ -53,7 +54,7 @@ const octokit = (token, repo) => {
     }
   };
   const octokitOptions = {
-    request: { agent: proxyAgent() },
+    request: { agent: new ProxyAgent() },
     auth: token,
     throttle: {
       onRateLimit: throttleHandler,
