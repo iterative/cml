@@ -473,6 +473,7 @@ exports.builder = (yargs) =>
       cloudMetadata: {
         type: 'array',
         string: true,
+        default: [],
         coerce: (items) => {
           const keyValuePairs = items.map((item) => [
             ...item.split(/=(.+)/),
