@@ -110,16 +110,16 @@ class CML {
     const drv = getDriver(this);
 
     let comment;
-    const updatableComment = (comments) =>
-      comments.reverse().find(({ body }) => {
-        return body.includes(watermark);
+    const updatableComment = (comments) => {
+      return comments.reverse().find(({ body }) => {
+        return body.includes('watermark.svg');
       });
+    };
 
     if (pr || this.driver === 'bitbucket') {
-      const branch = (await exec(`git branch --contains ${commitSha}`)).replace(
-        '* ',
-        ''
-      );
+      const branch = (await exec(`git branch --contains ${commitSha}`))
+        .replace('*', '')
+        .trim();
       const prs = await drv.prs();
       const { url } = prs.find((pr) => pr.source === branch) || {};
 
@@ -131,13 +131,18 @@ class CML {
         comment = updatableComment(await drv.prComments({ prNumber }));
 
       if (update && comment) {
-        return await drv.prCommentUpdate({
+        const commentUrl = await drv.prCommentUpdate({
           report,
-          id: comment.id
+          id: comment.id,
+          prNumber
         });
+
+        if (this.driver !== 'bitbucket') return commentUrl;
       }
 
-      return await drv.prCommentCreate({ report, prNumber });
+      const commentUrl = await drv.prCommentCreate({ report, prNumber });
+
+      if (this.driver !== 'bitbucket') return commentUrl;
     }
 
     if (update)

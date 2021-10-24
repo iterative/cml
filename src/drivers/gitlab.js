@@ -77,9 +77,9 @@ class Gitlab {
     const body = new URLSearchParams();
     body.append('note', report);
 
-    const output = await this.request({ endpoint, method: 'POST', body });
+    await this.request({ endpoint, method: 'POST', body });
 
-    return output;
+    return `${this.repo}/-/commit/${commitSha}`;
   }
 
   async commentUpdate(opts = {}) {
@@ -92,11 +92,11 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
 
-    return (await this.request({ endpoint, method: 'GET' })).map(
-      ({ id, note: body }) => {
-        return { id, body };
-      }
-    );
+    const comments = await this.request({ endpoint, method: 'GET' });
+
+    return comments.map(({ id, note: body }) => {
+      return { id, body };
+    });
   }
 
   async checkCreate() {
@@ -230,11 +230,11 @@ class Gitlab {
 
   async prCommentCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { description, prNumber } = opts;
+    const { report, prNumber } = opts;
 
     const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
     const body = new URLSearchParams();
-    body.append('body', description);
+    body.append('body', report);
 
     const { id } = await this.request({
       endpoint,
@@ -243,6 +243,39 @@ class Gitlab {
     });
 
     return `${this.repo}/-/merge_requests/${prNumber}#note_${id}`;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { report, prNumber, id: commentId } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes/${commentId}`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'PUT',
+      body
+    });
+
+    return `${this.repo}/-/merge_requests/${prNumber}#note_${id}`;
+  }
+
+  async prComments(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { prNumber } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
+
+    const comments = await this.request({
+      endpoint,
+      method: 'GET'
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
   }
 
   async prs(opts = {}) {
