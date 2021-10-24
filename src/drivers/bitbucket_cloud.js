@@ -29,7 +29,7 @@ class BitbucketCloud {
     return (
       await this.request({
         endpoint,
-        method: 'PUT',
+        method: 'POST',
         body: JSON.stringify({ content: { raw: report } })
       })
     ).links.html.href;
@@ -40,11 +40,10 @@ class BitbucketCloud {
     const { commitSha, report, id } = opts;
 
     const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/${id}`;
-
     return (
       await this.request({
         endpoint,
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify({ content: { raw: report } })
       })
     ).links.html.href;
@@ -56,7 +55,7 @@ class BitbucketCloud {
 
     const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
 
-    return await this.paginatedRequest({ endpoint, method: 'GET' }).map(
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
       ({ id, content: { raw: body = '' } = {} }) => {
         return { id, body };
       }
@@ -121,16 +120,42 @@ class BitbucketCloud {
 
   async prCommentCreate(opts = {}) {
     const { projectPath } = this;
-    const { description, prNumber, prId } = opts;
+    const { report, prNumber } = opts;
 
-    const endpoint = `/repositories/${projectPath}/pullrequests/${
-      prId || prNumber
-    }/comments/`;
-    await this.request({
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    const output = await this.request({
+      endpoint,
+      method: 'POST',
+      body: JSON.stringify({ content: { raw: report } })
+    });
+
+    return output.links.self.href;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { report, prNumber, id } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/${id}`;
+    const output = await this.request({
       endpoint,
       method: 'PUT',
-      body: JSON.stringify({ content: { raw: description } })
+      body: JSON.stringify({ content: { raw: report } })
     });
+
+    return output.links.self.href;
+  }
+
+  async prComments(opts = {}) {
+    const { projectPath } = this;
+    const { prNumber } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
   }
 
   async prs(opts = {}) {
@@ -139,7 +164,7 @@ class BitbucketCloud {
 
     try {
       const endpoint = `/repositories/${projectPath}/pullrequests?state=${state}`;
-      const { values: prs } = await this.paginatedRequest({ endpoint });
+      const prs = await this.paginatedRequest({ endpoint });
 
       return prs.map((pr) => {
         const {

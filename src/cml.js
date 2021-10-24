@@ -51,6 +51,7 @@ const inferDriver = (opts = {}) => {
   if (repo && repo.includes('github.com')) return GITHUB;
   if (repo && repo.includes('gitlab.com')) return GITLAB;
   if (repo && repo.includes('bitbucket.com')) return BB;
+  if (repo && repo.includes('bitbucket.org')) return BB;
 
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
@@ -117,9 +118,10 @@ class CML {
     };
 
     if (pr || this.driver === 'bitbucket') {
-      const branch = (await exec(`git branch --contains ${commitSha}`))
-        .replace('*', '')
-        .trim();
+      const branch =
+        (await exec(`git branch --contains ${commitSha}`))
+          .replace('*', '')
+          .trim() || (await this.branch());
       const prs = await drv.prs();
       const { url } = prs.find((pr) => pr.source === branch) || {};
 
@@ -138,11 +140,10 @@ class CML {
         });
 
         if (this.driver !== 'bitbucket') return commentUrl;
+      } else {
+        const commentUrl = await drv.prCommentCreate({ report, prNumber });
+        if (this.driver !== 'bitbucket') return commentUrl;
       }
-
-      const commentUrl = await drv.prCommentCreate({ report, prNumber });
-
-      if (this.driver !== 'bitbucket') return commentUrl;
     }
 
     if (update)
@@ -151,7 +152,8 @@ class CML {
     if (update && comment) {
       return await drv.commentUpdate({
         report,
-        id: comment.id
+        id: comment.id,
+        commitSha
       });
     }
 
