@@ -62,6 +62,32 @@ class BitbucketCloud {
     );
   }
 
+  async commitPrs(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha, state = 'OPEN' } = opts;
+
+    try {
+      const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+      const prs = await this.paginatedRequest({ endpoint });
+
+      return prs.map((pr) => {
+        const {
+          links: {
+            html: { href: url }
+          }
+        } = pr;
+        return {
+          url
+        };
+      });
+    } catch (err) {
+      if (err.message === 'Not Found Resource not found')
+        err.message =
+          "Click 'Go to pull request' on any commit details page to enable this API";
+      throw err;
+    }
+  }
+
   async checkCreate() {
     throw new Error('Bitbucket Cloud does not support check!');
   }

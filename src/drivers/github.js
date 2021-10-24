@@ -129,6 +129,30 @@ class Github {
     });
   }
 
+  async commitPrs(opts = {}) {
+    const { commitSha, state = 'open' } = opts;
+    const { repos } = octokit(this.token, this.repo);
+
+    return (
+      await repos.listPullRequestsAssociatedWithCommit({
+        ...ownerRepo({ uri: this.repo }),
+        commit_sha: commitSha,
+        state
+      })
+    ).data.map((pr) => {
+      const {
+        html_url: url,
+        head: { ref: source },
+        base: { ref: target }
+      } = pr;
+      return {
+        url,
+        source: branchName(source),
+        target: branchName(target)
+      };
+    });
+  }
+
   async checkCreate(opts = {}) {
     const {
       report,

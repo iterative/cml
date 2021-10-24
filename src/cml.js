@@ -118,14 +118,10 @@ class CML {
     };
 
     if (pr || this.driver === 'bitbucket') {
-      const branch =
-        (await exec(`git branch --contains ${commitSha}`))
-          .replace('*', '')
-          .trim() || (await this.branch());
-      const prs = await drv.prs();
-      const { url } = prs.find((pr) => pr.source === branch) || {};
+      const [commitPr] = await drv.commitPrs({ commitSha });
+      const { url } = commitPr;
 
-      if (!url) throw new Error(`PR for branch "${branch}" not found`);
+      if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
 
       const [prNumber] = url.split('/').slice(-1);
 
