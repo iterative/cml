@@ -95,20 +95,64 @@ class CML {
       report: userReport,
       commitSha = await this.headSha(),
       rmWatermark,
-      update
+      update,
+      pr
     } = opts;
+
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
+
     const watermark = rmWatermark
       ? ''
-      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
-    const report = `${userReport}${watermark}`;
+      : `![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)`;
 
-    return await getDriver(this).commentCreate({
-      ...opts,
+    const report = `${userReport}\n\n${watermark}`;
+    const drv = getDriver(this);
+
+    let comment;
+    const updatableComment = (comments) =>
+      comments.reverse().find(({ body }) => {
+        return body.includes(watermark);
+      });
+
+    if (pr || this.driver === 'bitbucket') {
+      const branch = (await exec(`git branch --contains ${commitSha}`)).replace(
+        '* ',
+        ''
+      );
+      const prs = await drv.prs();
+      const { url } = prs.find((pr) => pr.source === branch) || {};
+
+      if (!url) throw new Error(`PR for branch "${branch}" not found`);
+
+      const [prNumber] = url.split('/').slice(-1);
+
+      if (update)
+        comment = updatableComment(await drv.prComments({ prNumber }));
+
+      if (update && comment) {
+        return await drv.prCommentUpdate({
+          report,
+          id: comment.id
+        });
+      }
+
+      return await drv.prCommentCreate({ report, prNumber });
+    }
+
+    if (update)
+      comment = updatableComment(await drv.commitComments({ commitSha }));
+
+    if (update && comment) {
+      return await drv.commentUpdate({
+        report,
+        id: comment.id
+      });
+    }
+
+    return await drv.commentCreate({
       report,
-      commitSha,
-      watermark
+      commitSha
     });
   }
 

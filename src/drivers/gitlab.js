@@ -70,9 +70,7 @@ class Gitlab {
   }
 
   async commentCreate(opts = {}) {
-    const { commitSha, report, update } = opts;
-
-    if (update) throw new Error('GitLab does not support comment updates!');
+    const { commitSha, report } = opts;
 
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
@@ -82,6 +80,23 @@ class Gitlab {
     const output = await this.request({ endpoint, method: 'POST', body });
 
     return output;
+  }
+
+  async commentUpdate(opts = {}) {
+    throw new Error('GitLab does not support comment updates!');
+  }
+
+  async commitComments(opts = {}) {
+    const { commitSha } = opts;
+
+    const projectPath = await this.projectPath();
+    const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
+
+    return (await this.request({ endpoint, method: 'GET' })).map(
+      ({ id, note: body }) => {
+        return { id, body };
+      }
+    );
   }
 
   async checkCreate() {
@@ -211,6 +226,23 @@ class Gitlab {
     });
 
     return url;
+  }
+
+  async prCommentCreate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { description, prNumber } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
+    const body = new URLSearchParams();
+    body.append('body', description);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
+
+    return `${this.repo}/-/merge_requests/${prNumber}#note_${id}`;
   }
 
   async prs(opts = {}) {

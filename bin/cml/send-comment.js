@@ -16,6 +16,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_SEND_COMMENT').options(
     kebabcaseKeys({
+      pr: {
+        type: 'boolean',
+        description:
+          'Creates the comment as a PR/MR comment given by the commit-sha'
+      },
       commitSha: {
         type: 'string',
         alias: 'head-sha',
