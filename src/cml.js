@@ -118,6 +118,9 @@ class CML {
     };
 
     if (pr || this.driver === 'bitbucket') {
+      let commentUrl;
+
+      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
       const [commitPr] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
 
@@ -129,17 +132,18 @@ class CML {
         comment = updatableComment(await drv.prComments({ prNumber }));
 
       if (update && comment) {
-        const commentUrl = await drv.prCommentUpdate({
-          report,
+        commentUrl = await drv.prCommentUpdate({
+          report: longReport,
           id: comment.id,
           prNumber
         });
+      } else
+        commentUrl = await drv.prCommentCreate({
+          report: longReport,
+          prNumber
+        });
 
-        if (this.driver !== 'bitbucket') return commentUrl;
-      } else {
-        const commentUrl = await drv.prCommentCreate({ report, prNumber });
-        if (this.driver !== 'bitbucket') return commentUrl;
-      }
+      if (this.driver !== 'bitbucket') return commentUrl;
     }
 
     if (update)
