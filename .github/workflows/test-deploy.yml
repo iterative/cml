@@ -34,6 +34,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
       - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
       - run: pip install tensorboard
       - run: npm ci
       - run: npm run test
