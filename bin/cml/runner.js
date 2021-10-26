@@ -470,6 +470,14 @@ exports.builder = (yargs) =>
         description:
           'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
       },
+      cloudPermissionSet: {
+        type: 'string',
+        default: '',
+        description: 'temp',
+        check: (val) => {
+          return true;
+        }
+      },
       cloudMetadata: {
         type: 'array',
         string: true,
