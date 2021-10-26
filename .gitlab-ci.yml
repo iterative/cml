@@ -5,7 +5,7 @@ deploy-runner:
       cml runner \
           --cloud=aws \
           --cloud-region=us-west \
-          --cloud-type=g2.2xlarge \
+          --cloud-type=g4dn.xlarge \
           --cloud-spot \
           --labels=cml-runner-gpu
 test-runner:
