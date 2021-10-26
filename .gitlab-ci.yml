@@ -1,18 +1,15 @@
-stages:
-  - deploy
-  - test
-
-deploy_job:
-  stage: deploy
-  when: always
-  image: iterativeai/cml:0-dvc2-base1-gpu
+deploy-runner:
+  image: iterativeai/cml:0-dvc2-base1
   script:
-    - cml-runner --cloud aws --cloud-region us-west --cloud-type g2.2xlarge
-      --cloud-spot --labels=cml-runner-gpu
-
-test_runner:
-  stage: test
-  when: on_success
+    - |
+      cml runner \
+          --cloud=aws \
+          --cloud-region=us-west \
+          --cloud-type=g4dn.xlarge \
+          --cloud-spot \
+          --labels=cml-runner-gpu
+test-runner:
+  needs: [deploy-runner]
   tags:
     - cml-runner-gpu
   script:
@@ -23,15 +20,14 @@ test_runner:
     - npm run test
 
     - nvidia-smi
-
-test_container:
-  stage: test
-  when: on_success
+test-container:
+  needs: [deploy-runner]
   tags:
     - cml-runner-gpu
   image: iterativeai/cml:0-dvc2-base1-gpu
   script:
     - dvc --version
+    - cml --version
     - pip install tensorboard
 
     - npm ci

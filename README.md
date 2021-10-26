@@ -400,7 +400,7 @@ When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
 instances on AWS, Azure, GCP, or Kubernetes.
 
-For example, the following workflow deploys a `p2.xlarge` instance on AWS EC2
+For example, the following workflow deploys a `g4dn.xlarge` instance on AWS EC2
 and trains a model on the instance. After the job runs, the instance
 automatically shuts down.
 
@@ -432,7 +432,7 @@ jobs:
           cml-runner \
             --cloud=aws \
             --cloud-region=us-west \
-            --cloud-type=p2.xlarge \
+            --cloud-type=g4dn.xlarge \
             --labels=cml-gpu
   train-model:
     needs: deploy-runner
@@ -454,7 +454,7 @@ jobs:
           cml-send-comment report.md
 ```
 
-In the workflow above, the `deploy-runner` step launches an EC2 `p2.xlarge`
+In the workflow above, the `deploy-runner` step launches an EC2 `g4dn.xlarge`
 instance in the `us-west` region. The `model-training` step then runs on the
 newly-launched instance. See [Environment Variables] below for details on the
 `secrets` required.
