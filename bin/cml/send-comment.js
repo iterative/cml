@@ -19,7 +19,7 @@ exports.builder = (yargs) =>
       pr: {
         type: 'boolean',
         description:
-          'Creates the comment as a PR/MR comment given by the commit-sha'
+          'Post to an existing PR/MR associated with the specified commit'
       },
       commitSha: {
         type: 'string',

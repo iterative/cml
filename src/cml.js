@@ -48,10 +48,11 @@ const inferToken = () => {
 
 const inferDriver = (opts = {}) => {
   const { repo } = opts;
-  if (repo && repo.includes('github.com')) return GITHUB;
-  if (repo && repo.includes('gitlab.com')) return GITLAB;
-  if (repo && repo.includes('bitbucket.com')) return BB;
-  if (repo && repo.includes('bitbucket.org')) return BB;
+  if (repo) {
+    if (repo.includes('github.com')) return GITHUB;
+    if (repo.includes('gitlab.com')) return GITLAB;
+    if (/bitbucket\.(com|org)/.test(repo)) return BB;
+  }
 
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
@@ -105,7 +106,7 @@ class CML {
 
     const watermark = rmWatermark
       ? ''
-      : `![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)`;
+      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
     const report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);

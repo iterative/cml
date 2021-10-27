@@ -23,8 +23,8 @@ Options:
   --version                 Show version number                        [boolean]
   --log                     Maximum log level
           [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-  --pr                      Creates the comment as a PR/MR comment given by the
-                            commit-sha                                 [boolean]
+  --pr                      Post to an existing PR/MR associated with the
+                            specified commit                           [boolean]
   --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
                                                                         [string]
   --update                  Update the last CML comment (if any) instead of
