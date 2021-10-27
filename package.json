@@ -1,13 +1,15 @@
 {
   "name": "@dvcorg/cml",
   "version": "0.8.0",
+  "description": "<p align=\"center\"> <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "author": {
-    "name": "DVC",
+    "name": "Iterative Inc",
     "url": "http://cml.dev"
   },
+  "homepage": "https://github.com/iterative/cml#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iterative/cml.git"
+    "url": "https://github.com/iterative/cml"
   },
   "bugs": {
     "url": "https://github.com/iterative/cml/issues"
@@ -16,19 +18,20 @@
     "ci/cd",
     "ci",
     "cd",
-    "continuous",
+    "continuous-integration",
+    "continuous-delivery",
+    "developer-tools",
+    "data science",
     "machine learning",
     "deep learning",
-    "cml"
+    "cml",
+    "dvc"
   ],
   "license": "Apache-2.0",
-  "licenses": [
-    {
-      "type": "Apache-2.0",
-      "url": "http://www.apache.org/licenses/LICENSE-2.0"
-    }
-  ],
   "main": "index.js",
+  "engines": {
+    "node": "<=16.x"
+  },
   "bin": {
     "cml": "bin/cml.js",
     "cml-send-github-check": "bin/legacy.js",
@@ -88,7 +91,7 @@
     "yargs": "^17.2.0"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
+    "eslint": "^8.1.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.24.2",
@@ -102,8 +105,6 @@
     "prettier": "^2.4.1",
     "transparent-proxy": "^1.8.7"
   },
-  "description": "<p align=\"center\">   <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
-  "homepage": "https://github.com/iterative/cml#readme",
   "jest": {
     "globalSetup": "./tests/setup.js",
     "globalTeardown": "./tests/teardown.js",
