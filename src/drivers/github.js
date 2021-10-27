@@ -158,8 +158,8 @@ class Github {
       report,
       headSha,
       title = CHECK_TITLE,
-      started_at = new Date(),
-      completed_at = new Date(),
+      started_at: startedAt = new Date(),
+      completed_at: completedAt = new Date(),
       conclusion = 'success',
       status = 'completed'
     } = opts;
@@ -168,8 +168,8 @@ class Github {
     return await octokit(this.token, this.repo).checks.create({
       ...ownerRepo({ uri: this.repo }),
       head_sha: headSha,
-      started_at,
-      completed_at,
+      started_at: startedAt,
+      completed_at: completedAt,
       conclusion,
       status,
       name,
