@@ -77,21 +77,21 @@ jobs:
           cml-send-comment report.md
           cml-send-github-check report.md
 
-          cml-runner \
-            --cloud-spot \
-            --cloud azure \
-            --cloud-region eastus \
-            --cloud-type Standard_NC6 \
-            --idle-timeout 3600 \
-            --labels cml-runner-az-gpu
+          cml runner \
+              --cloud-spot \
+              --cloud=azure \
+              --cloud-region=eastus \
+              --cloud-type=Standard_NC6 \
+              --idle-timeout=3600 \
+              --labels=cml-runner-az-gpu
 
           cml-runner \
-            --cloud-spot \
-            --cloud aws \
-            --cloud-region us-west \
-            --cloud-type g2.2xlarge \
-            --idle-timeout 3600 \
-            --labels cml-runner-aws-gpu
+              --cloud-spot \
+              --cloud aws \
+              --cloud-region us-west \
+              --cloud-type g4dn.xlarge \
+              --idle-timeout 3600 \
+              --labels cml-runner-aws-gpu
   test_machine_aws:
     needs: check-container
     runs-on: [self-hosted, cml-runner-aws-gpu]
