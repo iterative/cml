@@ -16,8 +16,9 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
+    const url = await client.commentCreate({ report, commitSha });
 
-    await client.commentCreate({ report, commitSha });
+    expect(url.startsWith('https://')).toBe(true);
   });
 
   test('Check', async () => {

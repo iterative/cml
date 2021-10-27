@@ -17,13 +17,12 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-
-    const { created_at: createdAt } = await client.commentCreate({
+    const url = await client.commentCreate({
       report,
       commitSha
     });
 
-    expect(createdAt).not.toBeUndefined();
+    expect(url.startsWith('https://')).toBe(true);
   });
 
   test('Check', async () => {

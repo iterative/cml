@@ -90,40 +90,67 @@ class Github {
   }
 
   async commentCreate(opts = {}) {
-    const { report: body, commitSha, update, watermark } = opts;
+    const { report: body, commitSha } = opts;
+    const { repos } = octokit(this.token, this.repo);
 
-    const { paginate, repos } = octokit(this.token, this.repo);
+    return (
+      await repos.createCommitComment({
+        ...ownerRepo({ uri: this.repo }),
+        commit_sha: commitSha,
+        body
+      })
+    ).data.html_url;
+  }
 
-    const existing = Object.values(
+  async commentUpdate(opts = {}) {
+    const { report: body, id } = opts;
+    const { repos } = octokit(this.token, this.repo);
+
+    return (
+      await repos.updateCommitComment({
+        ...ownerRepo({ uri: this.repo }),
+        comment_id: id,
+        body
+      })
+    ).data.html_url;
+  }
+
+  async commitComments(opts = {}) {
+    const { commitSha } = opts;
+    const { repos, paginate } = octokit(this.token, this.repo);
+
+    return (
       await paginate(repos.listCommentsForCommit, {
         ...ownerRepo({ uri: this.repo }),
         commit_sha: commitSha
       })
-    )
-      .filter((comment) => {
-        const { body = '' } = comment;
-        return body.endsWith(watermark);
-      })
-      .sort((first, second) => first.id < second.id)
-      .pop();
+    ).map(({ id, body }) => {
+      return { id, body };
+    });
+  }
 
-    if (update && existing) {
-      return (
-        await repos.updateCommitComment({
-          ...ownerRepo({ uri: this.repo }),
-          comment_id: existing.id,
-          body
-        })
-      ).data.html_url;
-    } else {
-      return (
-        await repos.createCommitComment({
-          ...ownerRepo({ uri: this.repo }),
-          commit_sha: commitSha,
-          body
-        })
-      ).data.html_url;
-    }
+  async commitPrs(opts = {}) {
+    const { commitSha, state = 'open' } = opts;
+    const { repos } = octokit(this.token, this.repo);
+
+    return (
+      await repos.listPullRequestsAssociatedWithCommit({
+        ...ownerRepo({ uri: this.repo }),
+        commit_sha: commitSha,
+        state
+      })
+    ).data.map((pr) => {
+      const {
+        html_url: url,
+        head: { ref: source },
+        base: { ref: target }
+      } = pr;
+      return {
+        url,
+        source: branchName(source),
+        target: branchName(target)
+      };
+    });
   }
 
   async checkCreate(opts = {}) {
@@ -289,6 +316,56 @@ class Github {
     });
 
     return htmlUrl;
+  }
+
+  async prCommentCreate(opts = {}) {
+    const { report: body, prNumber } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.createComment({
+      owner,
+      repo,
+      body,
+      issue_number: prNumber
+    });
+
+    return htmlUrl;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const { report: body, id } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.updateComment({
+      owner,
+      repo,
+      body,
+      comment_id: id
+    });
+
+    return htmlUrl;
+  }
+
+  async prComments(opts = {}) {
+    const { prNumber } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const { data: comments } = await issues.listComments({
+      owner,
+      repo,
+      issue_number: prNumber
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
   }
 
   async prs(opts = {}) {

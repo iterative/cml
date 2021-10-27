@@ -23,67 +23,69 @@ class BitbucketCloud {
 
   async commentCreate(opts = {}) {
     const { projectPath } = this;
-    const { commitSha, report, update, watermark } = opts;
+    const { commitSha, report } = opts;
 
-    // Check for a corresponding PR. If it exists, also put the comment there.
-    let prs;
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
+    return (
+      await this.request({
+        endpoint,
+        method: 'POST',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
+  async commentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha, report, id } = opts;
+
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/${id}`;
+    return (
+      await this.request({
+        endpoint,
+        method: 'PUT',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
+  async commitComments(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha } = opts;
+
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
+
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
+  async commitPrs(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha, state = 'OPEN' } = opts;
+
     try {
-      const getPrEndpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests`;
-      prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
+      const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+      const prs = await this.paginatedRequest({ endpoint });
+
+      return prs.map((pr) => {
+        const {
+          links: {
+            html: { href: url }
+          }
+        } = pr;
+        return {
+          url
+        };
+      });
     } catch (err) {
       if (err.message === 'Not Found Resource not found')
         err.message =
           "Click 'Go to pull request' on any commit details page to enable this API";
       throw err;
     }
-
-    if (prs && prs.length) {
-      for (const pr of prs) {
-        // Append a watermark to the report with a link to the commit
-        const commitLink = commitSha.substr(0, 7);
-        const longReport = `${commitLink}\n\n${report}`;
-        const prBody = JSON.stringify({ content: { raw: longReport } });
-
-        // Write a comment on the PR
-        const prEndpoint = `/repositories/${projectPath}/pullrequests/${pr.id}/comments/`;
-        const existingPr = (
-          await this.paginatedRequest({ endpoint: prEndpoint, method: 'GET' })
-        )
-          .filter((comment) => {
-            const { content: { raw = '' } = {} } = comment;
-            return raw.endsWith(watermark);
-          })
-          .sort((first, second) => first.id < second.id)
-          .pop();
-        await this.request({
-          endpoint: prEndpoint + (update && existingPr ? existingPr.id : ''),
-          method: update && existingPr ? 'PUT' : 'POST',
-          body: prBody
-        });
-      }
-    }
-
-    const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
-
-    const existingCommmit = (
-      await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
-    )
-      .filter((comment) => {
-        const { content: { raw = '' } = {} } = comment;
-        return raw.endsWith(watermark);
-      })
-      .sort((first, second) => first.id < second.id)
-      .pop();
-
-    return (
-      await this.request({
-        endpoint:
-          commitEndpoint +
-          (update && existingCommmit ? existingCommmit.id : ''),
-        method: update && existingCommmit ? 'PUT' : 'POST',
-        body: JSON.stringify({ content: { raw: report } })
-      })
-    ).links.html.href;
   }
 
   async checkCreate() {
@@ -142,31 +144,78 @@ class BitbucketCloud {
     return href;
   }
 
+  async prCommentCreate(opts = {}) {
+    const { projectPath } = this;
+    const { report, prNumber } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    const output = await this.request({
+      endpoint,
+      method: 'POST',
+      body: JSON.stringify({ content: { raw: report } })
+    });
+
+    return output.links.self.href;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { report, prNumber, id } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/${id}`;
+    const output = await this.request({
+      endpoint,
+      method: 'PUT',
+      body: JSON.stringify({ content: { raw: report } })
+    });
+
+    return output.links.self.href;
+  }
+
+  async prComments(opts = {}) {
+    const { projectPath } = this;
+    const { prNumber } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
   async prs(opts = {}) {
     const { projectPath } = this;
     const { state = 'OPEN' } = opts;
 
-    const endpoint = `/repositories/${projectPath}/pullrequests?state=${state}`;
-    const { values: prs } = await this.request({ endpoint });
+    try {
+      const endpoint = `/repositories/${projectPath}/pullrequests?state=${state}`;
+      const prs = await this.paginatedRequest({ endpoint });
 
-    return prs.map((pr) => {
-      const {
-        links: {
-          html: { href: url }
-        },
-        source: {
-          branch: { name: source }
-        },
-        destination: {
-          branch: { name: target }
-        }
-      } = pr;
-      return {
-        url,
-        source,
-        target
-      };
-    });
+      return prs.map((pr) => {
+        const {
+          links: {
+            html: { href: url }
+          },
+          source: {
+            branch: { name: source }
+          },
+          destination: {
+            branch: { name: target }
+          }
+        } = pr;
+        return {
+          url,
+          source,
+          target
+        };
+      });
+    } catch (err) {
+      if (err.message === 'Not Found Resource not found')
+        err.message =
+          "Click 'Go to pull request' on any commit details page to enable this API";
+      throw err;
+    }
   }
 
   async pipelineRestart(opts = {}) {

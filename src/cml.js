@@ -48,9 +48,11 @@ const inferToken = () => {
 
 const inferDriver = (opts = {}) => {
   const { repo } = opts;
-  if (repo && repo.includes('github.com')) return GITHUB;
-  if (repo && repo.includes('gitlab.com')) return GITLAB;
-  if (repo && repo.includes('bitbucket.com')) return BB;
+  if (repo) {
+    if (repo.includes('github.com')) return GITHUB;
+    if (repo.includes('gitlab.com')) return GITLAB;
+    if (/bitbucket\.(com|org)/.test(repo)) return BB;
+  }
 
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
@@ -95,20 +97,70 @@ class CML {
       report: userReport,
       commitSha = await this.headSha(),
       rmWatermark,
-      update
+      update,
+      pr
     } = opts;
+
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
+
     const watermark = rmWatermark
       ? ''
-      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
-    const report = `${userReport}${watermark}`;
+      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    return await getDriver(this).commentCreate({
-      ...opts,
+    const report = `${userReport}\n\n${watermark}`;
+    const drv = getDriver(this);
+
+    let comment;
+    const updatableComment = (comments) => {
+      return comments.reverse().find(({ body }) => {
+        return body.includes('watermark.svg');
+      });
+    };
+
+    if (pr || this.driver === 'bitbucket') {
+      let commentUrl;
+
+      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
+      const [commitPr] = await drv.commitPrs({ commitSha });
+      const { url } = commitPr;
+
+      if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
+
+      const [prNumber] = url.split('/').slice(-1);
+
+      if (update)
+        comment = updatableComment(await drv.prComments({ prNumber }));
+
+      if (update && comment) {
+        commentUrl = await drv.prCommentUpdate({
+          report: longReport,
+          id: comment.id,
+          prNumber
+        });
+      } else
+        commentUrl = await drv.prCommentCreate({
+          report: longReport,
+          prNumber
+        });
+
+      if (this.driver !== 'bitbucket') return commentUrl;
+    }
+
+    if (update)
+      comment = updatableComment(await drv.commitComments({ commitSha }));
+
+    if (update && comment) {
+      return await drv.commentUpdate({
+        report,
+        id: comment.id,
+        commitSha
+      });
+    }
+
+    return await drv.commentCreate({
       report,
-      commitSha,
-      watermark
+      commitSha
     });
   }
 

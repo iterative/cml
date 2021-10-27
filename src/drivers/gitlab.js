@@ -70,18 +70,51 @@ class Gitlab {
   }
 
   async commentCreate(opts = {}) {
-    const { commitSha, report, update } = opts;
-
-    if (update) throw new Error('GitLab does not support comment updates!');
+    const { commitSha, report } = opts;
 
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
     const body = new URLSearchParams();
     body.append('note', report);
 
-    const output = await this.request({ endpoint, method: 'POST', body });
+    await this.request({ endpoint, method: 'POST', body });
 
-    return output;
+    return `${this.repo}/-/commit/${commitSha}`;
+  }
+
+  async commentUpdate(opts = {}) {
+    throw new Error('GitLab does not support comment updates!');
+  }
+
+  async commitComments(opts = {}) {
+    const { commitSha } = opts;
+
+    const projectPath = await this.projectPath();
+    const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
+
+    const comments = await this.request({ endpoint, method: 'GET' });
+
+    return comments.map(({ id, note: body }) => {
+      return { id, body };
+    });
+  }
+
+  async commitPrs(opts = {}) {
+    const { commitSha } = opts;
+
+    const projectPath = await this.projectPath();
+
+    const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/merge_requests`;
+    const prs = await this.request({ endpoint, method: 'GET' });
+
+    return prs.map((pr) => {
+      const { web_url: url, source_branch: source, target_branch: target } = pr;
+      return {
+        url,
+        source,
+        target
+      };
+    });
   }
 
   async checkCreate() {
@@ -211,6 +244,56 @@ class Gitlab {
     });
 
     return url;
+  }
+
+  async prCommentCreate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { report, prNumber } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
+
+    return `${this.repo}/-/merge_requests/${prNumber}#note_${id}`;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { report, prNumber, id: commentId } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes/${commentId}`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'PUT',
+      body
+    });
+
+    return `${this.repo}/-/merge_requests/${prNumber}#note_${id}`;
+  }
+
+  async prComments(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { prNumber } = opts;
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
+
+    const comments = await this.request({
+      endpoint,
+      method: 'GET'
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
   }
 
   async prs(opts = {}) {
