@@ -82,13 +82,9 @@ class CML {
     this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async headSha() {
-    return exec(`git rev-parse HEAD`);
-  }
-
   async triggerSha() {
     const { sha } = getDriver(this);
-    return sha || (await this.headSha());
+    return sha || (await exec(`git rev-parse HEAD`));
   }
 
   async branch() {
@@ -99,7 +95,7 @@ class CML {
   async commentCreate(opts = {}) {
     const {
       report: userReport,
-      commitSha = await this.headSha(),
+      commitSha = await this.triggerSha(),
       rmWatermark,
       update,
       pr
@@ -125,8 +121,15 @@ class CML {
     if (pr || this.driver === 'bitbucket') {
       let commentUrl;
 
+      if (
+        (await exec(`git rev-parse ${commitSha}`)) !==
+        (await exec('git rev-parse HEAD'))
+      )
+        winston.info(
+          `Looking for PR associated with --commit-sha="${commitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+        );
       const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr] = await drv.commitPrs({ commitSha });
+      const [commitPr = {}] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
 
       if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
