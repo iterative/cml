@@ -82,7 +82,7 @@ class CML {
     this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async headSha() {
+  async triggerSha() {
     const { sha } = getDriver(this);
     return sha || (await exec(`git rev-parse HEAD`));
   }
@@ -95,7 +95,7 @@ class CML {
   async commentCreate(opts = {}) {
     const {
       report: userReport,
-      commitSha = await this.headSha(),
+      commitSha = await this.triggerSha(),
       rmWatermark,
       update,
       pr
@@ -121,6 +121,13 @@ class CML {
     if (pr || this.driver === 'bitbucket') {
       let commentUrl;
 
+      if (
+        (await exec(`git rev-parse ${commitSha}`)) !==
+        (await exec('git rev-parse HEAD'))
+      )
+        winston.info(
+          `Looking for PR associated with --commit-sha="${commitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+        );
       const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
       const [commitPr = {}] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
@@ -165,7 +172,7 @@ class CML {
   }
 
   async checkCreate(opts = {}) {
-    const { headSha = await this.headSha() } = opts;
+    const { headSha = await this.triggerSha() } = opts;
 
     return await getDriver(this).checkCreate({ ...opts, headSha });
   }
@@ -334,7 +341,7 @@ class CML {
       return;
     }
 
-    const sha = await this.headSha();
+    const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
