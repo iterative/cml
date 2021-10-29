@@ -122,7 +122,7 @@ class CML {
       let commentUrl;
 
       const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr] = await drv.commitPrs({ commitSha });
+      const [commitPr = {}] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
 
       if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
