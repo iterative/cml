@@ -83,8 +83,12 @@ class CML {
   }
 
   async headSha() {
+    return exec(`git rev-parse HEAD`);
+  }
+
+  async triggerSha() {
     const { sha } = getDriver(this);
-    return sha || (await exec(`git rev-parse HEAD`));
+    return sha || (await this.headSha());
   }
 
   async branch() {
@@ -165,7 +169,7 @@ class CML {
   }
 
   async checkCreate(opts = {}) {
-    const { headSha = await this.headSha() } = opts;
+    const { headSha = await this.triggerSha() } = opts;
 
     return await getDriver(this).checkCreate({ ...opts, headSha });
   }
@@ -334,7 +338,7 @@ class CML {
       return;
     }
 
-    const sha = await this.headSha();
+    const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
