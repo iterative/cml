@@ -1,6 +1,11 @@
 const fetch = require('node-fetch');
 const { URL } = require('url');
+const { spawn } = require('child_process');
 const ProxyAgent = require('proxy-agent');
+
+const winston = require('winston');
+
+const { exec } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
 class BitbucketCloud {
@@ -97,19 +102,93 @@ class BitbucketCloud {
   }
 
   async runnerToken() {
-    throw new Error('Bitbucket Cloud does not support runnerToken!');
+    return '';
+  }
+
+  async startRunner(opts) {
+    const { projectPath } = this;
+    const { name, labels } = opts;
+
+    try {
+      const { uuid: accountId } = await this.request({ endpoint: `/user` });
+      const { uuid: repoId } = await this.request({
+        endpoint: `/repositories/${projectPath}`
+      });
+      const {
+        uuid,
+        oauth_client: { id, secret }
+      } = await this.registerRunner({ name, labels });
+      const command = `docker container run -t -a stderr -a stdout --rm \
+      -v /tmp:/tmp \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v /var/lib/docker/containers:/var/lib/docker/containers:ro \
+      -e ACCOUNT_UUID=${accountId} \
+      -e REPOSITORY_UUID=${repoId} \
+      -e RUNNER_UUID=${uuid} \
+      -e OAUTH_CLIENT_ID=${id} \
+      -e OAUTH_CLIENT_SECRET=${secret} \
+      -e WORKING_DIRECTORY=/tmp \
+      --name ${name} \
+      docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
+
+      return spawn(command, { shell: true });
+    } catch (err) {
+      throw new Error(`Failed preparing runner: ${err.message}`);
+    }
   }
 
   async registerRunner(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support registerRunner!');
+    const { projectPath } = this;
+    const { name, labels } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
+
+    return await this.request({
+      api: 'https://api.bitbucket.org/internal',
+      endpoint,
+      method: 'POST',
+      body: JSON.stringify({ labels: ['self.hosted'].concat(labels), name })
+    });
   }
 
   async unregisterRunner(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support unregisterRunner!');
+    const { projectPath } = this;
+    const { runnerId, name } = opts;
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners/${runnerId}`;
+
+    try {
+      await this.request({
+        api: 'https://api.bitbucket.org/internal',
+        endpoint,
+        method: 'DELETE'
+      });
+    } catch (err) {
+      if (!err.message.includes('invalid json response body')) {
+        await exec(`docker stop ${name}`);
+        throw err;
+      }
+      winston.warn(`Deleting: ${err.message}`);
+    }
+
+    await exec(`docker stop ${name}`);
   }
 
   async runners(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support runners!');
+    const { projectPath } = this;
+
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
+    const runners = await this.paginatedRequest({
+      api: 'https://api.bitbucket.org/internal',
+      endpoint
+    });
+
+    return runners.map(({ uuid: id, name, labels, state: { status } }) => ({
+      id,
+      name,
+      labels,
+      online: status === 'ONLINE',
+      busy: status === 'ONLINE'
+    }));
   }
 
   async prCreate(opts = {}) {
@@ -219,12 +298,18 @@ class BitbucketCloud {
   }
 
   async pipelineRestart(opts = {}) {
-    throw new Error('BitBucket Cloud does not support workflowRestart!');
+    winston.warn('BitBucket Cloud does not support workflowRestart yet!');
+  }
+
+  async pipelineJobs(opts = {}) {
+    winston.warn('BitBucket Cloud does not support pipelineJobs yet!');
+
+    return [];
   }
 
   async request(opts = {}) {
-    const { token, api } = this;
-    const { url, endpoint, method = 'GET', body } = opts;
+    const { token, api: bbApi } = this;
+    const { url, endpoint, body, method = 'GET', api = bbApi } = opts;
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
     const headers = {
@@ -247,10 +332,6 @@ class BitbucketCloud {
     }
 
     return await response.json();
-  }
-
-  async pipelineJobs(opts = {}) {
-    throw new Error('Not implemented');
   }
 
   async paginatedRequest(opts = {}) {

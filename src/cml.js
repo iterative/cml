@@ -231,7 +231,6 @@ class CML {
           log.job = '';
           log.status = 'job_ended';
           log.success = data.includes('Succeeded');
-          log.level = log.success ? 'info' : 'error';
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
         }
@@ -252,11 +251,26 @@ class CML {
         ) {
           log.status = 'job_ended';
           log.success = !msg.startsWith('Job failed');
-          log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
         }
         return log;
+      }
+
+      if (this.driver === BB) {
+        if (data.includes('runner state to executing step.')) {
+          log.status = 'job_started';
+        } else if (data.includes('Result{status=')) {
+          log.status = 'job_ended';
+          log.success = data.includes('status=PASSED');
+        } else if (
+          data.includes('Updating runner status to "ONLINE" and checking')
+        ) {
+          log.status = 'ready';
+        }
+
+        log.level = log.success ? 'info' : 'error';
+        return log.status ? log : null;
       }
     } catch (err) {
       winston.warn(`Failed parsing log: ${err.message}`);
@@ -266,10 +280,6 @@ class CML {
 
   async startRunner(opts = {}) {
     return await getDriver(this).startRunner(opts);
-  }
-
-  async registerRunner(opts = {}) {
-    return await getDriver(this).registerRunner(opts);
   }
 
   async unregisterRunner(opts = {}) {
