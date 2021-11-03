@@ -37,7 +37,12 @@ const init = async (opts = {}) => {
 
 const apply = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec(`terraform -chdir='${dir}' apply -auto-approve -no-color`);
+  const { CI } = process.env;
+  return await exec(
+    `terraform -chdir='${dir}' apply -auto-approve ${
+      CI === 'true' ? '-no-color' : ''
+    }`
+  );
 };
 
 const destroy = async (opts = {}) => {
