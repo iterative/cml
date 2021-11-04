@@ -476,10 +476,8 @@ exports.builder = (yargs) =>
       cloudPermissionSet: {
         type: 'string',
         default: '',
-        description: 'temp',
-        check: (val) => {
-          return true;
-        }
+        description:
+          'Specifies the instance profile in AWS or instance service account in GCP'
       },
       cloudMetadata: {
         type: 'array',
