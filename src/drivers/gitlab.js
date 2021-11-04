@@ -204,7 +204,7 @@ class Gitlab {
         --docker-runtime "${gpu ? 'nvidia' : ''}" \
         ${single ? '--max-builds 1' : ''}`;
 
-      return spawn(command, { shell: true });
+      return spawn(command, { shell: true, env: {} });
     } catch (err) {
       throw new Error(`Failed preparing Gitlab runner: ${err.message}`);
     }

@@ -265,7 +265,8 @@ class Github {
       );
 
       return spawn(resolve(workdir, 'run.sh'), {
-        shell: true
+        shell: true,
+        env: {}
       });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
