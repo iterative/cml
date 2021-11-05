@@ -43,7 +43,7 @@ Options:
   --cloud-type                Instance type. Choices: [m, l, xl]. Also supports
                               native types like i.e. t2.micro           [string]
   --cloud-permission-set      Specifies the instance profile in AWS or instance
-                              service account in GCP      [string] [default: ""]
+                              service account in GCP      [string] [default: \\"\\"]
   --cloud-metadata            Key Value pairs to associate cml-runner instance
                               on the provider i.e. tags/labels \\"key=value\\"
                                                            [array] [default: []]
