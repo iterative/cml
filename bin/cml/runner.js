@@ -118,6 +118,7 @@ const runCloud = async (opts) => {
       cloud,
       cloudRegion: region,
       cloudType: type,
+      cloudPermissionSet: permissionSet,
       cloudMetadata: metadata,
       cloudGpu: gpu,
       cloudHddSize: hddSize,
@@ -152,6 +153,7 @@ const runCloud = async (opts) => {
         cloud,
         region,
         type,
+        permissionSet,
         metadata,
         gpu: gpu === 'tesla' ? 'v100' : gpu,
         hddSize,
@@ -191,6 +193,7 @@ const runCloud = async (opts) => {
           instanceIp: attributes.instance_ip,
           instanceLaunchTime: attributes.instance_launch_time,
           instanceType: attributes.instance_type,
+          instancePermissionSet: attributes.instance_permission_set,
           labels: attributes.labels,
           metadata: attributes.metadata,
           name: attributes.name,
@@ -469,6 +472,12 @@ exports.builder = (yargs) =>
         type: 'string',
         description:
           'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+      },
+      cloudPermissionSet: {
+        type: 'string',
+        default: '',
+        description:
+          'Specifies the instance profile in AWS or instance service account in GCP'
       },
       cloudMetadata: {
         type: 'array',

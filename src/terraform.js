@@ -77,6 +77,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     name,
     single,
     type,
+    permissionSet,
     metadata,
     gpu,
     hddSize,
@@ -107,6 +108,7 @@ resource "iterative_cml_runner" "runner" {
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
+  ${permissionSet ? `instance_permission_set = "${permissionSet}"` : ''}
   ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
