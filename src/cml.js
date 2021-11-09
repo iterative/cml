@@ -133,7 +133,7 @@ class CML {
           `Looking for PR associated with --commit-sha="${commitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
         );
 
-      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
+      const longReport = `${sha.substr(0, 7)}\n\n${report}`;
       const [commitPr = {}] = await drv.commitPrs({ commitSha: sha });
       const { url } = commitPr;
 
