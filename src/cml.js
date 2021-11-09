@@ -82,7 +82,7 @@ class CML {
     this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async revParse({ ref = 'HEAD' }) {
+  async revParse({ ref = 'HEAD' } = {}) {
     return await exec(`git rev-parse ${ref}`);
   }
 
