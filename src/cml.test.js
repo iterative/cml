@@ -73,7 +73,9 @@ describe('Github tests', () => {
       caughtErr = err.message;
     }
 
-    expect(caughtErr).toBe('No commit found for SHA: invalid_sha');
+    expect(
+      caughtErr.includes('unknown revision or path not in the working tree')
+    ).toBe(true);
   });
 });
 
