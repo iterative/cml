@@ -196,6 +196,8 @@ describe('Gitlab tests', () => {
       caughtErr = err.message;
     }
 
-    expect(caughtErr).toBe('Not Found');
+    expect(
+      caughtErr.includes('unknown revision or path not in the working tree')
+    ).toBe(true);
   });
 });
