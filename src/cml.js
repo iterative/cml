@@ -125,7 +125,8 @@ class CML {
       });
     };
 
-    if (pr || this.driver === 'bitbucket') {
+    const isBB = this.driver === 'bitbucket';
+    if (pr || isBB) {
       let commentUrl;
 
       if (sha !== triggerSha)
@@ -137,26 +138,29 @@ class CML {
       const [commitPr = {}] = await drv.commitPrs({ commitSha: sha });
       const { url } = commitPr;
 
-      if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
+      if (!url && !isBB)
+        throw new Error(`PR for commit sha "${commitSha}" not found`);
 
-      const [prNumber] = url.split('/').slice(-1);
+      if (url) {
+        const [prNumber] = url.split('/').slice(-1);
 
-      if (update)
-        comment = updatableComment(await drv.prComments({ prNumber }));
+        if (update)
+          comment = updatableComment(await drv.prComments({ prNumber }));
 
-      if (update && comment) {
-        commentUrl = await drv.prCommentUpdate({
-          report: longReport,
-          id: comment.id,
-          prNumber
-        });
-      } else
-        commentUrl = await drv.prCommentCreate({
-          report: longReport,
-          prNumber
-        });
+        if (update && comment) {
+          commentUrl = await drv.prCommentUpdate({
+            report: longReport,
+            id: comment.id,
+            prNumber
+          });
+        } else
+          commentUrl = await drv.prCommentCreate({
+            report: longReport,
+            prNumber
+          });
 
-      if (this.driver !== 'bitbucket') return commentUrl;
+        if (this.driver !== 'bitbucket') return commentUrl;
+      }
     }
 
     if (update)

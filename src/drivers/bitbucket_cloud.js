@@ -81,10 +81,7 @@ class BitbucketCloud {
         };
       });
     } catch (err) {
-      if (err.message === 'Not Found Resource not found')
-        err.message =
-          "Click 'Go to pull request' on any commit details page to enable this API";
-      throw err;
+      return [];
     }
   }
 
