@@ -83,7 +83,13 @@ class CML {
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
-    return await exec(`git rev-parse ${ref}`);
+    try {
+      return await exec(`git rev-parse ${ref}`);
+    } catch (err) {
+      winston.warn(
+        'Failed calculating the SHA. This might be that we are operating in a non git folder or current git folder is not the desired repo'
+      );
+    }
   }
 
   async triggerSha() {
@@ -106,7 +112,7 @@ class CML {
       pr
     } = opts;
 
-    const sha = await this.revParse({ ref: commitSha });
+    const sha = (await this.revParse({ ref: commitSha })) || commitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');

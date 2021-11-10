@@ -73,9 +73,7 @@ describe('Github tests', () => {
       caughtErr = err.message;
     }
 
-    expect(
-      caughtErr.includes('unknown revision or path not in the working tree')
-    ).toBe(true);
+    expect(caughtErr).toBe('No commit found for SHA: invalid_sha');
   });
 });
 
@@ -196,8 +194,6 @@ describe('Gitlab tests', () => {
       caughtErr = err.message;
     }
 
-    expect(
-      caughtErr.includes('unknown revision or path not in the working tree')
-    ).toBe(true);
+    expect(caughtErr).toBe('Not Found');
   });
 });
