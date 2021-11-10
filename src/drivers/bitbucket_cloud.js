@@ -66,25 +66,18 @@ class BitbucketCloud {
     const { projectPath } = this;
     const { commitSha, state = 'OPEN' } = opts;
 
-    console.log('here');
-    try {
-      const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
-      console.log(endpoint);
-      const prs = await this.paginatedRequest({ endpoint });
-      console.log('here');
-      return prs.map((pr) => {
-        const {
-          links: {
-            html: { href: url }
-          }
-        } = pr;
-        return {
-          url
-        };
-      });
-    } catch (err) {
-      return [];
-    }
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+    const prs = await this.paginatedRequest({ endpoint });
+    return prs.map((pr) => {
+      const {
+        links: {
+          html: { href: url }
+        }
+      } = pr;
+      return {
+        url
+      };
+    });
   }
 
   async checkCreate() {
