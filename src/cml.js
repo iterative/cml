@@ -171,7 +171,7 @@ class CML {
     }
 
     if (update)
-      comment = updatableComment(await drv.commitComments({ commitSha }));
+      comment = updatableComment(await drv.commitComments({ commitSha: sha }));
 
     if (update && comment) {
       return await drv.commentUpdate({
