@@ -142,7 +142,6 @@ class CML {
 
       const longReport = `${sha.substr(0, 7)}\n\n${report}`;
       const [commitPr = {}] = await drv.commitPrs({ commitSha: sha });
-      console.log(commitPr);
       const { url } = commitPr;
 
       if (!url && !isBB)

@@ -237,7 +237,7 @@ class BitbucketCloud {
   async request(opts = {}) {
     const { token, api } = this;
     const { url, endpoint, method = 'GET', body } = opts;
-    console.log({ url, endpoint, method, body });
+
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
     const headers = {
