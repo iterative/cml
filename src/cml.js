@@ -131,7 +131,7 @@ class CML {
       });
     };
 
-    const isBB = this.driver === 'bitbucket';
+    const isBB = this.driver === BB;
     if (pr || isBB) {
       let commentUrl;
 
@@ -142,6 +142,7 @@ class CML {
 
       const longReport = `${sha.substr(0, 7)}\n\n${report}`;
       const [commitPr = {}] = await drv.commitPrs({ commitSha: sha });
+      console.log(commitPr);
       const { url } = commitPr;
 
       if (!url && !isBB)
