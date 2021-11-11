@@ -106,13 +106,14 @@ class CML {
     const triggerSha = await this.triggerSha();
     const {
       report: userReport,
-      commitSha = triggerSha,
+      commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
       pr
     } = opts;
 
-    const sha = (await this.revParse({ ref: commitSha })) || commitSha;
+    const commitSha =
+      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
@@ -135,17 +136,17 @@ class CML {
     if (pr || isBB) {
       let commentUrl;
 
-      if (sha !== triggerSha)
+      if (commitSha !== triggerSha)
         winston.info(
-          `Looking for PR associated with --commit-sha="${commitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
         );
 
-      const longReport = `${sha.substr(0, 7)}\n\n${report}`;
-      const [commitPr = {}] = await drv.commitPrs({ commitSha: sha });
+      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
+      const [commitPr = {}] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
 
       if (!url && !isBB)
-        throw new Error(`PR for commit sha "${commitSha}" not found`);
+        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
 
       if (url) {
         const [prNumber] = url.split('/').slice(-1);
@@ -170,19 +171,19 @@ class CML {
     }
 
     if (update)
-      comment = updatableComment(await drv.commitComments({ commitSha: sha }));
+      comment = updatableComment(await drv.commitComments({ commitSha }));
 
     if (update && comment) {
       return await drv.commentUpdate({
         report,
         id: comment.id,
-        commitSha: sha
+        commitSha
       });
     }
 
     return await drv.commentCreate({
       report,
-      commitSha: sha
+      commitSha
     });
   }
 
