@@ -87,7 +87,7 @@ class CML {
       return await exec(`git rev-parse ${ref}`);
     } catch (err) {
       winston.warn(
-        'Failed calculating the SHA. This might be that we are operating in a non git folder or current git folder is not the desired repo'
+        'Failed to obtain SHA. Perhaps not in the correct git folder'
       );
     }
   }
