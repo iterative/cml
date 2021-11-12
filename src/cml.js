@@ -82,13 +82,19 @@ class CML {
     this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async headSha() {
-    return exec(`git rev-parse HEAD`);
+  async revParse({ ref = 'HEAD' } = {}) {
+    try {
+      return await exec(`git rev-parse ${ref}`);
+    } catch (err) {
+      winston.warn(
+        'Failed to obtain SHA. Perhaps not in the correct git folder'
+      );
+    }
   }
 
   async triggerSha() {
     const { sha } = getDriver(this);
-    return sha || (await this.headSha());
+    return sha || (await this.revParse());
   }
 
   async branch() {
@@ -97,13 +103,17 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
+    const triggerSha = await this.triggerSha();
     const {
       report: userReport,
-      commitSha = await this.headSha(),
+      commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
       pr
     } = opts;
+
+    const commitSha =
+      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
@@ -122,33 +132,42 @@ class CML {
       });
     };
 
-    if (pr || this.driver === 'bitbucket') {
+    const isBB = this.driver === BB;
+    if (pr || isBB) {
       let commentUrl;
 
+      if (commitSha !== triggerSha)
+        winston.info(
+          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+        );
+
       const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr] = await drv.commitPrs({ commitSha });
+      const [commitPr = {}] = await drv.commitPrs({ commitSha });
       const { url } = commitPr;
 
-      if (!url) throw new Error(`PR for commit sha "${commitSha}" not found`);
+      if (!url && !isBB)
+        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
 
-      const [prNumber] = url.split('/').slice(-1);
+      if (url) {
+        const [prNumber] = url.split('/').slice(-1);
 
-      if (update)
-        comment = updatableComment(await drv.prComments({ prNumber }));
+        if (update)
+          comment = updatableComment(await drv.prComments({ prNumber }));
 
-      if (update && comment) {
-        commentUrl = await drv.prCommentUpdate({
-          report: longReport,
-          id: comment.id,
-          prNumber
-        });
-      } else
-        commentUrl = await drv.prCommentCreate({
-          report: longReport,
-          prNumber
-        });
+        if (update && comment) {
+          commentUrl = await drv.prCommentUpdate({
+            report: longReport,
+            id: comment.id,
+            prNumber
+          });
+        } else
+          commentUrl = await drv.prCommentCreate({
+            report: longReport,
+            prNumber
+          });
 
-      if (this.driver !== 'bitbucket') return commentUrl;
+        if (this.driver !== 'bitbucket') return commentUrl;
+      }
     }
 
     if (update)

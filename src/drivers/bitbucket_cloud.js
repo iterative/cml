@@ -66,26 +66,18 @@ class BitbucketCloud {
     const { projectPath } = this;
     const { commitSha, state = 'OPEN' } = opts;
 
-    try {
-      const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
-      const prs = await this.paginatedRequest({ endpoint });
-
-      return prs.map((pr) => {
-        const {
-          links: {
-            html: { href: url }
-          }
-        } = pr;
-        return {
-          url
-        };
-      });
-    } catch (err) {
-      if (err.message === 'Not Found Resource not found')
-        err.message =
-          "Click 'Go to pull request' on any commit details page to enable this API";
-      throw err;
-    }
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+    const prs = await this.paginatedRequest({ endpoint });
+    return prs.map((pr) => {
+      const {
+        links: {
+          html: { href: url }
+        }
+      } = pr;
+      return {
+        url
+      };
+    });
   }
 
   async checkCreate() {
@@ -222,9 +214,30 @@ class BitbucketCloud {
     throw new Error('BitBucket Cloud does not support workflowRestart!');
   }
 
+  async pipelineJobs(opts = {}) {
+    throw new Error('Not implemented');
+  }
+
+  async paginatedRequest(opts = {}) {
+    const { method = 'GET', body } = opts;
+    const { next, values } = await this.request(opts);
+
+    if (next) {
+      const nextValues = await this.paginatedRequest({
+        url: next,
+        method,
+        body
+      });
+      values.push(...nextValues);
+    }
+
+    return values;
+  }
+
   async request(opts = {}) {
     const { token, api } = this;
     const { url, endpoint, method = 'GET', body } = opts;
+
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
     const headers = {
@@ -247,26 +260,6 @@ class BitbucketCloud {
     }
 
     return await response.json();
-  }
-
-  async pipelineJobs(opts = {}) {
-    throw new Error('Not implemented');
-  }
-
-  async paginatedRequest(opts = {}) {
-    const { method = 'GET', body } = opts;
-    const { next, values } = await this.request(opts);
-
-    if (next) {
-      const nextValues = await this.paginatedRequest({
-        url: next,
-        method,
-        body
-      });
-      values.push(...nextValues);
-    }
-
-    return values;
   }
 
   get sha() {

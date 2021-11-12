@@ -36,6 +36,7 @@ describe('Terraform tests', () => {
         
         
         
+        
       }
       "
     `);
@@ -87,6 +88,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   instance_type = \\"mymachinetype\\"
   instance_gpu = \\"mygputype\\"
   instance_hdd_size = 50
+  
   ssh_private = \\"myprivate\\"
   spot = true
   spot_price = 0.0001
@@ -143,6 +145,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   instance_type = \\"mymachinetype\\"
   instance_gpu = \\"mygputype\\"
   instance_hdd_size = 50
+  
   ssh_private = \\"myprivate\\"
   spot = true
   spot_price = 0.0001
@@ -200,6 +203,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   instance_type = \\"mymachinetype\\"
   instance_gpu = \\"mygputype\\"
   instance_hdd_size = 50
+  
   ssh_private = \\"myprivate\\"
   spot = true
   spot_price = 0.0001
@@ -209,6 +213,65 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
     one = \\"value\\"
     two = \\"\\"
   }
+}
+"
+`);
+  });
+
+  test('basic settings with permission set', async () => {
+    const output = iterativeCmlRunnerTpl({
+      repo: 'https://',
+      token: 'abc',
+      driver: 'gitlab',
+      labels: 'mylabel',
+      idleTimeout: 300,
+      name: 'myrunner',
+      single: true,
+      cloud: 'aws',
+      region: 'west',
+      type: 'mymachinetype',
+      permissionSet: 'arn:aws:iam::1:instance-profile/x',
+      gpu: 'mygputype',
+      hddSize: 50,
+      sshPrivate: 'myprivate',
+      spot: true,
+      spotPrice: '0.0001',
+      awsSecurityGroup: 'mysg'
+    });
+    expect(output).toMatchInlineSnapshot(`
+"
+
+terraform {
+  required_providers {
+    iterative = {
+      source = \\"iterative/iterative\\"
+    }
+  }
+}
+
+provider \\"iterative\\" {}
+
+
+resource \\"iterative_cml_runner\\" \\"runner\\" {
+  repo = \\"https://\\"
+  token = \\"abc\\"
+  driver = \\"gitlab\\"
+  labels = \\"mylabel\\"
+  idle_timeout = 300
+  name = \\"myrunner\\"
+  single = \\"true\\"
+  cloud = \\"aws\\"
+  region = \\"west\\"
+  instance_type = \\"mymachinetype\\"
+  instance_gpu = \\"mygputype\\"
+  instance_hdd_size = 50
+  instance_permission_set = \\"arn:aws:iam::1:instance-profile/x\\"
+  ssh_private = \\"myprivate\\"
+  spot = true
+  spot_price = 0.0001
+  
+  aws_security_group = \\"mysg\\"
+  
 }
 "
 `);
@@ -260,6 +323,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   instance_type = \\"mymachinetype\\"
   instance_gpu = \\"mygputype\\"
   instance_hdd_size = 50
+  
   ssh_private = \\"myprivate\\"
   spot = true
   spot_price = 0.0001
