@@ -253,10 +253,14 @@ class BitbucketCloud {
     });
 
     if (response.status > 300) {
-      const {
-        error: { message }
-      } = await response.json();
-      throw new Error(`${response.statusText} ${message}`);
+      try {
+        const {
+          error: { message }
+        } = await response.json();
+        throw new Error(message);
+      } catch (err) {
+        throw new Error(`${response.statusText} ${err.message}`);
+      }
     }
 
     return await response.json();
