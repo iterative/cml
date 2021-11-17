@@ -257,9 +257,9 @@ class BitbucketCloud {
         const {
           error: { message }
         } = await response.json();
-        throw new Error(`${response.statusText} ${message}`);
+        throw new Error(message);
       } catch (err) {
-        throw new Error(`${response.statusText}`);
+        throw new Error(`${response.statusText} ${err.message}`);
       }
     }
 
