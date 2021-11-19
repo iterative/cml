@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const winston = require('winston');
 const { URL } = require('url');
 const ProxyAgent = require('proxy-agent');
 
@@ -245,7 +246,10 @@ class BitbucketCloud {
       Authorization: 'Basic ' + `${token}`
     };
 
-    const response = await fetch(url || `${api}${endpoint}`, {
+    const requestUrl = url || `${api}${endpoint}`;
+    winston.debug(`${method} ${requestUrl}`);
+
+    const response = await fetch(requestUrl, {
       method,
       headers,
       body,
@@ -254,10 +258,12 @@ class BitbucketCloud {
 
     if (response.status > 300) {
       try {
-        const {
-          error: { message }
-        } = await response.json();
-        throw new Error(message);
+        const json = await response.json();
+        winston.debug(json);
+        // Attempt to get additional context. We have observed two different error schemas
+        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+        // `{"error": "Error message"}`.
+        throw new Error(json.error.message || json.error);
       } catch (err) {
         throw new Error(`${response.statusText} ${err.message}`);
       }
