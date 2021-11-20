@@ -13,7 +13,7 @@ const exec = async (command) => {
       (error, stdout, stderr) => {
         if (!process.stdout.isTTY) {
           const controlSequence =
-            /(?<excape_char>\\u001b|\u001b)(?<csi_term_char>\[)(?<parameters>(\d*;?)+)(?<term_byte>m)/g; // eslint-disable-line no-control-regex
+            /(?<csi_char>(\\u001b|\u001b)\[)(?<sgr_bytes>(\d*;?)+)(?<sgr_term>m)/g; // eslint-disable-line no-control-regex
           stdout = stdout.replace(controlSequence, '');
           stderr = stderr.replace(controlSequence, '');
         }
