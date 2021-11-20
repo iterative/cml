@@ -4,9 +4,9 @@ const PATH = require('path');
 const mmm = require('mmmagic');
 const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
-const stripAnsi = require('strip-ansi');
 
 const exec = async (command) => {
+  const { default: stripAnsi } = await import('strip-ansi'); // eslint-disable-line
   return new Promise((resolve, reject) => {
     require('child_process').exec(
       command,
