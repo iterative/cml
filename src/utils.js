@@ -4,6 +4,7 @@ const PATH = require('path');
 const mmm = require('mmmagic');
 const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
+const stripAnsi = require('strip-ansi');
 
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
@@ -12,10 +13,8 @@ const exec = async (command) => {
       { ...process.env },
       (error, stdout, stderr) => {
         if (!process.stdout.isTTY) {
-          const controlSequence =
-            /(?<csi_char>(\\u001b|\u001b)\[)(?<sgr_bytes>(\d*;?)+)(?<sgr_term>m)/g; // eslint-disable-line no-control-regex
-          stdout = stdout.replace(controlSequence, '');
-          stderr = stderr.replace(controlSequence, '');
+          stdout = stripAnsi(stdout);
+          stderr = stripAnsi(stderr);
         }
         if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
