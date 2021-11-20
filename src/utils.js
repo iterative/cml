@@ -6,7 +6,7 @@ const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
 
 const exec = async (command) => {
-  const { default: stripAnsi } = await import('strip-ansi'); // eslint-disable-line
+  const { default: stripAnsi } = await import('strip-ansi');
   return new Promise((resolve, reject) => {
     require('child_process').exec(
       command,
