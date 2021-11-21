@@ -4,6 +4,7 @@ const PATH = require('path');
 const mmm = require('mmmagic');
 const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
+const stripAnsi = require('strip-ansi');
 
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
@@ -11,6 +12,10 @@ const exec = async (command) => {
       command,
       { ...process.env },
       (error, stdout, stderr) => {
+        if (!process.stdout.isTTY) {
+          stdout = stripAnsi(stdout);
+          stderr = stripAnsi(stderr);
+        }
         if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
         resolve((stdout || stderr).slice(0, -1));
