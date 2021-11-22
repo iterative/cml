@@ -11,6 +11,7 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
+
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
   process.env;
 
@@ -335,6 +336,8 @@ class CML {
       md
     } = opts;
 
+    await exec(await driver.updateGitConfig({ userName, userEmail }));
+
     const renderPr = (url) => {
       if (md)
         return `[CML's ${
@@ -378,20 +381,6 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git config --local user.email "${userEmail}"`);
-      await exec(`git config --local user.name "${userName}"`);
-
-      if (CI) {
-        if (this.driver === GITLAB) {
-          const repo = new URL(this.repo);
-          repo.password = this.token;
-          repo.username = driver.userName;
-
-          await exec(`git remote rm ${remote}`);
-          await exec(`git remote add ${remote} "${repo.toString()}.git"`);
-        }
-      }
-
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);

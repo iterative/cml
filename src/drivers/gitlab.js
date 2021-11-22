@@ -348,6 +348,35 @@ class Gitlab {
     throw new Error('Not implemented');
   }
 
+  async updateGitConfig({ userName, userEmail }) {
+    const repo = new URL(this.repo);
+    repo.password = this.token;
+    repo.username = this.userName;
+   
+    const command = `
+    git config user.name "${userName || this.userName}" && \
+    git config user.email "${userEmail || this.userEmail}" && \
+    git remote set-url origin "${repo.toString()}${repo.toString().endsWith('.git') ? '' : '.git'}"`;
+
+    return command;
+  }
+
+  get sha() {
+    return CI_COMMIT_SHA;
+  }
+
+  get branch() {
+    return CI_BUILD_REF_NAME;
+  }
+
+  get userEmail() {
+    return GITLAB_USER_EMAIL;
+  }
+
+  get userName() {
+    return GITLAB_USER_NAME;
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
@@ -369,22 +398,6 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
-  }
-
-  get sha() {
-    return CI_COMMIT_SHA;
-  }
-
-  get branch() {
-    return CI_BUILD_REF_NAME;
-  }
-
-  get userEmail() {
-    return GITLAB_USER_EMAIL;
-  }
-
-  get userName() {
-    return GITLAB_USER_NAME;
   }
 }
 

@@ -219,6 +219,37 @@ class BitbucketCloud {
     throw new Error('Not implemented');
   }
 
+  async updateGitConfig({ userName, userEmail }) {
+    const [ user, password ] = Buffer.from(this.token, 'base64').toString('utf-8').split[':'];
+    const repo = new URL(this.repo);
+    repo.password = password;
+    repo.username = user;
+   
+    const command = `
+    git config --unset user.name && \
+    git config --unset user.email && \
+    git config --unset push.default && \
+    git config --unset http.http://bitbucket.org/iterative-ai/fashion-mnist.proxy && \
+    git config user.name "${userName || this.userName}" && \
+    git config user.email "${userEmail || this.userEmail}" && \
+    git remote set-url origin "${repo.toString()}${repo.toString().endsWith('.git') ? '' : '.git'}"`;
+
+    return command;
+  }
+
+  get sha() {
+    return BITBUCKET_COMMIT;
+  }
+
+  get branch() {
+    return BITBUCKET_BRANCH;
+  }
+
+  get userEmail() {}
+
+  get userName() {}
+
+
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
     const { next, values } = await this.request(opts);
@@ -271,18 +302,6 @@ class BitbucketCloud {
 
     return await response.json();
   }
-
-  get sha() {
-    return BITBUCKET_COMMIT;
-  }
-
-  get branch() {
-    return BITBUCKET_BRANCH;
-  }
-
-  get userEmail() {}
-
-  get userName() {}
 }
 
 module.exports = BitbucketCloud;
