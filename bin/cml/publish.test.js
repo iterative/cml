@@ -35,7 +35,7 @@ Options:
                                   GITLAB_TOKEN, GITHUB_TOKEN, or
                                   BITBUCKET_TOKEN.                      [string]
       --driver                    If not specify it infers it from the ENV.
-                                          [string] [choices: \\"github\\", \\"gitlab\\"]"
+                                          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
 `);
   });
 
