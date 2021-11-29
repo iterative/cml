@@ -329,8 +329,7 @@ class CML {
 
     const driver = getDriver(this);
     const command = await driver.updateGitConfig({ userName, userEmail });
-    console.log(command);
-    // await exec(command);
+    await exec(command);
   }
 
   async prCreate(opts = {}) {
