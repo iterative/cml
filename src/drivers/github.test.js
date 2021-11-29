@@ -37,4 +37,19 @@ describe('Non Enviromental tests', () => {
     const output = await client.runnerToken();
     expect(output.length).toBe(29);
   });
+
+  test('updateGitConfig', async () => {
+    const client = new GithubClient({
+      repo: 'https://github.com/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig();
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config --unset http.https://github.com/.extraheader && \\\\
+          git config user.name \\"GitHub Action\\" && \\\\
+          git config user.email \\"action@github.com\\" && \\\\
+          git remote set-url origin \\"https://GitHub%20Action:dXNlcjpwYXNz@github.com/test/test.git\\""
+    `);
+  });
 });
