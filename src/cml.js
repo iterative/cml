@@ -330,6 +330,7 @@ class CML {
     const driver = getDriver(this);
     const command = await driver.updateGitConfig({ userName, userEmail });
     await exec(command);
+    await exec('git fetch --all');
   }
 
   async prCreate(opts = {}) {
