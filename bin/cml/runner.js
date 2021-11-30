@@ -443,7 +443,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
+        choices: ['github', 'gitlab'],
         description:
           'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
       },

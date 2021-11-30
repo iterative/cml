@@ -27,8 +27,7 @@ describe('CML e2e', () => {
                                     the same name or overlapping labels      [boolean]
         --driver                    Platform where the repository is hosted. If not
                                     specified, it will be inferred from the
-                                    environment
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+                                    environment [string] [choices: \\"github\\", \\"gitlab\\"]
         --repo                      Repository to be used for registering the runner.
                                     If not specified, it will be inferred from the
                                     environment                               [string]
