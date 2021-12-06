@@ -313,6 +313,37 @@ class Gitlab {
     });
   }
 
+  async pipelineRerun(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { jobId } = opts;
+
+    const {
+      pipeline: { id }
+    } = await this.request({
+      endpoint: `/projects/${projectPath}/jobs/${jobId}`
+    });
+
+    const { status } = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/cancel`,
+      method: 'POST'
+    });
+
+    if (status === 'running') return;
+
+    const jobs = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    });
+
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
+      })
+    );
+  }
+
   async pipelineRestart(opts = {}) {
     const projectPath = await this.projectPath();
     const { jobId } = opts;

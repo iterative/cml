@@ -393,6 +393,38 @@ class Github {
     });
   }
 
+  async pipelineRestart(opts = {}) {
+    const { jobId } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    const {
+      data: { run_id: runId }
+    } = await actions.getJobForWorkflowRun({
+      owner,
+      repo,
+      job_id: jobId
+    });
+
+    const {
+      data: { status }
+    } = await actions.getWorkflowRun({
+      owner,
+      repo,
+      run_id: runId
+    });
+
+    if (status !== 'running') {
+      try {
+        await actions.reRunWorkflow({
+          owner,
+          repo,
+          run_id: runId
+        });
+      } catch (err) {}
+    }
+  }
+
   async pipelineJobs(opts = {}) {
     const { jobs: runnerJobs } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
@@ -455,48 +487,6 @@ class Github {
     });
 
     return job;
-  }
-
-  async pipelineRestart(opts = {}) {
-    const { jobId } = opts;
-    const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
-
-    const {
-      data: { run_id: runId }
-    } = await actions.getJobForWorkflowRun({
-      owner,
-      repo,
-      job_id: jobId
-    });
-
-    try {
-      await actions.cancelWorkflowRun({
-        owner,
-        repo,
-        run_id: runId
-      });
-    } catch (err) {
-      // HANDLES: Cannot cancel a workflow run that is completed.
-    }
-
-    const {
-      data: { status }
-    } = await actions.getWorkflowRun({
-      owner,
-      repo,
-      run_id: runId
-    });
-
-    if (status !== 'queued') {
-      try {
-        await actions.reRunWorkflow({
-          owner,
-          repo,
-          run_id: runId
-        });
-      } catch (err) {}
-    }
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {
