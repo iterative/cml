@@ -4,42 +4,43 @@ describe('Terraform tests', () => {
   test('default options', async () => {
     const output = iterativeCmlRunnerTpl({});
     expect(output).toMatchInlineSnapshot(`
-      "
+"
 
-      terraform {
-        required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
-        }
-      }
+terraform {
+  required_providers {
+    iterative = {
+      source = \\"iterative/iterative\\"
+    }
+  }
+}
 
-      provider \\"iterative\\" {}
+provider \\"iterative\\" {}
 
 
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      }
-      "
-    `);
+resource \\"iterative_cml_runner\\" \\"runner\\" {
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+}
+"
+`);
   });
 
   test('basic settings', async () => {
@@ -94,6 +95,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   spot_price = 0.0001
   
   aws_security_group = \\"mysg\\"
+  
   
 }
 "
@@ -152,6 +154,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   
   
   
+  
 }
 "
 `);
@@ -207,6 +210,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   ssh_private = \\"myprivate\\"
   spot = true
   spot_price = 0.0001
+  
   
   
   metadata = {
@@ -272,6 +276,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   
   aws_security_group = \\"mysg\\"
   
+  
 }
 "
 `);
@@ -328,6 +333,7 @@ resource \\"iterative_cml_runner\\" \\"runner\\" {
   spot = true
   spot_price = 0.0001
   startup_script = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
+  
   
   
 }
