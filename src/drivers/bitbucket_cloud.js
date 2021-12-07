@@ -3,7 +3,8 @@ const winston = require('winston');
 const { URL } = require('url');
 const ProxyAgent = require('proxy-agent');
 
-const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
+const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
+  process.env;
 class BitbucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -209,6 +210,27 @@ class BitbucketCloud {
           "Click 'Go to pull request' on any commit details page to enable this API";
       throw err;
     }
+  }
+
+  async pipelineRerun(opts = {}) {
+    const { projectPath } = this;
+    const { id = BITBUCKET_PIPELINE_UUID } = opts;
+
+    const {
+      target,
+      state: { name: status }
+    } = await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/${id}`,
+      method: 'GET'
+    });
+
+    if (status !== 'COMPLETED') return;
+
+    await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/`,
+      method: 'POST',
+      body: JSON.stringify({ target })
+    });
   }
 
   async pipelineRestart(opts = {}) {

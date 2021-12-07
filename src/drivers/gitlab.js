@@ -14,7 +14,8 @@ const {
   CI_BUILD_REF_NAME,
   CI_COMMIT_SHA,
   GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME
+  GITLAB_USER_NAME,
+  CI_PIPELINE_ID
 } = process.env;
 const API_VER = 'v4';
 class Gitlab {
@@ -315,17 +316,11 @@ class Gitlab {
 
   async pipelineRerun(opts = {}) {
     const projectPath = await this.projectPath();
-    const { jobId } = opts;
-
-    const {
-      pipeline: { id }
-    } = await this.request({
-      endpoint: `/projects/${projectPath}/jobs/${jobId}`
-    });
+    const { id = CI_PIPELINE_ID } = opts;
 
     const { status } = await this.request({
-      endpoint: `/projects/${projectPath}/pipelines/${id}/cancel`,
-      method: 'POST'
+      endpoint: `/projects/${projectPath}/pipelines/${id}`,
+      method: 'GET'
     });
 
     if (status === 'running') return;
