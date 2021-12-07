@@ -21,7 +21,8 @@ const {
   GITHUB_SHA,
   GITHUB_REF,
   GITHUB_HEAD_REF,
-  GITHUB_EVENT_NAME
+  GITHUB_EVENT_NAME,
+  GITHUB_RUN_ID
 } = process.env;
 
 const branchName = (branch) => {
@@ -391,6 +392,28 @@ class Github {
         target: branchName(target)
       };
     });
+  }
+
+  async pipelineRerun(opts = {}) {
+    const { id = GITHUB_RUN_ID } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    const {
+      data: { status }
+    } = await actions.getWorkflowRun({
+      owner,
+      repo,
+      run_id: id
+    });
+
+    if (status !== 'running') {
+      await actions.reRunWorkflow({
+        owner,
+        repo,
+        run_id: id
+      });
+    }
   }
 
   async pipelineRestart(opts = {}) {

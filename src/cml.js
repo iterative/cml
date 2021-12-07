@@ -409,6 +409,10 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
     return renderPr(url);
   }
 
+  async pipelineRerun(opts) {
+    return await getDriver(this).pipelineRerun(opts);
+  }
+
   async pipelineRestart(opts) {
     return await getDriver(this).pipelineRestart(opts);
   }

@@ -7,17 +7,13 @@ exports.description = 'Reruns a workflow given the jobId or workflow Id';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
-  await cml.pipelineRestart(opts);
+  await cml.pipelineRerun(opts);
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_CI').options(
     kebabcaseKeys({
-      jobId: {
-        type: 'string',
-        description: 'Specifies the job Id to be rerun.'
-      },
-      runId: {
+      id: {
         type: 'string',
         description: 'Specifies the run Id to be rerun.'
       },
