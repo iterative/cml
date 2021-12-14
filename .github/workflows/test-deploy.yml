@@ -74,13 +74,6 @@ jobs:
           cml-runner --version
           cml-publish --version
           cml-pr --version
-      - if: matrix.system == 'ubuntu'
-        run: |
-          ./build/cml-linux publish assets/test.svg
-      - if: matrix.system == 'macos'
-        run: |
-          ./build/cml-macos publish assets/test.svg
-
   packages:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
@@ -98,21 +91,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   binaries:
-    needs: authorize
-    name: binaries-${{ matrix.system }}
+    needs: [lint, test, test-os]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: build
-        run: pkg package.json
-      - uses: JasonEtco/upload-to-release@master
+        run: |
+          npm i
+          npx pkg package.json
+      - if: ${{ github.event_name == 'release' }}
+        uses: JasonEtco/upload-to-release@master
         with:
           args: build/cml-macos application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: JasonEtco/upload-to-release@master
+      - if: ${{ github.event_name == 'release' }}
+        uses: JasonEtco/upload-to-release@master
         with:
           args: build/cml-linux application/octet-stream
         env:
