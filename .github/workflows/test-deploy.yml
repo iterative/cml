@@ -103,7 +103,7 @@ jobs:
       - name: build
         run: |
           npm i
-          npx pkg package.json
+          npx --yes pkg package.json
       - if: ${{ github.event_name == 'release' }}
         uses: JasonEtco/upload-to-release@master
         with:
