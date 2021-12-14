@@ -74,9 +74,12 @@ jobs:
           cml-runner --version
           cml-publish --version
           cml-pr --version
-
-          pkg -t node14-macos,node14-linux package.json
-          ./build/cml publish assets/test.svg
+      - if:
+          matrix.system == 'ubuntu' pkg -t node14-linux,node14-macos
+          package.json ./build/cml-linux publish assets/test.svg
+      - if:
+          matrix.system == 'macos' pkg -t node14-linux,node14-macos package.json
+          ./build/cml-macos publish assets/test.svg
 
   packages:
     needs: [lint, test, test-os]
@@ -105,7 +108,7 @@ jobs:
 
       - name: build
         run: |
-          pkg -t node14-macos,node14-linux package.json
+          pkg -t node14-linux,node14-macos package.json
 
       - uses: JasonEtco/upload-to-release@master
         with:
