@@ -63,7 +63,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - if: matrix.system == 'windows'
         uses: actions/setup-node@v2
-      - run: |
+      - name: install
+        shell: bash
+        run: |
           # https://github.com/npm/npm/issues/18503#issuecomment-347579469
           npm pack && npm i -g --no-save ./*cml*.tgz
           cml --version
