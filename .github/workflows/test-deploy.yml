@@ -76,8 +76,14 @@ jobs:
           cml-runner --version
           cml-publish --version
           cml-pr --version
-      - if: matrix.system == 'ubuntu' ./build/cml-linux publish assets/test.svg
-      - if: matrix.system == 'macos' ./build/cml-macos publish assets/test.svg
+      - if: matrix.system == 'ubuntu'
+        run: |
+          npm install
+          ./build/cml-linux publish assets/test.svg
+      - if: matrix.system == 'macos'
+        run: |
+          npm install
+          ./build/cml-macos publish assets/test.svg
 
   packages:
     needs: [lint, test, test-os]
