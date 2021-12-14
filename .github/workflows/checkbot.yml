@@ -146,3 +146,29 @@ jobs:
           npm ci
           sudo npm link
           # ${{ github.event.comment.body }}
+  tag: # /tag <tagname> <commit>
+    needs: react-seen
+    if: startsWith(github.event.comment.body, '/tag ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Tag Commit
+        run: |
+          git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} repo
+          git -C repo tag $(echo "$BODY" | awk '{print $2" "$3}')
+          git -C repo push --tags
+          rm -rf repo
+        env:
+          BODY: ${{ github.event.comment.body }}
+          GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
+      - name: React Success
+        uses: actions/github-script@v2
+        with:
+          script: |
+            post = (context.eventName == "issue_comment"
+              ? github.reactions.createForIssueComment
+              : github.reactions.createForPullRequestReviewComment)
+            post({
+              owner: context.repo.owner, repo: context.repo.repo,
+              comment_id: context.payload.comment.id, content: "rocket"})
+          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
