@@ -74,6 +74,10 @@ jobs:
           cml-runner --version
           cml-publish --version
           cml-pr --version
+
+          pkg -t node14-macos,node14-linux package.json
+          ./build/cml publish assets/test.svg
+
   packages:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
