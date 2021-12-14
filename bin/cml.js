@@ -42,6 +42,7 @@ const runPlugin = async ({ $0: executable, command }) => {
 };
 
 const handleError = (message, error) => {
+  console.log(error);
   if (error) {
     winston.error(error);
   } else {
