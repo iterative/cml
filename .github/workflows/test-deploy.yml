@@ -70,6 +70,7 @@ jobs:
           cml publish --version
           cml pr --version
 
+          npm install
           pkg -t node14-linux,node14-macos package.json
       - if: matrix.system != 'windows'
         run: |
@@ -78,11 +79,9 @@ jobs:
           cml-pr --version
       - if: matrix.system == 'ubuntu'
         run: |
-          npm install
           ./build/cml-linux publish assets/test.svg
       - if: matrix.system == 'macos'
         run: |
-          npm install
           ./build/cml-macos publish assets/test.svg
 
   packages:
