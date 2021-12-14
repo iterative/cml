@@ -69,17 +69,15 @@ jobs:
           cml runner --version
           cml publish --version
           cml pr --version
+
+          pkg -t node14-linux,node14-macos package.json
       - if: matrix.system != 'windows'
         run: |
           cml-runner --version
           cml-publish --version
           cml-pr --version
-      - if:
-          matrix.system == 'ubuntu' pkg -t node14-linux,node14-macos
-          package.json ./build/cml-linux publish assets/test.svg
-      - if:
-          matrix.system == 'macos' pkg -t node14-linux,node14-macos package.json
-          ./build/cml-macos publish assets/test.svg
+      - if: matrix.system == 'ubuntu' ./build/cml-linux publish assets/test.svg
+      - if: matrix.system == 'macos' ./build/cml-macos publish assets/test.svg
 
   packages:
     needs: [lint, test, test-os]
