@@ -117,6 +117,10 @@
       "**/*.js",
       "node_modules/@npcz/magic/**/*"
     ],
+    "targets": [
+      "linux",
+      "macos"
+    ],
     "outputPath": "build"
   }
 }
