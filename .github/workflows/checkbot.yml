@@ -6,6 +6,7 @@ on:
     types: [created]
 jobs:
   react-seen:
+    if: startsWith(github.event.comment.body, '/')
     runs-on: ubuntu-latest
     steps:
       - name: React Seen
