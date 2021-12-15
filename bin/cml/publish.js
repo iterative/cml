@@ -72,7 +72,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab'],
+        choices: ['github', 'gitlab', 'bitbucket'],
         description: 'If not specify it infers it from the ENV.'
       }
     })
