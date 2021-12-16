@@ -2,8 +2,8 @@ name: Test & Deploy
 on:
   schedule:
     - cron: '0 9 * * 1' # M H d m w (Mondays at 9:00)
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
   pull_request_target:
   workflow_dispatch:
 jobs:
@@ -89,33 +89,33 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run:
-          npm ${{ github.event_name == 'release' && 'publish' || 'publish
+          npm ${{ github.event_name == 'push' && 'publish' || 'publish
           --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  binaries:
-    needs: [lint, test, test-os]
+  release:
+    if: github.event_name == 'push'
+    needs: packages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - name: build
         run: |
           npm i
           npx --yes pkg package.json
-      - if: ${{ github.event_name == 'release' }}
-        uses: JasonEtco/upload-to-release@master
+      - id: meta
+        name: Metadata
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+      - uses: softprops/action-gh-release@v1
         with:
-          args: build/cml-macos application/octet-stream
+          name: CML ${{ steps.meta.outputs.tag }}
+          draft: true
+          generate_release_notes: true
+          files: |
+            build/cml-linux
+            build/cml-macos
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - if: ${{ github.event_name == 'release' }}
-        uses: JasonEtco/upload-to-release@master
-        with:
-          args: build/cml-linux application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
     runs-on: ubuntu-latest
     needs: packages
