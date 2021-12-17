@@ -2,11 +2,12 @@ name: checkbot
 on:
   issue_comment:
     types: [created]
+  pull_request_review_comment:
+    types: [created]
 jobs:
-  # check that CML container builds properly
-  build-container:
-    if: startsWith(github.event.comment.body, '/tests')
-    runs-on: ubuntu-18.04
+  react-seen:
+    if: startsWith(github.event.comment.body, '/')
+    runs-on: ubuntu-latest
     steps:
       - name: React Seen
         uses: actions/github-script@v2
@@ -15,16 +16,25 @@ jobs:
             const perm = await github.repos.getCollaboratorPermissionLevel({
               owner: context.repo.owner, repo: context.repo.repo,
               username: context.payload.comment.user.login})
+            post = (context.eventName == "issue_comment"
+              ? github.reactions.createForIssueComment
+              : github.reactions.createForPullRequestReviewComment)
             if (!["admin", "write"].includes(perm.data.permission)){
-              github.reactions.createForIssueComment({
+              post({
                 owner: context.repo.owner, repo: context.repo.repo,
                 comment_id: context.payload.comment.id, content: "laugh"})
               throw "Permission denied for user " + context.payload.comment.user.login
             }
-            github.reactions.createForIssueComment({
+            post({
               owner: context.repo.owner, repo: context.repo.repo,
               comment_id: context.payload.comment.id, content: "eyes"})
           github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
+  # check that CML container builds properly
+  build-container:
+    needs: react-seen
+    if: startsWith(github.event.comment.body, '/tests')
+    runs-on: ubuntu-18.04
+    steps:
       - uses: actions/checkout@v2
       - name: Build & Publish test image
         run: |
@@ -127,44 +137,39 @@ jobs:
         run: |
           nvidia-smi
   chatbot:
+    needs: react-seen
     if: startsWith(github.event.comment.body, '/cml-')
     runs-on: ubuntu-latest
     steps:
-      - name: React Seen
-        uses: actions/github-script@v2
-        with:
-          script: |
-            const perm = await github.repos.getCollaboratorPermissionLevel({
-              owner: context.repo.owner, repo: context.repo.repo,
-              username: context.payload.comment.user.login})
-            if (!["admin", "write"].includes(perm.data.permission)){
-              github.reactions.createForIssueComment({
-                owner: context.repo.owner, repo: context.repo.repo,
-                comment_id: context.payload.comment.id, content: "laugh"})
-              throw "Permission denied for user " + context.payload.comment.user.login
-            }
-            github.reactions.createForIssueComment({
-              owner: context.repo.owner, repo: context.repo.repo,
-              comment_id: context.payload.comment.id, content: "eyes"})
-          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
       - uses: actions/checkout@v2
-      - name: chatops
-        id: chatops
-        uses: actions/github-script@v1
-        env:
-          COMMAND: ${{github.event.comment.body}}
-        with:
-          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
-          script: |
-            github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.issue.number
-            }).then( (pr) => {
-              console.log(`::set-output name=COMMAND::${process.env.COMMAND}`)
-            })
       - name: chatactions
         run: |
           npm ci
           sudo npm link
-          # ${{steps.chatops.outputs.COMMAND}}
+          # ${{ github.event.comment.body }}
+  tag: # /tag <tagname> <commit>
+    needs: react-seen
+    if: startsWith(github.event.comment.body, '/tag ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Tag Commit
+        run: |
+          git clone https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY} repo
+          git -C repo tag $(echo "$BODY" | awk '{print $2" "$3}')
+          git -C repo push --tags
+          rm -rf repo
+        env:
+          BODY: ${{ github.event.comment.body }}
+          GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
+      - name: React Success
+        uses: actions/github-script@v2
+        with:
+          script: |
+            post = (context.eventName == "issue_comment"
+              ? github.reactions.createForIssueComment
+              : github.reactions.createForPullRequestReviewComment)
+            post({
+              owner: context.repo.owner, repo: context.repo.repo,
+              comment_id: context.payload.comment.id, content: "rocket"})
+          github-token: ${{ secrets.TEST_GITHUB_TOKEN }}
