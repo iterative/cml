@@ -9,3 +9,4 @@ terraform.*
 !terraform.js
 !terraform.test.js
 crash.log
+/build
