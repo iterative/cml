@@ -9,14 +9,7 @@ const ProxyAgent = require('proxy-agent');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
-const {
-  IN_DOCKER,
-  CI_BUILD_REF_NAME,
-  CI_COMMIT_SHA,
-  GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME,
-  CI_PIPELINE_ID
-} = process.env;
+const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -390,19 +383,19 @@ class Gitlab {
   }
 
   get sha() {
-    return CI_COMMIT_SHA;
+    return process.env.CI_COMMIT_SHA;
   }
 
   get branch() {
-    return CI_BUILD_REF_NAME;
+    return process.env.CI_BUILD_REF_NAME;
   }
 
   get userEmail() {
-    return GITLAB_USER_EMAIL;
+    return process.env.GITLAB_USER_EMAIL;
   }
 
   get userName() {
-    return GITLAB_USER_NAME;
+    return process.env.GITLAB_USER_NAME;
   }
 
   async request(opts = {}) {
