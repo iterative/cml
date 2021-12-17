@@ -58,7 +58,7 @@ describe('Non Enviromental tests', () => {
     expect(output.length).toBe(20);
   });
 
-  test('updateGitConfig', async () => {
+  test.skip('updateGitConfig', async () => {
     process.env.GITLAB_USER_NAME = 'james';
 
     const client = new GitlabClient({
