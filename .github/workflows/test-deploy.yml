@@ -1,7 +1,7 @@
 name: Test & Deploy
 on:
   schedule:
-    - cron: '0 9 * * 1' # M H d m w (Mondays at 9:00)
+    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
   push:
     tags: ['v*']
   pull_request_target:
