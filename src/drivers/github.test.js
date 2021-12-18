@@ -52,4 +52,13 @@ describe('Non Enviromental tests', () => {
           git remote set-url origin \\"https://GitHub%20Action:dXNlcjpwYXNz@github.com/test/test.git\\""
     `);
   });
+
+  test('Check pinned version of Octokit', async () => {
+    // This test is a must to ensure that @actions/github is not updated.
+    // There is a bug that after a reRunWorkflow deprecation rest the library does not contains
+    // nor the original reRunWorkflow nor the new one!
+
+    const { dependencies } = require('../../package.json');
+    expect(dependencies['@actions/github']).toBe('^4.0.0');
+  });
 });
