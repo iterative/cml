@@ -60,5 +60,7 @@ describe('Non Enviromental tests', () => {
 
     const { dependencies } = require('../../package.json');
     expect(dependencies['@actions/github']).toBe('^4.0.0');
+    expect(dependencies['@octokit/rest']).toBe('18.0.0');
+    expect(dependencies['@octokit/rest']).toBe('^3.5.1');
   });
 });
