@@ -127,6 +127,7 @@ const runCloud = async (opts) => {
       cloudSpotPrice: spotPrice,
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
+      cloudAwsSubnetId: awsSubnetId,
       tfFile,
       workdir
     } = opts;
@@ -161,7 +162,8 @@ const runCloud = async (opts) => {
         spot,
         spotPrice,
         startupScript,
-        awsSecurityGroup
+        awsSecurityGroup,
+        awsSubnetId
       });
     }
 
@@ -183,6 +185,7 @@ const runCloud = async (opts) => {
       for (const { attributes } of resource.instances) {
         const nonSensitiveValues = {
           awsSecurityGroup: attributes.aws_security_group,
+          awsSubnetId: attributes.aws_subnet_id,
           cloud: attributes.cloud,
           driver: attributes.driver,
           id: attributes.id,
@@ -528,6 +531,11 @@ exports.builder = (yargs) =>
         type: 'string',
         default: '',
         description: 'Specifies the security group in AWS'
+      },
+      cloudAwsSubnetId: {
+        type: 'string',
+        default: '',
+        description: 'Specifies the subnet to use within AWS'
       },
       tfResource: {
         hidden: true,
