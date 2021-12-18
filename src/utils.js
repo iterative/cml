@@ -1,10 +1,12 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const mmm = require('mmmagic');
 const forge = require('node-forge');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
+
+const { FileMagic, MagicFlags } = require('@npcz/magic');
+const tempy = require('tempy');
 
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
@@ -25,25 +27,29 @@ const exec = async (command) => {
 };
 
 const mimeType = async (opts) => {
-  return new Promise((resolve, reject) => {
-    const { path, buffer } = opts;
-    const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    const handler = (err, result) => {
-      if (err)
-        reject(
-          new Error(
-            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-          )
-        );
+  const { path, buffer } = opts;
+  FileMagic.magicFile = PATH.join(
+    __dirname,
+    '..',
+    'node_modules/@npcz/magic/dist/magic.mgc'
+  );
+  FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
+  const fileMagic = await FileMagic.getInstance();
 
-      if (result === 'image/svg') resolve('image/svg+xml');
+  let tmppath;
+  if (buffer) {
+    tmppath = tempy.file();
+    await fs.promises.writeFile(tmppath, buffer);
+  }
 
-      resolve(result);
-    };
+  const [mime] = (
+    fileMagic.detect(
+      buffer ? tmppath : path,
+      fileMagic.flags | MagicFlags.MAGIC_MIME
+    ) || []
+  ).split(';');
 
-    if (path) magic.detectFile(path, handler);
-    else magic.detect(buffer, handler);
-  });
+  return mime;
 };
 
 const fetchUploadData = async (opts) => {
