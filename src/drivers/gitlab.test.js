@@ -43,4 +43,21 @@ describe('Non Enviromental tests', () => {
 
     expect(output.length).toBe(20);
   });
+
+  test.skip('updateGitConfig', async () => {
+    const client = new GitlabClient({
+      repo: 'https://gitlab.com/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig({
+      userName: 'john',
+      userEmail: 'john@test.com'
+    });
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config user.name \\"john\\" && \\\\
+          git config user.email \\"john@test.com\\" && \\\\
+          git remote set-url origin \\"https://john:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+    `);
+  });
 });

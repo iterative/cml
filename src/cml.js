@@ -11,8 +11,7 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
-  process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -325,15 +324,24 @@ class CML {
     }
   }
 
+  async ci(opts = {}) {
+    const { userEmail = GIT_USER_EMAIL, userName = GIT_USER_NAME } = opts;
+
+    const driver = getDriver(this);
+    const command = await driver.updateGitConfig({ userName, userEmail });
+    await exec(command);
+    await exec('git fetch --all');
+  }
+
   async prCreate(opts = {}) {
     const driver = getDriver(this);
     const {
       remote = GIT_REMOTE,
-      userEmail = GIT_USER_EMAIL,
-      userName = GIT_USER_NAME,
       globs = ['dvc.lock', '.gitignore'],
       md
     } = opts;
+
+    await this.ci(opts);
 
     const renderPr = (url) => {
       if (md)
@@ -378,20 +386,6 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git config --local user.email "${userEmail}"`);
-      await exec(`git config --local user.name "${userName}"`);
-
-      if (CI) {
-        if (this.driver === GITLAB) {
-          const repo = new URL(this.repo);
-          repo.password = this.token;
-          repo.username = driver.userName;
-
-          await exec(`git remote rm ${remote}`);
-          await exec(`git remote add ${remote} "${repo.toString()}.git"`);
-        }
-      }
-
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
@@ -413,6 +407,10 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
     });
 
     return renderPr(url);
+  }
+
+  async pipelineRerun(opts) {
+    return await getDriver(this).pipelineRerun(opts);
   }
 
   async pipelineRestart(opts) {

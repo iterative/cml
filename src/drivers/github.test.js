@@ -37,4 +37,30 @@ describe('Non Enviromental tests', () => {
     const output = await client.runnerToken();
     expect(output.length).toBe(29);
   });
+
+  test('updateGitConfig', async () => {
+    const client = new GithubClient({
+      repo: 'https://github.com/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig();
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config --unset http.https://github.com/.extraheader && \\\\
+          git config user.name \\"GitHub Action\\" && \\\\
+          git config user.email \\"action@github.com\\" && \\\\
+          git remote set-url origin \\"https://GitHub%20Action:dXNlcjpwYXNz@github.com/test/test.git\\""
+    `);
+  });
+
+  test('Check pinned version of Octokit', async () => {
+    // This test is a must to ensure that @actions/github is not updated.
+    // There is a bug that after a reRunWorkflow deprecation rest the library does not contains
+    // nor the original reRunWorkflow nor the new one!
+
+    const { dependencies } = require('../../package.json');
+    expect(dependencies['@actions/github']).toBe('^4.0.0');
+    expect(dependencies['@octokit/rest']).toBe('18.0.0');
+    expect(dependencies['@octokit/core']).toBe('^3.5.1');
+  });
 });

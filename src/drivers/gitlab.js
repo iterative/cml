@@ -9,13 +9,7 @@ const ProxyAgent = require('proxy-agent');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
-const {
-  IN_DOCKER,
-  CI_BUILD_REF_NAME,
-  CI_COMMIT_SHA,
-  GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME
-} = process.env;
+const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -313,6 +307,31 @@ class Gitlab {
     });
   }
 
+  async pipelineRerun(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { id = CI_PIPELINE_ID } = opts;
+
+    const { status } = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}`,
+      method: 'GET'
+    });
+
+    if (status === 'running') return;
+
+    const jobs = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    });
+
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
+      })
+    );
+  }
+
   async pipelineRestart(opts = {}) {
     const projectPath = await this.projectPath();
     const { jobId } = opts;
@@ -348,6 +367,37 @@ class Gitlab {
     throw new Error('Not implemented');
   }
 
+  async updateGitConfig({ userName, userEmail } = {}) {
+    const repo = new URL(this.repo);
+    repo.password = this.token;
+    repo.username = this.userName || userName;
+
+    const command = `
+    git config user.name "${userName || this.userName}" && \\
+    git config user.email "${userEmail || this.userEmail}" && \\
+    git remote set-url origin "${repo.toString()}${
+      repo.toString().endsWith('.git') ? '' : '.git'
+    }"`;
+
+    return command;
+  }
+
+  get sha() {
+    return process.env.CI_COMMIT_SHA;
+  }
+
+  get branch() {
+    return process.env.CI_BUILD_REF_NAME;
+  }
+
+  get userEmail() {
+    return process.env.GITLAB_USER_EMAIL;
+  }
+
+  get userName() {
+    return process.env.GITLAB_USER_NAME;
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
@@ -369,22 +419,6 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
-  }
-
-  get sha() {
-    return CI_COMMIT_SHA;
-  }
-
-  get branch() {
-    return CI_BUILD_REF_NAME;
-  }
-
-  get userEmail() {
-    return GITLAB_USER_EMAIL;
-  }
-
-  get userName() {
-    return GITLAB_USER_NAME;
   }
 }
 
