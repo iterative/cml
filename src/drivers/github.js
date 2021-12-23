@@ -22,7 +22,10 @@ const {
   GITHUB_REF,
   GITHUB_HEAD_REF,
   GITHUB_EVENT_NAME,
-  GITHUB_RUN_ID
+  GITHUB_RUN_ID,
+  GITHUB_TOKEN,
+  CI,
+  TPI_TASK
 } = process.env;
 
 const branchName = (branch) => {
@@ -164,6 +167,15 @@ class Github {
       conclusion = 'success',
       status = 'completed'
     } = opts;
+
+    const warning =
+      'This command only works inside a Github runner or a Github app.';
+
+    if (!CI || TPI_TASK) winston.warn(warning);
+    if (GITHUB_TOKEN && GITHUB_TOKEN !== this.token)
+      winston.warn(
+        `Your token is different than the GITHUB_TOKEN, this command does not work with PAT. ${warning}`
+      );
 
     const name = title;
     return await octokit(this.token, this.repo).checks.create({
