@@ -9,7 +9,7 @@ const ProxyAgent = require('proxy-agent');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
-const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
+const { IN_DOCKER, CI_PIPELINE_ID, CML_GL_DOCKER_VOLUMES } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -195,7 +195,12 @@ class Gitlab {
         --wait-timeout ${idleTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
-        --docker-runtime "${gpu ? 'nvidia' : ''}" \
+        ${
+          CML_GL_DOCKER_VOLUMES
+            ? `--docker-volumes=${CML_GL_DOCKER_VOLUMES}`
+            : ''
+        } \
+        ${gpu ? '--docker-runtime nvidia' : ''} \
         ${single ? '--max-builds 1' : ''}`;
 
       return spawn(command, { shell: true });
