@@ -186,6 +186,11 @@ class Gitlab {
 
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
+
+      let dockerVolumesTpl = '';
+      CML_GL_DOCKER_VOLUMES.split(',').forEach((vol) => {
+        dockerVolumesTpl += `--docker-volumes ${vol} `;
+      });
       const command = `${bin} --log-format="json" run-single \
         --builds-dir "${workdir}" \
         --cache-dir "${workdir}" \
@@ -195,12 +200,8 @@ class Gitlab {
         --wait-timeout ${idleTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
-        ${
-          CML_GL_DOCKER_VOLUMES
-            ? `--docker-volumes=${CML_GL_DOCKER_VOLUMES}`
-            : ''
-        } \
         ${gpu ? '--docker-runtime nvidia' : ''} \
+        ${dockerVolumesTpl} \
         ${single ? '--max-builds 1' : ''}`;
 
       return spawn(command, { shell: true });
