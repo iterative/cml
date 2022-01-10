@@ -28,11 +28,6 @@ const exec = async (command) => {
 
 const mimeType = async (opts) => {
   const { path, buffer } = opts;
-  FileMagic.magicFile = PATH.join(
-    __dirname,
-    '..',
-    'node_modules/@npcz/magic/dist/magic.mgc'
-  );
   FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
   const fileMagic = await FileMagic.getInstance();
 
