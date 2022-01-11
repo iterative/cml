@@ -9,7 +9,7 @@ const ProxyAgent = require('proxy-agent');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
-const { IN_DOCKER, CI_PIPELINE_ID, CML_GL_DOCKER_VOLUMES } = process.env;
+const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -162,7 +162,14 @@ class Gitlab {
   }
 
   async startRunner(opts) {
-    const { workdir, idleTimeout, single, labels, name } = opts;
+    const {
+      workdir,
+      idleTimeout,
+      single,
+      labels,
+      name,
+      dockerVolumes = []
+    } = opts;
 
     let gpu = true;
     try {
@@ -178,8 +185,8 @@ class Gitlab {
     try {
       const bin = resolve(workdir, 'gitlab-runner');
       if (!(await fse.pathExists(bin))) {
-        const url =
-          'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
+        const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
+        const url = `https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-${arch}-amd64`;
         await download({ url, path: bin });
         await fs.chmod(bin, '777');
       }
@@ -188,7 +195,7 @@ class Gitlab {
       const { token } = await this.registerRunner({ tags: labels, name });
 
       let dockerVolumesTpl = '';
-      CML_GL_DOCKER_VOLUMES.split(',').forEach((vol) => {
+      dockerVolumes.forEach((vol) => {
         dockerVolumesTpl += `--docker-volumes ${vol} `;
       });
       const command = `${bin} --log-format="json" run-single \
