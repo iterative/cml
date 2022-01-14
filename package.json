@@ -93,7 +93,7 @@
     "tempy": "^0.6.0",
     "which": "^2.0.2",
     "winston": "^3.3.3",
-    "yargs": "^17.2.1"
+    "yargs": "^17.3.1"
   },
   "devDependencies": {
     "eslint": "^8.1.0",
