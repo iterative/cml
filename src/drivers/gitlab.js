@@ -185,7 +185,7 @@ class Gitlab {
     try {
       const bin = resolve(workdir, 'gitlab-runner');
       if (!(await fse.pathExists(bin))) {
-        const arch = process.platform === 'darwin' ? 'osx-x64' : 'linux-x64';
+        const arch = process.platform === 'darwin' ? 'darwin' : 'linux';
         const url = `https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-${arch}-amd64`;
         await download({ url, path: bin });
         await fs.chmod(bin, '777');
