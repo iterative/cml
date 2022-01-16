@@ -10,4 +10,3 @@ terraform.*
 !terraform.test.js
 crash.log
 /build
-get-docker.sh
