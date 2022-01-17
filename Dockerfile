@@ -69,7 +69,7 @@ ARG DVC_VERSION=2
 RUN cd /etc/apt/sources.list.d \
  && wget https://dvc.org/deb/dvc.list \
  && apt-get update \
- && apt-get install --yes "dvc=$(if [ "$DVC_VERSION" = "1" ]; then echo "${DVC_VERSION}.*" ; else echo 2.8.3 ; fi)" \
+ && apt-get install --yes "dvc=${DVC_VERSION}.*" \
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/*
 
