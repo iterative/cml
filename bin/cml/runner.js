@@ -419,7 +419,7 @@ exports.builder = (yargs) =>
       dockerVolumes: {
         type: 'array',
         default: [],
-        description: 'Docker volumes. This feature is only supported in Gitlab'
+        description: 'Docker volumes. This feature is only supported in GitLab'
       },
       labels: {
         type: 'string',
