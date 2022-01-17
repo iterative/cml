@@ -127,7 +127,6 @@ const runCloud = async (opts) => {
       cloudSpotPrice: spotPrice,
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
-      cloudAwsSubnetId: awsSubnetId,
       cloudAwsSubnet: awsSubnet,
       tfFile,
       workdir
@@ -164,7 +163,7 @@ const runCloud = async (opts) => {
         spotPrice,
         startupScript,
         awsSecurityGroup,
-        awsSubnetId: awsSubnet || awsSubnetId
+        awsSubnet
       });
     }
 
@@ -536,12 +535,8 @@ exports.builder = (yargs) =>
       cloudAwsSubnet: {
         type: 'string',
         default: '',
-        description: 'Specifies the subnet to use within AWS'
-      },
-      cloudAwsSubnetId: {
-        type: 'string',
-        default: '',
-        hidden: true
+        description: 'Specifies the subnet to use within AWS',
+        alias: 'cloud-aws-subnet-id'
       },
       tfResource: {
         hidden: true,
