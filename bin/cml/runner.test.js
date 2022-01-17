@@ -15,7 +15,7 @@ describe('CML e2e', () => {
         --log                       Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
         --docker-volumes            Docker volumes. This feature is only supported in
-                                    Gitlab                       [array] [default: []]
+                                    GitLab                       [array] [default: []]
         --labels                    One or more user-defined labels for this runner
                                     (delimited with commas)  [string] [default: \\"cml\\"]
         --idle-timeout              Seconds to wait for jobs before shutting down. Set
