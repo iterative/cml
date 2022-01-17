@@ -56,7 +56,9 @@ RUN curl --location https://apt.releases.hashicorp.com/gpg | sudo apt-key add - 
 # INSTALL DOCKER
 RUN apt update && curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh \
    && apt-get clean \
-   && rm --recursive --force /var/lib/apt/lists/*
+   && rm --recursive --force /var/lib/apt/lists/* \
+   && rm get-docker.sh
+
 
 # INSTALL PYTHON
 ARG PYTHON_VERSION=3
