@@ -335,11 +335,15 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
+    dockerVolumes,
     tfResource,
     workdir
   } = opts;
 
   cml = new CML({ driver, repo, token });
+
+  if (dockerVolumes.length && cml.driver !== 'gitlab')
+    winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
   if (cloud || tfResource) await tf.checkMinVersion();
 
