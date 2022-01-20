@@ -97,11 +97,7 @@ resource "iterative_cml_runner" "runner" {
   ${token ? `token = "${token}"` : ''}
   ${driver ? `driver = "${driver}"` : ''}
   ${labels ? `labels = "${labels}"` : ''}
-  ${
-    typeof idleTimeout !== 'undefined' && idleTimeout >= 0
-      ? `idle_timeout = ${idleTimeout}`
-      : ''
-  }
+  ${typeof idleTimeout !== 'undefined' ? `idle_timeout = ${idleTimeout}` : ''}
   ${name ? `name = "${name}"` : ''}
   ${single ? `single = "${single}"` : ''}
   ${cloud ? `cloud = "${cloud}"` : ''}
