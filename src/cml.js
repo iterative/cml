@@ -275,7 +275,9 @@ class CML {
       }
     } catch (err) {
       winston.warn(`Failed parsing log: ${err.message}`);
-      winston.warn(`Original log bytes, as Base64: ${data.toString('base64')}`);
+      winston.warn(
+        `Original log bytes, as Base64: ${Buffer.from(data).toString('base64')}`
+      );
     }
   }
 
