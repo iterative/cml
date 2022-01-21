@@ -86,7 +86,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     spotPrice,
     startupScript,
     awsSecurityGroup,
-    awsSubnetId
+    awsSubnet
   } = opts;
 
   const template = `
@@ -115,7 +115,7 @@ resource "iterative_cml_runner" "runner" {
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
   ${startupScript ? `startup_script = "${startupScript}"` : ''}
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
-  ${awsSubnetId ? `aws_subnet_id = "${awsSubnetId}"` : ''}
+  ${awsSubnet ? `aws_subnet_id = "${awsSubnet}"` : ''}
   ${
     metadata
       ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
