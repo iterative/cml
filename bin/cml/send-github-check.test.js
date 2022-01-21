@@ -34,26 +34,29 @@ describe('CML e2e', () => {
     const output = await exec(`node ./bin/cml.js send-github-check --help`);
 
     expect(output).toMatchInlineSnapshot(`
-"cml.js send-github-check <markdown file>
+      "cml.js send-github-check <markdown file>
 
-Create a check report
+      Create a check report
 
-Options:
-  --help                    Show help                                  [boolean]
-  --version                 Show version number                        [boolean]
-  --log                     Maximum log level
-          [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-  --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
-                                                                        [string]
-  --conclusion              Sets the conclusion status of the check.
-     [string] [choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
-                                               \\"timed_out\\"] [default: \\"success\\"]
-  --title                   Sets title of the check.
-                                                [string] [default: \\"CML Report\\"]
-  --repo                    Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.                  [string]
-  --token                   Personal access token to be used. If not specified
-                            in extracted from ENV REPO_TOKEN.           [string]"
-`);
+      Options:
+        --help                    Show help                                  [boolean]
+        --version                 Show version number                        [boolean]
+        --log                     Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
+                                                                              [string]
+        --conclusion              Sets the conclusion status of the check.
+           [string] [choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
+                                                     \\"timed_out\\"] [default: \\"success\\"]
+        --status                  Sets the status of the check.
+                    [string] [choices: \\"queued\\", \\"in_progress\\", \\"completed\\"] [default:
+                                                                          \\"completed\\"]
+        --title                   Sets title of the check.
+                                                      [string] [default: \\"CML Report\\"]
+        --repo                    Specifies the repo to be used. If not specified is
+                                  extracted from the CI ENV.                  [string]
+        --token                   GITHUB_TOKEN or Github App token. Personal access
+                                  token won't work                            [string]"
+    `);
   });
 });
