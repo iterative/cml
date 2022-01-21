@@ -86,7 +86,8 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     spotPrice,
     startupScript,
     awsSecurityGroup,
-    awsSubnet
+    awsSubnet,
+    dockerVolumes
   } = opts;
 
   const template = `
@@ -117,6 +118,7 @@ resource "iterative_cml_runner" "runner" {
       ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
       : ''
   }
+  ${dockerVolumes ? `docker_volumes = ${JSON.stringify(dockerVolumes)}` : ''}
 }
 `;
   return template;

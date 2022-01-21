@@ -115,6 +115,7 @@ const runCloud = async (opts) => {
       idleTimeout,
       name,
       single,
+      dockerVolumes,
       cloud,
       cloudRegion: region,
       cloudType: type,
@@ -163,7 +164,8 @@ const runCloud = async (opts) => {
         spotPrice,
         startupScript,
         awsSecurityGroup,
-        awsSubnet
+        awsSubnet,
+        dockerVolumes
       });
     }
 
@@ -215,14 +217,16 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   winston.info(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry, dockerVolumes } =
+    opts;
 
   const proc = await cml.startRunner({
     workdir,
     name,
     labels,
     single,
-    idleTimeout
+    idleTimeout,
+    dockerVolumes
   });
 
   const dataHandler = async (data) => {
@@ -331,11 +335,15 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
+    dockerVolumes,
     tfResource,
     workdir
   } = opts;
 
   cml = new CML({ driver, repo, token });
+
+  if (dockerVolumes.length && cml.driver !== 'gitlab')
+    winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
   if (cloud || tfResource) await tf.checkMinVersion();
 
@@ -412,6 +420,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
+      dockerVolumes: {
+        type: 'array',
+        default: [],
+        description: 'Docker volumes. This feature is only supported in GitLab'
+      },
       labels: {
         type: 'string',
         default: 'cml',

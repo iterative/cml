@@ -14,6 +14,9 @@ describe('CML e2e', () => {
         --version                                 Show version number        [boolean]
         --log                                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --docker-volumes                          Docker volumes. This feature is only
+                                                  supported in GitLab
+                                                                 [array] [default: []]
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]
