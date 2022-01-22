@@ -4,18 +4,12 @@ describe('Terraform tests', () => {
   test('default options', async () => {
     const output = iterativeCmlRunnerTpl({});
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         
@@ -65,18 +59,12 @@ describe('Terraform tests', () => {
       awsSecurityGroup: 'mysg'
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
@@ -125,18 +113,12 @@ describe('Terraform tests', () => {
       spotPrice: '0.0001'
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
@@ -186,18 +168,12 @@ describe('Terraform tests', () => {
       metadata: { one: 'value', two: null }
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
@@ -250,18 +226,12 @@ describe('Terraform tests', () => {
       dockerVolumes: ['/aa:/aa', '/bb:/bb']
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
@@ -312,18 +282,12 @@ describe('Terraform tests', () => {
       awsSecurityGroup: 'mysg'
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
@@ -373,18 +337,12 @@ describe('Terraform tests', () => {
       startupScript: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
     });
     expect(output).toMatchInlineSnapshot(`
-      "
-
-      terraform {
+      "terraform {
         required_providers {
-          iterative = {
-            source = \\"iterative/iterative\\"
-          }
+          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
         }
       }
-
       provider \\"iterative\\" {}
-
 
       resource \\"iterative_cml_runner\\" \\"runner\\" {
         repo = \\"https://\\"
