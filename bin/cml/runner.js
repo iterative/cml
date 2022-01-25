@@ -437,7 +437,7 @@ exports.builder = (yargs) =>
         coerce: (val) =>
           /^-?\d+$/.test(val) ? parseInt(val) : timestring(val),
         description:
-          'Time to wait for jobs before shutting down. Set to -1 to disable timeout'
+          'Time to wait for jobs before shutting down (e.g. "5min"). Use "never" to disable'
       },
       name: {
         type: 'string',
