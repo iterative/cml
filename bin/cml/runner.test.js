@@ -20,9 +20,10 @@ describe('CML e2e', () => {
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]
-        --idle-timeout                            Seconds to wait for jobs before
-                                                  shutting down. Set to -1 to disable
-                                                  timeout      [number] [default: 300]
+        --idle-timeout                            Time to wait for jobs before
+                                                  shutting down (e.g. \\"5min\\"). Use
+                                                  \\"never\\" to disable
+                                                       [string] [default: \\"5 minutes\\"]
         --name                                    Name displayed in the repository
                                                   once registered
                                                           [string] [default: cml-{ID}]

@@ -3,7 +3,7 @@ const { homedir } = require('os');
 const fs = require('fs').promises;
 const { SpotNotifier } = require('ec2-spot-notification');
 const kebabcaseKeys = require('kebabcase-keys');
-
+const timestring = require('timestring');
 const winston = require('winston');
 const CML = require('../../src/cml').default;
 const { exec, randid, sleep } = require('../../src/utils');
@@ -432,10 +432,12 @@ exports.builder = (yargs) =>
           'One or more user-defined labels for this runner (delimited with commas)'
       },
       idleTimeout: {
-        type: 'number',
-        default: 5 * 60,
+        type: 'string',
+        default: '5 minutes',
+        coerce: (val) =>
+          /^-?\d+$/.test(val) ? parseInt(val) : timestring(val),
         description:
-          'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
+          'Time to wait for jobs before shutting down (e.g. "5min"). Use "never" to disable'
       },
       name: {
         type: 'string',
