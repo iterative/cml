@@ -1,9 +1,10 @@
 const fetch = require('node-fetch');
+const winston = require('winston');
 const { URL } = require('url');
+const ProxyAgent = require('proxy-agent');
 
-const { proxyAgent } = require('../utils');
-
-const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
+const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
+  process.env;
 class BitbucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -24,67 +25,61 @@ class BitbucketCloud {
 
   async commentCreate(opts = {}) {
     const { projectPath } = this;
-    const { commitSha, report, update, watermark } = opts;
+    const { commitSha, report } = opts;
 
-    // Check for a corresponding PR. If it exists, also put the comment there.
-    let prs;
-    try {
-      const getPrEndpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests`;
-      prs = await this.paginatedRequest({ endpoint: getPrEndpoint });
-    } catch (err) {
-      if (err.message === 'Not Found Resource not found')
-        err.message =
-          "Click 'Go to pull request' on any commit details page to enable this API";
-      throw err;
-    }
-
-    if (prs && prs.length) {
-      for (const pr of prs) {
-        // Append a watermark to the report with a link to the commit
-        const commitLink = commitSha.substr(0, 7);
-        const longReport = `${commitLink}\n\n${report}`;
-        const prBody = JSON.stringify({ content: { raw: longReport } });
-
-        // Write a comment on the PR
-        const prEndpoint = `/repositories/${projectPath}/pullrequests/${pr.id}/comments/`;
-        const existingPr = (
-          await this.paginatedRequest({ endpoint: prEndpoint, method: 'GET' })
-        )
-          .filter((comment) => {
-            const { content: { raw = '' } = {} } = comment;
-            return raw.endsWith(watermark);
-          })
-          .sort((first, second) => first.id < second.id)
-          .pop();
-        await this.request({
-          endpoint: prEndpoint + (update && existingPr ? existingPr.id : ''),
-          method: update && existingPr ? 'PUT' : 'POST',
-          body: prBody
-        });
-      }
-    }
-
-    const commitEndpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
-
-    const existingCommmit = (
-      await this.paginatedRequest({ endpoint: commitEndpoint, method: 'GET' })
-    )
-      .filter((comment) => {
-        const { content: { raw = '' } = {} } = comment;
-        return raw.endsWith(watermark);
-      })
-      .sort((first, second) => first.id < second.id)
-      .pop();
-
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
     return (
       await this.request({
-        endpoint:
-          commitEndpoint +
-          (update && existingCommmit ? existingCommmit.id : ''),
-        method: update && existingCommmit ? 'PUT' : 'POST',
+        endpoint,
+        method: 'POST',
         body: JSON.stringify({ content: { raw: report } })
       })
     ).links.html.href;
+  }
+
+  async commentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha, report, id } = opts;
+
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/${id}`;
+    return (
+      await this.request({
+        endpoint,
+        method: 'PUT',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
+  async commitComments(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha } = opts;
+
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/comments/`;
+
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
+  async commitPrs(opts = {}) {
+    const { projectPath } = this;
+    const { commitSha, state = 'OPEN' } = opts;
+
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+    const prs = await this.paginatedRequest({ endpoint });
+    return prs.map((pr) => {
+      const {
+        links: {
+          html: { href: url }
+        }
+      } = pr;
+      return {
+        url
+      };
+    });
   }
 
   async checkCreate() {
@@ -147,30 +142,98 @@ class BitbucketCloud {
     return href;
   }
 
+  async prCommentCreate(opts = {}) {
+    const { projectPath } = this;
+    const { report, prNumber } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    const output = await this.request({
+      endpoint,
+      method: 'POST',
+      body: JSON.stringify({ content: { raw: report } })
+    });
+
+    return output.links.self.href;
+  }
+
+  async prCommentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { report, prNumber, id } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/${id}`;
+    const output = await this.request({
+      endpoint,
+      method: 'PUT',
+      body: JSON.stringify({ content: { raw: report } })
+    });
+
+    return output.links.self.href;
+  }
+
+  async prComments(opts = {}) {
+    const { projectPath } = this;
+    const { prNumber } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pullrequests/${prNumber}/comments/`;
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
   async prs(opts = {}) {
     const { projectPath } = this;
     const { state = 'OPEN' } = opts;
 
-    const endpoint = `/repositories/${projectPath}/pullrequests?state=${state}`;
-    const { values: prs } = await this.request({ endpoint });
+    try {
+      const endpoint = `/repositories/${projectPath}/pullrequests?state=${state}`;
+      const prs = await this.paginatedRequest({ endpoint });
 
-    return prs.map((pr) => {
-      const {
-        links: {
-          html: { href: url }
-        },
-        source: {
-          branch: { name: source }
-        },
-        destination: {
-          branch: { name: target }
-        }
-      } = pr;
-      return {
-        url,
-        source,
-        target
-      };
+      return prs.map((pr) => {
+        const {
+          links: {
+            html: { href: url }
+          },
+          source: {
+            branch: { name: source }
+          },
+          destination: {
+            branch: { name: target }
+          }
+        } = pr;
+        return {
+          url,
+          source,
+          target
+        };
+      });
+    } catch (err) {
+      if (err.message === 'Not Found Resource not found')
+        err.message =
+          "Click 'Go to pull request' on any commit details page to enable this API";
+      throw err;
+    }
+  }
+
+  async pipelineRerun(opts = {}) {
+    const { projectPath } = this;
+    const { id = BITBUCKET_PIPELINE_UUID } = opts;
+
+    const {
+      target,
+      state: { name: status }
+    } = await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/${id}`,
+      method: 'GET'
+    });
+
+    if (status !== 'COMPLETED') return;
+
+    await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/`,
+      method: 'POST',
+      body: JSON.stringify({ target })
     });
   }
 
@@ -178,36 +241,45 @@ class BitbucketCloud {
     throw new Error('BitBucket Cloud does not support workflowRestart!');
   }
 
-  async request(opts = {}) {
-    const { token, api } = this;
-    const { url, endpoint, method = 'GET', body } = opts;
-    if (!(url || endpoint))
-      throw new Error('Bitbucket Cloud API endpoint not found');
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: 'Basic ' + `${token}`
-    };
-
-    const response = await fetch(url || `${api}${endpoint}`, {
-      method,
-      headers,
-      body,
-      agent: proxyAgent()
-    });
-
-    if (response.status > 300) {
-      const {
-        error: { message }
-      } = await response.json();
-      throw new Error(`${response.statusText} ${message}`);
-    }
-
-    return await response.json();
-  }
-
   async pipelineJobs(opts = {}) {
     throw new Error('Not implemented');
   }
+
+  async updateGitConfig({ userName, userEmail } = {}) {
+    const [user, password] = Buffer.from(this.token, 'base64')
+      .toString('utf-8')
+      .split(':');
+    const repo = new URL(this.repo);
+    repo.password = password;
+    repo.username = user;
+
+    const command = `
+    git config --unset user.name && \\
+    git config --unset user.email && \\
+    git config --unset push.default && \\
+    git config --unset http.http://${this.repo
+      .replace('https://', '')
+      .replace('.git', '')}.proxy && \\
+    git config user.name "${userName || this.userName}" && \\
+    git config user.email "${userEmail || this.userEmail}" && \\
+    git remote set-url origin "${repo.toString()}${
+      repo.toString().endsWith('.git') ? '' : '.git'
+    }"`;
+
+    return command;
+  }
+
+  get sha() {
+    return BITBUCKET_COMMIT;
+  }
+
+  get branch() {
+    return BITBUCKET_BRANCH;
+  }
+
+  get userEmail() {}
+
+  get userName() {}
 
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
@@ -225,17 +297,42 @@ class BitbucketCloud {
     return values;
   }
 
-  get sha() {
-    return BITBUCKET_COMMIT;
+  async request(opts = {}) {
+    const { token, api } = this;
+    const { url, endpoint, method = 'GET', body } = opts;
+
+    if (!(url || endpoint))
+      throw new Error('Bitbucket Cloud API endpoint not found');
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: 'Basic ' + `${token}`
+    };
+
+    const requestUrl = url || `${api}${endpoint}`;
+    winston.debug(`${method} ${requestUrl}`);
+
+    const response = await fetch(requestUrl, {
+      method,
+      headers,
+      body,
+      agent: new ProxyAgent()
+    });
+
+    if (response.status > 300) {
+      try {
+        const json = await response.json();
+        winston.debug(json);
+        // Attempt to get additional context. We have observed two different error schemas
+        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+        // `{"error": "Error message"}`.
+        throw new Error(json.error.message || json.error);
+      } catch (err) {
+        throw new Error(`${response.statusText} ${err.message}`);
+      }
+    }
+
+    return await response.json();
   }
-
-  get branch() {
-    return BITBUCKET_BRANCH;
-  }
-
-  get userEmail() {}
-
-  get userName() {}
 }
 
 module.exports = BitbucketCloud;

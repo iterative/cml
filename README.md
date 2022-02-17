@@ -88,7 +88,7 @@ jobs:
       # may need to setup NodeJS & Python3 on e.g. self-hosted
       # - uses: actions/setup-node@v2
       #   with:
-      #     node-version: '12'
+      #     node-version: '16'
       # - uses: actions/setup-python@v2
       #   with:
       #     python-version: '3.x'
@@ -201,7 +201,7 @@ jobs:
           python train.py
 
           cat metrics.txt >> report.md
-          cml-publish confusion_matrix.png --md >> report.md
+          cml-publish plot.png --md >> report.md
           cml-send-comment report.md
 ```
 
@@ -400,7 +400,7 @@ When a workflow requires computational resources (such as GPUs), CML can
 automatically allocate cloud instances using `cml-runner`. You can spin up
 instances on AWS, Azure, GCP, or Kubernetes.
 
-For example, the following workflow deploys a `p2.xlarge` instance on AWS EC2
+For example, the following workflow deploys a `g4dn.xlarge` instance on AWS EC2
 and trains a model on the instance. After the job runs, the instance
 automatically shuts down.
 
@@ -432,7 +432,7 @@ jobs:
           cml-runner \
             --cloud=aws \
             --cloud-region=us-west \
-            --cloud-type=p2.xlarge \
+            --cloud-type=g4dn.xlarge \
             --labels=cml-gpu
   train-model:
     needs: deploy-runner
@@ -454,7 +454,7 @@ jobs:
           cml-send-comment report.md
 ```
 
-In the workflow above, the `deploy-runner` step launches an EC2 `p2.xlarge`
+In the workflow above, the `deploy-runner` step launches an EC2 `g4dn.xlarge`
 instance in the `us-west` region. The `model-training` step then runs on the
 newly-launched instance. See [Environment Variables] below for details on the
 `secrets` required.
@@ -600,7 +600,7 @@ CML and Vega-Lite package installation require the NodeJS package manager
 ```bash
 uses: actions/setup-node@v2
   with:
-    node-version: '12'
+    node-version: '16'
 ```
 
 - **GitLab**: Requires direct installation.

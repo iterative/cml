@@ -11,8 +11,7 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } =
-  process.env;
+const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -48,9 +47,11 @@ const inferToken = () => {
 
 const inferDriver = (opts = {}) => {
   const { repo } = opts;
-  if (repo && repo.includes('github.com')) return GITHUB;
-  if (repo && repo.includes('gitlab.com')) return GITLAB;
-  if (repo && repo.includes('bitbucket.com')) return BB;
+  if (repo) {
+    if (repo.includes('github.com')) return GITHUB;
+    if (repo.includes('gitlab.com')) return GITLAB;
+    if (/bitbucket\.(com|org)/.test(repo)) return BB;
+  }
 
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
@@ -80,9 +81,19 @@ class CML {
     this.driver = driver || inferDriver({ repo: this.repo });
   }
 
-  async headSha() {
+  async revParse({ ref = 'HEAD' } = {}) {
+    try {
+      return await exec(`git rev-parse ${ref}`);
+    } catch (err) {
+      winston.warn(
+        'Failed to obtain SHA. Perhaps not in the correct git folder'
+      );
+    }
+  }
+
+  async triggerSha() {
     const { sha } = getDriver(this);
-    return sha || (await exec(`git rev-parse HEAD`));
+    return sha || (await this.revParse());
   }
 
   async branch() {
@@ -91,29 +102,92 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
+    const triggerSha = await this.triggerSha();
     const {
       report: userReport,
-      commitSha = await this.headSha(),
+      commitSha: inCommitSha = triggerSha,
       rmWatermark,
-      update
+      update,
+      pr
     } = opts;
+
+    const commitSha =
+      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
+
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
+
     const watermark = rmWatermark
       ? ''
-      : ' \n\n  ![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
-    const report = `${userReport}${watermark}`;
+      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    return await getDriver(this).commentCreate({
-      ...opts,
+    const report = `${userReport}\n\n${watermark}`;
+    const drv = getDriver(this);
+
+    let comment;
+    const updatableComment = (comments) => {
+      return comments.reverse().find(({ body }) => {
+        return body.includes('watermark.svg');
+      });
+    };
+
+    const isBB = this.driver === BB;
+    if (pr || isBB) {
+      let commentUrl;
+
+      if (commitSha !== triggerSha)
+        winston.info(
+          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+        );
+
+      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
+      const [commitPr = {}] = await drv.commitPrs({ commitSha });
+      const { url } = commitPr;
+
+      if (!url && !isBB)
+        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
+
+      if (url) {
+        const [prNumber] = url.split('/').slice(-1);
+
+        if (update)
+          comment = updatableComment(await drv.prComments({ prNumber }));
+
+        if (update && comment) {
+          commentUrl = await drv.prCommentUpdate({
+            report: longReport,
+            id: comment.id,
+            prNumber
+          });
+        } else
+          commentUrl = await drv.prCommentCreate({
+            report: longReport,
+            prNumber
+          });
+
+        if (this.driver !== 'bitbucket') return commentUrl;
+      }
+    }
+
+    if (update)
+      comment = updatableComment(await drv.commitComments({ commitSha }));
+
+    if (update && comment) {
+      return await drv.commentUpdate({
+        report,
+        id: comment.id,
+        commitSha
+      });
+    }
+
+    return await drv.commentCreate({
       report,
-      commitSha,
-      watermark
+      commitSha
     });
   }
 
   async checkCreate(opts = {}) {
-    const { headSha = await this.headSha() } = opts;
+    const { headSha = await this.triggerSha() } = opts;
 
     return await getDriver(this).checkCreate({ ...opts, headSha });
   }
@@ -161,14 +235,15 @@ class CML {
       };
 
       if (this.driver === GITHUB) {
+        const id = 'gh';
         if (data.includes('Running job')) {
-          const { id } = await getDriver(this).job({ time: date.getTime() });
           log.job = id;
           log.status = 'job_started';
         } else if (
           data.includes('Job') &&
           data.includes('completed with result')
         ) {
+          log.job = id;
           log.status = 'job_ended';
           log.success = data.includes('Succeeded');
           log.level = log.success ? 'info' : 'error';
@@ -200,7 +275,9 @@ class CML {
       }
     } catch (err) {
       winston.warn(`Failed parsing log: ${err.message}`);
-      winston.warn(`Original log bytes, as Base64: ${data.toString('base64')}`);
+      winston.warn(
+        `Original log bytes, as Base64: ${Buffer.from(data).toString('base64')}`
+      );
     }
   }
 
@@ -253,15 +330,24 @@ class CML {
     }
   }
 
+  async ci(opts = {}) {
+    const { userEmail = GIT_USER_EMAIL, userName = GIT_USER_NAME } = opts;
+
+    const driver = getDriver(this);
+    const command = await driver.updateGitConfig({ userName, userEmail });
+    await exec(command);
+    await exec('git fetch --all');
+  }
+
   async prCreate(opts = {}) {
     const driver = getDriver(this);
     const {
       remote = GIT_REMOTE,
-      userEmail = GIT_USER_EMAIL,
-      userName = GIT_USER_NAME,
       globs = ['dvc.lock', '.gitignore'],
       md
     } = opts;
+
+    await this.ci(opts);
 
     const renderPr = (url) => {
       if (md)
@@ -285,7 +371,7 @@ class CML {
       return;
     }
 
-    const sha = await this.headSha();
+    const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
@@ -306,20 +392,6 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git config --local user.email "${userEmail}"`);
-      await exec(`git config --local user.name "${userName}"`);
-
-      if (CI) {
-        if (this.driver === GITLAB) {
-          const repo = new URL(this.repo);
-          repo.password = this.token;
-          repo.username = driver.userName;
-
-          await exec(`git remote rm ${remote}`);
-          await exec(`git remote add ${remote} "${repo.toString()}.git"`);
-        }
-      }
-
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
@@ -341,6 +413,10 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
     });
 
     return renderPr(url);
+  }
+
+  async pipelineRerun(opts) {
+    return await getDriver(this).pipelineRerun(opts);
   }
 
   async pipelineRestart(opts) {

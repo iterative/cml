@@ -1,9 +1,9 @@
 name: Test & Deploy
 on:
   schedule:
-    - cron: '0 9 * * 1' # M H d m w (Mondays at 9:00)
-  release:
-    types: [published]
+    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
+  push:
+    tags: ['v*']
   pull_request_target:
   workflow_dispatch:
 jobs:
@@ -34,6 +34,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
       - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
       - run: pip install tensorboard
       - run: npm ci
       - run: npm run test
@@ -44,7 +46,7 @@ jobs:
           TEST_GITHUB_SHA: 0cd16da26e35f8e5d57b2549a97e22618abf08f6
           TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
           TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
-          TEST_GITLAB_SHA: c4c13286e78dc252dd2611f31a755f10d343fbd4
+          TEST_GITLAB_SHA: f8b8b49a253243830ef59a7f090eb887157b2b67
           TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
           TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
           TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
@@ -61,17 +63,19 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - if: matrix.system == 'windows'
         uses: actions/setup-node@v2
-      - run: |
-          npm i -g
-          cml --version
-          cml runner --version
-          cml publish --version
-          cml pr --version
+      - name: install
+        shell: bash
+        run: |
+          # https://github.com/npm/npm/issues/18503#issuecomment-347579469
+          npm pack && npm install -g --no-save ./*cml*.tgz
+          for cmd in '' runner publish pr; do
+            cml $cmd --version
+          done
       - if: matrix.system != 'windows'
         run: |
-          cml-runner --version
-          cml-publish --version
-          cml-pr --version
+          for cmd in runner publish pr; do
+            cml-$cmd --version
+          done
   packages:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
@@ -84,10 +88,38 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run:
-          npm ${{ github.event_name == 'release' && 'publish' || 'publish
+          npm ${{ github.event_name == 'push' && 'publish' || 'publish
           --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: build
+        run: |
+          npx --yes pkg package.json
+          for cmd in '' runner publish pr; do
+            build/cml-linux $cmd --version
+          done
+  release:
+    if: github.event_name == 'push'
+    needs: packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: build
+        name: build
+        run: |
+          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+          npm install
+          npx --yes pkg package.json
+      - uses: softprops/action-gh-release@v1
+        with:
+          name: CML ${{ steps.build.outputs.tag }}
+          draft: true
+          generate_release_notes: true
+          files: |
+            build/cml-linux
+            build/cml-macos
+        env:
+          GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
     runs-on: ubuntu-latest
     needs: packages
@@ -178,8 +210,8 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push:
-            ${{ github.event_name == 'release' || github.event_name ==
-            'schedule' }}
+            ${{ github.event_name == 'push' || github.event_name == 'schedule'
+            || github.event_name == 'workflow_dispatch' }}
           context: ./
           file: ./Dockerfile
           tags: |

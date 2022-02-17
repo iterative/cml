@@ -17,13 +17,12 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-
-    const { created_at: createdAt } = await client.commentCreate({
+    const url = await client.commentCreate({
       report,
       commitSha
     });
 
-    expect(createdAt).not.toBeUndefined();
+    expect(url.startsWith('https://')).toBe(true);
   });
 
   test('Check', async () => {
@@ -43,5 +42,22 @@ describe('Non Enviromental tests', () => {
     const output = await client.runnerToken();
 
     expect(output.length).toBe(20);
+  });
+
+  test.skip('updateGitConfig', async () => {
+    const client = new GitlabClient({
+      repo: 'https://gitlab.com/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig({
+      userName: 'john',
+      userEmail: 'john@test.com'
+    });
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config user.name \\"john\\" && \\\\
+          git config user.email \\"john@test.com\\" && \\\\
+          git remote set-url origin \\"https://john:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+    `);
   });
 });
