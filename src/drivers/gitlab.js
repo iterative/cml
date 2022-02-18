@@ -250,17 +250,6 @@ class Gitlab {
     };
   }
 
-  parseRunner(runner) {
-    const { id, name, busy, status, labels } = runner;
-    return {
-      id,
-      name,
-      labels: labels.map(({ name }) => name),
-      online: status === 'online',
-      busy
-    };
-  }
-
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
     const { source, target, title, description } = opts;
