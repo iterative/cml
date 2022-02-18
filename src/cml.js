@@ -219,7 +219,7 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  async parseRunnerLog(opts = {}) {
+  parseRunnerLog(opts = {}) {
     let { data } = opts;
     if (!data) return;
 
