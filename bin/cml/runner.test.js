@@ -160,7 +160,7 @@ describe('CML e2e', () => {
     await testRunner(opts);
   });
 
-  test('cml-runner GL/Azure', async () => {
+  test.skip('cml-runner GL/Azure', async () => {
     const opts = {
       repo: TEST_GITLAB_REPO,
       token: TEST_GITLAB_TOKEN,
@@ -173,7 +173,7 @@ describe('CML e2e', () => {
     await testRunner(opts);
   });
 
-  test('cml-runner GH/Azure', async () => {
+  test.skip('cml-runner GH/Azure', async () => {
     const opts = {
       repo: TEST_GITHUB_REPO,
       token: TEST_GITHUB_TOKEN,
