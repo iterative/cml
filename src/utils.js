@@ -1,7 +1,6 @@
-const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const forge = require('node-forge');
+const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 
@@ -124,14 +123,6 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const sshPublicFromPrivateRsa = (privateKey) => {
-  const forgePrivate = forge.pki.privateKeyFromPem(privateKey);
-  const forgePublic = forge.pki.setRsaPublicKey(forgePrivate.n, forgePrivate.e);
-  const sshPublic = forge.ssh.publicKeyToOpenSSH(forgePublic);
-
-  return sshPublic;
-};
-
 const watermarkUri = (opts = {}) => {
   const { uri, type } = opts;
   const url = new URL(uri);
@@ -182,7 +173,6 @@ exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
-exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
 exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
