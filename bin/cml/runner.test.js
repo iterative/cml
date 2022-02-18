@@ -1,8 +1,8 @@
 jest.setTimeout(2000000);
 
 const isIp = require('is-ip');
-const { CML } = require('../src/cml');
-const { exec, sshConnection, randid, sleep } = require('../src/utils');
+const { CML } = require('../..//src/cml');
+const { exec, sshConnection, randid, sleep } = require('../../src/utils');
 
 const IDLE_TIMEOUT = 15;
 const {
