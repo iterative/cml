@@ -77,22 +77,23 @@ describe('Github tests', () => {
   });
 
   test('Runner logs', async () => {
-    const { parseRunnerLog } = new CML();
-    let log = parseRunnerLog({ data: 'Listening for Jobs' });
+    const cml = new CML();
+    cml.driver = 'github';
+    let log = cml.parseRunnerLog({ data: 'Listening for Jobs' });
     expect(log.status).toBe('ready');
 
-    log = parseRunnerLog({ data: 'Running job' });
+    log = cml.parseRunnerLog({ data: 'Running job' });
     expect(log.status).toBe('job_started');
 
-    log = parseRunnerLog({ data: 'completed with result Succeded' });
+    log = cml.parseRunnerLog({ data: 'completed with result Succeded' });
     expect(log.status).toBe('job_ended');
     expect(log.success).toBe(true);
 
-    log = parseRunnerLog({ data: 'completed with result Failed' });
+    log = cml.parseRunnerLog({ data: 'completed with result Failed' });
     expect(log.status).toBe('job_ended');
     expect(log.success).toBe(false);
 
-    log = parseRunnerLog({ data: 'completed with result Canceled' });
+    log = cml.parseRunnerLog({ data: 'completed with result Canceled' });
     expect(log.status).toBe('job_ended');
     expect(log.success).toBe(false);
   });
