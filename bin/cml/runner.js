@@ -228,7 +228,7 @@ const runLocal = async (opts) => {
     } else if (log && log.status === 'job_ended') {
       const { job: jobId } = log;
       RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
-        (job) => job.id === jobId
+        (job) => job.id !== jobId
       );
     }
   };
@@ -255,6 +255,7 @@ const runLocal = async (opts) => {
     const watcher = setInterval(async () => {
       let idle = !RUNNER_JOBS_RUNNING.length;
 
+      console.log(RUNNER_JOBS_RUNNING);
       if (cml.driver === 'github') {
         const { busy } = await cml.runnerById({ id: RUNNER_ID });
 
@@ -266,7 +267,7 @@ const runLocal = async (opts) => {
           RUNNER_JOBS_RUNNING = [];
         }
 
-        if (busy) {
+        if (busy && idle) {
           winston.error(
             `Runner seems to be busy yet. Will try again in ${idleTimeout} secs`
           );
