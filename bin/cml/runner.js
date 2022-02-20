@@ -50,7 +50,8 @@ const shutdown = async (opts) => {
       if (!noRetry && RUNNER_JOBS_RUNNING.length) {
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
-            async (job) => await cml.pipelineRestart({ jobId: job.id })
+            async (job) =>
+              await cml.pipelineRestart({ jobId: job.id, runnerId: RUNNER_ID })
           )
         );
       }
