@@ -94,10 +94,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: build
         run: |
+          cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg package.json
           for cmd in '' runner publish pr; do
             build/cml-linux $cmd --version
           done
+          rm assets/magic.mgc
   release:
     if: github.event_name == 'push'
     needs: packages
@@ -109,7 +111,9 @@ jobs:
         run: |
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
           npm install
+          cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg package.json
+          rm assets/magic.mgc
       - uses: softprops/action-gh-release@v1
         with:
           name: CML ${{ steps.build.outputs.tag }}

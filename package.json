@@ -120,6 +120,7 @@
     "assets": [
       "**/*.js",
       "node_modules/@npcz/magic/dist/*.wasm",
+      "node_modules/@npcz/magic/dist/magic.mgc",
       "assets/magic.mgc"
     ],
     "targets": [
