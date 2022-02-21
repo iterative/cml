@@ -119,7 +119,8 @@
     "bin": "bin/cml.js",
     "assets": [
       "**/*.js",
-      "node_modules/@npcz/magic/**/*"
+      "node_modules/@npcz/magic/dist/*.wasm",
+      "assets/magic.mgc"
     ],
     "targets": [
       "linux",
