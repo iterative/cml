@@ -96,10 +96,10 @@ jobs:
         run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg package.json
+          rm assets/magic.mgc
           for cmd in '' runner publish pr; do
             build/cml-linux $cmd --version
           done
-          rm assets/magic.mgc
   release:
     if: github.event_name == 'push'
     needs: packages
