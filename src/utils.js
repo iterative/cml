@@ -27,14 +27,8 @@ const exec = async (command) => {
 
 const mimeType = async (opts) => {
   const { path, buffer } = opts;
-  let magicFile = PATH.join(__dirname, '../assets/magic.mgc');
-  if (!fs.existsSync(magicFile))
-    magicFile = PATH.join(
-      __dirname,
-      '../node_modules/@npcz/magic/dist/magic.mgc'
-    );
-
-  FileMagic.magicFile = magicFile;
+  const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
+  if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
   FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
   const fileMagic = await FileMagic.getInstance();
 
