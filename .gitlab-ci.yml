@@ -1,6 +1,7 @@
 deploy-runner:
-  rules:
-    - if: $CI_COMMIT_BRANCH == 'master'
+  only:
+    refs:
+      - master
   image: iterativeai/cml:0-dvc2-base1
   script:
     - pip install awscli
