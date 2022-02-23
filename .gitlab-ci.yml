@@ -26,6 +26,9 @@ deploy-runner:
           --labels=cml-runner-gpu
 test-runner:
   needs: [deploy-runner]
+  only:
+    refs:
+      - master
   tags:
     - cml-runner-gpu
   script:
@@ -38,6 +41,9 @@ test-runner:
     - nvidia-smi
 test-container:
   needs: [deploy-runner]
+  only:
+    refs:
+      - master
   tags:
     - cml-runner-gpu
   image: iterativeai/cml:0-dvc2-base1-gpu
