@@ -1,8 +1,7 @@
 deploy-runner:
   image: iterativeai/cml:0-dvc2-base1
   script:
-    - sudo apt update
-    - sudo apt install --yes awscli
+    - pip install awscli
     - >
       CREDENTIALS=($(aws sts assume-role-with-web-identity
       --region=us-west-1
