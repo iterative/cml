@@ -1,6 +1,21 @@
 deploy-runner:
+  only:
+    refs: [master]
   image: iterativeai/cml:0-dvc2-base1
   script:
+    - pip install awscli
+    - >
+      CREDENTIALS=($(aws sts assume-role-with-web-identity
+      --region=us-west-1
+      --role-arn=arn:aws:iam::342840881361:role/SandboxUser
+      --role-session-name=GitLab
+      --duration-seconds=3600
+      --web-identity-token="$CI_JOB_JWT_V2"
+      --query="Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"
+      --output=text))
+    - export AWS_ACCESS_KEY_ID="${CREDENTIALS[0]}"
+    - export AWS_SECRET_ACCESS_KEY="${CREDENTIALS[1]}"
+    - export AWS_SESSION_TOKEN="${CREDENTIALS[2]}"
     - |
       cml runner \
           --cloud=aws \
@@ -10,6 +25,8 @@ deploy-runner:
           --labels=cml-runner-gpu
 test-runner:
   needs: [deploy-runner]
+  only:
+    refs: [master]
   tags:
     - cml-runner-gpu
   script:
@@ -22,6 +39,8 @@ test-runner:
     - nvidia-smi
 test-container:
   needs: [deploy-runner]
+  only:
+    refs: [master]
   tags:
     - cml-runner-gpu
   image: iterativeai/cml:0-dvc2-base1-gpu
