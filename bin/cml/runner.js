@@ -114,6 +114,7 @@ const runCloud = async (opts) => {
       labels,
       idleTimeout,
       name,
+      cmlVersion,
       single,
       dockerVolumes,
       cloud,
@@ -149,6 +150,7 @@ const runCloud = async (opts) => {
         token,
         driver,
         labels,
+        cmlVersion,
         idleTimeout,
         name,
         single,
@@ -200,6 +202,7 @@ const runCloud = async (opts) => {
           instanceType: attributes.instance_type,
           instancePermissionSet: attributes.instance_permission_set,
           labels: attributes.labels,
+          cmlVersion: attributes.cml_version,
           metadata: attributes.metadata,
           name: attributes.name,
           region: attributes.region,
@@ -552,6 +555,12 @@ exports.builder = (yargs) =>
         default: '',
         description: 'Specifies the subnet to use within AWS',
         alias: 'cloud-aws-subnet-id'
+      },
+      cmlVersion: {
+        type: 'string',
+        default: require('../../package.json').version,
+        description: 'CML version to load on tpi instance',
+        hidden: true
       },
       tfResource: {
         hidden: true,
