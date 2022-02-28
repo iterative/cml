@@ -239,13 +239,10 @@ class CML {
         if (data.includes('Running job')) {
           log.job = id;
           log.status = 'job_started';
-        } else if (
-          data.includes('Job') &&
-          data.includes('completed with result')
-        ) {
+        } else if (data.includes('completed with result')) {
           log.job = id;
           log.status = 'job_ended';
-          log.success = data.includes('Succeeded');
+          log.success = data.includes('Succeded');
           log.level = log.success ? 'info' : 'error';
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
@@ -261,12 +258,9 @@ class CML {
 
         if (msg.endsWith('received')) {
           log.status = 'job_started';
-        } else if (
-          msg.startsWith('Job failed') ||
-          msg.startsWith('Job succeeded')
-        ) {
+        } else if (msg.includes('completed with result')) {
           log.status = 'job_ended';
-          log.success = !msg.startsWith('Job failed');
+          log.success = !msg.includes('Succeded');
           log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
