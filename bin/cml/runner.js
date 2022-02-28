@@ -47,13 +47,19 @@ const shutdown = async (opts) => {
 
   const retryWorkflows = async () => {
     try {
-      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
-        await Promise.all(
-          RUNNER_JOBS_RUNNING.map(
-            async (job) =>
-              await cml.pipelineRestart({ jobId: job.id, runnerId: RUNNER_ID })
-          )
-        );
+      if (!noRetry) {
+        if (cml.driver === 'github') {
+          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
+          if (job) RUNNER_JOBS_RUNNING = [job];
+        }
+
+        if (RUNNER_JOBS_RUNNING.length) {
+          await Promise.all(
+            RUNNER_JOBS_RUNNING.map(
+              async (job) => await cml.pipelineRestart({ jobId: job.id })
+            )
+          );
+        }
       }
     } catch (err) {
       winston.error(err);
@@ -94,8 +100,12 @@ const shutdown = async (opts) => {
   await sleep(destroyDelay);
 
   if (!cloud) {
-    await unregisterRunner();
-    await retryWorkflows();
+    try {
+      await unregisterRunner();
+      await retryWorkflows();
+    } catch (err) {
+      winston.error('Failed connecting with the scm');
+    }
 
     await destroyDockerMachine();
   }
@@ -245,8 +255,11 @@ const runLocal = async (opts) => {
 
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
+  proc.on('disconnect', () =>
+    shutdown({ ...opts, reason: `runner disconnected` })
+  );
   proc.on('close', (exit) =>
-    shutdown({ ...opts, reason: `proc closed with exit code ${exit}` })
+    shutdown({ ...opts, reason: `runner closed with exit code ${exit}` })
   );
 
   RUNNER = proc;
@@ -256,24 +269,32 @@ const runLocal = async (opts) => {
     const watcher = setInterval(async () => {
       let idle = !RUNNER_JOBS_RUNNING.length;
 
-      if (cml.driver === 'github') {
-        const { busy } = await cml.runnerById({ id: RUNNER_ID });
+      try {
+        if (cml.driver === 'github') {
+          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
 
-        if (!idle && !busy) {
-          winston.error(
-            `Runner should be idle. Reseting jobs. Will try again in ${idleTimeout} secs`
-          );
+          if (!job && !idle) {
+            winston.error(
+              `Runner should be idle. Reseting jobs. Will try again in ${idleTimeout} secs`
+            );
 
-          RUNNER_JOBS_RUNNING = [];
+            RUNNER_JOBS_RUNNING = [];
+          }
+
+          if (job && idle) {
+            winston.error(
+              `Runner seems to be busy yet. Will try again in ${idleTimeout} secs`
+            );
+
+            idle = false;
+          }
         }
+      } catch (err) {
+        winston.error(
+          `Error connecting the SCM. Will try again in ${idleTimeout} secs`
+        );
 
-        if (busy && idle) {
-          winston.error(
-            `Runner seems to be busy yet. Will try again in ${idleTimeout} secs`
-          );
-
-          idle = !busy;
-        }
+        idle = false;
       }
 
       if (idle) {

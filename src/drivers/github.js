@@ -260,6 +260,7 @@ class Github {
         const url = `https://github.com/actions/runner/releases/download/${ver}/actions-runner-${arch}-${ver.substring(
           1
         )}.tar.gz`;
+        console.log(url);
         await download({ url, path: destination });
         await tar.extract({ file: destination, cwd: workdir });
         await exec(`chmod -R 777 ${workdir}`);
@@ -512,9 +513,12 @@ class Github {
   }
 
   async job(opts = {}) {
-    const { time, status = 'queued' } = opts;
+    const { time, runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
+
+    let { status = 'queued' } = opts;
+    if (status === 'running') status = 'in_progress';
 
     const {
       data: { workflow_runs: workflowRuns }
@@ -540,16 +544,20 @@ class Github {
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
-      const { id, started_at: date, run_id: runId } = job;
-      return { id, date, runId };
+      const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
+      return { id, date, runId, runnerId };
     });
 
-    const job = runJobs.reduce((prev, curr) => {
-      const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
-      return diffTime(curr) < diffTime(prev) ? curr : prev;
-    });
+    if (time) {
+      const job = runJobs.reduce((prev, curr) => {
+        const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
+        return diffTime(curr) < diffTime(prev) ? curr : prev;
+      });
 
-    return job;
+      return job;
+    }
+
+    return runJobs.find((job) => runnerId === job.runnerId);
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {

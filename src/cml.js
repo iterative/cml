@@ -320,6 +320,11 @@ class CML {
     );
   }
 
+  async runnerJob(opts = {}) {
+    const { runnerId, status = 'running' } = opts;
+    return await getDriver(this).job({ status, runnerId });
+  }
+
   async repoTokenCheck() {
     try {
       await this.runnerToken();
