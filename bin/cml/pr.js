@@ -19,6 +19,11 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description: 'Output in markdown format [](url).'
       },
+      autoMerge: {
+        type: 'boolean',
+        description:
+          'If enabled, PR/MR will be marked for automatic merging (only works on GitLab).'
+      },
       remote: {
         type: 'string',
         default: GIT_REMOTE,

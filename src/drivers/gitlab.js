@@ -235,7 +235,7 @@ class Gitlab {
 
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
 
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
@@ -244,13 +244,35 @@ class Gitlab {
     body.append('title', title);
     body.append('description', description);
 
-    const { web_url: url } = await this.request({
+    const { web_url: url, iid } = await this.request({
       endpoint,
       method: 'POST',
       body
     });
 
+    if (autoMerge) {
+      await this.prAutoMerge({ mergeRequestId: iid });
+    }
+
     return url;
+  }
+
+  /**
+   * @param {{ mergeRequestId: string }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ mergeRequestId }) {
+    const projectPath = await this.projectPath();
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${mergeRequestId}/merge`;
+    const body = new URLSearchParams();
+    body.append('merge_when_pipeline_succeeds', true);
+
+    await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
   }
 
   async prCommentCreate(opts = {}) {

@@ -340,7 +340,8 @@ class CML {
     const {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
-      md
+      md,
+      autoMerge
     } = opts;
 
     await this.ci(opts);
@@ -405,7 +406,8 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       source,
       target,
       title,
-      description
+      description,
+      autoMerge
     });
 
     return renderPr(url);
