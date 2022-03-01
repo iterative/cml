@@ -559,7 +559,7 @@ exports.builder = (yargs) =>
       cmlVersion: {
         type: 'string',
         default: require('../../package.json').version,
-        description: 'CML version to load on tpi instance',
+        description: 'CML version to load on TPI instance',
         hidden: true
       },
       tfResource: {
