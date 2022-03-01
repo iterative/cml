@@ -251,6 +251,7 @@ class Gitlab {
     });
 
     if (autoMerge) {
+      await new Promise((resolve) => setTimeout(resolve, 20000));
       await this.prAutoMerge({ mergeRequestId: iid });
     }
 
