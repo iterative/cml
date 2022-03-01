@@ -270,7 +270,7 @@ class Gitlab {
 
     await this.request({
       endpoint,
-      method: 'POST',
+      method: 'PUT',
       body
     });
   }
