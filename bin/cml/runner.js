@@ -53,7 +53,7 @@ const shutdown = async (opts) => {
           if (job) RUNNER_JOBS_RUNNING = [job];
         }
 
-        if (RUNNER_JOBS_RUNNING.length) {
+        if (RUNNER_JOBS_RUNNING.length > 0) {
           await Promise.all(
             RUNNER_JOBS_RUNNING.map(
               async (job) => await cml.pipelineRestart({ jobId: job.id })
@@ -267,7 +267,7 @@ const runLocal = async (opts) => {
 
   if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(async () => {
-      let idle = !RUNNER_JOBS_RUNNING.length;
+      let idle = RUNNER_JOBS_RUNNING.length === 0;
 
       try {
         if (cml.driver === 'github') {
