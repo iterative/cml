@@ -242,7 +242,7 @@ class CML {
         } else if (data.includes('completed with result')) {
           log.job = id;
           log.status = 'job_ended';
-          log.success = data.includes('Succeded');
+          log.success = data.includes('Succeeded');
           log.level = log.success ? 'info' : 'error';
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
@@ -253,14 +253,14 @@ class CML {
       }
 
       if (this.driver === GITLAB) {
-        const { msg, job } = JSON.parse(data);
+        const { msg, job, duration_s: duration } = JSON.parse(data);
         log = { ...log, job };
 
         if (msg.endsWith('received')) {
           log.status = 'job_started';
-        } else if (msg.includes('completed with result')) {
+        } else if (duration) {
           log.status = 'job_ended';
-          log.success = !msg.includes('Succeded');
+          log.success = msg.includes('Job succeeded');
           log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';

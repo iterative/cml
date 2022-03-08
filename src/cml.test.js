@@ -20,12 +20,12 @@ describe('Github tests', () => {
     process.env = OLD_ENV;
   });
 
-  test.skip('driver has to be github', async () => {
+  test('driver has to be github', async () => {
     const cml = new CML({ repo: REPO, token: TOKEN });
     expect(cml.driver).toBe('github');
   });
 
-  test.skip('Publish image without markdown returns an url', async () => {
+  test('Publish image without markdown returns an url', async () => {
     const path = `${__dirname}/../assets/logo.png`;
 
     const output = await new CML().publish({ path });
@@ -34,7 +34,7 @@ describe('Github tests', () => {
     expect(output.includes('cml=png')).toBe(true);
   });
 
-  test.skip('Publish image with markdown', async () => {
+  test('Publish image with markdown', async () => {
     const path = `${__dirname}/../assets/logo.png`;
     const title = 'my title';
 
@@ -45,7 +45,7 @@ describe('Github tests', () => {
     expect(output.includes('cml=png')).toBe(true);
   });
 
-  test.skip('Publish a non image file in markdown', async () => {
+  test('Publish a non image file in markdown', async () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
@@ -56,13 +56,13 @@ describe('Github tests', () => {
     expect(output.includes('cml=pdf')).toBe(true);
   });
 
-  test.skip('Comment should succeed with a valid sha', async () => {
+  test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
 
     await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
   });
 
-  test.skip('Comment should fail with a invalid sha', async () => {
+  test('Comment should fail with a invalid sha', async () => {
     let caughtErr;
     try {
       const report = '## Test comment';
@@ -85,7 +85,7 @@ describe('Github tests', () => {
     log = cml.parseRunnerLog({ data: 'Running job' });
     expect(log.status).toBe('job_started');
 
-    log = cml.parseRunnerLog({ data: 'completed with result: Succeded' });
+    log = cml.parseRunnerLog({ data: 'completed with result: Succeeded' });
     expect(log.status).toBe('job_ended');
     expect(log.success).toBe(true);
 
@@ -119,12 +119,12 @@ describe('Gitlab tests', () => {
     process.env = OLD_ENV;
   });
 
-  test.skip('driver has to be gitlab', async () => {
+  test('driver has to be gitlab', async () => {
     const cml = new CML({ repo: REPO, token: TOKEN, driver: 'gitlab' });
     expect(cml.driver).toBe('gitlab');
   });
 
-  test.skip('Publish image using gl without markdown returns an url', async () => {
+  test('Publish image using gl without markdown returns an url', async () => {
     const path = `${__dirname}/../assets/logo.png`;
 
     const output = await new CML({ repo: REPO }).publish({
@@ -136,7 +136,7 @@ describe('Gitlab tests', () => {
     expect(output.includes('cml=png')).toBe(true);
   });
 
-  test.skip('Publish image using gl with markdown', async () => {
+  test('Publish image using gl with markdown', async () => {
     const path = `${__dirname}/../assets/logo.png`;
     const title = 'my title';
 
@@ -152,7 +152,7 @@ describe('Gitlab tests', () => {
     expect(output.includes('cml=png')).toBe(true);
   });
 
-  test.skip('Publish a non image file using gl in markdown', async () => {
+  test('Publish a non image file using gl in markdown', async () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
@@ -168,7 +168,7 @@ describe('Gitlab tests', () => {
     expect(output.includes('cml=pdf')).toBe(true);
   });
 
-  test.skip('Publish a non image file using native', async () => {
+  test('Publish a non image file using native', async () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
@@ -184,7 +184,7 @@ describe('Gitlab tests', () => {
     expect(output.includes('cml=pdf')).toBe(true);
   });
 
-  test.skip('Publish should fail with an invalid driver', async () => {
+  test('Publish should fail with an invalid driver', async () => {
     let caughtErr;
     try {
       const path = `${__dirname}/../assets/logo.pdf`;
@@ -200,12 +200,12 @@ describe('Gitlab tests', () => {
     expect(caughtErr).not.toBeUndefined();
   });
 
-  test.skip('Comment should succeed with a valid sha', async () => {
+  test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
     await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
   });
 
-  test.skip('Comment should fail with a invalid sha', async () => {
+  test('Comment should fail with a invalid sha', async () => {
     let caughtErr;
     try {
       const report = '## Test comment';
@@ -219,7 +219,7 @@ describe('Gitlab tests', () => {
     expect(caughtErr).toBe('Not Found');
   });
 
-  test.skip('Runner logs', async () => {
+  test('Runner logs', async () => {
     const cml = new CML();
     cml.driver = 'gitlab';
     let log = await cml.parseRunnerLog({
@@ -233,7 +233,7 @@ describe('Gitlab tests', () => {
     expect(log.status).toBe('job_started');
 
     log = cml.parseRunnerLog({
-      data: '{"duration_s":120.0120526,"job":1396213069,"level":"info","msg":"Job succeeded: execution took longer than 2m0s seconds","project":27856642,"runner":"2SGFrnGt","time":"2021-07-02T16:47:47Z"}'
+      data: '{"duration_s":7.706165838,"job":2177867438,"level":"info","msg":"Job succeeded","project":27939020,"runner":"fe36krFK","time":"2022-03-08T18:12:57+01:00"}'
     });
     expect(log.status).toBe('job_ended');
     expect(log.success).toBe(true);
