@@ -275,7 +275,7 @@ const runLocal = async (opts) => {
 
           if (!job && !idle) {
             winston.error(
-              `Runner should be idle. Reseting jobs. Will try again in ${idleTimeout} secs`
+              `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
             );
 
             RUNNER_JOBS_RUNNING = [];
@@ -283,7 +283,7 @@ const runLocal = async (opts) => {
 
           if (job && idle) {
             winston.error(
-              `Runner seems to be busy yet. Will try again in ${idleTimeout} secs`
+              `Runner seems to be busy. Retrying in ${idleTimeout} secs`
             );
 
             idle = false;
