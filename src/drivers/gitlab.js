@@ -6,6 +6,7 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
+const { backOff } = require('exponential-backoff');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
@@ -251,7 +252,6 @@ class Gitlab {
     });
 
     if (autoMerge) {
-      await new Promise((resolve) => setTimeout(resolve, 20000));
       await this.prAutoMerge({ mergeRequestId: iid });
     }
 
@@ -269,11 +269,13 @@ class Gitlab {
     const body = new URLSearchParams();
     body.append('merge_when_pipeline_succeeds', true);
 
-    await this.request({
-      endpoint,
-      method: 'PUT',
-      body
-    });
+    await backOff(() =>
+      this.request({
+        endpoint,
+        method: 'PUT',
+        body
+      })
+    );
   }
 
   async prCommentCreate(opts = {}) {
