@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
+const { withCustomRequest } = require('@octokit/graphql');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 const ProxyAgent = require('proxy-agent');
@@ -313,12 +314,18 @@ class Github {
   }
 
   async prCreate(opts = {}) {
-    const { source: head, target: base, title, description: body } = opts;
+    const {
+      source: head,
+      target: base,
+      title,
+      description: body,
+      autoMerge
+    } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl }
+      data: { html_url: htmlUrl, node_id: nodeId }
     } = await pulls.create({
       owner,
       repo,
@@ -328,7 +335,33 @@ class Github {
       body
     });
 
+    if (autoMerge) {
+      await this.prAutoMerge({ pullRequestId: nodeId });
+    }
+
     return htmlUrl;
+  }
+
+  /**
+   * @param {{ pullRequestId: number }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ pullRequestId }) {
+    const octo = octokit(this.token, this.repo);
+    const graphql = withCustomRequest(octo.request);
+
+    await graphql(
+      `
+        mutation {
+          enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId }) {
+            clientMutationId
+          }
+        }
+      `,
+      {
+        pullRequestId
+      }
+    );
   }
 
   async prCommentCreate(opts = {}) {
