@@ -393,7 +393,11 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      await exec(`git commit -m "CML PR for ${shaShort} [skip ci]"`);
+      let commitMessage = `CML PR for ${shaShort}`;
+      if (!autoMerge) {
+        commitMessage += ' [skip ci]';
+      }
+      await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
