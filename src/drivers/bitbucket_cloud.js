@@ -112,7 +112,7 @@ class BitbucketCloud {
 
     if (autoMerge) {
       throw new Error(
-        "Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286"
+        'Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286'
       );
     }
 
