@@ -104,7 +104,7 @@ const shutdown = async (opts) => {
       await unregisterRunner();
       await retryWorkflows();
     } catch (err) {
-      winston.error('Failed connecting with the scm');
+      winston.error(`Error connecting the SCM: ${err.message}`);
     }
 
     await destroyDockerMachine();
@@ -291,7 +291,7 @@ const runLocal = async (opts) => {
         }
       } catch (err) {
         winston.error(
-          `Error connecting the SCM. Will try again in ${idleTimeout} secs`
+          `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
         );
 
         idle = false;
@@ -570,7 +570,8 @@ exports.builder = (yargs) =>
         type: 'number',
         default: 10,
         hidden: true,
-        description: 'Destroy delay'
+        description:
+          'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
       },
       dockerMachine: {
         type: 'string',
