@@ -570,7 +570,7 @@ exports.builder = (yargs) =>
         type: 'number',
         default: 10,
         hidden: true,
-        description: 'Destroy delay'
+        description: 'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
       },
       dockerMachine: {
         type: 'string',
