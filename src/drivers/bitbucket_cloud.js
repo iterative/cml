@@ -108,7 +108,13 @@ class BitbucketCloud {
 
   async prCreate(opts = {}) {
     const { projectPath } = this;
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
+
+    if (autoMerge) {
+      throw new Error(
+        "Bitbucket Cloud doesn't allow Auto-Merging via API. Interested in this feature? Leave a thumbs-up here: TODO ADD A LINK"
+      );
+    }
 
     const body = JSON.stringify({
       title,
