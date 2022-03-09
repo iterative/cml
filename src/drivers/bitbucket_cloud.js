@@ -112,7 +112,7 @@ class BitbucketCloud {
 
     if (autoMerge) {
       throw new Error(
-        "Bitbucket Cloud doesn't allow Auto-Merging via API. Interested in this feature? Leave a thumbs-up here: TODO ADD A LINK"
+        "Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286"
       );
     }
 
