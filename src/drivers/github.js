@@ -336,32 +336,78 @@ class Github {
     });
 
     if (autoMerge) {
-      await this.prAutoMerge({ pullRequestId: nodeId });
+      await this.prAutoMerge({ pullRequestId: nodeId, base });
     }
 
     return htmlUrl;
   }
 
   /**
-   * @param {{ pullRequestId: number }} param0
+   * @param {string} branch
+   * @returns {Promise<boolean>}
+   */
+  async isProtected(branch) {
+    const octo = octokit(this.token, this.repo);
+    const { owner, repo } = this.ownerRepo();
+    try {
+      await octo.repos.getBranchProtection({
+        branch,
+        owner,
+        repo
+      });
+      return true;
+    } catch (error) {
+      if (error.message === 'Branch not protected') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * @param {{ pullRequestId: number, base: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ pullRequestId }) {
+  async prAutoMerge({ pullRequestId, base }) {
     const octo = octokit(this.token, this.repo);
     const graphql = withCustomRequest(octo.request);
 
-    await graphql(
-      `
-        mutation {
-          enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId }) {
-            clientMutationId
+    try {
+      await graphql(
+        `
+          mutation autoMerge($pullRequestId: ID!) {
+            enablePullRequestAutoMerge(
+              input: { pullRequestId: $pullRequestId }
+            ) {
+              clientMutationId
+            }
           }
+        `,
+        {
+          pullRequestId
         }
-      `,
-      {
-        pullRequestId
+      );
+    } catch (error) {
+      if (
+        error.message.includes("Can't enable auto-merge for this pull request")
+      ) {
+        const { owner, repo } = this.ownerRepo();
+        const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+
+        const isProtected = await this.isProtected(base);
+        if (!isProtected) {
+          throw new Error(
+            `Enabling Auto-Merge failed. Please set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches`
+          );
+        }
+
+        throw new Error(
+          `Enabling Auto-Merge failed. Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge`
+        );
       }
-    );
+
+      throw error;
+    }
   }
 
   async prCommentCreate(opts = {}) {
