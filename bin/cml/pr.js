@@ -22,7 +22,7 @@ exports.builder = (yargs) =>
       autoMerge: {
         type: 'boolean',
         description:
-          'If enabled, PR/MR will be marked for automatic merging (only works on GitLab).'
+          'If enabled, PR/MR will be marked for automatic merging (doesnt work on BitBucket).'
       },
       remote: {
         type: 'string',
