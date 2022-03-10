@@ -219,7 +219,7 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  async parseRunnerLog(opts = {}) {
+  parseRunnerLog(opts = {}) {
     let { data } = opts;
     if (!data) return;
 
@@ -235,15 +235,12 @@ class CML {
       };
 
       if (this.driver === GITHUB) {
+        const id = 'gh';
         if (data.includes('Running job')) {
-          const { id } = await getDriver(this).job({ time: date.getTime() });
           log.job = id;
           log.status = 'job_started';
-        } else if (
-          data.includes('Job') &&
-          data.includes('completed with result')
-        ) {
-          log.job = '';
+        } else if (data.includes('completed with result')) {
+          log.job = id;
           log.status = 'job_ended';
           log.success = data.includes('Succeeded');
           log.level = log.success ? 'info' : 'error';
@@ -256,17 +253,14 @@ class CML {
       }
 
       if (this.driver === GITLAB) {
-        const { msg, job } = JSON.parse(data);
+        const { msg, job, duration_s: duration } = JSON.parse(data);
         log = { ...log, job };
 
         if (msg.endsWith('received')) {
           log.status = 'job_started';
-        } else if (
-          msg.startsWith('Job failed') ||
-          msg.startsWith('Job succeeded')
-        ) {
+        } else if (duration) {
           log.status = 'job_ended';
-          log.success = !msg.startsWith('Job failed');
+          log.success = msg.includes('Job succeeded');
           log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
@@ -306,6 +300,10 @@ class CML {
     return runners.find((runner) => runner.name === name);
   }
 
+  async runnerById(opts = {}) {
+    return await getDriver(this).runnerById(opts);
+  }
+
   async runnersByLabels(opts = {}) {
     let { labels, runners } = opts;
 
@@ -314,6 +312,11 @@ class CML {
     return runners.filter((runner) =>
       labels.split(',').every((label) => runner.labels.includes(label))
     );
+  }
+
+  async runnerJob(opts = {}) {
+    const { runnerId, status = 'running' } = opts;
+    return await getDriver(this).job({ status, runnerId });
   }
 
   async repoTokenCheck() {
