@@ -40,11 +40,10 @@ describe('Non Enviromental tests', () => {
 
   test('Runner token', async () => {
     const output = await client.runnerToken();
-
-    expect(output.length).toBe(20);
+    expect(output.length >= 20).toBe(true);
   });
 
-  test.skip('updateGitConfig', async () => {
+  test('updateGitConfig', async () => {
     const client = new GitlabClient({
       repo: 'https://gitlab.com/test/test',
       token: 'dXNlcjpwYXNz'

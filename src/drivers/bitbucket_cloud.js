@@ -106,6 +106,10 @@ class BitbucketCloud {
     throw new Error('Bitbucket Cloud does not support runners!');
   }
 
+  async runnerById(opts = {}) {
+    throw new Error('Not yet implemented');
+  }
+
   async prCreate(opts = {}) {
     const { projectPath } = this;
     const { source, target, title, description } = opts;
