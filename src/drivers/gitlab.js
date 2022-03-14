@@ -403,8 +403,8 @@ class Gitlab {
     repo.username = this.userName || userName;
 
     const command = `
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;
