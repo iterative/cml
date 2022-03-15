@@ -343,10 +343,10 @@ class Github {
   }
 
   /**
-   * @param {string} branch
+   * @param {{ branch: string }} opts
    * @returns {Promise<boolean>}
    */
-  async isProtected(branch) {
+  async isProtected({ branch }) {
     const octo = octokit(this.token, this.repo);
     const { owner, repo } = this.ownerRepo();
     try {
@@ -394,7 +394,7 @@ class Github {
         const { owner, repo } = this.ownerRepo();
         const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
 
-        const isProtected = await this.isProtected(base);
+        const isProtected = await this.isProtected({ branch: base });
         if (!isProtected) {
           throw new Error(
             `Enabling Auto-Merge failed. Please set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches`
