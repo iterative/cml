@@ -54,8 +54,8 @@ describe('Non Enviromental tests', () => {
     });
     expect(command).toMatchInlineSnapshot(`
       "
-          git config user.name \\"john\\" && \\\\
-          git config user.email \\"john@test.com\\" && \\\\
+          git config user.name \\"john\\" &&
+          git config user.email \\"john@test.com\\" &&
           git remote set-url origin \\"https://john:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
     `);
   });
