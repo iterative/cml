@@ -112,7 +112,13 @@ class BitbucketCloud {
 
   async prCreate(opts = {}) {
     const { projectPath } = this;
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
+
+    if (autoMerge) {
+      throw new Error(
+        'Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286'
+      );
+    }
 
     const body = JSON.stringify({
       title,

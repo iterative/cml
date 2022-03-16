@@ -15,6 +15,8 @@ describe('CML e2e', () => {
         --log         Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
         --md          Output in markdown format [](url).                     [boolean]
+        --auto-merge  Mark the PR/MR for automatic merging after tests pass
+                      (unsupported by Bitbucket).                            [boolean]
         --remote      Sets git remote.                    [string] [default: \\"origin\\"]
         --user-email  Sets git user email.   [string] [default: \\"olivaw@iterative.ai\\"]
         --user-name   Sets git user name.            [string] [default: \\"Olivaw[bot]\\"]
