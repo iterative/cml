@@ -270,7 +270,7 @@ class Github {
         `${resolve(
           workdir,
           'config.sh'
-        )} --unattended  --token "${await this.runnerToken()}" --url "${
+        )} --unattended --token "${await this.runnerToken()}" --url "${
           this.repo
         }" --name "${name}" --labels "${labels}" --work "${resolve(
           workdir,
@@ -304,13 +304,41 @@ class Github {
       });
     }
 
-    return runners.map(({ id, name, busy, status, labels }) => ({
+    return runners.map((runner) => this.parseRunner(runner));
+  }
+
+  async runnerById(opts = {}) {
+    const { id } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    if (typeof repo === 'undefined') {
+      const { data: runner } = await actions.getSelfHostedRunnerForOrg({
+        org: owner,
+        runner_id: id
+      });
+
+      return this.parseRunner(runner);
+    }
+
+    const { data: runner } = await actions.getSelfHostedRunnerForRepo({
+      owner,
+      repo,
+      runner_id: id
+    });
+
+    return this.parseRunner(runner);
+  }
+
+  parseRunner(runner) {
+    const { id, name, busy, status, labels } = runner;
+    return {
       id,
       name,
       labels: labels.map(({ name }) => name),
       online: status === 'online',
       busy
-    }));
+    };
   }
 
   async prCreate(opts = {}) {
@@ -563,9 +591,12 @@ class Github {
   }
 
   async job(opts = {}) {
-    const { time, status = 'queued' } = opts;
+    const { time, runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
+
+    let { status = 'queued' } = opts;
+    if (status === 'running') status = 'in_progress';
 
     const {
       data: { workflow_runs: workflowRuns }
@@ -591,16 +622,20 @@ class Github {
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
-      const { id, started_at: date, run_id: runId } = job;
-      return { id, date, runId };
+      const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
+      return { id, date, runId, runnerId };
     });
 
-    const job = runJobs.reduce((prev, curr) => {
-      const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
-      return diffTime(curr) < diffTime(prev) ? curr : prev;
-    });
+    if (time) {
+      const job = runJobs.reduce((prev, curr) => {
+        const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
+        return diffTime(curr) < diffTime(prev) ? curr : prev;
+      });
 
-    return job;
+      return job;
+    }
+
+    return runJobs.find((job) => runnerId === job.runnerId);
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {
@@ -609,9 +644,9 @@ class Github {
     repo.username = this.userName || userName;
 
     const command = `
-    git config --unset http.https://github.com/.extraheader && \\
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config --unset http.https://github.com/.extraheader;
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;

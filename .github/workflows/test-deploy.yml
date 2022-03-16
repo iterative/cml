@@ -141,7 +141,7 @@ jobs:
           - base: 1
             ubuntu: 20.04
             python: 3.8
-            cuda: 11.0.3
+            cuda: 11.2.1
             cudnn: 8
           - latest: true # update the values below after introducing a new major version
             base: 1

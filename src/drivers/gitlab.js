@@ -222,16 +222,33 @@ class Gitlab {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return await Promise.all(
-      runners.map(async ({ id, description, active, online }) => ({
+      runners.map(async ({ id, description, online }) => ({
         id,
         name: description,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
-        online,
-        busy: active && online
+        online
       }))
     );
+  }
+
+  async runnerById({ id } = {}) {
+    const {
+      description,
+      online,
+      tag_list: labels
+    } = await this.request({
+      endpoint: `/runners/${id}`,
+      method: 'GET'
+    });
+
+    return {
+      id,
+      name: description,
+      labels,
+      online
+    };
   }
 
   async prCreate(opts = {}) {
@@ -411,8 +428,8 @@ class Gitlab {
     repo.username = this.userName || userName;
 
     const command = `
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;
