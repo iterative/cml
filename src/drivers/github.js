@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
+const { withCustomRequest } = require('@octokit/graphql');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 const ProxyAgent = require('proxy-agent');
@@ -341,12 +342,18 @@ class Github {
   }
 
   async prCreate(opts = {}) {
-    const { source: head, target: base, title, description: body } = opts;
+    const {
+      source: head,
+      target: base,
+      title,
+      description: body,
+      autoMerge
+    } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl }
+      data: { html_url: htmlUrl, node_id: nodeId }
     } = await pulls.create({
       owner,
       repo,
@@ -356,7 +363,79 @@ class Github {
       body
     });
 
+    if (autoMerge) {
+      await this.prAutoMerge({ pullRequestId: nodeId, base });
+    }
+
     return htmlUrl;
+  }
+
+  /**
+   * @param {{ branch: string }} opts
+   * @returns {Promise<boolean>}
+   */
+  async isProtected({ branch }) {
+    const octo = octokit(this.token, this.repo);
+    const { owner, repo } = this.ownerRepo();
+    try {
+      await octo.repos.getBranchProtection({
+        branch,
+        owner,
+        repo
+      });
+      return true;
+    } catch (error) {
+      if (error.message === 'Branch not protected') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * @param {{ pullRequestId: number, base: string }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ pullRequestId, base }) {
+    const octo = octokit(this.token, this.repo);
+    const graphql = withCustomRequest(octo.request);
+
+    try {
+      await graphql(
+        `
+          mutation autoMerge($pullRequestId: ID!) {
+            enablePullRequestAutoMerge(
+              input: { pullRequestId: $pullRequestId }
+            ) {
+              clientMutationId
+            }
+          }
+        `,
+        {
+          pullRequestId
+        }
+      );
+    } catch (error) {
+      if (
+        error.message.includes("Can't enable auto-merge for this pull request")
+      ) {
+        const { owner, repo } = this.ownerRepo();
+        const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+
+        const isProtected = await this.isProtected({ branch: base });
+        if (!isProtected) {
+          throw new Error(
+            `Enabling Auto-Merge failed. Please set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches`
+          );
+        }
+
+        throw new Error(
+          `Enabling Auto-Merge failed. Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge`
+        );
+      }
+
+      throw error;
+    }
   }
 
   async prCommentCreate(opts = {}) {
