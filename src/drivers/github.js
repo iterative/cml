@@ -565,9 +565,9 @@ class Github {
     repo.username = this.userName || userName;
 
     const command = `
-    git config --unset http.https://github.com/.extraheader && \\
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config --unset http.https://github.com/.extraheader;
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;
