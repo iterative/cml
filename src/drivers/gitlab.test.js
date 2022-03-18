@@ -56,7 +56,7 @@ describe('Non Enviromental tests', () => {
       "
           git config user.name \\"john\\" &&
           git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://john:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+          git remote set-url origin \\"https://token:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
     `);
   });
 });

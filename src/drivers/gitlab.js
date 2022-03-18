@@ -425,7 +425,7 @@ class Gitlab {
   async updateGitConfig({ userName, userEmail } = {}) {
     const repo = new URL(this.repo);
     repo.password = this.token;
-    repo.username = this.userName || userName;
+    repo.username = 'token';
 
     const command = `
     git config user.name "${userName || this.userName}" &&
