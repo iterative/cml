@@ -83,6 +83,7 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
           REPO_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -91,6 +92,14 @@ jobs:
           vl2png assets/vega-lite.json | cml-publish --md >> report.md
           cml-send-comment report.md
           cml-send-github-check report.md
+
+          cml runner \
+              --cloud-spot \
+              --cloud=gcp \
+              --cloud-region=us-west1-b \
+              --cloud-type=custom-8-53248+nvidia-tesla-k80*1 \
+              --idle-timeout=3600 \
+              --labels=cml-runner-gcp-gpu
 
           cml runner \
               --cloud-spot \
@@ -134,6 +143,23 @@ jobs:
   test_container_az:
     needs: check-container
     runs-on: [self-hosted, cml-runner-az-gpu]
+    container:
+      image: docker://dvcorg/cml-test
+      options: --gpus all
+    steps:
+      - name: tests
+        run: |
+          nvidia-smi
+  test_machine_gcp:
+    needs: check-container
+    runs-on: [self-hosted, cml-runner-gcp-gpu]
+    steps:
+      - name: tests
+        run: |
+          nvidia-smi
+  test_container_gcp:
+    needs: check-container
+    runs-on: [self-hosted, cml-runner-gcp-gpu]
     container:
       image: docker://dvcorg/cml-test
       options: --gpus all
