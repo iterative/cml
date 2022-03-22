@@ -213,7 +213,9 @@ class Gitlab {
         ${single ? '--max-builds 1' : ''}`;
 
       return spawn(command, { shell: true });
-    } catch (err) {
+    } catch (err) {      
+      if (error.message === 'Forbidden')
+        error.message += ', check the permissions of your GitLab token';
       throw new Error(`Failed preparing Gitlab runner: ${err.message}`);
     }
   }
