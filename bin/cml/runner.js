@@ -276,7 +276,7 @@ const runLocal = async (opts) => {
         if (cml.driver === 'github') {
           const job = await cml.runnerJob({ runnerId: RUNNER_ID });
 
-          if (!job && !idle) {
+          if (!job && idle) {
             winston.error(
               `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
             );
@@ -284,7 +284,7 @@ const runLocal = async (opts) => {
             RUNNER_JOBS_RUNNING = [];
           }
 
-          if (job && idle) {
+          if (job && !idle) {
             winston.error(
               `Runner seems to be busy. Retrying in ${idleTimeout} secs`
             );
