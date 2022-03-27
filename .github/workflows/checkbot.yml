@@ -6,6 +6,7 @@ on:
     types: [created]
   pull_request_review_comment:
     types: [created]
+  push:
 jobs:
   react-seen:
     if: startsWith(github.event.comment.body, '/')
