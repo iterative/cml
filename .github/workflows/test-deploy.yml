@@ -241,6 +241,12 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ matrix.cloud }}
     container: ghcr.io/iterative/cml:latest
+    permissions:
+      contents: read
+      checks: write
+      packages: write
+      pull-requests: write
+      id-token: write
     strategy:
       matrix:
         cloud: [aws, azure, gcp]
