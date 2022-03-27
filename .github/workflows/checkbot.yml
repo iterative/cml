@@ -9,7 +9,7 @@ on:
   push:
 jobs:
   react-seen:
-    if: startsWith(github.event.comment.body, '/')
+    #if: startsWith(github.event.comment.body, '/')
     runs-on: ubuntu-latest
     steps:
       - name: React Seen
