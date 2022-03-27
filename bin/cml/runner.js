@@ -280,15 +280,13 @@ const runLocal = async (opts) => {
             winston.error(
               `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
             );
-
+            
             RUNNER_JOBS_RUNNING = [];
-          }
-
-          if (job && !idle) {
+          } else {
             winston.error(
               `Runner seems to be busy. Retrying in ${idleTimeout} secs`
             );
-
+            
             idle = false;
           }
         }
