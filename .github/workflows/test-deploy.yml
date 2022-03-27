@@ -291,12 +291,12 @@ jobs:
           REPO_TOKEN= cml-send-github-check report.md
           GITHUB_TOKEN= cml send-comment report.md
           GITHUB_TOKEN= cml runner \
-          --cloud-spot \
+          --repo=https://github.com/iterative-olivaw/cml \
+          --labels=smoke-${{ matrix.cloud }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }} \
           --cloud=${{ matrix.cloud }} \
           --cloud-region=${{ matrix.region }} \
           --cloud-type=${{ matrix.type }} \
-          --labels=smoke-${{ matrix.cloud }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }} \
-          --repo=https://github.com/iterative-olivaw/cml
+          --cloud-spot
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
