@@ -273,6 +273,17 @@ jobs:
         with:
           aws-region: us-west-1
           role-to-assume: arn:aws:iam::342840881361:role/SandboxUser
+      - uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+          REPO_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           echo 'Check container!' > report.md
           vl2png assets/vega-lite.json | cml-publish --md >> report.md
