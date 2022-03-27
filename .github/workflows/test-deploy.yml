@@ -277,7 +277,7 @@ jobs:
           echo 'Check container!' > report.md
           vl2png assets/vega-lite.json | cml-publish --md >> report.md
           vl2svg assets/vega-lite.json | cml publish --md >> report.md
-          cml-send-github-check report.md
+          REPO_TOKEN= cml-send-github-check report.md
           cml send-comment report.md
           cml runner \
           --cloud-spot \
