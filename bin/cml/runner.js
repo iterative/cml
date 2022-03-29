@@ -278,7 +278,11 @@ const runLocal = async (opts) => {
 
           if (!job && !idle) {
             winston.error(
-              `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
+              `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
+            );
+            winston.warn(`CML GitHub driver response: ${JSON.stringify(job)}`);
+            winston.warn(
+              `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
             );
 
             RUNNER_JOBS_RUNNING = [];
@@ -286,7 +290,7 @@ const runLocal = async (opts) => {
 
           if (job && idle) {
             winston.error(
-              `Runner seems to be busy. Retrying in ${idleTimeout} secs`
+              `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
             );
 
             idle = false;
