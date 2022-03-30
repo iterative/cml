@@ -88,7 +88,7 @@
     "proxy-agent": "^5.0.0",
     "pseudoexec": "^0.2.0",
     "semver": "^7.3.5",
-    "simple-git": "^2.46.0",
+    "simple-git": "^3.3.0",
     "strip-ansi": "^6.0.1",
     "strip-url-auth": "^1.0.1",
     "tar": "^6.1.11",
