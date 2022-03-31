@@ -5,11 +5,9 @@ deploy-runner:
   script:
     - pip install awscli
     - >
-      CREDENTIALS=($(aws sts assume-role-with-web-identity
-      --region=us-west-1
+      CREDENTIALS=($(aws sts assume-role-with-web-identity --region=us-west-1
       --role-arn=arn:aws:iam::342840881361:role/SandboxUser
-      --role-session-name=GitLab
-      --duration-seconds=3600
+      --role-session-name=GitLab --duration-seconds=3600
       --web-identity-token="$CI_JOB_JWT_V2"
       --query="Credentials.[AccessKeyId,SecretAccessKey,SessionToken]"
       --output=text))

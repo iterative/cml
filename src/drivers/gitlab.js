@@ -214,6 +214,9 @@ class Gitlab {
 
       return spawn(command, { shell: true });
     } catch (err) {
+      if (err.message === 'Forbidden')
+        err.message +=
+          ', check the permissions (scopes) of your GitLab token.\nSee https://cml.dev/doc/self-hosted-runners?tab=GitLab#personal-access-token';
       throw new Error(`Failed preparing Gitlab runner: ${err.message}`);
     }
   }
