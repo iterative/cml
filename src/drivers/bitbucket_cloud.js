@@ -128,7 +128,7 @@ class BitbucketCloud {
         }
       }
     });
-    const endpoint = `/repositories/${projectPath}/pullrequests`;
+    const endpoint = `/repositories/${projectPath}/pullrequests/`;
     const {
       id,
       links: {
@@ -136,22 +136,35 @@ class BitbucketCloud {
       }
     } = await this.request({
       method: 'POST',
-      endpoint: `${endpoint}/`,
+      endpoint,
       body
     });
 
-    if (autoMerge) {
-      winston.warn(
-        'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'
-      );
-      await this.request({
-        method: 'POST',
-        endpoint: `${endpoint}/${id}/merge`,
-        body
-      });
-    }
-
+    if (autoMerge)
+      await this.prAutoMerge({ pullRequestId: id, mergeMode: autoMerge });
     return href;
+  }
+
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage = undefined }) {
+    winston.warn(
+      'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'
+    );
+    const { projectPath } = this;
+    const endpoint = `/repositories/${projectPath}/pullrequests/${pullRequestId}/merge`;
+    const body = JSON.stringify({
+      merge_strategy: {
+        merge: 'merge_commit',
+        rebase: 'fast_forward',
+        squash: 'squash'
+      }[mergeMode],
+      close_source_branch: true,
+      message: mergeMessage
+    });
+    await this.request({
+      method: 'POST',
+      endpoint,
+      body
+    });
   }
 
   async prCommentCreate(opts = {}) {

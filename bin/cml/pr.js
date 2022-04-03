@@ -20,9 +20,10 @@ exports.builder = (yargs) =>
         description: 'Output in markdown format [](url).'
       },
       autoMerge: {
-        type: 'boolean',
-        description:
-          'Mark the PR/MR for automatic merging after tests pass (unsupported by Bitbucket).'
+        type: 'string',
+        choices: ['merge', 'rebase', 'squash'],
+        coerce: (val) => (val === '' ? 'merge' : val),
+        description: 'Mark the PR/MR for automatic merging after tests pass.'
       },
       remote: {
         type: 'string',

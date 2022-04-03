@@ -353,7 +353,7 @@ class Github {
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl, node_id: nodeId, number }
+      data: { html_url: htmlUrl, number }
     } = await pulls.create({
       owner,
       repo,
@@ -363,17 +363,12 @@ class Github {
       body
     });
 
-    if (autoMerge) {
-      try {
-        await this.prAutoMerge({ pullRequestId: nodeId, base });
-      } catch ({ message }) {
-        winston.warn(
-          `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
-        );
-        await pulls.merge({ owner, repo, pull_number: number });
-      }
-    }
-
+    if (autoMerge)
+      await this.prAutoMerge({
+        pullRequestId: number,
+        mergeMode: autoMerge,
+        base
+      });
     return htmlUrl;
   }
 
@@ -403,45 +398,74 @@ class Github {
    * @param {{ pullRequestId: number, base: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ pullRequestId, base }) {
+  async prAutoMerge({
+    pullRequestId,
+    mergeMode,
+    mergeMessage = undefined,
+    base
+  }) {
     const octo = octokit(this.token, this.repo);
     const graphql = withCustomRequest(octo.request);
-
+    const { owner, repo } = this.ownerRepo();
+    const [commitHeadline, commitBody] =
+      mergeMessage === undefined ? [] : mergeMessage.split(/\n\n(.*)/s);
+    const {
+      data: { node_id: nodeId }
+    } = await octo.pulls.get({ owner, repo, pull_number: pullRequestId });
     try {
       await graphql(
         `
-          mutation autoMerge($pullRequestId: ID!) {
+          mutation autoMerge(
+            $pullRequestId: ID!
+            $mergeMethod: PullRequestMergeMethod
+            $commitHeadline: String
+            $commitBody: String
+          ) {
             enablePullRequestAutoMerge(
-              input: { pullRequestId: $pullRequestId }
+              input: {
+                pullRequestId: $pullRequestId
+                mergeMethod: $mergeMethod
+                commitHeadline: $commitHeadline
+                commitBody: $commitBody
+              }
             ) {
               clientMutationId
             }
           }
         `,
         {
-          pullRequestId
+          pullRequestId: nodeId,
+          mergeMethod: mergeMode.toUpperCase(),
+          commitHeadline,
+          commitBody
         }
       );
-    } catch (error) {
+    } catch (err) {
       if (
-        error.message.includes("Can't enable auto-merge for this pull request")
-      ) {
-        const { owner, repo } = this.ownerRepo();
-        const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+        !err.message.includes("Can't enable auto-merge for this pull request")
+      )
+        throw err;
 
-        const isProtected = await this.isProtected({ branch: base });
-        if (!isProtected) {
-          throw new Error(
-            `Enabling Auto-Merge failed. Please set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches`
-          );
-        }
+      const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
 
-        throw new Error(
-          `Enabling Auto-Merge failed. Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge`
+      if (!(await this.isProtected({ branch: base }))) {
+        winston.warn(
+          `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
+        );
+      } else {
+        winston.warn(
+          `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
         );
       }
 
-      throw error;
+      await octo.pulls.merge({
+        owner,
+        repo,
+        pull_number: pullRequestId,
+        merge_method: mergeMode,
+        commit_title: commitHeadline,
+        commit_message: commitBody
+      });
     }
   }
 
