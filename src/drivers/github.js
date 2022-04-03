@@ -353,7 +353,7 @@ class Github {
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl, node_id: nodeId }
+      data: { html_url: htmlUrl, node_id: nodeId, number }
     } = await pulls.create({
       owner,
       repo,
@@ -364,7 +364,14 @@ class Github {
     });
 
     if (autoMerge) {
-      await this.prAutoMerge({ pullRequestId: nodeId, base });
+      try {
+        await this.prAutoMerge({ pullRequestId: nodeId, base });
+      } catch ({ message }) {
+        winston.warn(
+          `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
+        );
+        await pulls.merge({ owner, repo, pull_number: number });
+      }
     }
 
     return htmlUrl;

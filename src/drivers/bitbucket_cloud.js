@@ -114,12 +114,6 @@ class BitbucketCloud {
     const { projectPath } = this;
     const { source, target, title, description, autoMerge } = opts;
 
-    if (autoMerge) {
-      throw new Error(
-        'Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286'
-      );
-    }
-
     const body = JSON.stringify({
       title,
       description,
@@ -134,16 +128,28 @@ class BitbucketCloud {
         }
       }
     });
-    const endpoint = `/repositories/${projectPath}/pullrequests/`;
+    const endpoint = `/repositories/${projectPath}/pullrequests`;
     const {
+      id,
       links: {
         html: { href }
       }
     } = await this.request({
       method: 'POST',
-      endpoint,
+      endpoint: `${endpoint}/`,
       body
     });
+
+    if (autoMerge) {
+      winston.warn(
+        'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'
+      );
+      await this.request({
+        method: 'POST',
+        endpoint: `${endpoint}/${id}/merge`,
+        body
+      });
+    }
 
     return href;
   }

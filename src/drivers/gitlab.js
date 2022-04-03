@@ -7,6 +7,7 @@ const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
 const { backOff } = require('exponential-backoff');
+const winston = require('winston');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
@@ -272,7 +273,17 @@ class Gitlab {
     });
 
     if (autoMerge) {
-      await this.prAutoMerge({ mergeRequestId: iid });
+      try {
+        await this.prAutoMerge({ mergeRequestId: iid });
+      } catch ({ message }) {
+        winston.warn(
+          `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
+        );
+        await this.prAutoMerge({
+          mergeRequestId: iid,
+          whenPipelineSucceeds: false
+        });
+      }
     }
 
     return url;
@@ -282,12 +293,12 @@ class Gitlab {
    * @param {{ mergeRequestId: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ mergeRequestId }) {
+  async prAutoMerge({ mergeRequestId, whenPipelineSucceeds = true }) {
     const projectPath = await this.projectPath();
 
     const endpoint = `/projects/${projectPath}/merge_requests/${mergeRequestId}/merge`;
     const body = new URLSearchParams();
-    body.append('merge_when_pipeline_succeeds', true);
+    body.append('merge_when_pipeline_succeeds', whenPipelineSucceeds);
 
     await backOff(() =>
       this.request({
