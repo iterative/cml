@@ -151,12 +151,13 @@ class BitbucketCloud {
     );
     const { projectPath } = this;
     const endpoint = `/repositories/${projectPath}/pullrequests/${pullRequestId}/merge`;
+    const mergeModes = {
+      merge: 'merge_commit',
+      rebase: 'fast_forward',
+      squash: 'squash'
+    };
     const body = JSON.stringify({
-      merge_strategy: {
-        merge: 'merge_commit',
-        rebase: 'fast_forward',
-        squash: 'squash'
-      }[mergeMode],
+      merge_strategy: mergeModes[mergeMode],
       close_source_branch: true,
       message: mergeMessage
     });

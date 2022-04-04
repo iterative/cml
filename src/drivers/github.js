@@ -402,8 +402,9 @@ class Github {
     const octo = octokit(this.token, this.repo);
     const graphql = withCustomRequest(octo.request);
     const { owner, repo } = this.ownerRepo();
-    const [commitHeadline, commitBody] =
-      mergeMessage ? mergeMessage.split(/\n\n(.*)/s) : [];
+    const [commitHeadline, commitBody] = mergeMessage
+      ? mergeMessage.split(/\n\n(.*)/s)
+      : [];
     const {
       data: { node_id: nodeId }
     } = await octo.pulls.get({ owner, repo, pull_number: pullRequestId });
