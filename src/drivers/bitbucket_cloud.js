@@ -145,7 +145,7 @@ class BitbucketCloud {
     return href;
   }
 
-  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage = undefined }) {
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
     winston.warn(
       'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'
     );

@@ -281,7 +281,7 @@ class Gitlab {
    * @param {{ pullRequestId: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage = undefined }) {
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
     if (mergeMode === 'rebase')
       throw new Error(`Rebase auto-merge mode not implemented for GitLab`);
 
@@ -291,7 +291,7 @@ class Gitlab {
     const body = new URLSearchParams();
     body.set('merge_when_pipeline_succeeds', true);
     body.set('squash', mergeMode === 'squash');
-    if (mergeMessage !== undefined)
+    if (mergeMessage)
       body.set(`${mergeMode}_commit_message`, mergeMessage);
 
     try {

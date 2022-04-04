@@ -401,7 +401,7 @@ class Github {
   async prAutoMerge({
     pullRequestId,
     mergeMode,
-    mergeMessage = undefined,
+    mergeMessage,
     base
   }) {
     const octo = octokit(this.token, this.repo);
