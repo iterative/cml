@@ -398,12 +398,7 @@ class Github {
    * @param {{ pullRequestId: number, base: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({
-    pullRequestId,
-    mergeMode,
-    mergeMessage,
-    base
-  }) {
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage, base }) {
     const octo = octokit(this.token, this.repo);
     const graphql = withCustomRequest(octo.request);
     const { owner, repo } = this.ownerRepo();
