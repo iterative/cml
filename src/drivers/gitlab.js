@@ -291,8 +291,7 @@ class Gitlab {
     const body = new URLSearchParams();
     body.set('merge_when_pipeline_succeeds', true);
     body.set('squash', mergeMode === 'squash');
-    if (mergeMessage)
-      body.set(`${mergeMode}_commit_message`, mergeMessage);
+    if (mergeMessage) body.set(`${mergeMode}_commit_message`, mergeMessage);
 
     try {
       await backOff(() =>
