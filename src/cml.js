@@ -344,7 +344,6 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-      autoMerge,
       merge,
       rebase,
       squash
