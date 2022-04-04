@@ -306,13 +306,11 @@ class Gitlab {
         `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
       );
       body.set('merge_when_pipeline_succeeds', false);
-      await backOff(() =>
-        this.request({
-          endpoint,
-          method: 'PUT',
-          body
-        })
-      );
+      this.request({
+        endpoint,
+        method: 'PUT',
+        body
+      });
     }
   }
 
