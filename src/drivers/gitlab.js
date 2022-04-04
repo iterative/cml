@@ -7,6 +7,7 @@ const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
 const { backOff } = require('exponential-backoff');
+const winston = require('winston');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
@@ -271,31 +272,46 @@ class Gitlab {
       body
     });
 
-    if (autoMerge) {
-      await this.prAutoMerge({ mergeRequestId: iid });
-    }
-
+    if (autoMerge)
+      await this.prAutoMerge({ pullRequestId: iid, mergeMode: autoMerge });
     return url;
   }
 
   /**
-   * @param {{ mergeRequestId: string }} param0
+   * @param {{ pullRequestId: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ mergeRequestId }) {
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
+    if (mergeMode === 'rebase')
+      throw new Error(`Rebase auto-merge mode not implemented for GitLab`);
+
     const projectPath = await this.projectPath();
 
-    const endpoint = `/projects/${projectPath}/merge_requests/${mergeRequestId}/merge`;
+    const endpoint = `/projects/${projectPath}/merge_requests/${pullRequestId}/merge`;
     const body = new URLSearchParams();
-    body.append('merge_when_pipeline_succeeds', true);
+    body.set('merge_when_pipeline_succeeds', true);
+    body.set('squash', mergeMode === 'squash');
+    if (mergeMessage) body.set(`${mergeMode}_commit_message`, mergeMessage);
 
-    await backOff(() =>
+    try {
+      await backOff(() =>
+        this.request({
+          endpoint,
+          method: 'PUT',
+          body
+        })
+      );
+    } catch ({ message }) {
+      winston.warn(
+        `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
+      );
+      body.set('merge_when_pipeline_succeeds', false);
       this.request({
         endpoint,
         method: 'PUT',
         body
-      })
-    );
+      });
+    }
   }
 
   async prCommentCreate(opts = {}) {

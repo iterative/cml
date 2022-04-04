@@ -344,7 +344,10 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-      autoMerge
+      autoMerge,
+      merge,
+      rebase,
+      squash
     } = opts;
 
     await this.ci(opts);
@@ -414,7 +417,13 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       target,
       title,
       description,
-      autoMerge
+      autoMerge: merge
+        ? 'merge'
+        : rebase
+        ? 'rebase'
+        : squash
+        ? 'squash'
+        : undefined
     });
 
     return renderPr(url);
