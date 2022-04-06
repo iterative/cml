@@ -2,7 +2,7 @@ const { execSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
-const git = require('simple-git/promise')('./');
+const git = require('simple-git')('./');
 
 const winston = require('winston');
 
