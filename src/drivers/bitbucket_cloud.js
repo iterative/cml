@@ -371,23 +371,23 @@ class BitbucketCloud {
       agent: new ProxyAgent()
     });
 
-    const contentType = response.headers.get('Content-Type').includes('json')
-      ? 'json'
-      : 'text';
+    const responseBody = response.headers.get('Content-Type').includes('json')
+      ? await response.json()
+      : await response.text();
 
-    if (response.ok) {
-      return await response[contentType]();
+    if (!response.ok) {
+      winston.debug(responseBody);
+      const error =
+        responseBody.error.message || responseBody.error || responseBody;
+      throw new Error(
+        // Attempt to get additional context. We have observed two different error schemas
+        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+        // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
+        response.statusText + (error ? ' ' + error : '')
+      );
     }
 
-    const error = await response[contentType]();
-    winston.debug(error);
-    throw new Error(
-      // Attempt to get additional context. We have observed two different error schemas
-      // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
-      // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
-      response.statusText +
-        (error.error || error.message ? ' ' + error.message : '')
-    );
+    return responseBody;
   }
 }
 
