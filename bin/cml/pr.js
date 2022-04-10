@@ -19,6 +19,22 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description: 'Output in markdown format [](url).'
       },
+      merge: {
+        type: 'boolean',
+        alias: 'auto-merge',
+        conflicts: ['rebase', 'squash'],
+        description: 'Try to merge the pull request upon creation.'
+      },
+      rebase: {
+        type: 'boolean',
+        conflicts: ['merge', 'squash'],
+        description: 'Try to rebase-merge the pull request upon creation.'
+      },
+      squash: {
+        type: 'boolean',
+        conflicts: ['merge', 'rebase'],
+        description: 'Try to squash-merge the pull request upon creation.'
+      },
       remote: {
         type: 'string',
         default: GIT_REMOTE,
@@ -46,7 +62,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab'],
+        choices: ['github', 'gitlab', 'bitbucket'],
         description: 'If not specify it infers it from the ENV.'
       }
     })

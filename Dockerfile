@@ -39,7 +39,7 @@ ENV LC_ALL="en_US.UTF-8"
 # INSTALL NODE, GIT & GO
 RUN add-apt-repository ppa:git-core/ppa --yes \
  && add-apt-repository ppa:longsleep/golang-backports --yes \
- && curl --location https://deb.nodesource.com/setup_12.x | bash \
+ && curl --location https://deb.nodesource.com/setup_16.x | bash \
  && apt-get update \
  && apt-get install --yes git golang-go nodejs \
  && apt-get clean \

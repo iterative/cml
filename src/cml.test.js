@@ -75,6 +75,28 @@ describe('Github tests', () => {
 
     expect(caughtErr).toBe('No commit found for SHA: invalid_sha');
   });
+
+  test('Runner logs', async () => {
+    const cml = new CML();
+    cml.driver = 'github';
+    let log = cml.parseRunnerLog({ data: 'Listening for Jobs' });
+    expect(log.status).toBe('ready');
+
+    log = cml.parseRunnerLog({ data: 'Running job' });
+    expect(log.status).toBe('job_started');
+
+    log = cml.parseRunnerLog({ data: 'completed with result: Succeeded' });
+    expect(log.status).toBe('job_ended');
+    expect(log.success).toBe(true);
+
+    log = cml.parseRunnerLog({ data: 'completed with result: Failed' });
+    expect(log.status).toBe('job_ended');
+    expect(log.success).toBe(false);
+
+    log = cml.parseRunnerLog({ data: 'completed with result: Canceled' });
+    expect(log.status).toBe('job_ended');
+    expect(log.success).toBe(false);
+  });
 });
 
 describe('Gitlab tests', () => {
@@ -195,5 +217,31 @@ describe('Gitlab tests', () => {
     }
 
     expect(caughtErr).toBe('Not Found');
+  });
+
+  test('Runner logs', async () => {
+    const cml = new CML();
+    cml.driver = 'gitlab';
+    let log = await cml.parseRunnerLog({
+      data: '{"level":"info","msg":"Starting runner for https://gitlab.com with token 2SGFrnGt ...","time":"2021-07-02T16:45:05Z"}'
+    });
+    expect(log.status).toBe('ready');
+
+    log = cml.parseRunnerLog({
+      data: '{"job":1396213069,"level":"info","msg":"Checking for jobs... received","repo_url":"https://gitlab.com/iterative.ai/fashion_mnist.git","runner":"2SGFrnGt","time":"2021-07-02T16:45:47Z"}'
+    });
+    expect(log.status).toBe('job_started');
+
+    log = cml.parseRunnerLog({
+      data: '{"duration_s":7.706165838,"job":2177867438,"level":"info","msg":"Job succeeded","project":27939020,"runner":"fe36krFK","time":"2022-03-08T18:12:57+01:00"}'
+    });
+    expect(log.status).toBe('job_ended');
+    expect(log.success).toBe(true);
+
+    log = cml.parseRunnerLog({
+      data: '{"duration_s":120.0120526,"job":1396213069,"level":"warning","msg":"Job failed: execution took longer than 2m0s seconds","project":27856642,"runner":"2SGFrnGt","time":"2021-07-02T16:47:47Z"}'
+    });
+    expect(log.status).toBe('job_ended');
+    expect(log.success).toBe(false);
   });
 });

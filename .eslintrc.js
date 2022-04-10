@@ -2,7 +2,8 @@ module.exports = {
   env: {
     browser: true,
     commonjs: true,
-    es6: true
+    es6: true,
+    jest: true
   },
   extends: ['standard', 'prettier'],
   globals: {
@@ -17,8 +18,5 @@ module.exports = {
     camelcase: [1, { properties: 'never' }],
     'prettier/prettier': 'error'
   },
-  plugins: ['prettier'],
-  env: {
-    jest: true
-  }
+  plugins: ['prettier']
 };

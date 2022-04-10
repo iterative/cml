@@ -16,6 +16,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_SEND_COMMENT').options(
     kebabcaseKeys({
+      pr: {
+        type: 'boolean',
+        description:
+          'Post to an existing PR/MR associated with the specified commit'
+      },
       commitSha: {
         type: 'string',
         alias: 'head-sha',
