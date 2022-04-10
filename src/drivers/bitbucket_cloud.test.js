@@ -29,9 +29,9 @@ describe('Non Enviromental tests', () => {
 
   test('Publish', async () => {
     const path = `${__dirname}/../../assets/logo.png`;
-    await expect(client.upload({ path })).rejects.toThrow(
-      'Bitbucket Cloud does not support upload!'
-    );
+    const { uri } = await client.upload({ path });
+
+    expect(uri).not.toBeUndefined();
   });
 
   test('Runner token', async () => {
