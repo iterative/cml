@@ -1,8 +1,9 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
 const { URL } = require('url');
+const FormData = require('form-data');
 
-const { proxyAgent } = require('../utils');
+const { fetchUploadData, proxyAgent } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
 class BitbucketCloud {
@@ -93,19 +94,29 @@ class BitbucketCloud {
   }
 
   async upload(opts = {}) {
-    // https://bitbucket.org/atlassian/bitbucket-upload-file
     const { projectPath } = this;
     const { size, mime, data } = await fetchUploadData(opts);
-    
-    const hash = crypto.createHash('sha256').update(data).digest('hex');
-    
+
+    const chunks = [];
+    for await (const chunk of data) chunks.push(chunk);
+    const buffer = Buffer.concat(chunks);
+
+    const filename = `cml-${crypto
+      .createHash('sha256')
+      .update(buffer)
+      .digest('hex')}`;
     const body = new FormData();
-    body.append('files[]', data, hash);
+    body.append('files', buffer, { filename });
 
     const endpoint = `/repositories/${projectPath}/downloads`;
-    const { url } = await this.request({ endpoint, method: 'POST', body });
-
-    return { uri: `${endpoint}/${hash}`, mime, size };
+    await this.request({ endpoint, method: 'POST', body });
+    return {
+      uri: `https://bitbucket.org/${decodeURIComponent(
+        projectPath
+      )}/downloads/${filename}`,
+      mime,
+      size
+    };
   }
 
   async runnerToken() {
@@ -190,12 +201,13 @@ class BitbucketCloud {
   async request(opts = {}) {
     const { token, api } = this;
     const { url, endpoint, method = 'GET', body } = opts;
+
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Basic ${token}`
-    };
+
+    const headers = { Authorization: `Basic ${token}` };
+    if (body.constructor !== FormData)
+      headers['Content-Type'] = 'application/json';
 
     const response = await fetch(url || `${api}${endpoint}`, {
       method,
@@ -204,14 +216,18 @@ class BitbucketCloud {
       agent: proxyAgent()
     });
 
-    if (response.status > 300) {
-      const {
-        error: { message }
-      } = await response.json();
-      throw new Error(`${response.statusText} ${message}`);
+    const contentType = response.headers.get('Content-Type').includes('json')
+      ? 'json'
+      : 'text';
+
+    if (response.ok) {
+      return await response[contentType]();
     }
 
-    return await response.json();
+    const error = await response[contentType]();
+    throw new Error(
+      response.statusText + (error.message ? ' ' + error.message : '')
+    );
   }
 
   async pipelineJobs(opts = {}) {
