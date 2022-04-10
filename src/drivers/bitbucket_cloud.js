@@ -376,15 +376,12 @@ class BitbucketCloud {
       : await response.text();
 
     if (!response.ok) {
-      winston.debug(responseBody);
+      // Attempt to get additional context. We have observed two different error schemas
+      // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+      // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
       const error =
         responseBody.error.message || responseBody.error || responseBody;
-      throw new Error(
-        // Attempt to get additional context. We have observed two different error schemas
-        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
-        // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
-        response.statusText + (error ? ' ' + error : '')
-      );
+      throw new Error(response.statusText + (error ? ' ' + error : ''));
     }
 
     return responseBody;
