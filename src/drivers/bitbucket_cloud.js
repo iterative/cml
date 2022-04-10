@@ -1,10 +1,15 @@
+const crypto = require('crypto');
 const fetch = require('node-fetch');
 const winston = require('winston');
 const { URL } = require('url');
+const FormData = require('form-data');
 const ProxyAgent = require('proxy-agent');
+
+const { fetchUploadData } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
   process.env;
+
 class BitbucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -87,7 +92,29 @@ class BitbucketCloud {
   }
 
   async upload(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support upload!');
+    const { projectPath } = this;
+    const { size, mime, data } = await fetchUploadData(opts);
+
+    const chunks = [];
+    for await (const chunk of data) chunks.push(chunk);
+    const buffer = Buffer.concat(chunks);
+
+    const filename = `cml-${crypto
+      .createHash('sha256')
+      .update(buffer)
+      .digest('hex')}`;
+    const body = new FormData();
+    body.append('files', buffer, { filename });
+
+    const endpoint = `/repositories/${projectPath}/downloads`;
+    await this.request({ endpoint, method: 'POST', body });
+    return {
+      uri: `https://bitbucket.org/${decodeURIComponent(
+        projectPath
+      )}/downloads/${filename}`,
+      mime,
+      size
+    };
   }
 
   async runnerToken() {
@@ -329,10 +356,10 @@ class BitbucketCloud {
 
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: 'Basic ' + `${token}`
-    };
+
+    const headers = { Authorization: `Basic ${token}` };
+    if (body.constructor !== FormData)
+      headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
     winston.debug(`${method} ${requestUrl}`);
@@ -344,20 +371,20 @@ class BitbucketCloud {
       agent: new ProxyAgent()
     });
 
-    if (response.status > 300) {
-      try {
-        const json = await response.json();
-        winston.debug(json);
-        // Attempt to get additional context. We have observed two different error schemas
-        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
-        // `{"error": "Error message"}`.
-        throw new Error(json.error.message || json.error);
-      } catch (err) {
-        throw new Error(`${response.statusText} ${err.message}`);
-      }
+    const responseBody = response.headers.get('Content-Type').includes('json')
+      ? await response.json()
+      : await response.text();
+
+    if (!response.ok) {
+      // Attempt to get additional context. We have observed two different error schemas
+      // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+      // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
+      const error =
+        responseBody?.error?.message || responseBody?.error || responseBody;
+      throw new Error(`${response.statusText} ${error}`.trim());
     }
 
-    return await response.json();
+    return responseBody;
   }
 }
 
