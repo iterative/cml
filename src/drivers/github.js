@@ -625,24 +625,33 @@ class Github {
     let { status = 'queued' } = opts;
     if (status === 'running') status = 'in_progress';
 
-    const workflowRuns = await octokitClient.paginate(octokitClient.actions.listWorkflowRunsForRepo, {
-      owner,
-      repo,
-      status
-    });
-    
-    winston.warn("Length of workflowRuns: ${workflowRuns.length}");
+    const workflowRuns = await octokitClient.paginate(
+      octokitClient.actions.listWorkflowRunsForRepo,
+      {
+        owner,
+        repo,
+        status
+      }
+    );
+
+    winston.warn(`Length of workflowRuns: ${workflowRuns.length}`);
 
     let runJobs = await Promise.all(
-      workflowRuns.map(async (run) => await octokitClient.paginate(octokitClient.actions.listJobsForWorkflowRun, {
-          owner,
-          repo,
-          run_id: run.id,
-          status
-        }))
+      workflowRuns.map(
+        async (run) =>
+          await octokitClient.paginate(
+            octokitClient.actions.listJobsForWorkflowRun,
+            {
+              owner,
+              repo,
+              run_id: run.id,
+              status
+            }
+          )
+      )
     );
-    
-    winston.warn("Length of runJobs: ${runJobs.length}");
+
+    winston.warn(`Length of runJobs: ${runJobs.length}`);
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
       const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
