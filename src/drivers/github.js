@@ -627,11 +627,7 @@ class Github {
 
     const workflowRuns = await octokitClient.paginate(
       octokitClient.actions.listWorkflowRunsForRepo,
-      {
-        owner,
-        repo,
-        status
-      }
+      { owner, repo, status }
     );
 
     winston.warn(`Length of workflowRuns: ${workflowRuns.length}`);
@@ -641,12 +637,7 @@ class Github {
         async ({ id }) =>
           await octokitClient.paginate(
             octokitClient.actions.listJobsForWorkflowRun,
-            {
-              owner,
-              repo,
-              run_id: id,
-              status
-            }
+            { owner, repo, run_id: id, status }
           )
       )
     );
