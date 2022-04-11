@@ -14,13 +14,13 @@ describe('CML e2e', () => {
         --version     Show version number                                    [boolean]
         --log         Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --user-email  Sets git user email.   [string] [default: \\"olivaw@iterative.ai\\"]
-        --user-name   Sets git user name.            [string] [default: \\"Olivaw[bot]\\"]
-        --repo        Specifies the repo to be used. If not specified is extracted
-                      from the CI ENV.                                        [string]
-        --token       Personal access token to be used. If not specified in extracted
-                      from ENV REPO_TOKEN.                                    [string]
-        --driver      If not specify it infers it from the ENV.
+        --user-email  Set Git user email.    [string] [default: \\"olivaw@iterative.ai\\"]
+        --user-name   Set Git user name.             [string] [default: \\"Olivaw[bot]\\"]
+        --repo        Set repository to be used. If unspecified, inferred from the
+                      environment.                                            [string]
+        --token       Personal access token to be used. If unspecified, inferred from
+                      the environment.                                        [string]
+        --driver      If unspecified, inferred from the environment.
                                    [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
     `);
   });

@@ -17,27 +17,27 @@ exports.builder = (yargs) =>
       userEmail: {
         type: 'string',
         default: GIT_USER_EMAIL,
-        description: 'Sets git user email.'
+        description: 'Set Git user email.'
       },
       userName: {
         type: 'string',
         default: GIT_USER_NAME,
-        description: 'Sets git user name.'
+        description: 'Set Git user name.'
       },
       repo: {
         type: 'string',
         description:
-          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+          'Set repository to be used. If unspecified, inferred from the environment.'
       },
       token: {
         type: 'string',
         description:
-          'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
+          'Personal access token to be used. If unspecified, inferred from the environment.'
       },
       driver: {
         type: 'string',
         choices: ['github', 'gitlab', 'bitbucket'],
-        description: 'If not specify it infers it from the ENV.'
+        description: 'If unspecified, inferred from the environment.'
       }
     })
   );
