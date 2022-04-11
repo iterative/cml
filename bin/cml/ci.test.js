@@ -21,7 +21,7 @@ describe('CML e2e', () => {
         --token       Personal access token to be used. If unspecified, inferred from
                       the environment.                                        [string]
         --driver      If unspecified, inferred from the environment.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
     `);
   });
 });
