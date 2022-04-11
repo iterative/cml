@@ -51,10 +51,13 @@ const destroy = async (opts = {}) => {
 const mapCloudMetadata = (metadata) =>
   Object.entries(metadata).map(([key, value]) => `${key} = "${value || ''}"`);
 
-const iterativeProviderTpl = () => {
+const iterativeProviderTpl = (opts = {}) => {
+  const { tpiVersion } = opts;
   return `terraform {
   required_providers {
-    iterative = { source = "iterative/iterative", version = ">= 0.9.10" }
+    iterative = { source = "iterative/iterative"${
+      tpiVersion ? `, version = "${tpiVersion}"` : ''
+    } }
   }
 }
 provider "iterative" {}
@@ -87,7 +90,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     dockerVolumes
   } = opts;
 
-  const template = `${iterativeProviderTpl()}
+  const template = `${iterativeProviderTpl(opts)}
 resource "iterative_cml_runner" "runner" {
   ${repo ? `repo = "${repo}"` : ''}
   ${token ? `token = "${token}"` : ''}

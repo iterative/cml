@@ -121,6 +121,7 @@ const runCloud = async (opts) => {
 
     const { token, repo, driver } = cml;
     const {
+      tpiVersion,
       labels,
       idleTimeout,
       name,
@@ -156,6 +157,7 @@ const runCloud = async (opts) => {
           'GPU model "tesla" has been deprecated; please use "v100" instead.'
         );
       tpl = tf.iterativeCmlRunnerTpl({
+        tpiVersion,
         repo,
         token,
         driver,
@@ -345,6 +347,7 @@ const run = async (opts) => {
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
+    tpiVersion,
     driver,
     repo,
     token,
@@ -372,7 +375,7 @@ const run = async (opts) => {
 
     await fs.mkdir(tfPath, { recursive: true });
     const tfMainPath = join(tfPath, 'main.tf');
-    const tpl = tf.iterativeProviderTpl();
+    const tpl = tf.iterativeProviderTpl({ tpiVersion });
     await fs.writeFile(tfMainPath, tpl);
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
@@ -436,6 +439,12 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
+      tpiVersion: {
+        type: 'string',
+        default: '>= 0.9.10',
+        description:
+          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints'
+      },
       dockerVolumes: {
         type: 'array',
         default: [],
