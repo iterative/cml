@@ -6,7 +6,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -61,7 +61,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -115,7 +115,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -170,7 +170,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -228,7 +228,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -284,7 +284,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
@@ -339,7 +339,7 @@ describe('Terraform tests', () => {
     expect(output).toMatchInlineSnapshot(`
       "terraform {
         required_providers {
-          iterative = { source = \\"iterative/iterative\\", version = \\">= 0.9.10\\" }
+          iterative = { source = \\"iterative/iterative\\" }
         }
       }
       provider \\"iterative\\" {}
