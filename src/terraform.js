@@ -67,6 +67,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     token,
     driver,
     labels,
+    cmlVersion,
     idleTimeout,
     cloud,
     region,
@@ -92,6 +93,7 @@ resource "iterative_cml_runner" "runner" {
   ${token ? `token = "${token}"` : ''}
   ${driver ? `driver = "${driver}"` : ''}
   ${labels ? `labels = "${labels}"` : ''}
+  ${cmlVersion ? `cml_version = "${cmlVersion}"` : ''}
   ${typeof idleTimeout !== 'undefined' ? `idle_timeout = ${idleTimeout}` : ''}
   ${name ? `name = "${name}"` : ''}
   ${single ? `single = "${single}"` : ''}

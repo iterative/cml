@@ -1,7 +1,6 @@
-const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const forge = require('node-forge');
+const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 
@@ -28,11 +27,8 @@ const exec = async (command) => {
 
 const mimeType = async (opts) => {
   const { path, buffer } = opts;
-  FileMagic.magicFile = PATH.join(
-    __dirname,
-    '..',
-    'node_modules/@npcz/magic/dist/magic.mgc'
-  );
+  const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
+  if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
   FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
   const fileMagic = await FileMagic.getInstance();
 
@@ -124,14 +120,6 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const sshPublicFromPrivateRsa = (privateKey) => {
-  const forgePrivate = forge.pki.privateKeyFromPem(privateKey);
-  const forgePublic = forge.pki.setRsaPublicKey(forgePrivate.n, forgePrivate.e);
-  const sshPublic = forge.ssh.publicKeyToOpenSSH(forgePublic);
-
-  return sshPublic;
-};
-
 const watermarkUri = (opts = {}) => {
   const { uri, type } = opts;
   const url = new URL(uri);
@@ -182,7 +170,6 @@ exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
-exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
 exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;

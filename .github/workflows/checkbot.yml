@@ -1,4 +1,6 @@
 name: checkbot
+permissions:
+  id-token: write
 on:
   issue_comment:
     types: [created]
@@ -58,6 +60,7 @@ jobs:
           BASE_IMAGE: 'ubuntu:20.04'
   # test container all CML features, vega and actions with issues in the past
   check-container:
+    environment: internal
     needs: build-container
     runs-on: ubuntu-18.04
     container: dvcorg/cml-test
@@ -70,10 +73,12 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-west-1
+          role-to-assume: arn:aws:iam::342840881361:role/SandboxUser
       - name: CML test
         env:
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

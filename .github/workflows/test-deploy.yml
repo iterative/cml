@@ -94,7 +94,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: build
         run: |
+          cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg package.json
+          rm assets/magic.mgc
           for cmd in '' runner publish pr; do
             build/cml-linux $cmd --version
           done
@@ -109,7 +111,9 @@ jobs:
         run: |
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
           npm install
+          cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg package.json
+          rm assets/magic.mgc
       - uses: softprops/action-gh-release@v1
         with:
           name: CML ${{ steps.build.outputs.tag }}
@@ -137,7 +141,7 @@ jobs:
           - base: 1
             ubuntu: 20.04
             python: 3.8
-            cuda: 11.0.3
+            cuda: 11.2.1
             cudnn: 8
           - latest: true # update the values below after introducing a new major version
             base: 1

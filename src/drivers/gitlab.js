@@ -6,6 +6,8 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
+const { backOff } = require('exponential-backoff');
+const winston = require('winston');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
@@ -213,6 +215,9 @@ class Gitlab {
 
       return spawn(command, { shell: true });
     } catch (err) {
+      if (err.message === 'Forbidden')
+        err.message +=
+          ', check the permissions (scopes) of your GitLab token.\nSee https://cml.dev/doc/self-hosted-runners?tab=GitLab#personal-access-token';
       throw new Error(`Failed preparing Gitlab runner: ${err.message}`);
     }
   }
@@ -221,21 +226,38 @@ class Gitlab {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return await Promise.all(
-      runners.map(async ({ id, description, active, online }) => ({
+      runners.map(async ({ id, description, online }) => ({
         id,
         name: description,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
-        online,
-        busy: active && online
+        online
       }))
     );
   }
 
+  async runnerById({ id } = {}) {
+    const {
+      description,
+      online,
+      tag_list: labels
+    } = await this.request({
+      endpoint: `/runners/${id}`,
+      method: 'GET'
+    });
+
+    return {
+      id,
+      name: description,
+      labels,
+      online
+    };
+  }
+
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
 
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
@@ -244,13 +266,52 @@ class Gitlab {
     body.append('title', title);
     body.append('description', description);
 
-    const { web_url: url } = await this.request({
+    const { web_url: url, iid } = await this.request({
       endpoint,
       method: 'POST',
       body
     });
 
+    if (autoMerge)
+      await this.prAutoMerge({ pullRequestId: iid, mergeMode: autoMerge });
     return url;
+  }
+
+  /**
+   * @param {{ pullRequestId: string }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
+    if (mergeMode === 'rebase')
+      throw new Error(`Rebase auto-merge mode not implemented for GitLab`);
+
+    const projectPath = await this.projectPath();
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${pullRequestId}/merge`;
+    const body = new URLSearchParams();
+    body.set('merge_when_pipeline_succeeds', true);
+    body.set('squash', mergeMode === 'squash');
+    if (mergeMessage) body.set(`${mergeMode}_commit_message`, mergeMessage);
+
+    try {
+      await backOff(() =>
+        this.request({
+          endpoint,
+          method: 'PUT',
+          body
+        })
+      );
+    } catch ({ message }) {
+      winston.warn(
+        `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
+      );
+      body.set('merge_when_pipeline_succeeds', false);
+      this.request({
+        endpoint,
+        method: 'PUT',
+        body
+      });
+    }
   }
 
   async prCommentCreate(opts = {}) {
@@ -383,11 +444,11 @@ class Gitlab {
   async updateGitConfig({ userName, userEmail } = {}) {
     const repo = new URL(this.repo);
     repo.password = this.token;
-    repo.username = this.userName || userName;
+    repo.username = 'token';
 
     const command = `
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;

@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
+const { withCustomRequest } = require('@octokit/graphql');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 const ProxyAgent = require('proxy-agent');
@@ -269,7 +270,7 @@ class Github {
         `${resolve(
           workdir,
           'config.sh'
-        )} --unattended  --token "${await this.runnerToken()}" --url "${
+        )} --unattended --token "${await this.runnerToken()}" --url "${
           this.repo
         }" --name "${name}" --labels "${labels}" --work "${resolve(
           workdir,
@@ -303,22 +304,56 @@ class Github {
       });
     }
 
-    return runners.map(({ id, name, busy, status, labels }) => ({
+    return runners.map((runner) => this.parseRunner(runner));
+  }
+
+  async runnerById(opts = {}) {
+    const { id } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { actions } = octokit(this.token, this.repo);
+
+    if (typeof repo === 'undefined') {
+      const { data: runner } = await actions.getSelfHostedRunnerForOrg({
+        org: owner,
+        runner_id: id
+      });
+
+      return this.parseRunner(runner);
+    }
+
+    const { data: runner } = await actions.getSelfHostedRunnerForRepo({
+      owner,
+      repo,
+      runner_id: id
+    });
+
+    return this.parseRunner(runner);
+  }
+
+  parseRunner(runner) {
+    const { id, name, busy, status, labels } = runner;
+    return {
       id,
       name,
       labels: labels.map(({ name }) => name),
       online: status === 'online',
       busy
-    }));
+    };
   }
 
   async prCreate(opts = {}) {
-    const { source: head, target: base, title, description: body } = opts;
+    const {
+      source: head,
+      target: base,
+      title,
+      description: body,
+      autoMerge
+    } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl }
+      data: { html_url: htmlUrl, number }
     } = await pulls.create({
       owner,
       repo,
@@ -328,7 +363,106 @@ class Github {
       body
     });
 
+    if (autoMerge)
+      await this.prAutoMerge({
+        pullRequestId: number,
+        mergeMode: autoMerge,
+        base
+      });
     return htmlUrl;
+  }
+
+  /**
+   * @param {{ branch: string }} opts
+   * @returns {Promise<boolean>}
+   */
+  async isProtected({ branch }) {
+    const octo = octokit(this.token, this.repo);
+    const { owner, repo } = this.ownerRepo();
+    try {
+      await octo.repos.getBranchProtection({
+        branch,
+        owner,
+        repo
+      });
+      return true;
+    } catch (error) {
+      if (error.message === 'Branch not protected') {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * @param {{ pullRequestId: number, base: string }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage, base }) {
+    const octo = octokit(this.token, this.repo);
+    const graphql = withCustomRequest(octo.request);
+    const { owner, repo } = this.ownerRepo();
+    const [commitHeadline, commitBody] = mergeMessage
+      ? mergeMessage.split(/\n\n(.*)/s)
+      : [];
+    const {
+      data: { node_id: nodeId }
+    } = await octo.pulls.get({ owner, repo, pull_number: pullRequestId });
+    try {
+      await graphql(
+        `
+          mutation autoMerge(
+            $pullRequestId: ID!
+            $mergeMethod: PullRequestMergeMethod
+            $commitHeadline: String
+            $commitBody: String
+          ) {
+            enablePullRequestAutoMerge(
+              input: {
+                pullRequestId: $pullRequestId
+                mergeMethod: $mergeMethod
+                commitHeadline: $commitHeadline
+                commitBody: $commitBody
+              }
+            ) {
+              clientMutationId
+            }
+          }
+        `,
+        {
+          pullRequestId: nodeId,
+          mergeMethod: mergeMode.toUpperCase(),
+          commitHeadline,
+          commitBody
+        }
+      );
+    } catch (err) {
+      if (
+        !err.message.includes("Can't enable auto-merge for this pull request")
+      )
+        throw err;
+
+      const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+
+      if (!(await this.isProtected({ branch: base }))) {
+        winston.warn(
+          `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
+        );
+      } else {
+        winston.warn(
+          `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
+        );
+      }
+
+      await octo.pulls.merge({
+        owner,
+        repo,
+        pull_number: pullRequestId,
+        merge_method: mergeMode,
+        commit_title: commitHeadline,
+        commit_message: commitBody
+      });
+    }
   }
 
   async prCommentCreate(opts = {}) {
@@ -484,9 +618,12 @@ class Github {
   }
 
   async job(opts = {}) {
-    const { time, status = 'queued' } = opts;
+    const { time, runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
+
+    let { status = 'queued' } = opts;
+    if (status === 'running') status = 'in_progress';
 
     const {
       data: { workflow_runs: workflowRuns }
@@ -512,27 +649,31 @@ class Github {
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
-      const { id, started_at: date, run_id: runId } = job;
-      return { id, date, runId };
+      const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
+      return { id, date, runId, runnerId };
     });
 
-    const job = runJobs.reduce((prev, curr) => {
-      const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
-      return diffTime(curr) < diffTime(prev) ? curr : prev;
-    });
+    if (time) {
+      const job = runJobs.reduce((prev, curr) => {
+        const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
+        return diffTime(curr) < diffTime(prev) ? curr : prev;
+      });
 
-    return job;
+      return job;
+    }
+
+    return runJobs.find((job) => runnerId === job.runnerId);
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {
     const repo = new URL(this.repo);
     repo.password = this.token;
-    repo.username = this.userName || userName;
+    repo.username = 'token';
 
     const command = `
-    git config --unset http.https://github.com/.extraheader && \\
-    git config user.name "${userName || this.userName}" && \\
-    git config user.email "${userEmail || this.userEmail}" && \\
+    git config --unset http.https://github.com/.extraheader;
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
     git remote set-url origin "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;

@@ -33,6 +33,7 @@ describe('Terraform tests', () => {
         
         
         
+        
       }
       "
     `);
@@ -70,6 +71,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
@@ -123,6 +125,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 0
         name = \\"myrunner\\"
         single = \\"true\\"
@@ -177,6 +180,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
@@ -234,6 +238,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
@@ -289,6 +294,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"
@@ -343,6 +349,7 @@ describe('Terraform tests', () => {
         token = \\"abc\\"
         driver = \\"gitlab\\"
         labels = \\"mylabel\\"
+        
         idle_timeout = 300
         name = \\"myrunner\\"
         single = \\"true\\"

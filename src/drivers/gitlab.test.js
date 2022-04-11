@@ -40,11 +40,10 @@ describe('Non Enviromental tests', () => {
 
   test('Runner token', async () => {
     const output = await client.runnerToken();
-
-    expect(output.length).toBe(20);
+    expect(output.length >= 20).toBe(true);
   });
 
-  test.skip('updateGitConfig', async () => {
+  test('updateGitConfig', async () => {
     const client = new GitlabClient({
       repo: 'https://gitlab.com/test/test',
       token: 'dXNlcjpwYXNz'
@@ -55,9 +54,9 @@ describe('Non Enviromental tests', () => {
     });
     expect(command).toMatchInlineSnapshot(`
       "
-          git config user.name \\"john\\" && \\\\
-          git config user.email \\"john@test.com\\" && \\\\
-          git remote set-url origin \\"https://john:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+          git config user.name \\"john\\" &&
+          git config user.email \\"john@test.com\\" &&
+          git remote set-url origin \\"https://token:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
     `);
   });
 });
