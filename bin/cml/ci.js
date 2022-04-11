@@ -1,5 +1,6 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
+const { GIT_USER_NAME, GIT_USER_EMAIL } = require('../../src/cml');
 const CML = require('../../src/cml').default;
 
 exports.command = 'ci';
@@ -13,6 +14,16 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_CI').options(
     kebabcaseKeys({
+      userEmail: {
+        type: 'string',
+        default: GIT_USER_EMAIL,
+        description: 'Sets git user email.'
+      },
+      userName: {
+        type: 'string',
+        default: GIT_USER_NAME,
+        description: 'Sets git user name.'
+      },
       repo: {
         type: 'string',
         description:
