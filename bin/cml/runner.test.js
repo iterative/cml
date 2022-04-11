@@ -63,6 +63,12 @@ describe('CML e2e', () => {
         --version                                 Show version number        [boolean]
         --log                                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --tpi-version                             Pin the iterative/iterative
+                                                  terraform provider to a specific
+                                                  version. i.e. \\"= 0.10.4\\" See:
+                                                  https://www.terraform.io/language/ex
+                                                  pressions/version-constraints
+                                                       [string] [default: \\">= 0.9.10\\"]
         --docker-volumes                          Docker volumes. This feature is only
                                                   supported in GitLab
                                                                  [array] [default: []]
