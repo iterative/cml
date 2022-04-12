@@ -620,33 +620,26 @@ class Github {
   async job(opts = {}) {
     const { time, runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const octokitClient = octokit(this.token, this.repo);
 
     let { status = 'queued' } = opts;
     if (status === 'running') status = 'in_progress';
 
-    const {
-      data: { workflow_runs: workflowRuns }
-    } = await actions.listWorkflowRunsForRepo({
-      owner,
-      repo
-    });
+    const workflowRuns = await octokitClient.paginate(
+      octokitClient.actions.listWorkflowRunsForRepo,
+      { owner, repo }
+    );
 
     let runJobs = await Promise.all(
       workflowRuns
         .filter(({ status: jobStatus }) => jobStatus === status)
-        .map(async (run) => {
-          const {
-            data: { jobs }
-          } = await actions.listJobsForWorkflowRun({
-            owner,
-            repo,
-            run_id: run.id,
-            status
-          });
-
-          return jobs;
-        })
+        .map(
+          async ({ id }) =>
+            await octokitClient.paginate(
+              octokitClient.actions.listJobsForWorkflowRun,
+              { owner, repo, run_id: id, status }
+            )
+        )
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
