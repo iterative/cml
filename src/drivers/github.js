@@ -634,7 +634,7 @@ class Github {
 
     winston.warn(
       'Statuses from the last 30 items: ' +
-        workflowRunsAll.map(({ status }) => status)
+        workflowRunsAll.map(({ status, id }) => JSON.stringify({ status, id }))
     );
 
     const {
