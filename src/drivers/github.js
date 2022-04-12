@@ -629,23 +629,24 @@ class Github {
       data: { workflow_runs: workflowRuns }
     } = await actions.listWorkflowRunsForRepo({
       owner,
-      repo,
-      status
+      repo
     });
 
     let runJobs = await Promise.all(
-      workflowRuns.map(async (run) => {
-        const {
-          data: { jobs }
-        } = await actions.listJobsForWorkflowRun({
-          owner,
-          repo,
-          run_id: run.id,
-          status
-        });
+      workflowRuns
+        .filter(({ status: jobStatus }) => jobStatus === status)
+        .map(async (run) => {
+          const {
+            data: { jobs }
+          } = await actions.listJobsForWorkflowRun({
+            owner,
+            repo,
+            run_id: run.id,
+            status
+          });
 
-        return jobs;
-      })
+          return jobs;
+        })
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
