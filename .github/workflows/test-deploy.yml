@@ -122,6 +122,7 @@ jobs:
           files: |
             build/cml-linux
             build/cml-macos
+            build/cml-windows.exe
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
