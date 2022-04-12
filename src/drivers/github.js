@@ -630,8 +630,6 @@ class Github {
       { owner, repo, status }
     );
 
-    winston.warn(`Length of workflowRuns: ${workflowRuns.length}`);
-
     let runJobs = await Promise.all(
       workflowRuns.map(
         async ({ id }) =>
@@ -641,8 +639,6 @@ class Github {
           )
       )
     );
-
-    winston.warn(`Length of runJobs: ${runJobs.length}`);
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
       const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
