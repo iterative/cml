@@ -626,53 +626,27 @@ class Github {
     if (status === 'running') status = 'in_progress';
 
     const {
-      data: { workflow_runs: workflowRunsAll }
+      data: { workflow_runs: workflowRuns }
     } = await actions.listWorkflowRunsForRepo({
       owner,
       repo
     });
 
-    const {
-      data: { workflow_runs: workflowRunsFilter }
-    } = await actions.listWorkflowRunsForRepo({
-      owner,
-      repo,
-      status
-    });
-
-    winston.warn(
-      'Statuses from the last 30 items: ' +
-        workflowRunsAll.map(({ status, id }) => JSON.stringify({ status, id }))
-    );
-    winston.warn(
-      status +
-        ' statuses from the last 30 items: ' +
-        workflowRunsFilter.map(({ status, id }) =>
-          JSON.stringify({ status, id })
-        )
-    );
-
-    const {
-      data: { workflow_runs: workflowRuns }
-    } = await actions.listWorkflowRunsForRepo({
-      owner,
-      repo,
-      status
-    });
-
     let runJobs = await Promise.all(
-      workflowRuns.map(async (run) => {
-        const {
-          data: { jobs }
-        } = await actions.listJobsForWorkflowRun({
-          owner,
-          repo,
-          run_id: run.id,
-          status
-        });
+      workflowRuns
+        .filter(({ status: jobStatus }) => jobStatus === status)
+        .map(async (run) => {
+          const {
+            data: { jobs }
+          } = await actions.listJobsForWorkflowRun({
+            owner,
+            repo,
+            run_id: run.id,
+            status
+          });
 
-        return jobs;
-      })
+          return jobs;
+        })
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
