@@ -626,6 +626,18 @@ class Github {
     if (status === 'running') status = 'in_progress';
 
     const {
+      data: { workflow_runs: workflowRunsAll }
+    } = await actions.listWorkflowRunsForRepo({
+      owner,
+      repo
+    });
+
+    winston.warn(
+      'Statuses from the last 30 items: ' +
+        workflowRunsAll.map(({ status }) => status)
+    );
+
+    const {
       data: { workflow_runs: workflowRuns }
     } = await actions.listWorkflowRunsForRepo({
       owner,
