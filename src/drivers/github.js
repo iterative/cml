@@ -632,9 +632,24 @@ class Github {
       repo
     });
 
+    const {
+      data: { workflow_runs: workflowRunsFilter }
+    } = await actions.listWorkflowRunsForRepo({
+      owner,
+      repo,
+      status
+    });
+
     winston.warn(
       'Statuses from the last 30 items: ' +
         workflowRunsAll.map(({ status, id }) => JSON.stringify({ status, id }))
+    );
+    winston.warn(
+      status +
+        ' statuses from the last 30 items: ' +
+        workflowRunsFilter.map(({ status, id }) =>
+          JSON.stringify({ status, id })
+        )
     );
 
     const {
