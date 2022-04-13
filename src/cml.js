@@ -1,8 +1,10 @@
 const { execSync } = require('child_process');
+const fs = require('fs').promises;
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
+const path = require('path');
 
 const winston = require('winston');
 
@@ -335,6 +337,13 @@ class CML {
     const driver = getDriver(this);
     const command = await driver.updateGitConfig({ userName, userEmail });
     await exec(command);
+    const gitDir = execSync(`git rev-parse --git-dir`).toString('utf8');
+    try {
+      fs.accessSync(path.join(gitDir, 'shallow'))
+      await exec('git fetch --unshallow');
+    } catch (err) {
+      // repo not shallow
+    }
     await exec('git fetch --all');
   }
 
