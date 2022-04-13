@@ -437,14 +437,13 @@ class Github {
         }
       );
     } catch (err) {
-      const tolerated = [
+      const tolerate = [
         "Can't enable auto-merge for this pull request",
         'Pull request Protected branch rules not configured for this branch',
         'Pull request is in clean status'
       ];
 
-      if (!tolerated.some((message) => err.message.includes(message)))
-        throw err;
+      if (!tolerate.some((message) => err.message.includes(message))) throw err;
 
       const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
 
