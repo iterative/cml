@@ -1,6 +1,4 @@
 const { execSync } = require('child_process');
-const PATH = require('path');
-const fse = require('fs-extra');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
@@ -339,14 +337,9 @@ class CML {
     } = opts;
 
     const driver = getDriver(this);
-    const command = await driver.updateGitConfig({ userName, userEmail });
-    await exec(command);
-    if (unshallow) {
-      const gitdir = await exec('git rev-parse --git-dir');
-      if (await fse.pathExists(PATH.join(gitdir, 'shallow'))) {
-        await exec('git fetch --unshallow');
-      }
-    }
+    const shallow = await exec('git rev-parse --is-shallow-repository');
+    if (unshallow && shallow === 'true') await exec('git fetch --unshallow');
+    await exec(await driver.updateGitConfig({ userName, userEmail }));
     await exec('git fetch --all');
   }
 
