@@ -1,0 +1,4 @@
+restylers:
+  - name: prettier
+    arguments: ['--write']
+    include: ['**/*.{js,json,md,yaml,yml}']
