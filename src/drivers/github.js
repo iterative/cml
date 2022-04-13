@@ -437,20 +437,24 @@ class Github {
         }
       );
     } catch (err) {
-      if (
-        !err.message.includes("Can't enable auto-merge for this pull request")
-      )
+      const tolerated = [
+        "Can't enable auto-merge for this pull request",
+        'Pull request Protected branch rules not configured for this branch',
+        'Pull request is in clean status'
+      ];
+
+      if (!tolerated.some((message) => err.message.includes(message)))
         throw err;
 
       const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
 
-      if (!(await this.isProtected({ branch: base }))) {
+      if (await this.isProtected({ branch: base })) {
         winston.warn(
-          `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
+          `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
         );
       } else {
         winston.warn(
-          `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
+          `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
         );
       }
 
