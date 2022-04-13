@@ -330,11 +330,19 @@ class CML {
   }
 
   async ci(opts = {}) {
-    const { userEmail = GIT_USER_EMAIL, userName = GIT_USER_NAME } = opts;
+    const {
+      unshallow = false,
+      userEmail = GIT_USER_EMAIL,
+      userName = GIT_USER_NAME
+    } = opts;
 
     const driver = getDriver(this);
-    const command = await driver.updateGitConfig({ userName, userEmail });
-    await exec(command);
+    await exec(await driver.updateGitConfig({ userName, userEmail }));
+    if (unshallow) {
+      if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
+        await exec('git fetch --unshallow');
+      }
+    }
     await exec('git fetch --all');
   }
 
