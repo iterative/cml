@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const PATH = require('path');
 const fse = require('fs-extra');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
@@ -342,7 +343,7 @@ class CML {
     await exec(command);
     if (unshallow) {
       const gitdir = await exec('git rev-parse --git-dir');
-      if (await fse.pathExists(gitdir + '/shallow')) {
+      if (await fse.pathExists(PATH.join(gitdir, 'shallow'))) {
         await exec('git fetch --unshallow');
       }
     }
