@@ -14,6 +14,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_CI').options(
     kebabcaseKeys({
+      unshallow: {
+        type: 'boolean',
+        description:
+          'Fetch as much as possible, converting a shallow repository to a complete one.'
+      },
       userEmail: {
         type: 'string',
         default: GIT_USER_EMAIL,
