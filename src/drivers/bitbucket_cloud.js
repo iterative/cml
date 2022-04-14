@@ -358,7 +358,7 @@ class BitbucketCloud {
       throw new Error('Bitbucket Cloud API endpoint not found');
 
     const headers = { Authorization: `Basic ${token}` };
-    if (body.constructor !== FormData)
+    if (!body || body.constructor !== FormData)
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
