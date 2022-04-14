@@ -107,8 +107,8 @@ jobs:
           for cmd in '' runner publish pr; do
             build/cml-linux-x64 $cmd --version
           done
-          cp cml-linux-x64 cml-linux
-          cp cml-macos-x64 cml-macos
+          cp build/cml-linux{-x64,}
+          cp build/cml-macos{-x64,}
       - uses: softprops/action-gh-release@v1
         if: github.event_name == 'push'
         with:
