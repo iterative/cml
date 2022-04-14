@@ -30,7 +30,7 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "engines": {
-    "node": ">=16.x"
+    "node": ">=16.0.0"
   },
   "bin": {
     "cml": "bin/cml.js",
