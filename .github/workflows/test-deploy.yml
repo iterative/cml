@@ -101,7 +101,6 @@ jobs:
         name: build
         run: |
           echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
-          npm install
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
           rm assets/magic.mgc
