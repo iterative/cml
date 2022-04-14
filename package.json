@@ -128,8 +128,16 @@
       "assets/magic.mgc"
     ],
     "targets": [
-      "linux",
-      "macos"
+      "node16-alpine-arm64",
+      "node16-alpine-x64",
+      "node16-macos-arm64",
+      "node16-macos-x64",
+      "node16-linux-arm64",
+      "node16-linux-x64",
+      "node16-linuxstatic-arm64",
+      "node16-linuxstatic-x64",
+      "node16-win-arm64",
+      "node16-win-x64"
     ],
     "outputPath": "build"
   }
