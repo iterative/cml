@@ -97,25 +97,6 @@ jobs:
           sudo apt install --yes libplist-dev
           git clone --branch v2.1.5 git://git.saurik.com/ldid.git 
           sudo g++ -pipe -o /usr/bin/ldid ldid.cpp -I. -x c lookup2.c sha1.h -lplist -lcrypto
-      - name: build
-        run: |
-          cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
-          npx --yes pkg --no-bytecode --public-packages "*" --public package.json
-          rm assets/magic.mgc
-          for cmd in '' runner publish pr; do
-            build/cml-linux $cmd --version
-          done
-  release:
-    if: github.event_name == 'push'
-    needs: packages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: install ldid
-        run: |
-          sudo apt install --yes libplist-dev
-          git clone --branch v2.1.5 git://git.saurik.com/ldid.git 
-          sudo g++ -pipe -o /usr/bin/ldid ldid.cpp -I. -x c lookup2.c sha1.h -lplist -lcrypto
       - id: build
         name: build
         run: |
@@ -124,7 +105,13 @@ jobs:
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
           rm assets/magic.mgc
+          for cmd in '' runner publish pr; do
+            build/cml-linux-x64 $cmd --version
+          done
+          cp cml-linux-x64 cml-linux
+          cp cml-macos-x64 cml-macos
       - uses: softprops/action-gh-release@v1
+        if: github.event_name == 'push'
         with:
           name: CML ${{ steps.build.outputs.tag }}
           draft: true
@@ -136,8 +123,10 @@ jobs:
             build/cml-linuxstatic-arm64
             build/cml-linuxstatic-x64
             build/cml-linux-x64
+            build/cml-linux
             build/cml-macos-arm64
             build/cml-macos-x64
+            build/cml-macos
             build/cml-win-arm64.exe
             build/cml-win-x64.exe
         env:
