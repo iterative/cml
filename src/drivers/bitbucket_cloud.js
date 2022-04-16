@@ -358,7 +358,7 @@ class BitbucketCloud {
       throw new Error('Bitbucket Cloud API endpoint not found');
 
     const headers = { Authorization: `Basic ${token}` };
-    if (body.constructor !== FormData)
+    if (!body || body.constructor !== FormData)
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
@@ -379,9 +379,12 @@ class BitbucketCloud {
       // Attempt to get additional context. We have observed two different error schemas
       // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
       // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
-      const error =
-        responseBody?.error?.message || responseBody?.error || responseBody;
-      throw new Error(`${response.statusText} ${error}`.trim());
+      const { error } = responseBody.error
+        ? responseBody
+        : { error: responseBody };
+      throw new Error(
+        `${response.statusText} ${error.message || error}`.trim()
+      );
     }
 
     return responseBody;
