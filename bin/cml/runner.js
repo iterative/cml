@@ -443,7 +443,8 @@ exports.builder = (yargs) =>
         type: 'string',
         default: '>= 0.9.10',
         description:
-          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints'
+          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
+        hidden: true
       },
       dockerVolumes: {
         type: 'array',
