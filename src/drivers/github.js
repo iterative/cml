@@ -458,7 +458,8 @@ class Github {
           );
         }
       } catch (err) {
-        if (!err.message.includes('Resource not accessible by integration')) throw err;
+        if (!err.message.includes('Resource not accessible by integration'))
+          throw err;
         winston.warn(
           `Failed to enable auto-merge. Trying to merge immediately...`
         );
