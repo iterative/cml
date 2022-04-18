@@ -3,7 +3,6 @@ const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
-const path = require('path');
 
 const winston = require('winston');
 
