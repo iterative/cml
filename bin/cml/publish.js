@@ -43,7 +43,7 @@ exports.builder = (yargs) =>
         type: 'boolean',
         alias: 'gitlab-uploads',
         description:
-          "Uses driver's native capabilities to upload assets instead of CML's storage. Currently only available for GitLab CI."
+          "Uses driver's native capabilities to upload assets instead of CML's storage. Not available for GitHub."
       },
       rmWatermark: {
         type: 'boolean',
