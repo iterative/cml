@@ -11,7 +11,7 @@ const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri } = require('./utils');
 
-const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID, CI } = process.env;
+const { GITHUB_REPOSITORY, GITHUB_SERVER_URL, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
@@ -27,7 +27,7 @@ const uriNoTrailingSlash = (uri) => {
 const gitRemoteUrl = (opts = {}) => {
   const { remote = GIT_REMOTE } = opts;
 
-  if (CI && GITHUB_SERVER_URL) 
+  if (GITHUB_SERVER_URL) 
     return `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}`;
 
   const url = execSync(`git config --get remote.${remote}.url`).toString(
