@@ -335,6 +335,8 @@ class CML {
       userEmail = GIT_USER_EMAIL,
       userName = GIT_USER_NAME
     } = opts;
+    await exec('git config --global --add safe.directory "$PWD"');
+    await exec("git config --global --add safe.directory '*'");
 
     const driver = getDriver(this);
     await exec(await driver.updateGitConfig({ userName, userEmail }));
@@ -344,7 +346,6 @@ class CML {
       }
     }
     await exec('git fetch --all');
-    await exec('git config --global --add safe.directory "$PWD"');
   }
 
   async prCreate(opts = {}) {
