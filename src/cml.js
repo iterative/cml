@@ -338,6 +338,7 @@ class CML {
       userEmail = GIT_USER_EMAIL,
       userName = GIT_USER_NAME
     } = opts;
+
     const driver = getDriver(this);
     await exec(await driver.updateGitConfig({ userName, userEmail }));
     if (unshallow) {
