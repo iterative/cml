@@ -79,6 +79,9 @@ class CML {
     );
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
+
+    execSync('git config --global --add safe.directory "$PWD"');
+    execSync("git config --global --add safe.directory '*'");
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
@@ -335,9 +338,6 @@ class CML {
       userEmail = GIT_USER_EMAIL,
       userName = GIT_USER_NAME
     } = opts;
-    await exec('git config --global --add safe.directory "$PWD"');
-    await exec("git config --global --add safe.directory '*'");
-
     const driver = getDriver(this);
     await exec(await driver.updateGitConfig({ userName, userEmail }));
     if (unshallow) {
