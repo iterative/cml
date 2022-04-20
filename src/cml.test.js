@@ -129,7 +129,7 @@ describe('Gitlab tests', () => {
 
     const output = await new CML({ repo: REPO }).publish({
       path,
-      gitlabUploads: true
+      native: true
     });
 
     expect(output.startsWith('https://')).toBe(true);
@@ -144,7 +144,7 @@ describe('Gitlab tests', () => {
       path,
       md: true,
       title,
-      gitlabUploads: true
+      native: true
     });
 
     expect(output.startsWith('![](https://')).toBe(true);
@@ -160,7 +160,7 @@ describe('Gitlab tests', () => {
       path,
       md: true,
       title,
-      gitlabUploads: true
+      native: true
     });
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);

@@ -11,6 +11,8 @@ exports.command = data ? 'publish' : 'publish <asset>';
 exports.description = 'Upload an image to build a report';
 
 exports.handler = async (opts) => {
+  opts.native = opts.native || opts.gitlabUploads;
+
   const { file, repo, native } = opts;
 
   const path = opts.asset;
@@ -41,9 +43,12 @@ exports.builder = (yargs) =>
       },
       native: {
         type: 'boolean',
-        alias: 'gitlab-uploads',
         description:
           "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
+      },
+      gitlabUpoads: {
+        type: 'boolean',
+        hidden: true
       },
       rmWatermark: {
         type: 'boolean',
