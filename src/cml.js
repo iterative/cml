@@ -196,10 +196,10 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlabUploads, rmWatermark } = opts;
+    const { title = '', md, native, rmWatermark } = opts;
 
     let mime, uri;
-    if (native || gitlabUploads) {
+    if (native) {
       ({ mime, uri } = await getDriver(this).upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
