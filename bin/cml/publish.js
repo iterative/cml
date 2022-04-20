@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const pipeArgs = require('../../src/pipe-args');
+const winston = require('winston');
 
 const CML = require('../../src/cml').default;
 
@@ -11,7 +12,12 @@ exports.command = data ? 'publish' : 'publish <asset>';
 exports.description = 'Upload an image to build a report';
 
 exports.handler = async (opts) => {
-  opts.native = opts.native || opts.gitlabUploads;
+  if (opts.gitlabUploads) {
+    winston.warn(
+      '--gitlab-uploads will be deprecated soon. Use --native instead.'
+    );
+    opts.native = true;
+  }
 
   const { file, repo, native } = opts;
 
@@ -46,7 +52,7 @@ exports.builder = (yargs) =>
         description:
           "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
       },
-      gitlabUpoads: {
+      gitlabUploads: {
         type: 'boolean',
         hidden: true
       },
