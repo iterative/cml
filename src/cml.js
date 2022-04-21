@@ -1,8 +1,9 @@
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
+const path = require('path');
 
 const winston = require('winston');
 
@@ -80,8 +81,27 @@ class CML {
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
 
-    execSync('git config --global --add safe.directory "$PWD"');
-    execSync("git config --global --add safe.directory '*'");
+    const addSafeDirectoryIdempotent = (directory) =>
+      spawnSync('git', ['config', '--global', '--get-all', 'safe.directory'], {
+        encoding: 'utf8'
+      })
+        .stdout.split(/[\r\n]+/)
+        .includes(directory) ||
+      spawnSync(
+        'git',
+        ['config', '--global', '--add', 'safe.directory', directory],
+        { encoding: 'utf8' }
+      );
+
+    addSafeDirectoryIdempotent('/');
+    addSafeDirectoryIdempotent('*');
+    for (
+      let root, dir = process.cwd();
+      root !== dir;
+      { root, dir } = path.parse(dir)
+    ) {
+      addSafeDirectoryIdempotent(dir);
+    }
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
