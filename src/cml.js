@@ -81,17 +81,24 @@ class CML {
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
 
-    const addSafeDirectoryIdempotent = (directory) =>
-      spawnSync('git', ['config', '--global', '--get-all', 'safe.directory'], {
-        encoding: 'utf8'
-      })
-        .stdout.split(/[\r\n]+/)
-        .includes(directory) ||
+    const gitConfigSafeDirectory = (value) =>
       spawnSync(
         'git',
-        ['config', '--global', '--add', 'safe.directory', directory],
-        { encoding: 'utf8' }
-      );
+        [
+          'config',
+          '--global',
+          value ? '--add' : '--get-all',
+          'safe.directory',
+          value
+        ],
+        {
+          encoding: 'utf8'
+        }
+      ).stdout.split(/[\r\n]+/);
+
+    const addSafeDirectoryIdempotent = (directory) =>
+      gitConfigSafeDirectory().includes(directory) ||
+      gitConfigSafeDirectory(directory);
 
     addSafeDirectoryIdempotent('/');
     addSafeDirectoryIdempotent('*');
