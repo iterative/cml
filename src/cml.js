@@ -103,6 +103,8 @@ const fixGitSafeDirectory = () => {
 
 class CML {
   constructor(opts = {}) {
+    fixGitSafeDirectory();
+
     const { driver, repo, token } = opts;
 
     this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
@@ -111,8 +113,6 @@ class CML {
     );
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
-
-    fixGitSafeDirectory();
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
