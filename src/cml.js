@@ -70,6 +70,37 @@ const getDriver = (opts) => {
   throw new Error(`driver ${driver} unknown!`);
 };
 
+const fixGitSafeDirectory = () => {
+  const getOrSetGitConfigSafeDirectory = (value) =>
+    spawnSync(
+      'git',
+      [
+        'config',
+        '--global',
+        value ? '--add' : '--get-all',
+        'safe.directory',
+        value
+      ],
+      {
+        encoding: 'utf8'
+      }
+    ).stdout.split(/[\r\n]+/);
+
+  const addSafeDirectoryIdempotent = (directory) =>
+    getOrSetGitConfigSafeDirectory().includes(directory) ||
+    getOrSetGitConfigSafeDirectory(directory);
+
+  addSafeDirectoryIdempotent('/');
+  addSafeDirectoryIdempotent('*');
+  for (
+    let root, dir = process.cwd();
+    root !== dir;
+    { root, dir } = path.parse(dir)
+  ) {
+    addSafeDirectoryIdempotent(dir);
+  }
+};
+
 class CML {
   constructor(opts = {}) {
     const { driver, repo, token } = opts;
@@ -81,34 +112,7 @@ class CML {
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
 
-    const getOrSetGitConfigSafeDirectory = (value) =>
-      spawnSync(
-        'git',
-        [
-          'config',
-          '--global',
-          value ? '--add' : '--get-all',
-          'safe.directory',
-          value
-        ],
-        {
-          encoding: 'utf8'
-        }
-      ).stdout.split(/[\r\n]+/);
-
-    const addSafeDirectoryIdempotent = (directory) =>
-      getOrSetGitConfigSafeDirectory().includes(directory) ||
-      getOrSetGitConfigSafeDirectory(directory);
-
-    addSafeDirectoryIdempotent('/');
-    addSafeDirectoryIdempotent('*');
-    for (
-      let root, dir = process.cwd();
-      root !== dir;
-      { root, dir } = path.parse(dir)
-    ) {
-      addSafeDirectoryIdempotent(dir);
-    }
+    fixGitSafeDirectory();
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
