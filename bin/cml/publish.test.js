@@ -111,11 +111,4 @@ describe('CML e2e', () => {
       exec('node ./bin/cml.js publish /nonexistent')
     ).rejects.toThrowError('ENOENT');
   });
-
-  test('echo text | cml publish produces a plain text file', async () => {
-    const output = await exec(`echo none | node ./bin/cml.js publish`);
-
-    expect(output.startsWith('https://')).toBe(true);
-    expect(output.endsWith('plain')).toBe(true);
-  });
 });
