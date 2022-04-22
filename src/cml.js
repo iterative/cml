@@ -71,7 +71,7 @@ const getDriver = (opts) => {
 };
 
 const fixGitSafeDirectory = () => {
-  const getOrSetGitConfigSafeDirectory = (value) =>
+  const gitConfigSafeDirectory = (value) =>
     spawnSync(
       'git',
       [
@@ -84,23 +84,24 @@ const fixGitSafeDirectory = () => {
       {
         encoding: 'utf8'
       }
-    ).stdout.split(/[\r\n]+/);
+    ).stdout;
 
-  const addSafeDirectoryIdempotent = (directory) =>
-    getOrSetGitConfigSafeDirectory().includes(directory) ||
-    getOrSetGitConfigSafeDirectory(directory);
+  const addSafeDirectory = (directory) =>
+    gitConfigSafeDirectory()
+      .split(/[\r\n]+/)
+      .includes(directory) || gitConfigSafeDirectory(directory);
 
   // Fix for git>2.36.0
-  addSafeDirectoryIdempotent('*');
+  addSafeDirectory('*');
 
   // Fix for git^2.35.2
-  addSafeDirectoryIdempotent('/');
+  addSafeDirectory('/');
   for (
     let root, dir = process.cwd();
     root !== dir;
     { root, dir } = path.parse(dir)
   ) {
-    addSafeDirectoryIdempotent(dir);
+    addSafeDirectory(dir);
   }
 };
 
