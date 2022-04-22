@@ -1,14 +1,10 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
-const pipeArgs = require('../../src/pipe-args');
 const winston = require('winston');
 
 const CML = require('../../src/cml').default;
 
-pipeArgs.load('binary');
-const data = pipeArgs.pipedArg(); // HACK: see yargs/yargs#1312
-
-exports.command = data ? 'publish' : 'publish <asset>';
+exports.command = 'publish <asset>';
 exports.description = 'Upload an image to build a report';
 
 exports.handler = async (opts) => {
@@ -22,12 +18,10 @@ exports.handler = async (opts) => {
   const { file, repo, native } = opts;
 
   const path = opts.asset;
-  const buffer = data ? Buffer.from(data, 'binary') : null;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
 
   const output = await cml.publish({
     ...opts,
-    buffer,
     path
   });
 
