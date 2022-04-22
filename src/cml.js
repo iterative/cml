@@ -90,8 +90,11 @@ const fixGitSafeDirectory = () => {
     getOrSetGitConfigSafeDirectory().includes(directory) ||
     getOrSetGitConfigSafeDirectory(directory);
 
-  addSafeDirectoryIdempotent('/');
+  // Fix for git>2.36.0
   addSafeDirectoryIdempotent('*');
+  
+  // Fix for git^2.35.2
+  addSafeDirectoryIdempotent('/');
   for (
     let root, dir = process.cwd();
     root !== dir;
@@ -103,7 +106,7 @@ const fixGitSafeDirectory = () => {
 
 class CML {
   constructor(opts = {}) {
-    fixGitSafeDirectory();
+    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
 
     const { driver, repo, token } = opts;
 
