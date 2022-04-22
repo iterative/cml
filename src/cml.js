@@ -92,7 +92,7 @@ const fixGitSafeDirectory = () => {
 
   // Fix for git>2.36.0
   addSafeDirectoryIdempotent('*');
-  
+
   // Fix for git^2.35.2
   addSafeDirectoryIdempotent('/');
   for (
