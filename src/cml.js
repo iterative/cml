@@ -1,8 +1,9 @@
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
+const path = require('path');
 
 const winston = require('winston');
 
@@ -69,8 +70,44 @@ const getDriver = (opts) => {
   throw new Error(`driver ${driver} unknown!`);
 };
 
+const fixGitSafeDirectory = () => {
+  const getOrSetGitConfigSafeDirectory = (value) =>
+    spawnSync(
+      'git',
+      [
+        'config',
+        '--global',
+        value ? '--add' : '--get-all',
+        'safe.directory',
+        value
+      ],
+      {
+        encoding: 'utf8'
+      }
+    ).stdout.split(/[\r\n]+/);
+
+  const addSafeDirectoryIdempotent = (directory) =>
+    getOrSetGitConfigSafeDirectory().includes(directory) ||
+    getOrSetGitConfigSafeDirectory(directory);
+
+  // Fix for git>2.36.0
+  addSafeDirectoryIdempotent('*');
+
+  // Fix for git^2.35.2
+  addSafeDirectoryIdempotent('/');
+  for (
+    let root, dir = process.cwd();
+    root !== dir;
+    { root, dir } = path.parse(dir)
+  ) {
+    addSafeDirectoryIdempotent(dir);
+  }
+};
+
 class CML {
   constructor(opts = {}) {
+    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
+
     const { driver, repo, token } = opts;
 
     this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
