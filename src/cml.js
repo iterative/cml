@@ -91,7 +91,7 @@ const fixGitSafeDirectory = () => {
       .split(/[\r\n]+/)
       .includes(directory) || gitConfigSafeDirectory(directory);
 
-  // Fix for git>2.36.0
+  // Fix for git>=2.36.0
   addSafeDirectory('*');
 
   // Fix for git^2.35.2
