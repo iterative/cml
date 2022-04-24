@@ -1,0 +1,20 @@
+name: Trigger external examples & test
+on:
+  release:
+    types:
+      - published
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    strategy:
+      repos:
+        - todo
+    steps:
+      - name: Trigger external actions
+        run: |
+          curl --silent --show-error \
+            --request POST \
+            --headers "Authorization: token ${{ secrets.TODO_PAT }}" \
+            --headers "Accept: application/vnd.github.v3+json" \
+            --url "https://api.github.com/repos/iterative/${{ matrix.repo }}/dispatches" \
+            --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name }}"}}'
