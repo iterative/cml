@@ -1,5 +1,6 @@
 name: Trigger external examples & test
 on:
+  workflow_dispatch:
   release:
     types:
       - published
@@ -10,6 +11,20 @@ jobs:
       repos:
         - todo
     steps:
+      - uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          fetch-depth: 0
+      - name: Set latest version
+        if: github.event_name == 'workflow_dispatch'
+        id: version
+        run: |
+          ### hack warning
+          # would prefer to run: `git tag --sort=taggerdate:unix`
+          # but `git for-each-ref --format='%(object) %(taggerdate:unix) %(tag) %(refname)'` shows weird missing data?
+          # which prevent proper lexigraphical sorting by unix date aka give me the "latest" tag
+          # the using `git tag --sort=version:refname` might not give the "latest" tag
+          echo "::set-output name=tag::$(git tag --sort=version:refname | awk '{ last = $0 } END { print last}')"
       - name: Trigger external actions
         run: |
           curl --silent --show-error \
@@ -17,4 +32,4 @@ jobs:
             --headers "Authorization: token ${{ secrets.TODO_PAT }}" \
             --headers "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
-            --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name }}"}}'
+            --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name || steps.version.outputs.tag }}"}}'
