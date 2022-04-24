@@ -16,5 +16,5 @@ jobs:
             --request POST \
             --headers "Authorization: token ${{ secrets.TODO_PAT }}" \
             --headers "Accept: application/vnd.github.v3+json" \
-            --url "https://api.github.com/repos/iterative/${{ matrix.repo }}/dispatches" \
+            --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
             --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name }}"}}'
