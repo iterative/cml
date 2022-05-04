@@ -10,6 +10,10 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 # CONFIGURE SHELL
 SHELL ["/bin/bash", "-c"]
 
+# FIX NVIDIA APT GPG KEYS (https://github.com/NVIDIA/cuda-repo-management/issues/1#issuecomment-1111490201) 🤬
+RUN apt-key del 7fa2af80
+RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+
 # INSTALL CORE DEPENDENCIES
 RUN apt-get update \
  && apt-get install --no-install-recommends \
