@@ -1,0 +1,102 @@
+on:
+  workflow_call:
+    inputs:
+      test:
+        required: false
+        type: boolean
+    secrets: inherit
+jobs:
+  smoke-run:
+    if:
+      github.event_name == 'push' || github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
+    environment: internal
+    needs: images
+    runs-on: ubuntu-latest
+    concurrency: ${{ github.workflow }}-${{ matrix.cloud }}
+    container: ghcr.io/iterative/cml:latest
+    permissions:
+      contents: read
+      checks: write
+      packages: write
+      pull-requests: write
+      id-token: write
+    strategy:
+      matrix:
+        cloud: [aws, azure, gcp]
+        include:
+          - cloud: aws
+            region: us-west-1
+            type: g4dn.xlarge
+          - cloud: azure
+            region: eastus
+            type: Standard_NC6
+          - cloud: gcp
+            region: us-west1-b
+            type: custom-8-53248+nvidia-tesla-k80*1
+    steps: # test container all CML features, vega and actions with issues in the past
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 0.14.3
+      - uses: r-lib/actions/setup-r@master
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-west-1
+          role-to-assume: arn:aws:iam::342840881361:role/SandboxUser
+      - uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA:
+            ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+          REPO_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          echo 'Check container!' > report.md
+          vl2png assets/vega-lite.json | cml-publish --md >> report.md
+          vl2svg assets/vega-lite.json | cml publish --md >> report.md
+          REPO_TOKEN= cml-send-github-check report.md
+          GITHUB_TOKEN= cml send-comment report.md
+          GITHUB_TOKEN= cml runner \
+          --repo=https://github.com/iterative-olivaw/cml \
+          --labels=smoke-${{ matrix.cloud }}-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }} \
+          --cloud=${{ matrix.cloud }} \
+          --cloud-region=${{ matrix.region }} \
+          --cloud-type=${{ matrix.type }} \
+          --cloud-spot
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA:
+            ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_DATA }}
+          REPO_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  smoke-test:
+    needs: smoke-run
+    strategy:
+      matrix:
+        type: [machine, container]
+        cloud: [aws, azure, gcp]
+        include:
+          - type: container
+            image: ghcr.io/iterative/cml:latest-gpu
+            options: --gpus all
+    runs-on:
+      - self-hosted
+      - smoke-${{ matrix.cloud }}-${{ github.run_id }}-${ github.run_number
+        }}-${{ github.run_attempt }}
+    container:
+      image: ${{ matrix.image }}
+      options: ${{ matrix.options }}
+    steps:
+      - run: nvidia-smi
