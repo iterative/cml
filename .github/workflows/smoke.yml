@@ -1,17 +1,14 @@
 on:
-  workflow_call:
-    inputs:
-      test:
-        required: false
-        type: boolean
-    secrets: inherit
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+  push:
 jobs:
   smoke-run:
     if:
       github.event_name == 'push' || github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch'
     environment: internal
-    needs: images
     runs-on: ubuntu-latest
     concurrency: ${{ github.workflow }}-${{ matrix.cloud }}
     container: ghcr.io/iterative/cml:latest
