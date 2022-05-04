@@ -11,8 +11,8 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 SHELL ["/bin/bash", "-c"]
 
 # FIX NVIDIA APT GPG KEYS (https://github.com/NVIDIA/cuda-repo-management/issues/1#issuecomment-1111490201) 🤬
-RUN grep --invert-match nvidia <<< ${BASE_IMAGE} \
- || for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{,.backup}; done \
+RUN grep nvidia <<< ${BASE_IMAGE} \
+ && for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{,.backup}; done \
  && apt-get update \
  && apt-get install --yes gpg \
  && apt-key del 7fa2af80 \
@@ -21,7 +21,8 @@ RUN grep --invert-match nvidia <<< ${BASE_IMAGE} \
  && apt-get purge --yes gpg \
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/* \
- && for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{.backup,}; done
+ && for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{.backup,}; done \
+ || true
 
 # INSTALL CORE DEPENDENCIES
 RUN apt-get update \
