@@ -46,8 +46,10 @@ jobs:
           role-to-assume: arn:aws:iam::342840881361:role/SandboxUser
       - run: |
           echo 'Check container!' > report.md
-          vl2png assets/vega-lite.json | cml-publish --md /dev/stdin >> report.md
-          vl2svg assets/vega-lite.json | cml publish --md /dev/stdin >> report.md
+          vl2png assets/vega-lite.json > file.png
+          cml-publish --md file.png >> report.md
+          vl2svg assets/vega-lite.json > file.svg
+          cml publish --md file.svg >> report.md
           REPO_TOKEN= cml-send-github-check report.md
           GITHUB_TOKEN= cml send-comment report.md
           GITHUB_TOKEN= cml runner \
