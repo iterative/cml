@@ -11,8 +11,9 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 SHELL ["/bin/bash", "-c"]
 
 # FIX NVIDIA APT GPG KEYS (https://github.com/NVIDIA/cuda-repo-management/issues/1#issuecomment-1111490201) 🤬
-RUN apt-key del 7fa2af80
-RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+RUN apt-key del 7fa2af80 \
+ && curl -LO https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb \
+ && dpkg -i cuda-keyring_1.0-1_all.deb \
 
 # INSTALL CORE DEPENDENCIES
 RUN apt-get update \
