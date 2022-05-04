@@ -26,7 +26,7 @@ jobs:
             region: us-west-1
             type: g4dn.xlarge
           - cloud: azure
-            region: westus
+            region: eastus
             type: Standard_NC6
           - cloud: gcp
             region: us-west1-b
