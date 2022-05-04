@@ -21,8 +21,7 @@ RUN for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{,.backup
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/* \
  && for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{.backup,}; done
- 
- 
+
 # INSTALL CORE DEPENDENCIES
 RUN apt-get update \
  && apt-get install --no-install-recommends \
