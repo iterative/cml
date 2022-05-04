@@ -14,7 +14,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update \
  && apt-get install --yes gpg \
  && apt-key del 7fa2af80 \
- && apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+ && apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub \
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/*
  
