@@ -1,4 +1,4 @@
-<p align="center">
+ <p align="center">
   <img src="https://static.iterative.ai/img/cml/title_strip_trim.png" width=400>
 </p>
 
