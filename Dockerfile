@@ -11,12 +11,17 @@ RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90assumeyes
 SHELL ["/bin/bash", "-c"]
 
 # FIX NVIDIA APT GPG KEYS (https://github.com/NVIDIA/cuda-repo-management/issues/1#issuecomment-1111490201) 🤬
-RUN apt-get update \
+RUN for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{,.backup}; done
+ && apt-get update \
  && apt-get install --yes gpg \
  && apt-key del 7fa2af80 \
  && apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub \
+ && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1404/x86_64/7fa2af80.pub \
+ && apt-get purge --yes gpg \
  && apt-get clean \
- && rm --recursive --force /var/lib/apt/lists/*
+ && rm --recursive --force /var/lib/apt/lists/* \
+ && for list in cuda nvidia-ml; do mv /etc/apt/sources.list.d/cuda.list{.backup,}; done
+ 
  
 # INSTALL CORE DEPENDENCIES
 RUN apt-get update \
