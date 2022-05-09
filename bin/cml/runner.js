@@ -3,7 +3,7 @@ const { homedir } = require('os');
 const fs = require('fs').promises;
 const { SpotNotifier } = require('ec2-spot-notification');
 const kebabcaseKeys = require('kebabcase-keys');
-
+const timestring = require('timestring');
 const winston = require('winston');
 const CML = require('../../src/cml').default;
 const { exec, randid, sleep } = require('../../src/utils');
@@ -11,9 +11,9 @@ const tf = require('../../src/terraform');
 
 let cml;
 let RUNNER;
-let RUNNER_TIMEOUT_TIMER = 0;
-let RUNNER_SHUTTING_DOWN = false;
+let RUNNER_ID;
 let RUNNER_JOBS_RUNNING = [];
+let RUNNER_SHUTTING_DOWN = false;
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
@@ -47,12 +47,19 @@ const shutdown = async (opts) => {
 
   const retryWorkflows = async () => {
     try {
-      if (!noRetry && RUNNER_JOBS_RUNNING.length) {
-        await Promise.all(
-          RUNNER_JOBS_RUNNING.map(
-            async (job) => await cml.pipelineRestart({ jobId: job.id })
-          )
-        );
+      if (!noRetry) {
+        if (cml.driver === 'github') {
+          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
+          if (job) RUNNER_JOBS_RUNNING = [job];
+        }
+
+        if (RUNNER_JOBS_RUNNING.length > 0) {
+          await Promise.all(
+            RUNNER_JOBS_RUNNING.map(
+              async (job) => await cml.pipelineRestart({ jobId: job.id })
+            )
+          );
+        }
       }
     } catch (err) {
       winston.error(err);
@@ -92,15 +99,18 @@ const shutdown = async (opts) => {
   winston.info(`waiting ${destroyDelay} seconds before exiting...`);
   await sleep(destroyDelay);
 
-  if (cloud) {
-    await destroyTerraform();
-  } else {
-    await unregisterRunner();
-    await retryWorkflows();
+  if (!cloud) {
+    try {
+      await unregisterRunner();
+      await retryWorkflows();
+    } catch (err) {
+      winston.error(`Error connecting the SCM: ${err.message}`);
+    }
 
     await destroyDockerMachine();
-    await destroyTerraform();
   }
+
+  await destroyTerraform();
 
   process.exit(error ? 1 : 0);
 };
@@ -114,10 +124,13 @@ const runCloud = async (opts) => {
       labels,
       idleTimeout,
       name,
+      cmlVersion,
       single,
+      dockerVolumes,
       cloud,
       cloudRegion: region,
       cloudType: type,
+      cloudPermissionSet: permissionSet,
       cloudMetadata: metadata,
       cloudGpu: gpu,
       cloudHddSize: hddSize,
@@ -126,6 +139,7 @@ const runCloud = async (opts) => {
       cloudSpotPrice: spotPrice,
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
+      cloudAwsSubnet: awsSubnet,
       tfFile,
       workdir
     } = opts;
@@ -146,12 +160,14 @@ const runCloud = async (opts) => {
         token,
         driver,
         labels,
+        cmlVersion,
         idleTimeout,
         name,
         single,
         cloud,
         region,
         type,
+        permissionSet,
         metadata,
         gpu: gpu === 'tesla' ? 'v100' : gpu,
         hddSize,
@@ -159,7 +175,9 @@ const runCloud = async (opts) => {
         spot,
         spotPrice,
         startupScript,
-        awsSecurityGroup
+        awsSecurityGroup,
+        awsSubnet,
+        dockerVolumes
       });
     }
 
@@ -181,6 +199,7 @@ const runCloud = async (opts) => {
       for (const { attributes } of resource.instances) {
         const nonSensitiveValues = {
           awsSecurityGroup: attributes.aws_security_group,
+          awsSubnetId: attributes.aws_subnet_id,
           cloud: attributes.cloud,
           driver: attributes.driver,
           id: attributes.id,
@@ -191,7 +210,9 @@ const runCloud = async (opts) => {
           instanceIp: attributes.instance_ip,
           instanceLaunchTime: attributes.instance_launch_time,
           instanceType: attributes.instance_type,
+          instancePermissionSet: attributes.instance_permission_set,
           labels: attributes.labels,
+          cmlVersion: attributes.cml_version,
           metadata: attributes.metadata,
           name: attributes.name,
           region: attributes.region,
@@ -209,69 +230,82 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   winston.info(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, noRetry } = opts;
+  const { workdir, name, labels, single, idleTimeout, noRetry, dockerVolumes } =
+    opts;
+
+  const dataHandler = async (data) => {
+    const log = cml.parseRunnerLog({ data });
+    log && winston.info('runner status', log);
+
+    if (log && log.status === 'job_started') {
+      RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
+    } else if (log && log.status === 'job_ended') {
+      const { job: jobId } = log;
+      RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
+        (job) => job.id !== jobId
+      );
+    }
+  };
 
   const proc = await cml.startRunner({
     workdir,
     name,
     labels,
     single,
-    idleTimeout
+    idleTimeout,
+    dockerVolumes
   });
-
-  const dataHandler = async (data) => {
-    const log = await cml.parseRunnerLog({ data });
-    log && winston.info('runner status', log);
-
-    if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
-      RUNNER_TIMEOUT_TIMER = 0;
-    } else if (log && log.status === 'job_ended') {
-      const { job } = log;
-
-      const waitCompletedPipelineJobs = () => {
-        return new Promise((resolve, reject) => {
-          try {
-            if (RUNNER_JOBS_RUNNING.length === 1) {
-              resolve([RUNNER_JOBS_RUNNING[0].id]);
-              return;
-            }
-
-            const watcher = setInterval(async () => {
-              const jobs = (
-                await cml.pipelineJobs({ jobs: RUNNER_JOBS_RUNNING })
-              )
-                .filter((job) => job.status === 'completed')
-                .map((job) => job.id);
-
-              if (jobs.length) {
-                resolve(jobs);
-                clearInterval(watcher);
-              }
-            }, 5 * 1000);
-          } catch (err) {
-            reject(err);
-          }
-        });
-      };
-
-      if (!RUNNER_SHUTTING_DOWN) {
-        const jobs = job ? [job] : await waitCompletedPipelineJobs();
-
-        RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
-          (job) => !jobs.includes(job.id)
-        );
-      }
-    }
-  };
 
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
-  proc.on('uncaughtException', () =>
-    shutdown({ ...opts, reason: 'proc_uncaughtException' })
+  proc.on('disconnect', () =>
+    shutdown({ ...opts, reason: `runner disconnected` })
   );
-  proc.on('disconnect', () => shutdown({ ...opts, reason: 'proc_disconnect' }));
-  proc.on('exit', () => shutdown({ ...opts, reason: 'proc_exit' }));
+  proc.on('close', (exit) =>
+    shutdown({ ...opts, reason: `runner closed with exit code ${exit}` })
+  );
+
+  RUNNER = proc;
+  ({ id: RUNNER_ID } = await cml.runnerByName({ name }));
+
+  if (parseInt(idleTimeout) > 0) {
+    const watcher = setInterval(async () => {
+      let idle = RUNNER_JOBS_RUNNING.length === 0;
+
+      try {
+        if (cml.driver === 'github') {
+          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
+
+          if (!job && !idle) {
+            winston.error(
+              `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
+            );
+
+            RUNNER_JOBS_RUNNING = [];
+          }
+
+          if (job && idle) {
+            winston.error(
+              `Runner seems to be busy. Retrying in ${idleTimeout} secs`
+            );
+
+            idle = false;
+          }
+        }
+      } catch (err) {
+        winston.error(
+          `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
+        );
+
+        idle = false;
+      }
+
+      if (idle) {
+        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
+        clearInterval(watcher);
+      }
+    }, idleTimeout * 1000);
+  }
 
   if (!noRetry) {
     try {
@@ -283,38 +317,27 @@ const runLocal = async (opts) => {
     } catch (err) {
       winston.warn('SpotNotifier can not be started.');
     }
+
+    if (cml.driver === 'github') {
+      const watcherSeventyTwo = setInterval(() => {
+        RUNNER_JOBS_RUNNING.forEach((job) => {
+          if (
+            new Date().getTime() - new Date(job.date).getTime() >
+            GH_5_MIN_TIMEOUT
+          ) {
+            shutdown({ ...opts, reason: 'timeout:72h' });
+            clearInterval(watcherSeventyTwo);
+          }
+        });
+      }, 60 * 1000);
+    }
   }
-
-  if (parseInt(idleTimeout) > 0) {
-    const watcher = setInterval(() => {
-      RUNNER_TIMEOUT_TIMER > idleTimeout &&
-        shutdown({ ...opts, reason: `timeout:${idleTimeout}` }) &&
-        clearInterval(watcher);
-
-      if (!RUNNER_JOBS_RUNNING.length) RUNNER_TIMEOUT_TIMER++;
-    }, 1000);
-  }
-
-  if (!noRetry && cml.driver === 'github') {
-    const watcher = setInterval(() => {
-      RUNNER_JOBS_RUNNING.forEach((job) => {
-        if (
-          new Date().getTime() - new Date(job.date).getTime() >
-          GH_5_MIN_TIMEOUT
-        )
-          shutdown({ ...opts, reason: 'timeout:72h' }) &&
-            clearInterval(watcher);
-      });
-    }, 60 * 1000);
-  }
-
-  RUNNER = proc;
 };
 
 const run = async (opts) => {
-  process.on('SIGTERM', () => shutdown({ ...opts, reason: 'SIGTERM' }));
-  process.on('SIGINT', () => shutdown({ ...opts, reason: 'SIGINT' }));
-  process.on('SIGQUIT', () => shutdown({ ...opts, reason: 'SIGQUIT' }));
+  ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach((signal) => {
+    process.on(signal, () => shutdown({ ...opts, reason: signal }));
+  });
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
@@ -325,11 +348,17 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
+    dockerVolumes,
     tfResource,
     workdir
   } = opts;
 
   cml = new CML({ driver, repo, token });
+
+  await cml.repoTokenCheck();
+
+  if (dockerVolumes.length && cml.driver !== 'gitlab')
+    winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
   if (cloud || tfResource) await tf.checkMinVersion();
 
@@ -351,15 +380,12 @@ const run = async (opts) => {
     await tf.saveTfState({ tfstate, path });
   }
 
-  // if (name !== NAME) {
-  await cml.repoTokenCheck();
-
   const runners = await cml.runners();
   const runner = await cml.runnerByName({ name, runners });
   if (runner) {
     if (!reuse)
       throw new Error(
-        `Runner name ${name} is already in use. Please change the name or terminate the other runner.`
+        `Runner name ${name} is already in use. Please change the name or terminate the existing runner.`
       );
     winston.info(`Reusing existing runner named ${name}...`);
     process.exit(0);
@@ -406,6 +432,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
+      dockerVolumes: {
+        type: 'array',
+        default: [],
+        description: 'Docker volumes. This feature is only supported in GitLab'
+      },
       labels: {
         type: 'string',
         default: 'cml',
@@ -413,10 +444,12 @@ exports.builder = (yargs) =>
           'One or more user-defined labels for this runner (delimited with commas)'
       },
       idleTimeout: {
-        type: 'number',
-        default: 5 * 60,
+        type: 'string',
+        default: '5 minutes',
+        coerce: (val) =>
+          /^-?\d+$/.test(val) ? parseInt(val) : timestring(val),
         description:
-          'Seconds to wait for jobs before shutting down. Set to -1 to disable timeout'
+          'Time to wait for jobs before shutting down (e.g. "5min"). Use "never" to disable'
       },
       name: {
         type: 'string',
@@ -470,6 +503,12 @@ exports.builder = (yargs) =>
         description:
           'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
       },
+      cloudPermissionSet: {
+        type: 'string',
+        default: '',
+        description:
+          'Specifies the instance profile in AWS or instance service account in GCP'
+      },
       cloudMetadata: {
         type: 'array',
         string: true,
@@ -520,15 +559,28 @@ exports.builder = (yargs) =>
         default: '',
         description: 'Specifies the security group in AWS'
       },
+      cloudAwsSubnet: {
+        type: 'string',
+        default: '',
+        description: 'Specifies the subnet to use within AWS',
+        alias: 'cloud-aws-subnet-id'
+      },
+      cmlVersion: {
+        type: 'string',
+        default: require('../../package.json').version,
+        description: 'CML version to load on TPI instance',
+        hidden: true
+      },
       tfResource: {
         hidden: true,
         alias: 'tf_resource'
       },
       destroyDelay: {
         type: 'number',
-        default: 20,
+        default: 10,
         hidden: true,
-        description: 'Destroy delay'
+        description:
+          'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
       },
       dockerMachine: {
         type: 'string',

@@ -39,4 +39,25 @@ describe('Non Enviromental tests', () => {
       'Bitbucket Cloud does not support runnerToken!'
     );
   });
+
+  test('updateGitConfig', async () => {
+    const client = new BitbucketCloud({
+      repo: 'https://bitbucket.org/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig({
+      userName: 'john',
+      userEmail: 'john@test.com'
+    });
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config --unset user.name;
+          git config --unset user.email;
+          git config --unset push.default;
+          git config --unset http.http://bitbucket.org/test/test.proxy;
+          git config user.name \\"john\\" &&
+          git config user.email \\"john@test.com\\" &&
+          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test.git\\""
+    `);
+  });
 });

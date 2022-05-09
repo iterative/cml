@@ -19,6 +19,11 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description: 'Output in markdown format [](url).'
       },
+      autoMerge: {
+        type: 'boolean',
+        description:
+          'Mark the PR/MR for automatic merging after tests pass (unsupported by Bitbucket).'
+      },
       remote: {
         type: 'string',
         default: GIT_REMOTE,
@@ -46,7 +51,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab'],
+        choices: ['github', 'gitlab', 'bitbucket'],
         description: 'If not specify it infers it from the ENV.'
       }
     })

@@ -6,16 +6,11 @@ const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
+const { backOff } = require('exponential-backoff');
 
 const { fetchUploadData, download, exec } = require('../utils');
 
-const {
-  IN_DOCKER,
-  CI_BUILD_REF_NAME,
-  CI_COMMIT_SHA,
-  GITLAB_USER_EMAIL,
-  GITLAB_USER_NAME
-} = process.env;
+const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -168,7 +163,14 @@ class Gitlab {
   }
 
   async startRunner(opts) {
-    const { workdir, idleTimeout, single, labels, name } = opts;
+    const {
+      workdir,
+      idleTimeout,
+      single,
+      labels,
+      name,
+      dockerVolumes = []
+    } = opts;
 
     let gpu = true;
     try {
@@ -184,14 +186,19 @@ class Gitlab {
     try {
       const bin = resolve(workdir, 'gitlab-runner');
       if (!(await fse.pathExists(bin))) {
-        const url =
-          'https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64';
+        const arch = process.platform === 'darwin' ? 'darwin' : 'linux';
+        const url = `https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-${arch}-amd64`;
         await download({ url, path: bin });
         await fs.chmod(bin, '777');
       }
 
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
+
+      let dockerVolumesTpl = '';
+      dockerVolumes.forEach((vol) => {
+        dockerVolumesTpl += `--docker-volumes ${vol} `;
+      });
       const command = `${bin} --log-format="json" run-single \
         --builds-dir "${workdir}" \
         --cache-dir "${workdir}" \
@@ -201,7 +208,8 @@ class Gitlab {
         --wait-timeout ${idleTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
-        --docker-runtime "${gpu ? 'nvidia' : ''}" \
+        ${gpu ? '--docker-runtime nvidia' : ''} \
+        ${dockerVolumesTpl} \
         ${single ? '--max-builds 1' : ''}`;
 
       return spawn(command, { shell: true });
@@ -214,21 +222,38 @@ class Gitlab {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
     return await Promise.all(
-      runners.map(async ({ id, description, active, online }) => ({
+      runners.map(async ({ id, description, online }) => ({
         id,
         name: description,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
-        online,
-        busy: active && online
+        online
       }))
     );
   }
 
+  async runnerById({ id } = {}) {
+    const {
+      description,
+      online,
+      tag_list: labels
+    } = await this.request({
+      endpoint: `/runners/${id}`,
+      method: 'GET'
+    });
+
+    return {
+      id,
+      name: description,
+      labels,
+      online
+    };
+  }
+
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
 
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
@@ -237,13 +262,37 @@ class Gitlab {
     body.append('title', title);
     body.append('description', description);
 
-    const { web_url: url } = await this.request({
+    const { web_url: url, iid } = await this.request({
       endpoint,
       method: 'POST',
       body
     });
 
+    if (autoMerge) {
+      await this.prAutoMerge({ mergeRequestId: iid });
+    }
+
     return url;
+  }
+
+  /**
+   * @param {{ mergeRequestId: string }} param0
+   * @returns {Promise<void>}
+   */
+  async prAutoMerge({ mergeRequestId }) {
+    const projectPath = await this.projectPath();
+
+    const endpoint = `/projects/${projectPath}/merge_requests/${mergeRequestId}/merge`;
+    const body = new URLSearchParams();
+    body.append('merge_when_pipeline_succeeds', true);
+
+    await backOff(() =>
+      this.request({
+        endpoint,
+        method: 'PUT',
+        body
+      })
+    );
   }
 
   async prCommentCreate(opts = {}) {
@@ -313,6 +362,31 @@ class Gitlab {
     });
   }
 
+  async pipelineRerun(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { id = CI_PIPELINE_ID } = opts;
+
+    const { status } = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}`,
+      method: 'GET'
+    });
+
+    if (status === 'running') return;
+
+    const jobs = await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    });
+
+    await Promise.all(
+      jobs.map(async (job) => {
+        return this.request({
+          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
+          method: 'POST'
+        });
+      })
+    );
+  }
+
   async pipelineRestart(opts = {}) {
     const projectPath = await this.projectPath();
     const { jobId } = opts;
@@ -348,6 +422,37 @@ class Gitlab {
     throw new Error('Not implemented');
   }
 
+  async updateGitConfig({ userName, userEmail } = {}) {
+    const repo = new URL(this.repo);
+    repo.password = this.token;
+    repo.username = 'token';
+
+    const command = `
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
+    git remote set-url origin "${repo.toString()}${
+      repo.toString().endsWith('.git') ? '' : '.git'
+    }"`;
+
+    return command;
+  }
+
+  get sha() {
+    return process.env.CI_COMMIT_SHA;
+  }
+
+  get branch() {
+    return process.env.CI_BUILD_REF_NAME;
+  }
+
+  get userEmail() {
+    return process.env.GITLAB_USER_EMAIL;
+  }
+
+  get userName() {
+    return process.env.GITLAB_USER_NAME;
+  }
+
   async request(opts = {}) {
     const { token } = this;
     const { endpoint, method = 'GET', body, raw } = opts;
@@ -369,22 +474,6 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
-  }
-
-  get sha() {
-    return CI_COMMIT_SHA;
-  }
-
-  get branch() {
-    return CI_BUILD_REF_NAME;
-  }
-
-  get userEmail() {
-    return GITLAB_USER_EMAIL;
-  }
-
-  get userName() {
-    return GITLAB_USER_NAME;
   }
 }
 

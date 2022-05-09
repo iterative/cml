@@ -71,12 +71,14 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     token,
     driver,
     labels,
+    cmlVersion,
     idleTimeout,
     cloud,
     region,
     name,
     single,
     type,
+    permissionSet,
     metadata,
     gpu,
     hddSize,
@@ -84,7 +86,9 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     spot,
     spotPrice,
     startupScript,
-    awsSecurityGroup
+    awsSecurityGroup,
+    awsSubnet,
+    dockerVolumes
   } = opts;
 
   const template = `
@@ -95,11 +99,8 @@ resource "iterative_cml_runner" "runner" {
   ${token ? `token = "${token}"` : ''}
   ${driver ? `driver = "${driver}"` : ''}
   ${labels ? `labels = "${labels}"` : ''}
-  ${
-    typeof idleTimeout !== 'undefined' && idleTimeout >= 0
-      ? `idle_timeout = ${idleTimeout}`
-      : ''
-  }
+  ${cmlVersion ? `cml_version = "${cmlVersion}"` : ''}
+  ${typeof idleTimeout !== 'undefined' ? `idle_timeout = ${idleTimeout}` : ''}
   ${name ? `name = "${name}"` : ''}
   ${single ? `single = "${single}"` : ''}
   ${cloud ? `cloud = "${cloud}"` : ''}
@@ -107,16 +108,19 @@ resource "iterative_cml_runner" "runner" {
   ${type ? `instance_type = "${type}"` : ''}
   ${gpu ? `instance_gpu = "${gpu}"` : ''}
   ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
+  ${permissionSet ? `instance_permission_set = "${permissionSet}"` : ''}
   ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
   ${spot ? `spot = ${spot}` : ''}
   ${spotPrice ? `spot_price = ${spotPrice}` : ''}
   ${startupScript ? `startup_script = "${startupScript}"` : ''}
   ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
+  ${awsSubnet ? `aws_subnet_id = "${awsSubnet}"` : ''}
   ${
     metadata
       ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
       : ''
   }
+  ${dockerVolumes ? `docker_volumes = ${JSON.stringify(dockerVolumes)}` : ''}
 }
 `;
   return template;

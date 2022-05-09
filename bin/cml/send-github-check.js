@@ -33,6 +33,12 @@ exports.builder = (yargs) =>
         default: 'success',
         description: 'Sets the conclusion status of the check.'
       },
+      status: {
+        type: 'string',
+        choices: ['queued', 'in_progress', 'completed'],
+        default: 'completed',
+        description: 'Sets the status of the check.'
+      },
       title: {
         type: 'string',
         default: 'CML Report',
@@ -46,7 +52,7 @@ exports.builder = (yargs) =>
       token: {
         type: 'string',
         description:
-          'Personal access token to be used. If not specified in extracted from ENV REPO_TOKEN.'
+          "GITHUB_TOKEN or Github App token. Personal access token won't work"
       }
     })
   );

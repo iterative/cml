@@ -1,9 +1,11 @@
-const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const mmm = require('mmmagic');
-const forge = require('node-forge');
+const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
+const stripAnsi = require('strip-ansi');
+
+const { FileMagic, MagicFlags } = require('@npcz/magic');
+const tempy = require('tempy');
 
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
@@ -11,6 +13,10 @@ const exec = async (command) => {
       command,
       { ...process.env },
       (error, stdout, stderr) => {
+        if (!process.stdout.isTTY) {
+          stdout = stripAnsi(stdout);
+          stderr = stripAnsi(stderr);
+        }
         if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
         resolve((stdout || stderr).slice(0, -1));
@@ -20,25 +26,26 @@ const exec = async (command) => {
 };
 
 const mimeType = async (opts) => {
-  return new Promise((resolve, reject) => {
-    const { path, buffer } = opts;
-    const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    const handler = (err, result) => {
-      if (err)
-        reject(
-          new Error(
-            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-          )
-        );
+  const { path, buffer } = opts;
+  const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
+  if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
+  FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
+  const fileMagic = await FileMagic.getInstance();
 
-      if (result === 'image/svg') resolve('image/svg+xml');
+  let tmppath;
+  if (buffer) {
+    tmppath = tempy.file();
+    await fs.promises.writeFile(tmppath, buffer);
+  }
 
-      resolve(result);
-    };
+  const [mime] = (
+    fileMagic.detect(
+      buffer ? tmppath : path,
+      fileMagic.flags | MagicFlags.MAGIC_MIME
+    ) || []
+  ).split(';');
 
-    if (path) magic.detectFile(path, handler);
-    else magic.detect(buffer, handler);
-  });
+  return mime;
 };
 
 const fetchUploadData = async (opts) => {
@@ -113,14 +120,6 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const sshPublicFromPrivateRsa = (privateKey) => {
-  const forgePrivate = forge.pki.privateKeyFromPem(privateKey);
-  const forgePublic = forge.pki.setRsaPublicKey(forgePrivate.n, forgePrivate.e);
-  const sshPublic = forge.ssh.publicKeyToOpenSSH(forgePublic);
-
-  return sshPublic;
-};
-
 const watermarkUri = (opts = {}) => {
   const { uri, type } = opts;
   const url = new URL(uri);
@@ -171,7 +170,6 @@ exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
-exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
 exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;

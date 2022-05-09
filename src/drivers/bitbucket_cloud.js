@@ -1,13 +1,14 @@
 const fetch = require('node-fetch');
+const winston = require('winston');
 const { URL } = require('url');
 const { spawn } = require('child_process');
 const ProxyAgent = require('proxy-agent');
 
-const winston = require('winston');
-
 const { exec } = require('../utils');
 
-const { BITBUCKET_COMMIT, BITBUCKET_BRANCH } = process.env;
+const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
+  process.env;
+
 class BitbucketCloud {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -71,26 +72,18 @@ class BitbucketCloud {
     const { projectPath } = this;
     const { commitSha, state = 'OPEN' } = opts;
 
-    try {
-      const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
-      const prs = await this.paginatedRequest({ endpoint });
-
-      return prs.map((pr) => {
-        const {
-          links: {
-            html: { href: url }
-          }
-        } = pr;
-        return {
-          url
-        };
-      });
-    } catch (err) {
-      if (err.message === 'Not Found Resource not found')
-        err.message =
-          "Click 'Go to pull request' on any commit details page to enable this API";
-      throw err;
-    }
+    const endpoint = `/repositories/${projectPath}/commit/${commitSha}/pullrequests?state=${state}`;
+    const prs = await this.paginatedRequest({ endpoint });
+    return prs.map((pr) => {
+      const {
+        links: {
+          html: { href: url }
+        }
+      } = pr;
+      return {
+        url
+      };
+    });
   }
 
   async checkCreate() {
@@ -191,9 +184,19 @@ class BitbucketCloud {
     }));
   }
 
+  async runnerById(opts = {}) {
+    throw new Error('Not yet implemented');
+  }
+
   async prCreate(opts = {}) {
     const { projectPath } = this;
-    const { source, target, title, description } = opts;
+    const { source, target, title, description, autoMerge } = opts;
+
+    if (autoMerge) {
+      throw new Error(
+        'Auto-merging is unsupported by Bitbucket Cloud. See https://jira.atlassian.com/browse/BCLOUD-14286'
+      );
+    }
 
     const body = JSON.stringify({
       title,
@@ -307,32 +310,62 @@ class BitbucketCloud {
     return [];
   }
 
-  async request(opts = {}) {
-    const { token, api: bbApi } = this;
-    const { url, endpoint, body, method = 'GET', api = bbApi } = opts;
-    if (!(url || endpoint))
-      throw new Error('Bitbucket Cloud API endpoint not found');
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: 'Basic ' + `${token}`
-    };
+  async pipelineRerun(opts = {}) {
+    const { projectPath } = this;
+    const { id = BITBUCKET_PIPELINE_UUID } = opts;
 
-    const response = await fetch(url || `${api}${endpoint}`, {
-      method,
-      headers,
-      body,
-      agent: new ProxyAgent()
+    const {
+      target,
+      state: { name: status }
+    } = await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/${id}`,
+      method: 'GET'
     });
 
-    if (response.status > 300) {
-      const {
-        error: { message }
-      } = await response.json();
-      throw new Error(`${response.statusText} ${message}`);
-    }
+    if (status !== 'COMPLETED') return;
 
-    return await response.json();
+    await this.request({
+      endpoint: `/repositories/${projectPath}/pipelines/`,
+      method: 'POST',
+      body: JSON.stringify({ target })
+    });
   }
+
+  async updateGitConfig({ userName, userEmail } = {}) {
+    const [user, password] = Buffer.from(this.token, 'base64')
+      .toString('utf-8')
+      .split(':');
+    const repo = new URL(this.repo);
+    repo.password = password;
+    repo.username = user;
+
+    const command = `
+    git config --unset user.name;
+    git config --unset user.email;
+    git config --unset push.default;
+    git config --unset http.http://${this.repo
+      .replace('https://', '')
+      .replace('.git', '')}.proxy;
+    git config user.name "${userName || this.userName}" &&
+    git config user.email "${userEmail || this.userEmail}" &&
+    git remote set-url origin "${repo.toString()}${
+      repo.toString().endsWith('.git') ? '' : '.git'
+    }"`;
+
+    return command;
+  }
+
+  get sha() {
+    return BITBUCKET_COMMIT;
+  }
+
+  get branch() {
+    return BITBUCKET_BRANCH;
+  }
+
+  get userEmail() {}
+
+  get userName() {}
 
   async paginatedRequest(opts = {}) {
     const { method = 'GET', body } = opts;
@@ -350,17 +383,40 @@ class BitbucketCloud {
     return values;
   }
 
-  get sha() {
-    return BITBUCKET_COMMIT;
+  async request(opts = {}) {
+    const { token, api } = this;
+    const { url, endpoint, method = 'GET', body } = opts;
+
+    if (!(url || endpoint))
+      throw new Error('Bitbucket Cloud API endpoint not found');
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: 'Basic ' + `${token}`
+    };
+
+    const requestUrl = url || `${api}${endpoint}`;
+
+    const response = await fetch(requestUrl, {
+      method,
+      headers,
+      body,
+      agent: new ProxyAgent()
+    });
+
+    if (response.status > 300) {
+      try {
+        const json = await response.json();
+        // Attempt to get additional context. We have observed two different error schemas
+        // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
+        // `{"error": "Error message"}`.
+        throw new Error(json.error.message || json.error);
+      } catch (err) {
+        throw new Error(`${response.statusText} ${err.message}`);
+      }
+    }
+
+    return await response.json();
   }
-
-  get branch() {
-    return BITBUCKET_BRANCH;
-  }
-
-  get userEmail() {}
-
-  get userName() {}
 }
 
 module.exports = BitbucketCloud;

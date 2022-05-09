@@ -88,7 +88,7 @@ jobs:
       # may need to setup NodeJS & Python3 on e.g. self-hosted
       # - uses: actions/setup-node@v2
       #   with:
-      #     node-version: '12'
+      #     node-version: '16'
       # - uses: actions/setup-python@v2
       #   with:
       #     python-version: '3.x'
@@ -201,7 +201,7 @@ jobs:
           python train.py
 
           cat metrics.txt >> report.md
-          cml-publish confusion_matrix.png --md >> report.md
+          cml-publish plot.png --md >> report.md
           cml-send-comment report.md
 ```
 
@@ -600,7 +600,7 @@ CML and Vega-Lite package installation require the NodeJS package manager
 ```bash
 uses: actions/setup-node@v2
   with:
-    node-version: '12'
+    node-version: '16'
 ```
 
 - **GitLab**: Requires direct installation.
