@@ -77,7 +77,7 @@ jobs:
         cloud: [aws, azure, gcp]
         include:
           - type: container
-            image: ghcr.io/iterative/cml:latest-gpu
+            image: nvidia/cuda:11.6.0-runtime-ubuntu20.04
             options: --gpus all
     runs-on:
       - self-hosted
