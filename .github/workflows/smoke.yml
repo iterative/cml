@@ -19,6 +19,7 @@ jobs:
       pull-requests: write
       id-token: write
     strategy:
+      fail-fast: false
       matrix:
         cloud: [aws, azure, gcp]
         include:
