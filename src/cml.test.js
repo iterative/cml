@@ -208,7 +208,7 @@ describe('Gitlab tests', () => {
     let caughtErr;
     try {
       const path = `${__dirname}/../assets/logo.pdf`;
-      const cml = new CML({ repo: REPO });
+      const cml = new CML({ repo: REPO, driver: 'invalid' });
       await cml.init();
       await cml.publish({
         path,
