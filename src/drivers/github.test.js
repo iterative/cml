@@ -38,21 +38,6 @@ describe('Non Enviromental tests', () => {
     expect(output.length).toBe(29);
   });
 
-  test('updateGitConfig', async () => {
-    const client = new GithubClient({
-      repo: 'https://github.com/test/test',
-      token: 'dXNlcjpwYXNz'
-    });
-    const command = await client.updateGitConfig();
-    expect(command).toMatchInlineSnapshot(`
-      "
-          git config --unset http.https://github.com/.extraheader;
-          git config user.name \\"GitHub Action\\" &&
-          git config user.email \\"action@github.com\\" &&
-          git remote set-url origin \\"https://token:dXNlcjpwYXNz@github.com/test/test.git\\""
-    `);
-  });
-
   test('Check pinned version of Octokit', async () => {
     // This test is a must to ensure that @actions/github is not updated.
     // There is a bug that after a reRunWorkflow deprecation rest the library does not contains
