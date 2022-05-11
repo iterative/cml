@@ -19,7 +19,7 @@ exports.handler = async (opts) => {
 
   const path = opts.asset;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
-
+  await cml.init();
   const output = await cml.publish({
     ...opts,
     path

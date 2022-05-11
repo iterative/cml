@@ -441,21 +441,6 @@ class Gitlab {
     throw new Error('Not implemented');
   }
 
-  async updateGitConfig({ userName, userEmail } = {}) {
-    const repo = new URL(this.repo);
-    repo.password = this.token;
-    repo.username = 'token';
-
-    const command = `
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url origin "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
-
-    return command;
-  }
-
   get sha() {
     return process.env.CI_COMMIT_SHA;
   }

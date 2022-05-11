@@ -7,6 +7,7 @@ exports.description = 'Reruns a workflow given the jobId or workflow Id';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
+  await cml.init();
   await cml.pipelineRerun(opts);
 };
 

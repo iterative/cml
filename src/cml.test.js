@@ -22,13 +22,16 @@ describe('Github tests', () => {
 
   test('driver has to be github', async () => {
     const cml = new CML({ repo: REPO, token: TOKEN });
+    await cml.init();
     expect(cml.driver).toBe('github');
   });
 
   test('Publish image without markdown returns an url', async () => {
     const path = `${__dirname}/../assets/logo.png`;
 
-    const output = await new CML().publish({ path });
+    const cml = new CML();
+    await cml.init();
+    const output = await cml.publish({ path });
 
     expect(output.startsWith('https://')).toBe(true);
     expect(output.includes('cml=png')).toBe(true);
@@ -38,7 +41,9 @@ describe('Github tests', () => {
     const path = `${__dirname}/../assets/logo.png`;
     const title = 'my title';
 
-    const output = await new CML().publish({ path, md: true, title });
+    const cml = new CML();
+    await cml.init();
+    const output = await cml.publish({ path, md: true, title });
 
     expect(output.startsWith('![](https://')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
@@ -49,7 +54,9 @@ describe('Github tests', () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
-    const output = await new CML().publish({ path, md: true, title });
+    const cml = new CML();
+    await cml.init();
+    const output = await cml.publish({ path, md: true, title });
 
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
@@ -59,7 +66,9 @@ describe('Github tests', () => {
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
 
-    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    await cml.commentCreate({ report, commitSha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
@@ -68,7 +77,9 @@ describe('Github tests', () => {
       const report = '## Test comment';
       const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
+      const cml = new CML({ repo: REPO });
+      await cml.init();
+      await cml.commentCreate({ report, commitSha });
     } catch (err) {
       caughtErr = err.message;
     }
@@ -121,13 +132,16 @@ describe('Gitlab tests', () => {
 
   test('driver has to be gitlab', async () => {
     const cml = new CML({ repo: REPO, token: TOKEN, driver: 'gitlab' });
+    await cml.init();
     expect(cml.driver).toBe('gitlab');
   });
 
   test('Publish image using gl without markdown returns an url', async () => {
     const path = `${__dirname}/../assets/logo.png`;
 
-    const output = await new CML({ repo: REPO }).publish({
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    const output = await cml.publish({
       path,
       native: true
     });
@@ -140,7 +154,9 @@ describe('Gitlab tests', () => {
     const path = `${__dirname}/../assets/logo.png`;
     const title = 'my title';
 
-    const output = await new CML({ repo: REPO }).publish({
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    const output = await cml.publish({
       path,
       md: true,
       title,
@@ -156,7 +172,9 @@ describe('Gitlab tests', () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
-    const output = await new CML({ repo: REPO }).publish({
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    const output = await cml.publish({
       path,
       md: true,
       title,
@@ -172,7 +190,9 @@ describe('Gitlab tests', () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';
 
-    const output = await new CML({ repo: REPO }).publish({
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    const output = await cml.publish({
       path,
       md: true,
       title,
@@ -188,7 +208,9 @@ describe('Gitlab tests', () => {
     let caughtErr;
     try {
       const path = `${__dirname}/../assets/logo.pdf`;
-      await new CML({ repo: REPO, driver: 'invalid' }).publish({
+      const cml = new CML({ repo: REPO });
+      await cml.init();
+      await cml.publish({
         path,
         md: true,
         native: true
@@ -202,7 +224,9 @@ describe('Gitlab tests', () => {
 
   test('Comment should succeed with a valid sha', async () => {
     const report = '## Test comment';
-    await new CML({ repo: REPO }).commentCreate({ report, commitSha: SHA });
+    const cml = new CML({ repo: REPO });
+    await cml.init();
+    await cml.commentCreate({ report, commitSha: SHA });
   });
 
   test('Comment should fail with a invalid sha', async () => {
@@ -211,7 +235,9 @@ describe('Gitlab tests', () => {
       const report = '## Test comment';
       const commitSha = 'invalid_sha';
 
-      await new CML({ repo: REPO }).commentCreate({ report, commitSha });
+      const cml = new CML({ repo: REPO });
+      await cml.init();
+      await cml.commentCreate({ report, commitSha });
     } catch (err) {
       caughtErr = err.message;
     }

@@ -1,16 +1,16 @@
-const { execSync, spawnSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
-const git = require('simple-git')('./');
-const path = require('path');
+const fs = require('fs');
+const git = require('isomorphic-git');
+const http = require('isomorphic-git/http/node');
 
 const winston = require('winston');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri } = require('./utils');
+const { upload, watermarkUri } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -25,10 +25,11 @@ const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
 
-const gitRemoteUrl = (opts = {}) => {
+const gitRemoteUrl = async (opts = {}) => {
   const { remote = GIT_REMOTE } = opts;
-  const url = execSync(`git config --get remote.${remote}.url`).toString(
-    'utf8'
+  const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
+  const { url } = (await git.listRemotes({ fs, http, dir: gitpath })).find(
+    (i) => i.remote === remote
   );
   return stripAuth(gitUrlParse(url).toString('https'));
 };
@@ -69,49 +70,15 @@ const getDriver = (opts) => {
 
   throw new Error(`driver ${driver} unknown!`);
 };
-
-const fixGitSafeDirectory = () => {
-  const gitConfigSafeDirectory = (value) =>
-    spawnSync(
-      'git',
-      [
-        'config',
-        '--global',
-        value ? '--add' : '--get-all',
-        'safe.directory',
-        value
-      ],
-      {
-        encoding: 'utf8'
-      }
-    ).stdout;
-
-  const addSafeDirectory = (directory) =>
-    gitConfigSafeDirectory()
-      .split(/[\r\n]+/)
-      .includes(directory) || gitConfigSafeDirectory(directory);
-
-  // Fix for git>=2.36.0
-  addSafeDirectory('*');
-
-  // Fix for git^2.35.2
-  addSafeDirectory('/');
-  for (
-    let root, dir = process.cwd();
-    root !== dir;
-    { root, dir } = path.parse(dir)
-  ) {
-    addSafeDirectory(dir);
-  }
-};
-
 class CML {
   constructor(opts = {}) {
-    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
+    this.opts = opts;
+  }
 
-    const { driver, repo, token } = opts;
+  async init() {
+    const { driver, repo, token } = this.opts;
 
-    this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
+    this.repo = uriNoTrailingSlash(repo || (await gitRemoteUrl())).replace(
       /\.git$/,
       ''
     );
@@ -121,7 +88,9 @@ class CML {
 
   async revParse({ ref = 'HEAD' } = {}) {
     try {
-      return await exec(`git rev-parse ${ref}`);
+      const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
+      const sha = await git.resolveRef({ fs, http, dir: gitpath, ref });
+      return sha;
     } catch (err) {
       winston.warn(
         'Failed to obtain SHA. Perhaps not in the correct git folder'
@@ -136,7 +105,10 @@ class CML {
 
   async branch() {
     const { branch } = getDriver(this);
-    return branch || (await exec(`git branch --show-current`));
+    if (branch) return branch;
+
+    const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
+    return await git.currentBranch({ fs, http, dir: gitpath });
   }
 
   async commentCreate(opts = {}) {
@@ -375,13 +347,66 @@ class CML {
     } = opts;
 
     const driver = getDriver(this);
-    await exec(await driver.updateGitConfig({ userName, userEmail }));
-    if (unshallow) {
-      if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-        await exec('git fetch --unshallow');
-      }
+    const repo = new URL(this.repo);
+    repo.password = this.token;
+    repo.username = 'token';
+
+    const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
+    const gitops = { fs, http, dir: gitpath };
+
+    if (this.driver === 'github') {
+      repo.password = this.token;
+      repo.username = 'token';
+
+      await git.setConfig({
+        ...gitops,
+        path: 'http.https://github.com/.extraheader',
+        value: undefined
+      });
+    } else if (this.driver === 'bitbucket') {
+      const [user, password] = Buffer.from(this.token, 'base64')
+        .toString('utf-8')
+        .split(':');
+      repo.password = password;
+      repo.username = user;
+
+      await git.setConfig({
+        ...gitops,
+        path: 'push.default',
+        value: undefined
+      });
+
+      await git.setConfig({
+        ...gitops,
+        path: `http.http://${this.repo
+          .replace('https://', '')
+          .replace('.git', '')}.proxy`,
+        value: undefined
+      });
     }
-    await exec('git fetch --all');
+
+    await git.setConfig({
+      ...gitops,
+      path: 'user.name',
+      value: userName || driver.userName
+    });
+
+    await git.setConfig({
+      ...gitops,
+      path: 'user.email',
+      value: userEmail || driver.userEmail
+    });
+
+    await git.addRemote({
+      ...gitops,
+      remote: 'origin',
+      force: true,
+      url: repo.toString().endsWith('.git') ? '' : '.git'
+    });
+
+    let gitop = { ...gitops, remote: this.repo, tags: true };
+    if (unshallow) gitop = { ...gitop, depth: 1000000 };
+    await git.fetch(gitop);
   }
 
   async prCreate(opts = {}) {
@@ -405,7 +430,11 @@ class CML {
       return url;
     };
 
-    const { files } = await git.status();
+    const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
+    const gitops = { fs, http, dir: gitpath };
+    const files = (await git.statusMatrix({ ...gitops }))
+      .filter((row) => row[1] !== row[2])
+      .map((row) => row[0]);
     if (!files.length) {
       winston.warn('No files changed. Nothing to do.');
       return;
@@ -425,11 +454,8 @@ class CML {
     const target = await this.branch();
     const source = `${target}-cml-pr-${shaShort}`;
 
-    const branchExists = (
-      await exec(
-        `git ls-remote $(git config --get remote.${remote}.url) ${source}`
-      )
-    ).includes(source);
+    const branches = await git.listBranches({ ...gitops, remote });
+    const branchExists = branches.find((branch) => branch === source);
 
     if (branchExists) {
       const prs = await driver.prs();
@@ -440,16 +466,30 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git fetch ${remote} ${sha}`);
-      await exec(`git checkout -B ${target} ${sha}`);
-      await exec(`git checkout -b ${source}`);
-      await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (!(merge || rebase || squash)) {
-        commitMessage += ' [skip ci]';
+      await git.resetIndex({ ...gitops, ref: sha });
+
+      try {
+        await git.branch({ ...gitops, ref: target });
+      } finally {
+        await git.checkout({ ...gitops, ref: target });
+        await git.resetIndex({ ...gitops, ref: sha });
       }
-      await exec(`git commit -m "${commitMessage}"`);
-      await exec(`git push --set-upstream ${remote} ${source}`);
+
+      await git.branch({ ...gitops, ref: source });
+      await git.checkout({ ...gitops, ref: source });
+
+      for (const filepath of paths) {
+        await git.add({ ...gitops, filepath });
+      }
+
+      let commitMessage = `CML PR for ${shaShort}`;
+      if (!(merge || rebase || squash)) commitMessage += ' [skip ci]';
+      await git.commit({
+        ...gitops,
+        message: commitMessage
+      });
+
+      await git.push({ ...gitops, remote, ref: source });
     }
 
     const title = `CML PR for ${target} ${shaShort}`;

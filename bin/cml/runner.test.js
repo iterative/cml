@@ -30,6 +30,7 @@ const testRunner = async (opts) => {
 
   const sshOpts = { host, username: 'ubuntu', privateKey };
   const cml = new CML({ repo, token });
+  await cml.init();
 
   let runner = await cml.runnerByName({ name });
   expect(runner).not.toBe(undefined);

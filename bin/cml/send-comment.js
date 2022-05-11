@@ -10,6 +10,7 @@ exports.handler = async (opts) => {
   const path = opts.markdownfile;
   const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
+  await cml.init();
   console.log(await cml.commentCreate({ ...opts, report }));
 };
 

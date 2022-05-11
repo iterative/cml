@@ -362,6 +362,7 @@ const run = async (opts) => {
 
   cml = new CML({ driver, repo, token });
 
+  await cml.init();
   await cml.repoTokenCheck();
 
   if (dockerVolumes.length && cml.driver !== 'gitlab')

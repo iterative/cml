@@ -660,22 +660,6 @@ class Github {
     return runJobs.find((job) => runnerId === job.runnerId);
   }
 
-  async updateGitConfig({ userName, userEmail } = {}) {
-    const repo = new URL(this.repo);
-    repo.password = this.token;
-    repo.username = 'token';
-
-    const command = `
-    git config --unset http.https://github.com/.extraheader;
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url origin "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
-
-    return command;
-  }
-
   get sha() {
     if (GITHUB_EVENT_NAME === 'pull_request')
       return github.context.payload.pull_request.head.sha;

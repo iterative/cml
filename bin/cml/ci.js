@@ -8,6 +8,7 @@ exports.description = 'Fixes specific CI setups';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
+  await cml.init();
   console.log((await cml.ci(opts)) || '');
 };
 
