@@ -1,7 +1,4 @@
 const kebabcaseKeys = require('kebabcase-keys');
-const fs = require('fs');
-const git = require('isomorphic-git');
-const http = require('isomorphic-git/http/node');
 
 const { GIT_REMOTE, GIT_USER_NAME, GIT_USER_EMAIL } = require('../../src/cml');
 const CML = require('../../src/cml').default;
@@ -10,15 +7,6 @@ exports.command = 'pr <glob path...>';
 exports.description = 'Create a pull request with the specified files';
 
 exports.handler = async (opts) => {
-  const gitpath = await git.findRoot({ fs, filepath: process.cwd() });
-  const gitops = { fs, http, dir: gitpath };
-  const sha = await git.resolveRef({ ...gitops, ref: 'HEAD' });
-  console.log(sha);
-
-  const path = await git.findRoot({ fs, filepath: process.cwd() });
-  console.log(path);
-  process.exit(1);
-
   const cml = new CML(opts);
   await cml.init();
   const link = await cml.prCreate({ ...opts, globs: opts.globpath });
