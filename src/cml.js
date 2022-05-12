@@ -1,8 +1,9 @@
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
+const path = require('path');
 
 const winston = require('winston');
 
@@ -69,8 +70,45 @@ const getDriver = (opts) => {
   throw new Error(`driver ${driver} unknown!`);
 };
 
+const fixGitSafeDirectory = () => {
+  const gitConfigSafeDirectory = (value) =>
+    spawnSync(
+      'git',
+      [
+        'config',
+        '--global',
+        value ? '--add' : '--get-all',
+        'safe.directory',
+        value
+      ],
+      {
+        encoding: 'utf8'
+      }
+    ).stdout;
+
+  const addSafeDirectory = (directory) =>
+    gitConfigSafeDirectory()
+      .split(/[\r\n]+/)
+      .includes(directory) || gitConfigSafeDirectory(directory);
+
+  // Fix for git>=2.36.0
+  addSafeDirectory('*');
+
+  // Fix for git^2.35.2
+  addSafeDirectory('/');
+  for (
+    let root, dir = process.cwd();
+    root !== dir;
+    { root, dir } = path.parse(dir)
+  ) {
+    addSafeDirectory(dir);
+  }
+};
+
 class CML {
   constructor(opts = {}) {
+    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
+
     const { driver, repo, token } = opts;
 
     this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
@@ -193,10 +231,10 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlabUploads, rmWatermark } = opts;
+    const { title = '', md, native, rmWatermark } = opts;
 
     let mime, uri;
-    if (native || gitlabUploads) {
+    if (native) {
       ({ mime, uri } = await getDriver(this).upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));

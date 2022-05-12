@@ -638,19 +638,17 @@ class Github {
 
     const workflowRuns = await octokitClient.paginate(
       octokitClient.actions.listWorkflowRunsForRepo,
-      { owner, repo }
+      { owner, repo, status }
     );
 
     let runJobs = await Promise.all(
-      workflowRuns
-        .filter(({ status: jobStatus }) => jobStatus === status)
-        .map(
-          async ({ id }) =>
-            await octokitClient.paginate(
-              octokitClient.actions.listJobsForWorkflowRun,
-              { owner, repo, run_id: id, status }
-            )
-        )
+      workflowRuns.map(
+        async ({ id }) =>
+          await octokitClient.paginate(
+            octokitClient.actions.listJobsForWorkflowRun,
+            { owner, repo, run_id: id, status }
+          )
+      )
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {
