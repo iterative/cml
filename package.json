@@ -120,6 +120,9 @@
     "testTimeout": 600000
   },
   "pkg": {
+    "options": [
+      "experimental-modules"
+    ],
     "bin": "bin/cml.js",
     "assets": [
       "**/*.js",
