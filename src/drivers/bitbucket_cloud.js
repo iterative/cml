@@ -119,7 +119,7 @@ class BitbucketCloud {
   }
 
   async runnerToken() {
-    return '';
+    return 'DUMMY';
   }
 
   async startRunner(opts) {
