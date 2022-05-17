@@ -35,9 +35,8 @@ describe('Non Enviromental tests', () => {
   });
 
   test('Runner token', async () => {
-    await expect(client.runnerToken()).rejects.toThrow(
-      'Bitbucket Cloud does not support runnerToken!'
-    );
+    const token = await client.runnerToken();
+    await expect(token).toBe('DUMMY');
   });
 
   test('updateGitConfig', async () => {
