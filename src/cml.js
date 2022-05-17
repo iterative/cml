@@ -268,14 +268,17 @@ class CML {
       }
 
       if (this.driver === BB) {
-        if (data.includes('runner state to executing step.')) {
+        const id = 'bb';
+        if (data.includes('Getting step StepId{accountUuid={')) {
+          log.job = id;
           log.status = 'job_started';
-        } else if (data.includes('Result{status=')) {
+        } else if (
+          data.includes('Completing step with result Result{status=')
+        ) {
+          log.job = id;
           log.status = 'job_ended';
           log.success = data.includes('status=PASSED');
-        } else if (
-          data.includes('Updating runner status to "ONLINE" and checking')
-        ) {
+        } else if (data.includes('Updating runner status to "ONLINE"')) {
           log.status = 'ready';
         }
 

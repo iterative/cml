@@ -8,7 +8,7 @@ const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
 const { backOff } = require('exponential-backoff');
 
-const { fetchUploadData, download, exec } = require('../utils');
+const { fetchUploadData, download, gpuPresent } = require('../utils');
 
 const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
 const API_VER = 'v4';
@@ -172,16 +172,7 @@ class Gitlab {
       dockerVolumes = []
     } = opts;
 
-    let gpu = true;
-    try {
-      await exec('nvidia-smi');
-    } catch (err) {
-      try {
-        await exec('cuda-smi');
-      } catch (err) {
-        gpu = false;
-      }
-    }
+    const gpu = await gpuPresent();
 
     try {
       const bin = resolve(workdir, 'gitlab-runner');

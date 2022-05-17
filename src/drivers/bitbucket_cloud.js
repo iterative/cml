@@ -4,7 +4,7 @@ const { URL } = require('url');
 const { spawn } = require('child_process');
 const ProxyAgent = require('proxy-agent');
 
-const { exec } = require('../utils');
+const { exec, gpuPresent } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
   process.env;
@@ -111,10 +111,12 @@ class BitbucketCloud {
         uuid,
         oauth_client: { id, secret }
       } = await this.registerRunner({ name, labels });
+
+      const gpu = await gpuPresent();
       const command = `docker container run -t -a stderr -a stdout --rm \
-      -v /tmp:/tmp \
       -v /var/run/docker.sock:/var/run/docker.sock \
       -v /var/lib/docker/containers:/var/lib/docker/containers:ro \
+      -v /tmp:/tmp \
       -e ACCOUNT_UUID=${accountId} \
       -e REPOSITORY_UUID=${repoId} \
       -e RUNNER_UUID=${uuid} \
@@ -122,6 +124,7 @@ class BitbucketCloud {
       -e OAUTH_CLIENT_SECRET=${secret} \
       -e WORKING_DIRECTORY=/tmp \
       --name ${name} \
+      ${gpu ? '--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all' : ''} \
       docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
 
       return spawn(command, { shell: true });
@@ -136,12 +139,25 @@ class BitbucketCloud {
 
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
 
-    return await this.request({
+    const request = await this.request({
       api: 'https://api.bitbucket.org/internal',
       endpoint,
       method: 'POST',
-      body: JSON.stringify({ labels: ['self.hosted'].concat(labels), name })
+      body: JSON.stringify({
+        labels: ['self.hosted'].concat(labels.split(',')),
+        name
+      })
     });
+
+    let registered = false;
+    while (!registered) {
+      const runner = (await this.runners()).find(
+        (runner) => runner.name === name
+      );
+      if (runner) registered = true;
+    }
+
+    return request;
   }
 
   async unregisterRunner(opts = {}) {
@@ -157,13 +173,11 @@ class BitbucketCloud {
       });
     } catch (err) {
       if (!err.message.includes('invalid json response body')) {
-        await exec(`docker stop ${name}`);
         throw err;
       }
-      winston.warn(`Deleting: ${err.message}`);
+    } finally {
+      await exec(`docker stop ${name}`);
     }
-
-    await exec(`docker stop ${name}`);
   }
 
   async runners(opts = {}) {
@@ -384,8 +398,8 @@ class BitbucketCloud {
   }
 
   async request(opts = {}) {
-    const { token, api } = this;
-    const { url, endpoint, method = 'GET', body } = opts;
+    const { token } = this;
+    const { url, endpoint, method = 'GET', body, api = this.api } = opts;
 
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
@@ -395,7 +409,6 @@ class BitbucketCloud {
     };
 
     const requestUrl = url || `${api}${endpoint}`;
-
     const response = await fetch(requestUrl, {
       method,
       headers,

@@ -406,6 +406,7 @@ const run = async (opts) => {
   try {
     winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
+    await fs.chmod(workdir, '777');
   } catch (err) {}
 
   if (cloud) await runCloud(opts);
