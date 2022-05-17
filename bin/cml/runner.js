@@ -121,6 +121,7 @@ const runCloud = async (opts) => {
 
     const { token, repo, driver } = cml;
     const {
+      tpiVersion,
       labels,
       idleTimeout,
       name,
@@ -156,6 +157,7 @@ const runCloud = async (opts) => {
           'GPU model "tesla" has been deprecated; please use "v100" instead.'
         );
       tpl = tf.iterativeCmlRunnerTpl({
+        tpiVersion,
         repo,
         token,
         driver,
@@ -278,7 +280,11 @@ const runLocal = async (opts) => {
 
           if (!job && !idle) {
             winston.error(
-              `Runner should be idle. Resetting jobs. Retrying in ${idleTimeout} secs`
+              `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
+            );
+            winston.warn(`CML GitHub driver response: ${JSON.stringify(job)}`);
+            winston.warn(
+              `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
             );
 
             RUNNER_JOBS_RUNNING = [];
@@ -286,7 +292,7 @@ const runLocal = async (opts) => {
 
           if (job && idle) {
             winston.error(
-              `Runner seems to be busy. Retrying in ${idleTimeout} secs`
+              `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
             );
 
             idle = false;
@@ -341,6 +347,7 @@ const run = async (opts) => {
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
+    tpiVersion,
     driver,
     repo,
     token,
@@ -368,7 +375,7 @@ const run = async (opts) => {
 
     await fs.mkdir(tfPath, { recursive: true });
     const tfMainPath = join(tfPath, 'main.tf');
-    const tpl = tf.iterativeProviderTpl();
+    const tpl = tf.iterativeProviderTpl({ tpiVersion });
     await fs.writeFile(tfMainPath, tpl);
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
@@ -433,6 +440,13 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
+      tpiVersion: {
+        type: 'string',
+        default: '>= 0.9.10',
+        description:
+          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
+        hidden: true
+      },
       dockerVolumes: {
         type: 'array',
         default: [],

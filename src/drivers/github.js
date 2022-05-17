@@ -352,7 +352,7 @@ class Github {
     const { pulls } = octokit(this.token, this.repo);
 
     const {
-      data: { html_url: htmlUrl, node_id: nodeId }
+      data: { html_url: htmlUrl, number }
     } = await pulls.create({
       owner,
       repo,
@@ -362,10 +362,12 @@ class Github {
       body
     });
 
-    if (autoMerge) {
-      await this.prAutoMerge({ pullRequestId: nodeId, base });
-    }
-
+    if (autoMerge)
+      await this.prAutoMerge({
+        pullRequestId: number,
+        mergeMode: autoMerge,
+        base
+      });
     return htmlUrl;
   }
 
@@ -395,45 +397,81 @@ class Github {
    * @param {{ pullRequestId: number, base: string }} param0
    * @returns {Promise<void>}
    */
-  async prAutoMerge({ pullRequestId, base }) {
+  async prAutoMerge({ pullRequestId, mergeMode, mergeMessage, base }) {
     const octo = octokit(this.token, this.repo);
     const graphql = withCustomRequest(octo.request);
-
+    const { owner, repo } = this.ownerRepo();
+    const [commitHeadline, commitBody] = mergeMessage
+      ? mergeMessage.split(/\n\n(.*)/s)
+      : [];
+    const {
+      data: { node_id: nodeId }
+    } = await octo.pulls.get({ owner, repo, pull_number: pullRequestId });
     try {
       await graphql(
         `
-          mutation autoMerge($pullRequestId: ID!) {
+          mutation autoMerge(
+            $pullRequestId: ID!
+            $mergeMethod: PullRequestMergeMethod
+            $commitHeadline: String
+            $commitBody: String
+          ) {
             enablePullRequestAutoMerge(
-              input: { pullRequestId: $pullRequestId }
+              input: {
+                pullRequestId: $pullRequestId
+                mergeMethod: $mergeMethod
+                commitHeadline: $commitHeadline
+                commitBody: $commitBody
+              }
             ) {
               clientMutationId
             }
           }
         `,
         {
-          pullRequestId
+          pullRequestId: nodeId,
+          mergeMethod: mergeMode.toUpperCase(),
+          commitHeadline,
+          commitBody
         }
       );
-    } catch (error) {
-      if (
-        error.message.includes("Can't enable auto-merge for this pull request")
-      ) {
-        const { owner, repo } = this.ownerRepo();
-        const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+    } catch (err) {
+      const tolerate = [
+        "Can't enable auto-merge for this pull request",
+        'Pull request Protected branch rules not configured for this branch',
+        'Pull request is in clean status'
+      ];
 
-        const isProtected = await this.isProtected({ branch: base });
-        if (!isProtected) {
-          throw new Error(
-            `Enabling Auto-Merge failed. Please set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches`
+      if (!tolerate.some((message) => err.message.includes(message))) throw err;
+
+      const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
+
+      try {
+        if (await this.isProtected({ branch: base })) {
+          winston.warn(
+            `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
+          );
+        } else {
+          winston.warn(
+            `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
           );
         }
-
-        throw new Error(
-          `Enabling Auto-Merge failed. Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge`
+      } catch (err) {
+        if (!err.message.includes('Resource not accessible by integration'))
+          throw err;
+        winston.warn(
+          `Failed to enable auto-merge. Trying to merge immediately...`
         );
       }
 
-      throw error;
+      await octo.pulls.merge({
+        owner,
+        repo,
+        pull_number: pullRequestId,
+        merge_method: mergeMode,
+        commit_title: commitHeadline,
+        commit_message: commitBody
+      });
     }
   }
 
@@ -592,32 +630,24 @@ class Github {
   async job(opts = {}) {
     const { time, runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const octokitClient = octokit(this.token, this.repo);
 
     let { status = 'queued' } = opts;
     if (status === 'running') status = 'in_progress';
 
-    const {
-      data: { workflow_runs: workflowRuns }
-    } = await actions.listWorkflowRunsForRepo({
-      owner,
-      repo,
-      status
-    });
+    const workflowRuns = await octokitClient.paginate(
+      octokitClient.actions.listWorkflowRunsForRepo,
+      { owner, repo, status }
+    );
 
     let runJobs = await Promise.all(
-      workflowRuns.map(async (run) => {
-        const {
-          data: { jobs }
-        } = await actions.listJobsForWorkflowRun({
-          owner,
-          repo,
-          run_id: run.id,
-          status
-        });
-
-        return jobs;
-      })
+      workflowRuns.map(
+        async ({ id }) =>
+          await octokitClient.paginate(
+            octokitClient.actions.listJobsForWorkflowRun,
+            { owner, repo, run_id: id, status }
+          )
+      )
     );
 
     runJobs = [].concat.apply([], runJobs).map((job) => {

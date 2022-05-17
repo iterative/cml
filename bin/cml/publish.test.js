@@ -6,37 +6,32 @@ describe('CML e2e', () => {
     const output = await exec(`node ./bin/cml.js publish --help`);
 
     expect(output).toMatchInlineSnapshot(`
-    "cml.js publish <asset>
+      "cml.js publish <asset>
 
-    Upload an image to build a report
+      Upload an image to build a report
 
-    Options:
-          --help                      Show help                            [boolean]
-          --version                   Show version number                  [boolean]
-          --log                       Maximum log level
-              [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-          --md                        Output in markdown format [title ||
-                                      name](url).                          [boolean]
-      -t, --title                     Markdown title [title](url) or ![](url title).
-                                                                            [string]
-          --native, --gitlab-uploads  Uses driver's native capabilities to upload
-                                      assets instead of CML's storage. Currently
-                                      only available for GitLab CI.        [boolean]
-          --rm-watermark              Avoid CML watermark.                 [boolean]
-          --mime-type                 Specifies the mime-type. If not set guess it
-                                      from the content.                     [string]
-      -f, --file                      Append the output to the given file. Create it
-                                      if does not exist.                    [string]
-          --repo                      Specifies the repo to be used. If not
-                                      specified is extracted from the CI ENV.
-                                                                            [string]
-          --token                     Personal access token to be used. If not
-                                      specified, extracted from ENV REPO_TOKEN,
-                                      GITLAB_TOKEN, GITHUB_TOKEN, or
-                                      BITBUCKET_TOKEN.                      [string]
-          --driver                    If not specify it infers it from the ENV.
-                                 [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
-  `);
+      Options:
+            --help          Show help                                        [boolean]
+            --version       Show version number                              [boolean]
+            --log           Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --md            Output in markdown format [title || name](url).  [boolean]
+        -t, --title         Markdown title [title](url) or ![](url title).    [string]
+            --native        Uses driver's native capabilities to upload assets instead
+                            of CML's storage. Not available on GitHub.       [boolean]
+            --rm-watermark  Avoid CML watermark.                             [boolean]
+            --mime-type     Specifies the mime-type. If not set guess it from the
+                            content.                                          [string]
+        -f, --file          Append the output to the given file. Create it if does not
+                            exist.                                            [string]
+            --repo          Specifies the repo to be used. If not specified is
+                            extracted from the CI ENV.                        [string]
+            --token         Personal access token to be used. If not specified,
+                            extracted from ENV REPO_TOKEN, GITLAB_TOKEN, GITHUB_TOKEN,
+                            or BITBUCKET_TOKEN.                               [string]
+            --driver        If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
+    `);
   });
 
   test('cml publish assets/logo.png --md', async () => {
@@ -115,12 +110,5 @@ describe('CML e2e', () => {
     await expect(
       exec('node ./bin/cml.js publish /nonexistent')
     ).rejects.toThrowError('ENOENT');
-  });
-
-  test('echo text | cml publish produces a plain text file', async () => {
-    const output = await exec(`echo none | node ./bin/cml.js publish`);
-
-    expect(output.startsWith('https://')).toBe(true);
-    expect(output.endsWith('plain')).toBe(true);
   });
 });

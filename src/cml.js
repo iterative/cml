@@ -1,8 +1,9 @@
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
-const git = require('simple-git/promise')('./');
+const git = require('simple-git')('./');
+const path = require('path');
 
 const winston = require('winston');
 
@@ -69,8 +70,45 @@ const getDriver = (opts) => {
   throw new Error(`driver ${driver} unknown!`);
 };
 
+const fixGitSafeDirectory = () => {
+  const gitConfigSafeDirectory = (value) =>
+    spawnSync(
+      'git',
+      [
+        'config',
+        '--global',
+        value ? '--add' : '--get-all',
+        'safe.directory',
+        value
+      ],
+      {
+        encoding: 'utf8'
+      }
+    ).stdout;
+
+  const addSafeDirectory = (directory) =>
+    gitConfigSafeDirectory()
+      .split(/[\r\n]+/)
+      .includes(directory) || gitConfigSafeDirectory(directory);
+
+  // Fix for git>=2.36.0
+  addSafeDirectory('*');
+
+  // Fix for git^2.35.2
+  addSafeDirectory('/');
+  for (
+    let root, dir = process.cwd();
+    root !== dir;
+    { root, dir } = path.parse(dir)
+  ) {
+    addSafeDirectory(dir);
+  }
+};
+
 class CML {
   constructor(opts = {}) {
+    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
+
     const { driver, repo, token } = opts;
 
     this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
@@ -193,10 +231,10 @@ class CML {
   }
 
   async publish(opts = {}) {
-    const { title = '', md, native, gitlabUploads, rmWatermark } = opts;
+    const { title = '', md, native, rmWatermark } = opts;
 
     let mime, uri;
-    if (native || gitlabUploads) {
+    if (native) {
       ({ mime, uri } = await getDriver(this).upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
@@ -344,11 +382,19 @@ class CML {
   }
 
   async ci(opts = {}) {
-    const { userEmail = GIT_USER_EMAIL, userName = GIT_USER_NAME } = opts;
+    const {
+      unshallow = false,
+      userEmail = GIT_USER_EMAIL,
+      userName = GIT_USER_NAME
+    } = opts;
 
     const driver = getDriver(this);
-    const command = await driver.updateGitConfig({ userName, userEmail });
-    await exec(command);
+    await exec(await driver.updateGitConfig({ userName, userEmail }));
+    if (unshallow) {
+      if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
+        await exec('git fetch --unshallow');
+      }
+    }
     await exec('git fetch --all');
   }
 
@@ -358,7 +404,9 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-      autoMerge
+      merge,
+      rebase,
+      squash
     } = opts;
 
     await this.ci(opts);
@@ -411,7 +459,7 @@ class CML {
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
       let commitMessage = `CML PR for ${shaShort}`;
-      if (!autoMerge) {
+      if (!(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
@@ -428,7 +476,13 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       target,
       title,
       description,
-      autoMerge
+      autoMerge: merge
+        ? 'merge'
+        : rebase
+        ? 'rebase'
+        : squash
+        ? 'squash'
+        : undefined
     });
 
     return renderPr(url);

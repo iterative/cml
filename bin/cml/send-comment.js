@@ -24,7 +24,8 @@ exports.builder = (yargs) =>
       commitSha: {
         type: 'string',
         alias: 'head-sha',
-        description: 'Commit SHA linked to this comment. Defaults to HEAD.'
+        default: 'HEAD',
+        description: 'Commit SHA linked to this comment'
       },
       update: {
         type: 'boolean',
