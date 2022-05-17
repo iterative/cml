@@ -298,7 +298,6 @@ class CML {
         } else if (duration) {
           log.status = 'job_ended';
           log.success = msg.includes('Job succeeded');
-          log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
         }
