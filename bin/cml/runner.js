@@ -14,6 +14,7 @@ let RUNNER;
 let RUNNER_ID;
 let RUNNER_JOBS_RUNNING = [];
 let RUNNER_SHUTTING_DOWN = false;
+let RUNNER_TIMER = 0;
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
@@ -273,44 +274,50 @@ const runLocal = async (opts) => {
   if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(async () => {
       let idle = RUNNER_JOBS_RUNNING.length === 0;
+      if (!idle) RUNNER_TIMER = 0;
+      RUNNER_TIMER++;
 
-      try {
-        if (cml.driver === 'github') {
-          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
+      if (RUNNER_TIMER === idleTimeout) {
+        try {
+          if (cml.driver === 'github') {
+            const job = await cml.runnerJob({ runnerId: RUNNER_ID });
 
-          if (!job && !idle) {
-            winston.error(
-              `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
-            );
-            winston.warn(`CML GitHub driver response: ${JSON.stringify(job)}`);
-            winston.warn(
-              `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
-            );
+            if (!job && !idle) {
+              winston.error(
+                `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
+              );
+              winston.warn(
+                `CML GitHub driver response: ${JSON.stringify(job)}`
+              );
+              winston.warn(
+                `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
+              );
 
-            RUNNER_JOBS_RUNNING = [];
+              RUNNER_JOBS_RUNNING = [];
+            }
+
+            if (job && idle) {
+              winston.error(
+                `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
+              );
+
+              idle = false;
+            }
           }
+        } catch (err) {
+          winston.error(
+            `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
+          );
 
-          if (job && idle) {
-            winston.error(
-              `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
-            );
-
-            idle = false;
-          }
+          idle = false;
         }
-      } catch (err) {
-        winston.error(
-          `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
-        );
 
-        idle = false;
+        if (idle) {
+          shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
+          clearInterval(watcher);
+        }
       }
-
-      if (idle) {
-        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
-        clearInterval(watcher);
-      }
-    }, idleTimeout * 1000);
+    }, 1000);
   }
 
   if (!noRetry) {
