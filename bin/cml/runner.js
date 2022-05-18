@@ -274,8 +274,6 @@ const runLocal = async (opts) => {
   if (parseInt(idleTimeout) > 0) {
     const watcher = setInterval(async () => {
       let idle = RUNNER_JOBS_RUNNING.length === 0;
-      if (!idle) RUNNER_TIMER = 0;
-      RUNNER_TIMER++;
 
       if (RUNNER_TIMER === idleTimeout) {
         try {
@@ -317,6 +315,9 @@ const runLocal = async (opts) => {
           clearInterval(watcher);
         }
       }
+
+      if (!idle) RUNNER_TIMER = 0;
+      RUNNER_TIMER++;
     }, 1000);
   }
 
