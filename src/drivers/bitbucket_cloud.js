@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 const FormData = require('form-data');
 const ProxyAgent = require('proxy-agent');
 
-const { fetchUploadData, exec, gpuPresent } = require('../utils');
+const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
   process.env;
@@ -175,6 +175,7 @@ class BitbucketCloud {
 
     let registered = false;
     while (!registered) {
+      await sleep(1);
       const runner = (await this.runners()).find(
         (runner) => runner.name === name
       );
