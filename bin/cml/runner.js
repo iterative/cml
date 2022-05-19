@@ -274,7 +274,7 @@ const runLocal = async (opts) => {
   const watcher = setInterval(async () => {
     let idle = RUNNER_JOBS_RUNNING.length === 0;
 
-    if (RUNNER_TIMER === idleTimeout) {
+    if (RUNNER_TIMER >= idleTimeout) {
       try {
         if (cml.driver === 'github') {
           const job = await cml.runnerJob({ runnerId: RUNNER_ID });
