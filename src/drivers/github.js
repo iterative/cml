@@ -261,8 +261,11 @@ class Github {
         const url = `https://github.com/actions/runner/releases/download/${ver}/actions-runner-${arch}-${ver.substring(
           1
         )}.tar.gz`;
+        console.log('downloading...');
         await download({ url, path: destination });
+        console.log('extracting');
         await tar.extract({ file: destination, cwd: workdir });
+        console.log('ready...');
         await exec(`chmod -R 777 ${workdir}`);
       }
 

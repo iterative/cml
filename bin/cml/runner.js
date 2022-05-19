@@ -313,10 +313,11 @@ const runLocal = async (opts) => {
         if (idle) {
           shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
           clearInterval(watcher);
+        } else {
+          RUNNER_TIMER = 0;
         }
       }
 
-      if (!idle) RUNNER_TIMER = 0;
       RUNNER_TIMER++;
     }, 1000);
   }
