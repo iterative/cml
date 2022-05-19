@@ -6,7 +6,10 @@ const { spawn } = require('child_process');
 const FormData = require('form-data');
 const ProxyAgent = require('proxy-agent');
 
-const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
+const { resolve } = require('path');
+const tar = require('tar');
+
+const { fetchUploadData, exec, download, sleep } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
   process.env;
@@ -124,7 +127,8 @@ class BitbucketCloud {
 
   async startRunner(opts) {
     const { projectPath } = this;
-    const { name, labels } = opts;
+    const { workdir, name, labels } = opts;
+    // const workdir = '/tmp';
 
     try {
       const { uuid: accountId } = await this.request({ endpoint: `/user` });
@@ -136,20 +140,39 @@ class BitbucketCloud {
         oauth_client: { id, secret }
       } = await this.registerRunner({ name, labels });
 
-      const gpu = await gpuPresent();
-      const command = `docker container run -t -a stderr -a stdout --rm \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-      -v /var/lib/docker/containers:/var/lib/docker/containers:ro \
-      -v /tmp:/tmp \
-      -e ACCOUNT_UUID=${accountId} \
-      -e REPOSITORY_UUID=${repoId} \
-      -e RUNNER_UUID=${uuid} \
-      -e OAUTH_CLIENT_ID=${id} \
-      -e OAUTH_CLIENT_SECRET=${secret} \
-      -e WORKING_DIRECTORY=/tmp \
-      --name ${name} \
-      ${gpu ? '--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all' : ''} \
-      docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
+      const destination = resolve(workdir, 'bb-runner.tar.gz');
+      const ver = '1.322';
+      const url = `https://product-downloads.atlassian.com/software/bitbucket/pipelines/atlassian-bitbucket-pipelines-runner-${ver}.tar.gz`;
+      await download({ url, path: destination });
+      await tar.extract({ file: destination, cwd: workdir });
+      await exec(`chmod -R 777 ${workdir}`);
+
+      const os = process.platform === 'darwin' ? 'macos' : 'linux';
+      if (os === 'linux') {
+        await exec(`
+sudo tee /usr/bin/retry << 'EOF'
+#!/bin/bash
+exec env GIT_LFS_SKIP_SMUDGE=1 "$\{@:2}"
+EOF'
+`);
+        await exec(`chmod 777 /usr/bin/retry`);
+      }
+
+      const command = `java -jar \
+      -Dbitbucket.pipelines.runner.account.uuid=${accountId} \
+      -Dbitbucket.pipelines.runner.repository.uuid=${repoId} \
+      -Dbitbucket.pipelines.runner.uuid=${uuid} \
+      -Dbitbucket.pipelines.runner.oauth.client.id=${id} \
+      -Dbitbucket.pipelines.runner.oauth.client.secret=${secret} \
+      -Dbitbucket.pipelines.runner.directory.working=${workdir}/temp \
+      -Dbitbucket.pipelines.runner.runtime=${os}-bash \
+      -Dbitbucket.pipelines.runner.docker.uri=unix:///var/run/docker.sock \
+      -Dbitbucket.pipelines.runner.scheduled.state.update.initial.delay.seconds=0 \
+      -Dbitbucket.pipelines.runner.scheduled.state.update.period.seconds=30 \
+      -Dbitbucket.pipelines.runner.environment=PRODUCTION \
+      -Dfile.encoding=UTF-8 \
+      -Dsun.jnu.encoding=UTF-8 \
+      ${workdir}/bin/runner.jar`;
 
       return spawn(command, { shell: true });
     } catch (err) {
@@ -159,7 +182,11 @@ class BitbucketCloud {
 
   async registerRunner(opts = {}) {
     const { projectPath } = this;
-    const { name, labels } = opts;
+    const { name, labels: labelsstr } = opts;
+
+    const labels = labelsstr.split(',');
+    const os = process.platform === 'darwin' ? 'macos' : 'linux';
+    labels.push(os);
 
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
 
@@ -168,7 +195,7 @@ class BitbucketCloud {
       endpoint,
       method: 'POST',
       body: JSON.stringify({
-        labels: ['self.hosted'].concat(labels.split(',')),
+        labels: ['self.hosted'].concat(labels),
         name
       })
     });
@@ -187,7 +214,7 @@ class BitbucketCloud {
 
   async unregisterRunner(opts = {}) {
     const { projectPath } = this;
-    const { runnerId, name } = opts;
+    const { runnerId } = opts;
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners/${runnerId}`;
 
     try {
@@ -200,8 +227,6 @@ class BitbucketCloud {
       if (!err.message.includes('invalid json response body')) {
         throw err;
       }
-    } finally {
-      await exec(`docker stop ${name}`);
     }
   }
 
