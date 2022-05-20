@@ -9,7 +9,7 @@ jobs:
       - uses: iterative/setup-cml@v1
       - name: Train model
         env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_TOKEN: ${{ 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 }}
         run: |
           pip install -r requirements.txt
           python train.py
