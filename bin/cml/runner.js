@@ -247,6 +247,7 @@ const runLocal = async (opts) => {
       RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
         (job) => job.id !== jobId
       );
+      RUNNER_TIMER = 0;
     }
   };
 
