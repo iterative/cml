@@ -145,7 +145,6 @@ class BitbucketCloud {
       const url = `https://product-downloads.atlassian.com/software/bitbucket/pipelines/atlassian-bitbucket-pipelines-runner-${ver}.tar.gz`;
       await download({ url, path: destination });
       await tar.extract({ file: destination, cwd: workdir });
-      await exec(`chmod -R 777 ${workdir}`);
 
       const os = process.platform === 'darwin' ? 'macos' : 'linux';
       if (os === 'linux') {
@@ -184,8 +183,8 @@ EOF'
     const { projectPath } = this;
     const { name, labels: labelsstr } = opts;
 
+    // const os = process.platform === 'darwin' ? 'macos' : 'linux';
     const labels = labelsstr.split(',');
-    const os = process.platform === 'darwin' ? 'macos' : 'linux';
     labels.push('macos');
 
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
