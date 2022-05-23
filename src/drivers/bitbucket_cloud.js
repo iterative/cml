@@ -127,8 +127,8 @@ class BitbucketCloud {
 
   async startRunner(opts) {
     const { projectPath } = this;
-    const { workdir, name, labels } = opts;
-    // const workdir = '/tmp';
+    const { name, labels } = opts;
+    const workdir = '/tmp';
 
     try {
       const { uuid: accountId } = await this.request({ endpoint: `/user` });
