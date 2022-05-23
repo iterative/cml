@@ -150,7 +150,7 @@ class BitbucketCloud {
       const os = process.platform === 'darwin' ? 'macos' : 'linux';
       //       if (os === 'linux') {
       //         await exec(`
-      // sudo tee /usr/bin/retry << 'EOF'
+      // tee /usr/bin/retry << 'EOF'
       // #!/bin/bash
       // exec env GIT_LFS_SKIP_SMUDGE=1 "$\{@:2}"
       // EOF'
@@ -164,7 +164,7 @@ class BitbucketCloud {
       -Dbitbucket.pipelines.runner.uuid=${uuid} \
       -Dbitbucket.pipelines.runner.oauth.client.id=${id} \
       -Dbitbucket.pipelines.runner.oauth.client.secret=${secret} \
-      -Dbitbucket.pipelines.runner.directory.working=./temp \
+      -Dbitbucket.pipelines.runner.directory.working=/tmp \
       -Dbitbucket.pipelines.runner.runtime=${os}-bash \
       -Dbitbucket.pipelines.runner.docker.uri=unix:///var/run/docker.sock \
       -Dbitbucket.pipelines.runner.scheduled.state.update.initial.delay.seconds=0 \
