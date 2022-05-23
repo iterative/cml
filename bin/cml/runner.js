@@ -246,6 +246,10 @@ const runLocal = async (opts) => {
       RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
         (job) => job.id !== jobId
       );
+
+      if (single && cml.driver === 'bitbucket') {
+        await shutdown({ ...opts, reason: 'single job' });
+      }
     }
   };
 
