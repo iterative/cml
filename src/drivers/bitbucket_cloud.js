@@ -148,15 +148,15 @@ class BitbucketCloud {
       await exec(`chmod -R 777 ${workdir}`);
 
       const os = process.platform === 'darwin' ? 'macos' : 'linux';
-      if (os === 'linux') {
-        await exec(`
-sudo tee /usr/bin/retry << 'EOF'
-#!/bin/bash
-exec env GIT_LFS_SKIP_SMUDGE=1 "$\{@:2}"
-EOF'
-`);
-        await exec(`chmod 777 /usr/bin/retry`);
-      }
+      //       if (os === 'linux') {
+      //         await exec(`
+      // sudo tee /usr/bin/retry << 'EOF'
+      // #!/bin/bash
+      // exec env GIT_LFS_SKIP_SMUDGE=1 "$\{@:2}"
+      // EOF'
+      // `);
+      //         await exec(`chmod 777 /usr/bin/retry`);
+      //       }
 
       const command = `java -jar \
       -Dbitbucket.pipelines.runner.account.uuid=${accountId} \
@@ -164,7 +164,7 @@ EOF'
       -Dbitbucket.pipelines.runner.uuid=${uuid} \
       -Dbitbucket.pipelines.runner.oauth.client.id=${id} \
       -Dbitbucket.pipelines.runner.oauth.client.secret=${secret} \
-      -Dbitbucket.pipelines.runner.directory.working=${workdir}/temp \
+      -Dbitbucket.pipelines.runner.directory.working=./temp \
       -Dbitbucket.pipelines.runner.runtime=${os}-bash \
       -Dbitbucket.pipelines.runner.docker.uri=unix:///var/run/docker.sock \
       -Dbitbucket.pipelines.runner.scheduled.state.update.initial.delay.seconds=0 \
