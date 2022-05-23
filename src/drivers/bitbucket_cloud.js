@@ -124,7 +124,11 @@ class BitbucketCloud {
 
   async startRunner(opts) {
     const { projectPath } = this;
-    const { name, labels } = opts;
+    const { workdir, name, labels } = opts;
+
+    winston.warn(
+      `Bitbucket runner is working under /tmp folder and not under ${workdir} as expected`
+    );
 
     try {
       const { uuid: accountId } = await this.request({ endpoint: `/user` });

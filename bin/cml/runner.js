@@ -70,7 +70,7 @@ const shutdown = async (opts) => {
     if (!dockerMachine) return;
 
     winston.info('docker-machine destroy...');
-    winston.warning(
+    winston.warn(
       'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
     );
     try {
@@ -413,8 +413,10 @@ const run = async (opts) => {
   try {
     winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
-    await fs.chmod(workdir, '777');
-  } catch (err) {}
+    await fs.chmod(workdir, '766');
+  } catch (err) {
+    winston.warn(err.message);
+  }
 
   if (cloud) await runCloud(opts);
   else await runLocal(opts);
