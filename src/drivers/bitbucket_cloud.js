@@ -164,7 +164,7 @@ EOF'
       -Dbitbucket.pipelines.runner.oauth.client.id=${id} \
       -Dbitbucket.pipelines.runner.oauth.client.secret=${secret} \
       -Dbitbucket.pipelines.runner.directory.working=/tmp \
-      -Dbitbucket.pipelines.runner.runtime=macos-bash \
+      -Dbitbucket.pipelines.runner.runtime=${os}-bash \
       -Dbitbucket.pipelines.runner.docker.uri=unix:///var/run/docker.sock \
       -Dbitbucket.pipelines.runner.scheduled.state.update.initial.delay.seconds=0 \
       -Dbitbucket.pipelines.runner.scheduled.state.update.period.seconds=30 \
@@ -183,9 +183,9 @@ EOF'
     const { projectPath } = this;
     const { name, labels: labelsstr } = opts;
 
-    // const os = process.platform === 'darwin' ? 'macos' : 'linux';
+    const os = process.platform === 'darwin' ? 'macos' : 'linux';
     const labels = labelsstr.split(',');
-    labels.push('macos');
+    labels.push(os);
 
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
 
