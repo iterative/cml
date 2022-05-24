@@ -6,7 +6,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 const CML = require('../../src/cml').default;
-const { exec, randid, sleep } = require('../../src/utils');
+const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
 
 let cml;
@@ -28,8 +28,7 @@ const shutdown = async (opts) => {
     tfResource,
     noRetry,
     reason,
-    destroyDelay,
-    dockerMachine
+    destroyDelay
   } = opts;
   const tfPath = workdir;
 
@@ -67,20 +66,6 @@ const shutdown = async (opts) => {
     }
   };
 
-  const destroyDockerMachine = async () => {
-    if (!dockerMachine) return;
-
-    winston.info('docker-machine destroy...');
-    winston.warning(
-      'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
-    );
-    try {
-      await exec(`echo y | docker-machine rm ${dockerMachine}`);
-    } catch (err) {
-      winston.error(`\tFailed shutting down docker machine: ${err.message}`);
-    }
-  };
-
   const destroyTerraform = async () => {
     if (!tfResource) return;
 
@@ -107,8 +92,6 @@ const shutdown = async (opts) => {
     } catch (err) {
       winston.error(`Error connecting the SCM: ${err.message}`);
     }
-
-    await destroyDockerMachine();
   }
 
   await destroyTerraform();
@@ -605,11 +588,6 @@ exports.builder = (yargs) =>
         hidden: true,
         description:
           'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
-      },
-      dockerMachine: {
-        type: 'string',
-        hidden: true,
-        description: 'Legacy docker-machine environment variable'
       },
       workdir: {
         type: 'string',
