@@ -231,6 +231,10 @@ const runLocal = async (opts) => {
         (job) => job.id !== jobId
       );
       RUNNER_TIMER = 0;
+
+      if (single && cml.driver === 'bitbucket') {
+        await shutdown({ ...opts, reason: 'single job' });
+      }
     }
   };
 
@@ -406,7 +410,10 @@ const run = async (opts) => {
   try {
     winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
-  } catch (err) {}
+    await fs.chmod(workdir, '766');
+  } catch (err) {
+    winston.warn(err.message);
+  }
 
   if (cloud) await runCloud(opts);
   else await runLocal(opts);
@@ -480,7 +487,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab'],
+        choices: ['github', 'gitlab', 'bitbucket'],
         description:
           'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
       },
