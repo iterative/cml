@@ -21,14 +21,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const {
-    name,
-    workdir = '',
-    tfResource,
-    noRetry,
-    reason,
-    destroyDelay
-  } = opts;
+  const { name, workdir = '', tfResource, noRetry, reason } = opts;
   const tfPath = workdir;
 
   const unregisterRunner = async () => {
@@ -36,8 +29,8 @@ const shutdown = async (opts) => {
 
     try {
       winston.info(`Unregistering runner ${name}...`);
-      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
+      RUNNER && RUNNER.kill('SIGINT');
       winston.info('\tSuccess');
     } catch (err) {
       winston.error(`\tFailed: ${err.message}`);
@@ -80,9 +73,6 @@ const shutdown = async (opts) => {
   } else {
     winston.info('runner status', { reason, status: 'terminated' });
   }
-
-  winston.info(`waiting ${destroyDelay} seconds before exiting...`);
-  await sleep(destroyDelay);
 
   if (!cloud) {
     try {
@@ -413,6 +403,7 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
+  const { destroyDelay } = opts;
   if (process.env.RUNNER_NAME) {
     winston.warn(
       'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
@@ -421,6 +412,8 @@ exports.handler = async (opts) => {
   try {
     await run(opts);
   } catch (error) {
+    winston.info(`waiting ${destroyDelay} seconds before exiting...`);
+    await sleep(destroyDelay);
     await shutdown({ ...opts, error });
     throw error;
   }
