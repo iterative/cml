@@ -263,7 +263,6 @@ class Github {
         )}.tar.gz`;
         await download({ url, path: destination });
         await tar.extract({ file: destination, cwd: workdir });
-        await exec(`chmod -R 777 ${workdir}`);
       }
 
       await exec(
@@ -447,13 +446,21 @@ class Github {
 
       const settingsUrl = `https://github.com/${owner}/${repo}/settings`;
 
-      if (await this.isProtected({ branch: base })) {
+      try {
+        if (await this.isProtected({ branch: base })) {
+          winston.warn(
+            `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
+          );
+        } else {
+          winston.warn(
+            `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
+          );
+        }
+      } catch (err) {
+        if (!err.message.includes('Resource not accessible by integration'))
+          throw err;
         winston.warn(
-          `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
-        );
-      } else {
-        winston.warn(
-          `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
+          `Failed to enable auto-merge. Trying to merge immediately...`
         );
       }
 

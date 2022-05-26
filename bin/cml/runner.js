@@ -6,7 +6,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 const CML = require('../../src/cml').default;
-const { exec, randid, sleep } = require('../../src/utils');
+const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
 
 let cml;
@@ -14,6 +14,7 @@ let RUNNER;
 let RUNNER_ID;
 let RUNNER_JOBS_RUNNING = [];
 let RUNNER_SHUTTING_DOWN = false;
+let RUNNER_TIMER = 0;
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
@@ -27,8 +28,7 @@ const shutdown = async (opts) => {
     tfResource,
     noRetry,
     reason,
-    destroyDelay,
-    dockerMachine
+    destroyDelay
   } = opts;
   const tfPath = workdir;
 
@@ -66,20 +66,6 @@ const shutdown = async (opts) => {
     }
   };
 
-  const destroyDockerMachine = async () => {
-    if (!dockerMachine) return;
-
-    winston.info('docker-machine destroy...');
-    winston.warning(
-      'Docker machine is deprecated and will be removed!! Check how to deploy using our tf provider.'
-    );
-    try {
-      await exec(`echo y | docker-machine rm ${dockerMachine}`);
-    } catch (err) {
-      winston.error(`\tFailed shutting down docker machine: ${err.message}`);
-    }
-  };
-
   const destroyTerraform = async () => {
     if (!tfResource) return;
 
@@ -106,8 +92,6 @@ const shutdown = async (opts) => {
     } catch (err) {
       winston.error(`Error connecting the SCM: ${err.message}`);
     }
-
-    await destroyDockerMachine();
   }
 
   await destroyTerraform();
@@ -246,6 +230,11 @@ const runLocal = async (opts) => {
       RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
         (job) => job.id !== jobId
       );
+      RUNNER_TIMER = 0;
+
+      if (single && cml.driver === 'bitbucket') {
+        await shutdown({ ...opts, reason: 'single job' });
+      }
     }
   };
 
@@ -270,47 +259,55 @@ const runLocal = async (opts) => {
   RUNNER = proc;
   ({ id: RUNNER_ID } = await cml.runnerByName({ name }));
 
-  if (parseInt(idleTimeout) > 0) {
+  if (idleTimeout > 0) {
     const watcher = setInterval(async () => {
       let idle = RUNNER_JOBS_RUNNING.length === 0;
 
-      try {
-        if (cml.driver === 'github') {
-          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
+      if (RUNNER_TIMER >= idleTimeout) {
+        try {
+          if (cml.driver === 'github') {
+            const job = await cml.runnerJob({ runnerId: RUNNER_ID });
 
-          if (!job && !idle) {
-            winston.error(
-              `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
-            );
-            winston.warn(`CML GitHub driver response: ${JSON.stringify(job)}`);
-            winston.warn(
-              `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
-            );
+            if (!job && !idle) {
+              winston.error(
+                `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
+              );
+              winston.warn(
+                `CML GitHub driver response: ${JSON.stringify(job)}`
+              );
+              winston.warn(
+                `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
+              );
 
-            RUNNER_JOBS_RUNNING = [];
+              RUNNER_JOBS_RUNNING = [];
+            }
+
+            if (job && idle) {
+              winston.error(
+                `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
+              );
+
+              idle = false;
+            }
           }
+        } catch (err) {
+          winston.error(
+            `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
+          );
 
-          if (job && idle) {
-            winston.error(
-              `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
-            );
-
-            idle = false;
-          }
+          idle = false;
         }
-      } catch (err) {
-        winston.error(
-          `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
-        );
 
-        idle = false;
+        if (idle) {
+          shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
+          clearInterval(watcher);
+        } else {
+          RUNNER_TIMER = 0;
+        }
       }
 
-      if (idle) {
-        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
-        clearInterval(watcher);
-      }
-    }, idleTimeout * 1000);
+      RUNNER_TIMER++;
+    }, 1000);
   }
 
   if (!noRetry) {
@@ -413,7 +410,10 @@ const run = async (opts) => {
   try {
     winston.info(`Preparing workdir ${workdir}...`);
     await fs.mkdir(workdir, { recursive: true });
-  } catch (err) {}
+    await fs.chmod(workdir, '766');
+  } catch (err) {
+    winston.warn(err.message);
+  }
 
   if (cloud) await runCloud(opts);
   else await runLocal(opts);
@@ -487,7 +487,7 @@ exports.builder = (yargs) =>
       },
       driver: {
         type: 'string',
-        choices: ['github', 'gitlab'],
+        choices: ['github', 'gitlab', 'bitbucket'],
         description:
           'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
       },
@@ -595,11 +595,6 @@ exports.builder = (yargs) =>
         hidden: true,
         description:
           'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
-      },
-      dockerMachine: {
-        type: 'string',
-        hidden: true,
-        description: 'Legacy docker-machine environment variable'
       },
       workdir: {
         type: 'string',

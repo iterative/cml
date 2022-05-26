@@ -164,6 +164,21 @@ const sshConnection = async (opts) => {
   return ssh;
 };
 
+const gpuPresent = async () => {
+  let gpu = true;
+  try {
+    await exec('nvidia-smi');
+  } catch (err) {
+    try {
+      await exec('cuda-smi');
+    } catch (err) {
+      gpu = false;
+    }
+  }
+
+  return gpu;
+};
+
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;
@@ -173,3 +188,4 @@ exports.isProcRunning = isProcRunning;
 exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
+exports.gpuPresent = gpuPresent;
