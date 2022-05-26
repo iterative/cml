@@ -21,7 +21,15 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const { name, workdir = '', tfResource, noRetry, reason } = opts;
+  const {
+    name,
+    workdir = '',
+    tfResource,
+    noRetry,
+    reason,
+    destroyDelay,
+    destroyDelayed
+  } = opts;
   const tfPath = workdir;
 
   const unregisterRunner = async () => {
@@ -60,6 +68,11 @@ const shutdown = async (opts) => {
 
   const destroyTerraform = async () => {
     if (!tfResource) return;
+
+    if (destroyDelayed) {
+      winston.info(`Waiting ${destroyDelay} seconds to destroy`);
+      await sleep(destroyDelay);
+    }
 
     try {
       winston.debug(await tf.destroy({ dir: tfPath }));
@@ -403,7 +416,6 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
-  const { destroyDelay } = opts;
   if (process.env.RUNNER_NAME) {
     winston.warn(
       'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
@@ -412,10 +424,7 @@ exports.handler = async (opts) => {
   try {
     await run(opts);
   } catch (error) {
-    winston.info(`waiting ${destroyDelay} seconds before exiting...`);
-    await sleep(destroyDelay);
-    await shutdown({ ...opts, error });
-    throw error;
+    await shutdown({ ...opts, error, destroyDelayed: true });
   }
 };
 
