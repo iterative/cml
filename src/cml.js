@@ -4,6 +4,7 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
+const fs = require('fs');
 
 const winston = require('winston');
 
@@ -20,6 +21,8 @@ const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
+
+const paths = new Set();
 
 const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -146,7 +149,10 @@ class CML {
       commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
-      pr
+      pr,
+      publish,
+      markdownfile,
+      watch
     } = opts;
 
     const commitSha =
@@ -159,8 +165,42 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    const report = `${userReport}\n\n${watermark}`;
+    let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
+
+    const { remark } = await import('remark');
+    const { visit } = await import('unist-util-visit');
+
+    paths.add(markdownfile);
+
+    const publishLocalFiles = () => async (tree) => {
+      const nodes = [];
+
+      visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
+
+      const visitor = async (node) => {
+        if (node.url && node.alt !== 'CML watermark') {
+          try {
+            await fs.promises.access(node.url, fs.constants.F_OK);
+          } catch {
+            return;
+          }
+          node.url = await this.publish({ ...opts, path: node.url });
+          paths.add(node.url);
+        }
+      };
+
+      await Promise.all(nodes.map(visitor));
+    };
+
+    if (publish)
+      report = String(await remark().use(publishLocalFiles).process(report));
+
+    if (watch)
+      setInterval(() => {
+        console.log('updating report...');
+        this.commentCreate({ ...opts, update: true, watch: false });
+      }, 16384); // TODO: use a proper file watcher on the `paths` set
 
     let comment;
     const updatableComment = (comments) => {

@@ -27,6 +27,20 @@ exports.builder = (yargs) =>
         default: 'HEAD',
         description: 'Commit SHA linked to this comment'
       },
+      publish: {
+        type: 'boolean',
+        description:
+          'Upload local files and images linked from the Markdown report'
+      },
+      watch: {
+        type: 'boolean',
+        description: 'Watch for changes and automatically update the report'
+      },
+      native: {
+        type: 'boolean',
+        description:
+          "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
+      },
       update: {
         type: 'boolean',
         description:
