@@ -68,7 +68,7 @@ requirement.
 ### Bitbucket
 
 Please see our docs on
-[CML with Bitbucket Cloud](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).
+[CML with Bitbucket Cloud](https://cml.dev/doc/usage?tab=Bitbucket).
 
 ### GitHub
 
