@@ -125,47 +125,42 @@ const runCloud = async (opts) => {
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
       cloudAwsSubnet: awsSubnet,
-      tfFile,
       workdir
     } = opts;
+
+    if (gpu === 'tesla')
+      winston.warn(
+        'GPU model "tesla" has been deprecated; please use "v100" instead.'
+      );
 
     const tfPath = workdir;
     const tfMainPath = join(tfPath, 'main.tf');
 
-    let tpl;
-    if (tfFile) {
-      tpl = await fs.writeFile(tfMainPath, await fs.readFile(tfFile));
-    } else {
-      if (gpu === 'tesla')
-        winston.warn(
-          'GPU model "tesla" has been deprecated; please use "v100" instead.'
-        );
-      tpl = tf.iterativeCmlRunnerTpl({
-        tpiVersion,
-        repo,
-        token,
-        driver,
-        labels,
-        cmlVersion,
-        idleTimeout,
-        name,
-        single,
-        cloud,
-        region,
-        type,
-        permissionSet,
-        metadata,
-        gpu: gpu === 'tesla' ? 'v100' : gpu,
-        hddSize,
-        sshPrivate,
-        spot,
-        spotPrice,
-        startupScript,
-        awsSecurityGroup,
-        awsSubnet,
-        dockerVolumes
-      });
-    }
+    const tpl = tf.iterativeCmlRunnerTpl({
+      tpiVersion,
+      repo,
+      token,
+      driver,
+      labels,
+      cmlVersion,
+      idleTimeout,
+      name,
+      single,
+      cloud,
+      region,
+      type,
+      permissionSet,
+      metadata,
+      gpu: gpu === 'tesla' ? 'v100' : gpu,
+      hddSize,
+      sshPrivate,
+      spot,
+      spotPrice,
+      startupScript,
+      awsSecurityGroup,
+      awsSubnet,
+      dockerVolumes
+    });
 
     await fs.writeFile(tfMainPath, tpl);
     await tf.init({ dir: tfPath });
