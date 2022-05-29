@@ -37,8 +37,8 @@ const shutdown = async (opts) => {
 
     try {
       winston.info(`Unregistering runner ${name}...`);
-      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
+      RUNNER && RUNNER.kill('SIGINT');
       winston.info('\tSuccess');
     } catch (err) {
       winston.error(`\tFailed: ${err.message}`);
@@ -69,6 +69,9 @@ const shutdown = async (opts) => {
   const destroyTerraform = async () => {
     if (!tfResource) return;
 
+    winston.info(`Waiting ${destroyDelay} seconds to destroy`);
+    await sleep(destroyDelay);
+
     try {
       winston.debug(await tf.destroy({ dir: tfPath }));
     } catch (err) {
@@ -81,9 +84,6 @@ const shutdown = async (opts) => {
   } else {
     winston.info('runner status', { reason, status: 'terminated' });
   }
-
-  winston.info(`waiting ${destroyDelay} seconds before exiting...`);
-  await sleep(destroyDelay);
 
   if (!cloud) {
     try {
@@ -125,47 +125,42 @@ const runCloud = async (opts) => {
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
       cloudAwsSubnet: awsSubnet,
-      tfFile,
       workdir
     } = opts;
+
+    if (gpu === 'tesla')
+      winston.warn(
+        'GPU model "tesla" has been deprecated; please use "v100" instead.'
+      );
 
     const tfPath = workdir;
     const tfMainPath = join(tfPath, 'main.tf');
 
-    let tpl;
-    if (tfFile) {
-      tpl = await fs.writeFile(tfMainPath, await fs.readFile(tfFile));
-    } else {
-      if (gpu === 'tesla')
-        winston.warn(
-          'GPU model "tesla" has been deprecated; please use "v100" instead.'
-        );
-      tpl = tf.iterativeCmlRunnerTpl({
-        tpiVersion,
-        repo,
-        token,
-        driver,
-        labels,
-        cmlVersion,
-        idleTimeout,
-        name,
-        single,
-        cloud,
-        region,
-        type,
-        permissionSet,
-        metadata,
-        gpu: gpu === 'tesla' ? 'v100' : gpu,
-        hddSize,
-        sshPrivate,
-        spot,
-        spotPrice,
-        startupScript,
-        awsSecurityGroup,
-        awsSubnet,
-        dockerVolumes
-      });
-    }
+    const tpl = tf.iterativeCmlRunnerTpl({
+      tpiVersion,
+      repo,
+      token,
+      driver,
+      labels,
+      cmlVersion,
+      idleTimeout,
+      name,
+      single,
+      cloud,
+      region,
+      type,
+      permissionSet,
+      metadata,
+      gpu: gpu === 'tesla' ? 'v100' : gpu,
+      hddSize,
+      sshPrivate,
+      spot,
+      spotPrice,
+      startupScript,
+      awsSecurityGroup,
+      awsSubnet,
+      dockerVolumes
+    });
 
     await fs.writeFile(tfMainPath, tpl);
     await tf.init({ dir: tfPath });
@@ -432,7 +427,6 @@ exports.handler = async (opts) => {
     await run(opts);
   } catch (error) {
     await shutdown({ ...opts, error });
-    throw error;
   }
 };
 
