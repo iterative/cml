@@ -340,7 +340,7 @@ class CML {
 
   async unregisterRunner(opts = {}) {
     const { id: runnerId } = (await this.runnerByName(opts)) || {};
-    if (!runnerId) throw new Error(`Runner with id ${runnerId} not found`);
+    if (!runnerId) throw new Error(`Runner not found`);
 
     return await getDriver(this).unregisterRunner({ runnerId, ...opts });
   }

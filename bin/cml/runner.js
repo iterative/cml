@@ -28,8 +28,7 @@ const shutdown = async (opts) => {
     tfResource,
     noRetry,
     reason,
-    destroyDelay,
-    single
+    destroyDelay
   } = opts;
   const tfPath = workdir;
 
@@ -42,13 +41,7 @@ const shutdown = async (opts) => {
       RUNNER && RUNNER.kill('SIGINT');
       winston.info('\tSuccess');
     } catch (err) {
-      if (single) {
-        winston.warn(
-          `\tFailed: Runner in --single mode, might have cleared itself.`
-        );
-      } else {
-        winston.error(`\tFailed: ${err.message}`);
-      }
+      winston.error(`\tFailed: ${err.message}`);
     }
   };
 
