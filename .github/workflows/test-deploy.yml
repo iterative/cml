@@ -40,6 +40,7 @@ jobs:
       - run: npm ci
       - run: |
           export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python 
+          pip install -I protobuf==3.20.1
           npm run test
         env:
           GITHUB_TOKEN: ${{ github.token }}
