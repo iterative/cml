@@ -36,12 +36,11 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - run: pip install tensorboard
-      - run: npm ci
       - run: |
-          export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python 
+          pip install tensorboard
           pip install -I protobuf==3.20.1
-          npm run test
+      - run: npm ci
+      - run: npm run test
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
