@@ -5,6 +5,8 @@ const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
 const fs = require('fs');
+const chokidar = require('chokidar');
+const uuid = require('uuid');
 
 const winston = require('winston');
 
@@ -22,7 +24,19 @@ const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
 
-const paths = new Set();
+const session = uuid.v4();
+
+const watcher = chokidar.watch([], {
+  persistent: true,
+  followSymlinks: true,
+  disableGlobbing: true,
+  ignoreInitial: true
+  // FIXME: desirable, disabled because it triggers forever
+  // awaitWriteFinish: {
+  //   stabilityThreshold: 4000,
+  //   pollInterval: 1000
+  // }
+});
 
 const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -145,13 +159,13 @@ class CML {
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {
-      report: userReport,
       commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
       pr,
       publish,
       markdownfile,
+      report: testReport,
       watch
     } = opts;
 
@@ -165,13 +179,20 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
+    const userReport =
+      testReport || (await fs.promises.readFile(markdownfile, 'utf-8'));
     let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
 
     const { remark } = await import('remark');
     const { visit } = await import('unist-util-visit');
 
-    paths.add(markdownfile);
+    if (watch) {
+      watcher.on('all', (event, path) => {
+        winston.info(`updating report: ${event} ${path}`);
+        this.commentCreate({ ...opts, update: true, watch: false });
+      });
+    }
 
     const publishLocalFiles = () => async (tree) => {
       const nodes = [];
@@ -180,13 +201,12 @@ class CML {
 
       const visitor = async (node) => {
         if (node.url && node.alt !== 'CML watermark') {
-          try {
-            await fs.promises.access(node.url, fs.constants.F_OK);
-          } catch {
-            return;
+          if (watch) {
+            watcher.add(node.url);
           }
-          node.url = await this.publish({ ...opts, path: node.url });
-          paths.add(node.url);
+          try {
+            node.url = await this.publish({ ...opts, path: node.url, session });
+          } catch {} // file may not exist (yet)
         }
       };
 
@@ -196,11 +216,11 @@ class CML {
     if (publish)
       report = String(await remark().use(publishLocalFiles).process(report));
 
-    if (watch)
-      setInterval(() => {
-        console.log('updating report...');
-        this.commentCreate({ ...opts, update: true, watch: false });
-      }, 16384); // TODO: use a proper file watcher on the `paths` set
+    if (watch) {
+      watcher.add(markdownfile);
+      winston.info('watching for file changes...');
+      await new Promise((resolve) => resolve); // wait forever
+    }
 
     let comment;
     const updatableComment = (comments) => {

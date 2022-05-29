@@ -1,3 +1,0 @@
-## Report
-
-![](./assets/logo.png)

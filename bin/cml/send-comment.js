@@ -1,4 +1,3 @@
-const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 
 const CML = require('../../src/cml').default;
@@ -7,10 +6,8 @@ exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
-  const path = opts.markdownfile;
-  const report = await fs.readFile(path, 'utf-8');
   const cml = new CML(opts);
-  console.log(await cml.commentCreate({ ...opts, report }));
+  console.log(await cml.commentCreate(opts));
 };
 
 exports.builder = (yargs) =>
