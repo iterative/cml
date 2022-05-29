@@ -37,8 +37,8 @@ const shutdown = async (opts) => {
 
     try {
       winston.info(`Unregistering runner ${name}...`);
-      RUNNER && RUNNER.kill('SIGINT');
       await cml.unregisterRunner({ name });
+      RUNNER && RUNNER.kill('SIGINT');
       winston.info('\tSuccess');
     } catch (err) {
       winston.error(`\tFailed: ${err.message}`);
@@ -69,6 +69,9 @@ const shutdown = async (opts) => {
   const destroyTerraform = async () => {
     if (!tfResource) return;
 
+    winston.info(`Waiting ${destroyDelay} seconds to destroy`);
+    await sleep(destroyDelay);
+
     try {
       winston.debug(await tf.destroy({ dir: tfPath }));
     } catch (err) {
@@ -81,9 +84,6 @@ const shutdown = async (opts) => {
   } else {
     winston.info('runner status', { reason, status: 'terminated' });
   }
-
-  winston.info(`waiting ${destroyDelay} seconds before exiting...`);
-  await sleep(destroyDelay);
 
   if (!cloud) {
     try {
@@ -427,7 +427,6 @@ exports.handler = async (opts) => {
     await run(opts);
   } catch (error) {
     await shutdown({ ...opts, error });
-    throw error;
   }
 };
 
