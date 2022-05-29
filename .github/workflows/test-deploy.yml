@@ -38,7 +38,7 @@ jobs:
           python-version: 3.9
       - run: pip install tensorboard
       - run: npm ci
-      - run: npm run test
+      - run: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python npm run test
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
