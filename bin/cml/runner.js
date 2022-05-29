@@ -28,7 +28,7 @@ const shutdown = async (opts) => {
     noRetry,
     reason,
     destroyDelay,
-    destroyDelayed
+    single
   } = opts;
   const tfPath = workdir;
 
@@ -41,7 +41,13 @@ const shutdown = async (opts) => {
       RUNNER && RUNNER.kill('SIGINT');
       winston.info('\tSuccess');
     } catch (err) {
-      winston.error(`\tFailed: ${err.message}`);
+      if (single) {
+        winston.warn(
+          `\tFailed: Runner in --single mode, might have cleared itself.`
+        );
+      } else {
+        winston.error(`\tFailed: ${err.message}`);
+      }
     }
   };
 
@@ -69,10 +75,8 @@ const shutdown = async (opts) => {
   const destroyTerraform = async () => {
     if (!tfResource) return;
 
-    if (destroyDelayed) {
-      winston.info(`Waiting ${destroyDelay} seconds to destroy`);
-      await sleep(destroyDelay);
-    }
+    winston.info(`Waiting ${destroyDelay} seconds to destroy`);
+    await sleep(destroyDelay);
 
     try {
       winston.debug(await tf.destroy({ dir: tfPath }));
@@ -424,7 +428,7 @@ exports.handler = async (opts) => {
   try {
     await run(opts);
   } catch (error) {
-    await shutdown({ ...opts, error, destroyDelayed: true });
+    await shutdown({ ...opts, error });
   }
 };
 
