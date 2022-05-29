@@ -263,7 +263,6 @@ class Github {
         )}.tar.gz`;
         await download({ url, path: destination });
         await tar.extract({ file: destination, cwd: workdir });
-        await exec(`chmod -R 777 ${workdir}`);
       }
 
       await exec(

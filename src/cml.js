@@ -281,7 +281,6 @@ class CML {
           log.job = id;
           log.status = 'job_ended';
           log.success = data.includes('Succeeded');
-          log.level = log.success ? 'info' : 'error';
         } else if (data.includes('Listening for Jobs')) {
           log.status = 'ready';
         }
@@ -299,11 +298,29 @@ class CML {
         } else if (duration) {
           log.status = 'job_ended';
           log.success = msg.includes('Job succeeded');
-          log.level = log.success ? 'info' : 'error';
         } else if (msg.includes('Starting runner for')) {
           log.status = 'ready';
         }
         return log;
+      }
+
+      if (this.driver === BB) {
+        const id = 'bb';
+        if (data.includes('Getting step StepId{accountUuid={')) {
+          log.job = id;
+          log.status = 'job_started';
+        } else if (
+          data.includes('Completing step with result Result{status=')
+        ) {
+          log.job = id;
+          log.status = 'job_ended';
+          log.success = data.includes('status=PASSED');
+        } else if (data.includes('Updating runner status to "ONLINE"')) {
+          log.status = 'ready';
+        }
+
+        log.level = log.success ? 'info' : 'error';
+        return log.status ? log : null;
       }
     } catch (err) {
       winston.warn(`Failed parsing log: ${err.message}`);
@@ -322,7 +339,9 @@ class CML {
   }
 
   async unregisterRunner(opts = {}) {
-    const { id: runnerId } = await this.runnerByName(opts);
+    const { id: runnerId } = (await this.runnerByName(opts)) || {};
+    if (!runnerId) throw new Error(`Runner not found`);
+
     return await getDriver(this).unregisterRunner({ runnerId, ...opts });
   }
 
