@@ -48,11 +48,6 @@ const shutdown = async (opts) => {
   const retryWorkflows = async () => {
     try {
       if (!noRetry) {
-        if (cml.driver === 'github') {
-          const job = await cml.runnerJob({ runnerId: RUNNER_ID });
-          if (job) RUNNER_JOBS_RUNNING = [job];
-        }
-
         if (RUNNER_JOBS_RUNNING.length > 0) {
           await Promise.all(
             RUNNER_JOBS_RUNNING.map(
@@ -77,7 +72,7 @@ const shutdown = async (opts) => {
   };
 
   if (error) {
-    winston.error(error, { reason, status: 'terminated' });
+    winston.error(error, { status: 'terminated' });
   } else {
     winston.info('runner status', { reason, status: 'terminated' });
   }
@@ -129,6 +124,8 @@ const runCloud = async (opts) => {
       workdir
     } = opts;
 
+    await tf.checkMinVersion();
+
     const tfPath = workdir;
     const tfMainPath = join(tfPath, 'main.tf');
 
@@ -166,8 +163,8 @@ const runCloud = async (opts) => {
         dockerVolumes
       });
     }
-
     await fs.writeFile(tfMainPath, tpl);
+
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
 
@@ -216,8 +213,37 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   winston.info(`Launching ${cml.driver} runner`);
-  const { workdir, name, labels, single, idleTimeout, noRetry, dockerVolumes } =
-    opts;
+  const {
+    workdir,
+    name,
+    labels,
+    single,
+    idleTimeout,
+    noRetry,
+    dockerVolumes,
+    tfResource,
+    tpiVersion
+  } = opts;
+
+  if (tfResource) {
+    await tf.checkMinVersion();
+
+    const tfPath = workdir;
+    await fs.mkdir(tfPath, { recursive: true });
+    const tfMainPath = join(tfPath, 'main.tf');
+    const tpl = tf.iterativeProviderTpl({ tpiVersion });
+    await fs.writeFile(tfMainPath, tpl);
+
+    await tf.init({ dir: tfPath });
+    await tf.apply({ dir: tfPath });
+
+    const path = join(tfPath, 'terraform.tfstate');
+    const tfstate = await tf.loadTfState({ path });
+    tfstate.resources = [
+      JSON.parse(Buffer.from(tfResource, 'base64').toString('utf-8'))
+    ];
+    await tf.saveTfState({ tfstate, path });
+  }
 
   const dataHandler = async (data) => {
     const log = cml.parseRunnerLog({ data });
@@ -230,11 +256,8 @@ const runLocal = async (opts) => {
       RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
         (job) => job.id !== jobId
       );
-      RUNNER_TIMER = 0;
 
-      if (single && cml.driver === 'bitbucket') {
-        await shutdown({ ...opts, reason: 'single job' });
-      }
+      if (single) await shutdown({ ...opts, reason: 'single job' });
     }
   };
 
@@ -250,60 +273,26 @@ const runLocal = async (opts) => {
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('disconnect', () =>
-    shutdown({ ...opts, reason: `runner disconnected` })
+    shutdown({ ...opts, error: new Error('runner disconnected') })
   );
-  proc.on('close', (exit) =>
-    shutdown({ ...opts, reason: `runner closed with exit code ${exit}` })
-  );
+  proc.on('close', (exit) => {
+    const reason = `runner closed with exit code ${exit}`;
+    if (exit === 0) shutdown({ ...opts, reason });
+    else shutdown({ ...opts, error: new Error(reason) });
+  });
 
   RUNNER = proc;
   ({ id: RUNNER_ID } = await cml.runnerByName({ name }));
 
   if (idleTimeout > 0) {
     const watcher = setInterval(async () => {
-      let idle = RUNNER_JOBS_RUNNING.length === 0;
+      const idle = RUNNER_JOBS_RUNNING.length === 0;
 
-      if (RUNNER_TIMER >= idleTimeout) {
-        try {
-          if (cml.driver === 'github') {
-            const job = await cml.runnerJob({ runnerId: RUNNER_ID });
-
-            if (!job && !idle) {
-              winston.error(
-                `Runner is idle as per the GitHub API but busy as per CML internal state. Resetting jobs. Retrying in ${idleTimeout} seconds...`
-              );
-              winston.warn(
-                `CML GitHub driver response: ${JSON.stringify(job)}`
-              );
-              winston.warn(
-                `CML internal state: ${JSON.stringify(RUNNER_JOBS_RUNNING)}`
-              );
-
-              RUNNER_JOBS_RUNNING = [];
-            }
-
-            if (job && idle) {
-              winston.error(
-                `Runner is busy as per the GitHub API but idle as per CML internal state. Retrying in ${idleTimeout} seconds...`
-              );
-
-              idle = false;
-            }
-          }
-        } catch (err) {
-          winston.error(
-            `Error connecting the SCM: ${err.message}. Will try again in ${idleTimeout} secs`
-          );
-
-          idle = false;
-        }
-
-        if (idle) {
-          shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
-          clearInterval(watcher);
-        } else {
-          RUNNER_TIMER = 0;
-        }
+      if (idle) {
+        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
+        clearInterval(watcher);
+      } else {
+        RUNNER_TIMER = 0;
       }
 
       RUNNER_TIMER++;
@@ -344,17 +333,15 @@ const run = async (opts) => {
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
-    tpiVersion,
     driver,
     repo,
     token,
+    workdir,
     cloud,
     labels,
     name,
     reuse,
-    dockerVolumes,
-    tfResource,
-    workdir
+    dockerVolumes
   } = opts;
 
   cml = new CML({ driver, repo, token });
@@ -364,27 +351,8 @@ const run = async (opts) => {
   if (dockerVolumes.length && cml.driver !== 'gitlab')
     winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
-  if (cloud || tfResource) await tf.checkMinVersion();
-
-  // prepare tf
-  if (tfResource) {
-    const tfPath = workdir;
-
-    await fs.mkdir(tfPath, { recursive: true });
-    const tfMainPath = join(tfPath, 'main.tf');
-    const tpl = tf.iterativeProviderTpl({ tpiVersion });
-    await fs.writeFile(tfMainPath, tpl);
-    await tf.init({ dir: tfPath });
-    await tf.apply({ dir: tfPath });
-    const path = join(tfPath, 'terraform.tfstate');
-    const tfstate = await tf.loadTfState({ path });
-    tfstate.resources = [
-      JSON.parse(Buffer.from(tfResource, 'base64').toString('utf-8'))
-    ];
-    await tf.saveTfState({ tfstate, path });
-  }
-
   const runners = await cml.runners();
+
   const runner = await cml.runnerByName({ name, runners });
   if (runner) {
     if (!reuse)
@@ -407,13 +375,9 @@ const run = async (opts) => {
     process.exit(0);
   }
 
-  try {
-    winston.info(`Preparing workdir ${workdir}...`);
-    await fs.mkdir(workdir, { recursive: true });
-    await fs.chmod(workdir, '766');
-  } catch (err) {
-    winston.warn(err.message);
-  }
+  winston.info(`Preparing workdir ${workdir}...`);
+  await fs.mkdir(workdir, { recursive: true });
+  await fs.chmod(workdir, '766');
 
   if (cloud) await runCloud(opts);
   else await runLocal(opts);
@@ -432,24 +396,27 @@ exports.handler = async (opts) => {
     await run(opts);
   } catch (error) {
     await shutdown({ ...opts, error });
-    throw error;
   }
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
-      tpiVersion: {
+      driver: {
         type: 'string',
-        default: '>= 0.9.10',
+        choices: ['github', 'gitlab', 'bitbucket'],
         description:
-          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
-        hidden: true
+          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
       },
-      dockerVolumes: {
-        type: 'array',
-        default: [],
-        description: 'Docker volumes. This feature is only supported in GitLab'
+      repo: {
+        type: 'string',
+        description:
+          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+      },
+      token: {
+        type: 'string',
+        description:
+          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
       },
       labels: {
         type: 'string',
@@ -485,21 +452,16 @@ exports.builder = (yargs) =>
         description:
           "Don't launch a new runner if an existing one has the same name or overlapping labels"
       },
-      driver: {
+      workdir: {
         type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description:
-          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+        hidden: true,
+        alias: 'path',
+        description: 'Runner working directory'
       },
-      repo: {
-        type: 'string',
-        description:
-          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+      dockerVolumes: {
+        type: 'array',
+        default: [],
+        description: 'Docker volumes. This feature is only supported in GitLab'
       },
       cloud: {
         type: 'string',
@@ -579,6 +541,13 @@ exports.builder = (yargs) =>
         description: 'Specifies the subnet to use within AWS',
         alias: 'cloud-aws-subnet-id'
       },
+      tpiVersion: {
+        type: 'string',
+        default: '>= 0.9.10',
+        description:
+          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
+        hidden: true
+      },
       cmlVersion: {
         type: 'string',
         default: require('../../package.json').version,
@@ -595,12 +564,6 @@ exports.builder = (yargs) =>
         hidden: true,
         description:
           'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
-      },
-      workdir: {
-        type: 'string',
-        hidden: true,
-        alias: 'path',
-        description: 'Runner working directory'
       }
     })
   );
