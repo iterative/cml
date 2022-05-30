@@ -468,7 +468,7 @@ class CML {
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort} [ci skip]`;
+    const title = `CML PR for ${target} ${shaShort}`;
     const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
