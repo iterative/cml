@@ -21,7 +21,7 @@ exports.builder = (yargs) =>
       },
       skipCI: {
         type: 'boolean',
-        description: 'Skip CI for the commit created for the pull request?'
+        description: 'Force skip CI for the created commit (if any)'
       },
       merge: {
         type: 'boolean',
