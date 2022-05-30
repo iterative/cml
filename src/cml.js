@@ -271,6 +271,7 @@ class CML {
     };
 
     await getDriver(this).runnerParseLog({ data, log });
+
     if (!log.status) return;
 
     log.level = log.success ? 'info' : 'error';

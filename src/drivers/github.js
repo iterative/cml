@@ -341,8 +341,6 @@ class Github {
     } else if (data.includes('Listening for Jobs')) {
       log.status = 'ready';
     }
-
-    return log;
   }
 
   parseRunner(runner) {

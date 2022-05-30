@@ -248,11 +248,12 @@ class Gitlab {
 
   runnerParseLog({ data, log }) {
     const { msg, job, duration_s: duration } = JSON.parse(data);
-    log = { ...log, job };
 
     if (msg.endsWith('received')) {
+      log.job = job;
       log.status = 'job_started';
     } else if (duration) {
+      log.job = job;
       log.status = 'job_ended';
       log.success = msg.includes('Job succeeded');
     } else if (msg.includes('Starting runner for')) {
