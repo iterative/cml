@@ -465,7 +465,7 @@ class CML {
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
       let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCI || !(merge || rebase || squash)){
+      if (skipCI || !(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
