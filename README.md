@@ -68,8 +68,7 @@ requirement.
 ### Bitbucket
 
 Please see our docs on
-[CML with Bitbucket Cloud](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).
-_Bitbucket Server support estimated to arrive by mid 2021._
+[CML with Bitbucket Cloud](https://cml.dev/doc/usage?tab=Bitbucket).
 
 ### GitHub
 
