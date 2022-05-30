@@ -22,231 +22,227 @@ const GITLAB = 'gitlab';
 const BB = 'bitbucket';
 
 const uriNoTrailingSlash = (uri) => {
-  return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
+    return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
 };
 
 const gitRemoteUrl = (opts = {}) => {
-  const { remote = GIT_REMOTE } = opts;
-  const url = execSync(`git config --get remote.${remote}.url`).toString(
-    'utf8'
-  );
-  return stripAuth(gitUrlParse(url).toString('https'));
+    const { remote = GIT_REMOTE } = opts;
+    const url = execSync(`git config --get remote.${remote}.url`).toString(
+        'utf8'
+    );
+    return stripAuth(gitUrlParse(url).toString('https'));
 };
 
 const inferToken = () => {
-  const {
-    REPO_TOKEN,
-    repo_token: repoToken,
-    GITHUB_TOKEN,
-    GITLAB_TOKEN,
-    BITBUCKET_TOKEN
-  } = process.env;
-  return (
-    REPO_TOKEN || repoToken || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
-  );
+    const {
+        REPO_TOKEN,
+        repo_token: repoToken,
+        GITHUB_TOKEN,
+        GITLAB_TOKEN,
+        BITBUCKET_TOKEN
+    } = process.env;
+    return (
+        REPO_TOKEN || repoToken || GITHUB_TOKEN || GITLAB_TOKEN || BITBUCKET_TOKEN
+    );
 };
 
 const inferDriver = (opts = {}) => {
-  const { repo } = opts;
-  if (repo) {
-    if (repo.includes('github.com')) return GITHUB;
-    if (repo.includes('gitlab.com')) return GITLAB;
-    if (/bitbucket\.(com|org)/.test(repo)) return BB;
-  }
+    const { repo } = opts;
+    if (repo) {
+        if (repo.includes('github.com')) return GITHUB;
+        if (repo.includes('gitlab.com')) return GITLAB;
+        if (/bitbucket\.(com|org)/.test(repo)) return BB;
+    }
 
-  if (GITHUB_REPOSITORY) return GITHUB;
-  if (CI_PROJECT_URL) return GITLAB;
-  if (BITBUCKET_REPO_UUID) return BB;
+    if (GITHUB_REPOSITORY) return GITHUB;
+    if (CI_PROJECT_URL) return GITLAB;
+    if (BITBUCKET_REPO_UUID) return BB;
 };
 
 const getDriver = (opts) => {
-  const { driver, repo, token } = opts;
-  if (!driver) throw new Error('driver not set');
+    const { driver, repo, token } = opts;
+    if (!driver) throw new Error('driver not set');
 
-  if (driver === GITHUB) return new Github({ repo, token });
-  if (driver === GITLAB) return new Gitlab({ repo, token });
-  if (driver === BB) return new BitbucketCloud({ repo, token });
+    if (driver === GITHUB) return new Github({ repo, token });
+    if (driver === GITLAB) return new Gitlab({ repo, token });
+    if (driver === BB) return new BitbucketCloud({ repo, token });
 
-  throw new Error(`driver ${driver} unknown!`);
+    throw new Error(`driver ${driver} unknown!`);
 };
 
 const fixGitSafeDirectory = () => {
-  const gitConfigSafeDirectory = (value) =>
-    spawnSync(
-      'git',
-      [
-        'config',
-        '--global',
-        value ? '--add' : '--get-all',
-        'safe.directory',
-        value
-      ],
-      {
-        encoding: 'utf8'
-      }
-    ).stdout;
+    const gitConfigSafeDirectory = (value) =>
+        spawnSync(
+            'git', [
+                'config',
+                '--global',
+                value ? '--add' : '--get-all',
+                'safe.directory',
+                value
+            ], {
+                encoding: 'utf8'
+            }
+        ).stdout;
 
-  const addSafeDirectory = (directory) =>
-    gitConfigSafeDirectory()
-      .split(/[\r\n]+/)
-      .includes(directory) || gitConfigSafeDirectory(directory);
+    const addSafeDirectory = (directory) =>
+        gitConfigSafeDirectory()
+        .split(/[\r\n]+/)
+        .includes(directory) || gitConfigSafeDirectory(directory);
 
-  // Fix for git>=2.36.0
-  addSafeDirectory('*');
+    // Fix for git>=2.36.0
+    addSafeDirectory('*');
 
-  // Fix for git^2.35.2
-  addSafeDirectory('/');
-  for (
-    let root, dir = process.cwd();
-    root !== dir;
-    { root, dir } = path.parse(dir)
-  ) {
-    addSafeDirectory(dir);
-  }
+    // Fix for git^2.35.2
+    addSafeDirectory('/');
+    for (
+        let root, dir = process.cwd(); root !== dir; { root, dir } = path.parse(dir)
+    ) {
+        addSafeDirectory(dir);
+    }
 };
 
 class CML {
-  constructor(opts = {}) {
-    fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
+    constructor(opts = {}) {
+        fixGitSafeDirectory(); // https://github.com/iterative/cml/issues/970
 
-    const { driver, repo, token } = opts;
+        const { driver, repo, token } = opts;
 
-    this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
-      /\.git$/,
-      ''
-    );
-    this.token = token || inferToken();
-    this.driver = driver || inferDriver({ repo: this.repo });
-  }
-
-  async revParse({ ref = 'HEAD' } = {}) {
-    try {
-      return await exec(`git rev-parse ${ref}`);
-    } catch (err) {
-      winston.warn(
-        'Failed to obtain SHA. Perhaps not in the correct git folder'
-      );
-    }
-  }
-
-  async triggerSha() {
-    const { sha } = getDriver(this);
-    return sha || (await this.revParse());
-  }
-
-  async branch() {
-    const { branch } = getDriver(this);
-    return branch || (await exec(`git branch --show-current`));
-  }
-
-  async commentCreate(opts = {}) {
-    const triggerSha = await this.triggerSha();
-    const {
-      report: userReport,
-      commitSha: inCommitSha = triggerSha,
-      rmWatermark,
-      update,
-      pr
-    } = opts;
-
-    const commitSha =
-      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
-
-    if (rmWatermark && update)
-      throw new Error('watermarks are mandatory for updateable comments');
-
-    const watermark = rmWatermark
-      ? ''
-      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
-
-    const report = `${userReport}\n\n${watermark}`;
-    const drv = getDriver(this);
-
-    let comment;
-    const updatableComment = (comments) => {
-      return comments.reverse().find(({ body }) => {
-        return body.includes('watermark.svg');
-      });
-    };
-
-    const isBB = this.driver === BB;
-    if (pr || isBB) {
-      let commentUrl;
-
-      if (commitSha !== triggerSha)
-        winston.info(
-          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+        this.repo = uriNoTrailingSlash(repo || gitRemoteUrl()).replace(
+            /\.git$/,
+            ''
         );
+        this.token = token || inferToken();
+        this.driver = driver || inferDriver({ repo: this.repo });
+    }
 
-      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr = {}] = await drv.commitPrs({ commitSha });
-      const { url } = commitPr;
+    async revParse({ ref = 'HEAD' } = {}) {
+        try {
+            return await exec(`git rev-parse ${ref}`);
+        } catch (err) {
+            winston.warn(
+                'Failed to obtain SHA. Perhaps not in the correct git folder'
+            );
+        }
+    }
 
-      if (!url && !isBB)
-        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
+    async triggerSha() {
+        const { sha } = getDriver(this);
+        return sha || (await this.revParse());
+    }
 
-      if (url) {
-        const [prNumber] = url.split('/').slice(-1);
+    async branch() {
+        const { branch } = getDriver(this);
+        return branch || (await exec(`git branch --show-current`));
+    }
+
+    async commentCreate(opts = {}) {
+        const triggerSha = await this.triggerSha();
+        const {
+            report: userReport,
+            commitSha: inCommitSha = triggerSha,
+            rmWatermark,
+            update,
+            pr
+        } = opts;
+
+        const commitSha =
+            (await this.revParse({ ref: inCommitSha })) || inCommitSha;
+
+        if (rmWatermark && update)
+            throw new Error('watermarks are mandatory for updateable comments');
+
+        const watermark = rmWatermark ?
+            '' :
+            '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
+
+        const report = `${userReport}\n\n${watermark}`;
+        const drv = getDriver(this);
+
+        let comment;
+        const updatableComment = (comments) => {
+            return comments.reverse().find(({ body }) => {
+                return body.includes('watermark.svg');
+            });
+        };
+
+        const isBB = this.driver === BB;
+        if (pr || isBB) {
+            let commentUrl;
+
+            if (commitSha !== triggerSha)
+                winston.info(
+                    `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
+                );
+
+            const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
+            const [commitPr = {}] = await drv.commitPrs({ commitSha });
+            const { url } = commitPr;
+
+            if (!url && !isBB)
+                throw new Error(`PR for commit sha "${inCommitSha}" not found`);
+
+            if (url) {
+                const [prNumber] = url.split('/').slice(-1);
+
+                if (update)
+                    comment = updatableComment(await drv.prComments({ prNumber }));
+
+                if (update && comment) {
+                    commentUrl = await drv.prCommentUpdate({
+                        report: longReport,
+                        id: comment.id,
+                        prNumber
+                    });
+                } else
+                    commentUrl = await drv.prCommentCreate({
+                        report: longReport,
+                        prNumber
+                    });
+
+                if (this.driver !== 'bitbucket') return commentUrl;
+            }
+        }
 
         if (update)
-          comment = updatableComment(await drv.prComments({ prNumber }));
+            comment = updatableComment(await drv.commitComments({ commitSha }));
 
         if (update && comment) {
-          commentUrl = await drv.prCommentUpdate({
-            report: longReport,
-            id: comment.id,
-            prNumber
-          });
-        } else
-          commentUrl = await drv.prCommentCreate({
-            report: longReport,
-            prNumber
-          });
+            return await drv.commentUpdate({
+                report,
+                id: comment.id,
+                commitSha
+            });
+        }
 
-        if (this.driver !== 'bitbucket') return commentUrl;
-      }
+        return await drv.commentCreate({
+            report,
+            commitSha
+        });
     }
 
-    if (update)
-      comment = updatableComment(await drv.commitComments({ commitSha }));
+    async checkCreate(opts = {}) {
+        const { headSha = await this.triggerSha() } = opts;
 
-    if (update && comment) {
-      return await drv.commentUpdate({
-        report,
-        id: comment.id,
-        commitSha
-      });
+        return await getDriver(this).checkCreate({...opts, headSha });
     }
 
-    return await drv.commentCreate({
-      report,
-      commitSha
-    });
-  }
+    async publish(opts = {}) {
+            const { title = '', md, native, rmWatermark } = opts;
 
-  async checkCreate(opts = {}) {
-    const { headSha = await this.triggerSha() } = opts;
+            let mime, uri;
+            if (native) {
+                ({ mime, uri } = await getDriver(this).upload(opts));
+            } else {
+                ({ mime, uri } = await upload(opts));
+            }
 
-    return await getDriver(this).checkCreate({ ...opts, headSha });
-  }
+            if (!rmWatermark) {
+                const [, type] = mime.split('/');
+                uri = watermarkUri({ uri, type });
+            }
 
-  async publish(opts = {}) {
-    const { title = '', md, native, rmWatermark } = opts;
-
-    let mime, uri;
-    if (native) {
-      ({ mime, uri } = await getDriver(this).upload(opts));
-    } else {
-      ({ mime, uri } = await upload(opts));
-    }
-
-    if (!rmWatermark) {
-      const [, type] = mime.split('/');
-      uri = watermarkUri({ uri, type });
-    }
-
-    if (md && mime.match('(image|video)/.*'))
-      return `![](${uri}${title ? ` "${title}"` : ''})`;
+            if (md && mime.match('(image|video)/.*'))
+                return `![](${uri}${title ? ` "${title}"` : ''})`;
 
     if (md) return `[${title}](${uri})`;
 
@@ -463,15 +459,12 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (!(merge || rebase || squash)) {
-        commitMessage += ' [skip ci]';
-      }
+      let commitMessage = `CML PR for ${shaShort} [skip ci]`;
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
+    const title = `CML PR for ${target} ${shaShort} [skip ci]`;
     const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
