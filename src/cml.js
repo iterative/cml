@@ -409,6 +409,7 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
+      skipCI,
       merge,
       rebase,
       squash
@@ -463,7 +464,10 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      const commitMessage = `CML PR for ${shaShort} [ci skip]`;
+      let commitMessage = `CML PR for ${shaShort}`;
+      if ( skipCI ){
+        commitMessage += ' [skip ci]';
+      }
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
