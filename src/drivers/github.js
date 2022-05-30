@@ -329,6 +329,22 @@ class Github {
     return this.parseRunner(runner);
   }
 
+  runnerParseLog({ data, log }) {
+    const id = 'gh';
+    if (data.includes('Running job')) {
+      log.job = id;
+      log.status = 'job_started';
+    } else if (data.includes('completed with result')) {
+      log.job = id;
+      log.status = 'job_ended';
+      log.success = data.includes('Succeeded');
+    } else if (data.includes('Listening for Jobs')) {
+      log.status = 'ready';
+    }
+
+    return log;
+  }
+
   parseRunner(runner) {
     const { id, name, busy, status, labels } = runner;
     return {

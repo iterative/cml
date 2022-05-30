@@ -241,7 +241,7 @@ const runLocal = async (opts) => {
   }
 
   const dataHandler = async (data) => {
-    const log = cml.parseRunnerLog({ data });
+    const log = await cml.parseRunnerLog({ data });
     log && winston.info('runner status', log);
 
     if (log && log.status === 'job_started') {
@@ -281,7 +281,7 @@ const runLocal = async (opts) => {
     const watcher = setInterval(async () => {
       const idle = RUNNER_JOBS_RUNNING.length === 0;
 
-      if (RUNNER_TIMER >= idleTimeout && idle) {
+      if (RUNNER_TIMER >= idleTimeout) {
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
         clearInterval(watcher);
       }

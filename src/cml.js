@@ -257,61 +257,20 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  parseRunnerLog(opts = {}) {
+  async parseRunnerLog(opts = {}) {
     let { data } = opts;
     if (!data) return;
 
     data = data.toString('utf8');
 
     const date = new Date();
-    let log = {
+    const log = {
       level: 'info',
       date: date.toISOString(),
       repo: this.repo
     };
 
-    if (this.driver === GITHUB) {
-      const id = 'gh';
-      if (data.includes('Running job')) {
-        log.job = id;
-        log.status = 'job_started';
-      } else if (data.includes('completed with result')) {
-        log.job = id;
-        log.status = 'job_ended';
-        log.success = data.includes('Succeeded');
-      } else if (data.includes('Listening for Jobs')) {
-        log.status = 'ready';
-      }
-    }
-
-    if (this.driver === GITLAB) {
-      const { msg, job, duration_s: duration } = JSON.parse(data);
-      log = { ...log, job };
-
-      if (msg.endsWith('received')) {
-        log.status = 'job_started';
-      } else if (duration) {
-        log.status = 'job_ended';
-        log.success = msg.includes('Job succeeded');
-      } else if (msg.includes('Starting runner for')) {
-        log.status = 'ready';
-      }
-    }
-
-    if (this.driver === BB) {
-      const id = 'bb';
-      if (data.includes('Getting step StepId{accountUuid={')) {
-        log.job = id;
-        log.status = 'job_started';
-      } else if (data.includes('Completing step with result Result{status=')) {
-        log.job = id;
-        log.status = 'job_ended';
-        log.success = data.includes('status=PASSED');
-      } else if (data.includes('Updating runner status to "ONLINE"')) {
-        log.status = 'ready';
-      }
-    }
-
+    await getDriver(this).runnerParseLog({ data, log });
     if (!log.status) return;
 
     log.level = log.success ? 'info' : 'error';
