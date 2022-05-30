@@ -312,8 +312,10 @@ class CML {
       }
     }
 
+    if (!log.status) return;
+
     log.level = log.success ? 'info' : 'error';
-    return log.status ? log : null;
+    return log;
   }
 
   async startRunner(opts = {}) {
