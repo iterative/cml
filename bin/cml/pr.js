@@ -19,6 +19,10 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description: 'Output in markdown format [](url).'
       },
+      skipCI: {
+        type: 'booelan',
+        description: 'Skip CI for the commit created for the pull request?'
+      },
       merge: {
         type: 'boolean',
         alias: 'auto-merge',
