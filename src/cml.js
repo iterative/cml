@@ -463,15 +463,12 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (!(merge || rebase || squash)) {
-        commitMessage += ' [skip ci]';
-      }
+      let commitMessage = `CML PR for ${shaShort} [ci skip]`;
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
+    const title = `CML PR for ${target} ${shaShort} [ci skip]`;
     const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
