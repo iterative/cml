@@ -179,6 +179,11 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
+    if (watch) {
+      try {
+        await (await fs.promises.open(markdownfile, 'wx')).close();
+      } catch {}
+    }
     const userReport =
       testReport || (await fs.promises.readFile(markdownfile, 'utf-8'));
     let report = `${userReport}\n\n${watermark}`;
@@ -205,7 +210,11 @@ class CML {
             watcher.add(node.url);
           }
           try {
-            node.url = await this.publish({ ...opts, path: node.url, session });
+            const url = new URL(
+              await this.publish({ ...opts, path: node.url, session })
+            );
+            url.searchParams.set('cache-bypass', uuid.v4());
+            node.url = url.toString();
           } catch {} // file may not exist (yet)
         }
       };

@@ -59,17 +59,19 @@ const fetchUploadData = async (opts) => {
 };
 
 const upload = async (opts) => {
-  const { path } = opts;
+  const { path, session } = opts;
   const endpoint = 'https://asset.cml.dev';
 
   const { mime, size, data: body } = await fetchUploadData(opts);
   const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
 
   const headers = {
-    'Content-length': size,
+    'Content-Length': size,
     'Content-Type': mime,
     'Content-Disposition': `inline; filename="${filename}"`
   };
+
+  if (session) headers['Content-Address-Seed'] = `${session}:${path}`;
 
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
