@@ -96,7 +96,7 @@
     "timestring": "^6.0.0",
     "which": "^2.0.2",
     "winston": "^3.3.3",
-    "yargs": "^17.2.1"
+    "yargs": "^17.5.0"
   },
   "devDependencies": {
     "eslint": "^8.1.0",
