@@ -27,10 +27,10 @@ const uriNoTrailingSlash = (uri) => {
 
 const gitRemoteUrl = (opts = {}) => {
   const { remote = GIT_REMOTE } = opts;
-  const url = execSync(`git config --get remote.${remote}.url`).toString(
-    'utf8'
+  const url = gitUrlParse(
+    execSync(`git config --get remote.${remote}.url`).toString('utf8')
   );
-  return stripAuth(gitUrlParse(url).toString('https'));
+  return stripAuth(url.toString(url.protocol === 'http' ? 'http' : 'https'));
 };
 
 const inferToken = () => {
