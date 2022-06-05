@@ -241,18 +241,23 @@ const runLocal = async (opts) => {
   }
 
   const dataHandler = async (data) => {
-    const log = await cml.parseRunnerLog({ data });
-    log && winston.info('runner status', log);
+    const logs = await cml.parseRunnerLog({ data });
+    for (const idx in logs) {
+      const log = logs[idx];
+      log && winston.info('runner status', log);
 
-    if (log && log.status === 'job_started') {
-      RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
-    } else if (log && log.status === 'job_ended') {
-      const { job: jobId } = log;
-      RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
-        (job) => job.id !== jobId
-      );
+      if (log.status === 'job_started') {
+        RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
+      }
 
-      if (single) await shutdown({ ...opts, reason: 'single job' });
+      if (log.status === 'job_ended') {
+        const { job: jobId } = log;
+        RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
+          (job) => job.id !== jobId
+        );
+
+        if (single) await shutdown({ ...opts, reason: 'single job' });
+      }
     }
   };
 
@@ -318,6 +323,11 @@ const runLocal = async (opts) => {
 };
 
 const run = async (opts) => {
+  process.on('unhandledRejection', (reason) =>
+    shutdown({ ...opts, error: new Error(reason) })
+  );
+  process.on('uncaughtException', (error) => shutdown({ ...opts, error }));
+
   ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach((signal) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });

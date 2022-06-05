@@ -79,25 +79,24 @@ describe('Github tests', () => {
   test('Runner logs', async () => {
     const cml = new CML();
     cml.driver = 'github';
-    let log = await cml.parseRunnerLog({ data: 'Listening for Jobs' });
-    expect(log.status).toBe('ready');
-
-    log = await cml.parseRunnerLog({ data: 'Running job' });
-    expect(log.status).toBe('job_started');
-
-    log = await cml.parseRunnerLog({
-      data: 'completed with result: Succeeded'
+    let logs = await cml.parseRunnerLog({
+      data: `
+2022-06-05 16:25:56Z: Listening for Jobs
+2022-06-05 16:26:35Z: Running job: train
+2022-06-05 16:28:03Z: Job train completed with result: Failed
+`
     });
-    expect(log.status).toBe('job_ended');
-    expect(log.success).toBe(true);
+    expect(logs.length).toBe(3);
+    expect(logs[0].status).toBe('ready');
+    expect(logs[1].status).toBe('job_started');
+    expect(logs[2].status).toBe('job_ended');
+    expect(logs[2].success).toBe(false);
 
-    log = await cml.parseRunnerLog({ data: 'completed with result: Failed' });
-    expect(log.status).toBe('job_ended');
-    expect(log.success).toBe(false);
-
-    log = await cml.parseRunnerLog({ data: 'completed with result: Canceled' });
-    expect(log.status).toBe('job_ended');
-    expect(log.success).toBe(false);
+    logs = await cml.parseRunnerLog({
+      data: '2022-06-05 16:28:03Z: Job train completed with result: Succeeded'
+    });
+    expect(logs[0].status).toBe('job_ended');
+    expect(logs[0].success).toBe(true);
   });
 });
 
@@ -224,26 +223,63 @@ describe('Gitlab tests', () => {
   test('Runner logs', async () => {
     const cml = new CML();
     cml.driver = 'gitlab';
-    let log = await cml.parseRunnerLog({
-      data: '{"level":"info","msg":"Starting runner for https://gitlab.com with token 2SGFrnGt ...","time":"2021-07-02T16:45:05Z"}'
+    let logs = await cml.parseRunnerLog({
+      data: `
+{"level":"info","msg":"Starting runner for https://gitlab.com with token 2SGFrnGt ...","time":"2021-07-02T16:45:05Z"}
+{"job":1396213069,"level":"info","msg":"Checking for jobs... received","repo_url":"https://gitlab.com/iterative.ai/fashion_mnist.git","runner":"2SGFrnGt","time":"2021-07-02T16:45:47Z"}
+{"duration_s":120.0120526,"job":1396213069,"level":"warning","msg":"Job failed: execution took longer than 2m0s seconds","project":27856642,"runner":"2SGFrnGt","time":"2021-07-02T16:47:47Z"}
+`
     });
-    expect(log.status).toBe('ready');
+    expect(logs.length).toBe(3);
+    expect(logs[0].status).toBe('ready');
+    expect(logs[1].status).toBe('job_started');
+    expect(logs[2].status).toBe('job_ended');
+    expect(logs[2].success).toBe(false);
 
-    log = await cml.parseRunnerLog({
-      data: '{"job":1396213069,"level":"info","msg":"Checking for jobs... received","repo_url":"https://gitlab.com/iterative.ai/fashion_mnist.git","runner":"2SGFrnGt","time":"2021-07-02T16:45:47Z"}'
-    });
-    expect(log.status).toBe('job_started');
-
-    log = await cml.parseRunnerLog({
+    logs = await cml.parseRunnerLog({
       data: '{"duration_s":7.706165838,"job":2177867438,"level":"info","msg":"Job succeeded","project":27939020,"runner":"fe36krFK","time":"2022-03-08T18:12:57+01:00"}'
     });
-    expect(log.status).toBe('job_ended');
-    expect(log.success).toBe(true);
+    expect(logs[0].status).toBe('job_ended');
+    expect(logs[0].success).toBe(true);
+  });
+});
 
-    log = await cml.parseRunnerLog({
-      data: '{"duration_s":120.0120526,"job":1396213069,"level":"warning","msg":"Job failed: execution took longer than 2m0s seconds","project":27856642,"runner":"2SGFrnGt","time":"2021-07-02T16:47:47Z"}'
+describe('Bitbucket tests', () => {
+  const OLD_ENV = process.env;
+
+  const { TEST_BITBUCKET_TOKEN: TOKEN = 'DUMMY' } = process.env;
+
+  beforeEach(() => {
+    jest.resetModules();
+
+    process.env = {};
+    process.env.REPO_TOKEN = TOKEN;
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  test('Runner logs', async () => {
+    const cml = new CML();
+    cml.driver = 'bitbucket';
+    let logs = await cml.parseRunnerLog({
+      data: `
+[2022-06-05 17:23:41,945] Updating runner status to "ONLINE" and checking for new steps assigned to the runner after 0 seconds and then every 30 seconds.
+[2022-06-05 17:24:12,246] Getting step StepId{accountUuid={XXXXX-XXX-XXX-XXXXXXXX}, repositoryUuid={XXXXX-XXX-XXX-XXXXXXXX}, pipelineUuid={XXXXX-XXX-XXX-XXXXXXXX}, stepUuid={XXXXX-XXX-XXX-XXXXXXXX}}.
+[2022-06-05 17:24:53,466] Completing step with result Result{status=FAILED, error=None}.
+`
     });
-    expect(log.status).toBe('job_ended');
-    expect(log.success).toBe(false);
+    expect(logs.length).toBe(3);
+    expect(logs[0].status).toBe('ready');
+    expect(logs[1].status).toBe('job_started');
+    expect(logs[2].status).toBe('job_ended');
+    expect(logs[2].success).toBe(false);
+
+    logs = await cml.parseRunnerLog({
+      data: '[2022-06-05 17:24:53,466] Completing step with result Result{status=PASSED, error=None}.'
+    });
+    expect(logs[0].status).toBe('job_ended');
+    expect(logs[0].success).toBe(true);
   });
 });

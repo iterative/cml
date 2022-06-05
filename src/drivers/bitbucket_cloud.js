@@ -266,18 +266,13 @@ class BitbucketCloud {
     return href;
   }
 
-  runnerParseLog({ data, log }) {
-    const id = 'bb';
-    if (data.includes('Getting step StepId{accountUuid={')) {
-      log.job = id;
-      log.status = 'job_started';
-    } else if (data.includes('Completing step with result Result{status=')) {
-      log.job = id;
-      log.status = 'job_ended';
-      log.success = data.includes('status=PASSED');
-    } else if (data.includes('Updating runner status to "ONLINE"')) {
-      log.status = 'ready';
-    }
+  runnerParseLogEntities() {
+    return {
+      ready: /Updating runner status to "ONLINE"/,
+      job_started: /Getting step StepId/,
+      job_ended: /Completing step with result/,
+      job_ended_succeded: /Completing step with result Result{status=PASSED/
+    };
   }
 
   async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {

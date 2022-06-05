@@ -259,23 +259,36 @@ class CML {
 
   async parseRunnerLog(opts = {}) {
     let { data } = opts;
-    if (!data) return;
+    if (!data) return [];
 
     data = data.toString('utf8');
 
-    const date = new Date();
-    const log = {
-      level: 'info',
-      date: date.toISOString(),
-      repo: this.repo
-    };
+    const logs = [];
+    const entities = await getDriver(this).runnerParseLogEntities();
+    for (const [entity, rule] of Object.entries(entities)) {
+      const regex = new RegExp(rule);
+      if (regex.test(data)) {
+        const date = new Date();
+        const log = {
+          id: 'dummy',
+          status: entity,
+          date: date.toISOString(),
+          repo: this.repo
+        };
 
-    await getDriver(this).runnerParseLog({ data, log });
+        if (entity === 'job_ended') log.success = false;
 
-    if (!log.status) return;
+        log.level = log.success ? 'info' : 'error';
 
-    log.level = log.success ? 'info' : 'error';
-    return log;
+        if (entity === 'job_ended_succeded') {
+          logs[logs.length - 1].success = true;
+        } else {
+          logs.push(log);
+        }
+      }
+    }
+
+    return logs;
   }
 
   async startRunner(opts = {}) {
