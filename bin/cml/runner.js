@@ -534,7 +534,7 @@ exports.builder = (yargs) =>
       cloudGpu: {
         type: 'string',
         description:
-          'GPU type. Choices: [k80, v100]. Also supports native types like e.g. nvidia-tesla-t4',
+          'GPU type. Choices: k80, v100, or native types e.g. nvidia-tesla-t4',
         coerce: (val) => (val === 'nogpu' ? undefined : val)
       },
       cloudHddSize: {
