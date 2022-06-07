@@ -114,9 +114,9 @@ describe('CML e2e', () => {
                                                   cml-runner instance on the provider
                                                   i.e. tags/labels \\"key=value\\"
                                                                  [array] [default: []]
-        --cloud-gpu                               GPU type. Choices: [k80, v100]. Also
-                                                  supports native types like e.g.
-                                                  nvidia-tesla-t4             [string]
+        --cloud-gpu                               GPU type. Choices: k80, v100, or
+                                                  native types e.g. nvidia-tesla-t4
+                                                                              [string]
         --cloud-hdd-size                          HDD size in GB              [number]
         --cloud-ssh-private                       Custom private RSA SSH key. If not
                                                   provided an automatically generated
