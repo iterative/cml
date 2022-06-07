@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       repos:
-        - todo
+        - cml-playground
     steps:
       - name: Trigger external actions
         run: |
           curl --silent --show-error \
             --request POST \
-            --headers "Authorization: token ${{ secrets.TODO_PAT }}" \
+            --headers "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
             --headers "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
             --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name || github.event.inputs.tag }}"}}'
