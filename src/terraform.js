@@ -1,5 +1,7 @@
 const fs = require('fs').promises;
+const { Buffer } = require('buffer');
 const { ltr } = require('semver');
+const winston = require('winston');
 const { exec } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
@@ -36,8 +38,50 @@ const init = async (opts = {}) => {
 };
 
 const apply = async (opts = {}) => {
-  const { dir = './' } = opts;
-  return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+  const { dir = './', json = false } = opts;
+  if (json) {
+    return new Promise((resolve, reject) => {
+      const stderrCollection = [];
+      const tfProc = require('child_process').spawn(
+        'terraform',
+        [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+        {
+          cwd: process.cwd(),
+          env: process.env
+        }
+      );
+      tfProc.stdout.on('data', (buf) => {
+        const parse = (line) => {
+          if (line === '') return;
+          try {
+            const log = JSON.parse(line);
+            if (log['@level'] === 'error') {
+              winston.error(`terraform error: ${log['@message']}`);
+            } else {
+              winston.info(log['@message']);
+            }
+          } catch (err) {
+            // Failed to parse json from buffer
+            winston.info(line);
+          }
+        };
+        buf.toString('utf8').split('\n').forEach(parse);
+      });
+      tfProc.stderr.on('data', (buf) => {
+        stderrCollection.push(buf);
+      });
+      tfProc.on('close', (code, signal) => {
+        if (code !== 0) {
+          const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
+          reject(new Error('terraform apply error', { code, signal }));
+          process.stdout.write(stderrOutput);
+        }
+        resolve();
+      });
+    });
+  } else {
+    return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+  }
 };
 
 const destroy = async (opts = {}) => {
