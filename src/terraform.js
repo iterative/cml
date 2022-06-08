@@ -1,8 +1,6 @@
 const fs = require('fs').promises;
-const { Buffer } = require('buffer');
 const { ltr } = require('semver');
-const winston = require('winston');
-const { exec } = require('./utils');
+const { exec, tfCapture } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
 
@@ -40,11 +38,10 @@ const init = async (opts = {}) => {
 const apply = async (opts = {}) => {
   const { dir = './', json = false } = opts;
   if (json) {
-    return new Promise((resolve, reject) => {
-      const stderrCollection = [];
-      const env = process.env;
-      if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
-      const tfProc = require('child_process').spawn(
+    const env = process.env;
+    if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
+    try {
+      await tfCapture(
         'terraform',
         [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
         {
@@ -53,35 +50,10 @@ const apply = async (opts = {}) => {
           shell: true
         }
       );
-      tfProc.stdout.on('data', (buf) => {
-        const parse = (line) => {
-          if (line === '') return;
-          try {
-            const log = JSON.parse(line);
-            if (log['@level'] === 'error') {
-              winston.error(`terraform error: ${log['@message']}`);
-            } else {
-              winston.info(log['@message']);
-            }
-          } catch (err) {
-            // Failed to parse json from buffer
-            winston.info(line);
-          }
-        };
-        buf.toString('utf8').split('\n').forEach(parse);
-      });
-      tfProc.stderr.on('data', (buf) => {
-        stderrCollection.push(buf);
-      });
-      tfProc.on('close', (code, signal) => {
-        if (code !== 0) {
-          const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
-          process.stdout.write(stderrOutput);
-          reject(new Error('terraform apply error', { code, signal }));
-        }
-        resolve();
-      });
-    });
+    } catch (rejectionLogs) {
+      process.stdout.write(rejectionLogs);
+      throw new Error('terraform apply error');
+    }
   } else {
     return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
   }
