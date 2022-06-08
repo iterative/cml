@@ -38,7 +38,7 @@ const init = async (opts = {}) => {
 const apply = async (opts = {}) => {
   const { dir = './', json = false } = opts;
   if (json) {
-    const env = process.env;
+    const { env } = process;
     if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
     try {
       await tfCapture(
@@ -46,7 +46,7 @@ const apply = async (opts = {}) => {
         [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
         {
           cwd: process.cwd(),
-          env: env,
+          env,
           shell: true
         }
       );
