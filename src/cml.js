@@ -207,7 +207,9 @@ class CML {
             );
             url.searchParams.set('cache-bypass', uuid.v4());
             node.url = url.toString();
-          } catch {} // file may not exist (yet)
+          } catch (err) {
+            if (err.code !== 'ENOENT') throw err;
+          }
         }
       };
 
@@ -222,7 +224,7 @@ class CML {
       watcher.add(triggerFile || markdownFile);
       watcher.on('all', async (event, path) => {
         if (lock) return;
-        else lock = true;
+        lock = true;
         try {
           winston.info(`watcher event: ${event} ${path}`);
           await this.commentCreate({ ...opts, update: true, watch: false });
