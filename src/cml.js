@@ -155,7 +155,6 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
-    // ESM imports; replace by from ... import ... after the migration
     const { remark } = await import('remark');
     const { visit } = await import('unist-util-visit');
 
