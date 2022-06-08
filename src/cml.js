@@ -29,11 +29,11 @@ const watcher = chokidar.watch([], {
   persistent: true,
   followSymlinks: true,
   disableGlobbing: true,
-  ignoreInitial: true
-  // awaitWriteFinish: {
-  //   stabilityThreshold: 4000,
-  //   pollInterval: 1000
-  // }
+  ignoreInitial: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 4000,
+    pollInterval: 1000
+  }
 });
 
 const uriNoTrailingSlash = (uri) => {
