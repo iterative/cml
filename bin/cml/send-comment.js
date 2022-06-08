@@ -6,6 +6,7 @@ exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
+  opts.markdownFile = opts.markdownfile;
   const cml = new CML(opts);
   console.log(await cml.commentCreate(opts));
 };
@@ -32,6 +33,11 @@ exports.builder = (yargs) =>
       watch: {
         type: 'boolean',
         description: 'Watch for changes and automatically update the report'
+      },
+      triggerFile: {
+        type: 'string',
+        description: 'File used to trigger the watcher',
+        hidden: true
       },
       native: {
         type: 'boolean',

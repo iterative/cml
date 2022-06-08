@@ -7,7 +7,6 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const uuid = require('uuid');
-
 const winston = require('winston');
 
 const Gitlab = require('./drivers/gitlab');
@@ -31,7 +30,6 @@ const watcher = chokidar.watch([], {
   followSymlinks: true,
   disableGlobbing: true,
   ignoreInitial: true
-  // FIXME: desirable, disabled because it triggers forever
   // awaitWriteFinish: {
   //   stabilityThreshold: 4000,
   //   pollInterval: 1000
@@ -157,6 +155,10 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
+    // ESM imports; replace by from ... import ... after the migration
+    const { remark } = await import('remark');
+    const { visit } = await import('unist-util-visit');
+
     const triggerSha = await this.triggerSha();
     const {
       commitSha: inCommitSha = triggerSha,
@@ -164,9 +166,10 @@ class CML {
       update,
       pr,
       publish,
-      markdownfile,
+      markdownFile,
       report: testReport,
-      watch
+      watch,
+      triggerFile
     } = opts;
 
     const commitSha =
@@ -179,25 +182,16 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    if (watch) {
-      try {
-        await (await fs.promises.open(markdownfile, 'wx')).close();
-      } catch {}
+    let userReport = testReport;
+    try {
+      if (!userReport)
+        userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+    } catch (err) {
+      if (!watch) throw err;
     }
-    const userReport =
-      testReport || (await fs.promises.readFile(markdownfile, 'utf-8'));
+
     let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
-
-    const { remark } = await import('remark');
-    const { visit } = await import('unist-util-visit');
-
-    if (watch) {
-      watcher.on('all', (event, path) => {
-        winston.info(`updating report: ${event} ${path}`);
-        this.commentCreate({ ...opts, update: true, watch: false });
-      });
-    }
 
     const publishLocalFiles = () => async (tree) => {
       const nodes = [];
@@ -206,9 +200,7 @@ class CML {
 
       const visitor = async (node) => {
         if (node.url && node.alt !== 'CML watermark') {
-          if (watch) {
-            watcher.add(node.url);
-          }
+          if (watch && !triggerFile) watcher.add(node.url);
           try {
             const url = new URL(
               await this.publish({ ...opts, path: node.url, session })
@@ -226,7 +218,21 @@ class CML {
       report = String(await remark().use(publishLocalFiles).process(report));
 
     if (watch) {
-      watcher.add(markdownfile);
+      let lock;
+      watcher.add(triggerFile || markdownFile);
+      watcher.on('all', async (event, path) => {
+        if (lock) return;
+        else lock = true;
+        try {
+          winston.info(`watcher event: ${event} ${path}`);
+          await this.commentCreate({ ...opts, update: true, watch: false });
+          if (event !== 'unlink' && path === triggerFile)
+            await fs.promises.unlink(triggerFile);
+        } catch (err) {
+          winston.warn(err);
+        }
+        lock = false;
+      });
       winston.info('watching for file changes...');
       await new Promise((resolve) => resolve); // wait forever
     }

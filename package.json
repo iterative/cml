@@ -100,6 +100,8 @@
     "tar": "^6.1.11",
     "tempy": "^0.6.0",
     "timestring": "^6.0.0",
+    "turndown": "^7.1.1",
+    "turndown-plugin-gfm": "^1.0.2",
     "unist-util-visit": "^4.1.0",
     "which": "^2.0.2",
     "winston": "^3.3.3",
