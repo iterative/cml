@@ -37,25 +37,23 @@ const init = async (opts = {}) => {
 
 const apply = async (opts = {}) => {
   const { dir = './', json = false } = opts;
-  if (json) {
-    const { env } = process;
-    if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
-    try {
-      await tfCapture(
-        'terraform',
-        [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
-        {
-          cwd: process.cwd(),
-          env,
-          shell: true
-        }
-      );
-    } catch (rejectionLogs) {
-      process.stdout.write(rejectionLogs);
-      throw new Error('terraform apply error');
-    }
-  } else {
-    return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+  if (!json) return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+
+  const { env } = process;
+  if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
+  try {
+    await tfCapture(
+      'terraform',
+      [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+      {
+        cwd: process.cwd(),
+        env,
+        shell: true
+      }
+    );
+  } catch (rejectionLogs) {
+    process.stdout.write(rejectionLogs);
+    throw new Error('terraform apply error');
   }
 };
 
