@@ -31,8 +31,8 @@ const watcher = chokidar.watch([], {
   disableGlobbing: true,
   ignoreInitial: true,
   awaitWriteFinish: {
-    stabilityThreshold: 4000,
-    pollInterval: 1000
+    stabilityThreshold: 2000,
+    pollInterval: 500
   }
 });
 
@@ -200,7 +200,7 @@ class CML {
 
       const visitor = async (node) => {
         if (node.url && node.alt !== 'CML watermark') {
-          if (watch && !triggerFile) watcher.add(node.url);
+          if (!triggerFile) watcher.add(node.url);
           try {
             const url = new URL(
               await this.publish({ ...opts, path: node.url, session })
