@@ -164,7 +164,7 @@ const runCloud = async (opts) => {
 
     await fs.writeFile(tfMainPath, tpl);
     await tf.init({ dir: tfPath });
-    await tf.apply({ dir: tfPath });
+    await tf.apply({ dir: tfPath, json: true });
 
     const tfStatePath = join(tfPath, 'terraform.tfstate');
     const tfstate = await tf.loadTfState({ path: tfStatePath });
