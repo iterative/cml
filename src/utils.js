@@ -29,7 +29,6 @@ const mimeType = async (opts) => {
   const { path, buffer } = opts;
   const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
   if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
-  FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
   const fileMagic = await FileMagic.getInstance();
 
   let tmppath;
