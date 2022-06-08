@@ -42,12 +42,14 @@ const apply = async (opts = {}) => {
   if (json) {
     return new Promise((resolve, reject) => {
       const stderrCollection = [];
+      const env = process.env;
+      if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
       const tfProc = require('child_process').spawn(
         'terraform',
         [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
         {
           cwd: process.cwd(),
-          env: process.env,
+          env: env,
           shell: true
         }
       );
