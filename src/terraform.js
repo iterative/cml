@@ -47,7 +47,8 @@ const apply = async (opts = {}) => {
         [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
         {
           cwd: process.cwd(),
-          env: process.env
+          env: process.env,
+          shell: true
         }
       );
       tfProc.stdout.on('data', (buf) => {
@@ -73,8 +74,8 @@ const apply = async (opts = {}) => {
       tfProc.on('close', (code, signal) => {
         if (code !== 0) {
           const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
-          reject(new Error('terraform apply error', { code, signal }));
           process.stdout.write(stderrOutput);
+          reject(new Error('terraform apply error', { code, signal }));
         }
         resolve();
       });
