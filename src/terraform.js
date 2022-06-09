@@ -36,9 +36,7 @@ const init = async (opts = {}) => {
 };
 
 const apply = async (opts = {}) => {
-  const { dir = './', json = false } = opts;
-  if (!json) return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
-
+  const { dir = './' } = opts;
   const { env } = process;
   if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
   try {
