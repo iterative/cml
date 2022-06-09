@@ -15,6 +15,7 @@ describe('CML e2e', () => {
         --log                  Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
         --md                   Output in markdown format [](url).            [boolean]
+        --skip-ci              Force skip CI for the created commit (if any) [boolean]
         --merge, --auto-merge  Try to merge the pull request upon creation.  [boolean]
         --rebase               Try to rebase-merge the pull request upon creation.
                                                                              [boolean]
