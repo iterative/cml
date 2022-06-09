@@ -196,7 +196,6 @@ const tfCapture = async (command, args = [], options = {}) => {
             winston.info(message);
           }
         } catch (err) {
-          // Failed to parse json from buffer
           winston.info(line);
         }
       };
