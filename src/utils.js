@@ -189,11 +189,11 @@ const tfCapture = async (command, args = [], options = {}) => {
       const parse = (line) => {
         if (line === '') return;
         try {
-          const log = JSON.parse(line);
-          if (log['@level'] === 'error') {
-            winston.error(`terraform error: ${log['@message']}`);
+          const { '@level': level, '@message': message } = JSON.parse(line);
+          if (level === 'error') {
+            winston.error(`terraform error: ${message}`);
           } else {
-            winston.info(log['@message']);
+            winston.info(message);
           }
         } catch (err) {
           // Failed to parse json from buffer
@@ -205,7 +205,7 @@ const tfCapture = async (command, args = [], options = {}) => {
     tfProc.stderr.on('data', (buf) => {
       stderrCollection.push(buf);
     });
-    tfProc.on('close', (code, signal) => {
+    tfProc.on('close', (code) => {
       if (code !== 0) {
         const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
         reject(stderrOutput);
