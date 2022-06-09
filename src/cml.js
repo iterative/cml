@@ -8,6 +8,7 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const uuid = require('uuid');
 const winston = require('winston');
+const waitForever = require('wait-forever');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -235,7 +236,7 @@ class CML {
         lock = false;
       });
       winston.info('watching for file changes...');
-      await new Promise((resolve) => resolve); // wait forever
+      await waitForever();
     }
 
     let comment;
