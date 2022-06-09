@@ -242,9 +242,8 @@ const runLocal = async (opts) => {
 
   const dataHandler = async (data) => {
     const logs = await cml.parseRunnerLog({ data });
-    for (const idx in logs) {
-      const log = logs[idx];
-      log && winston.info('runner status', log);
+    for (const log of logs) {
+      winston.info('runner status', log);
 
       if (log.status === 'job_started') {
         RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
