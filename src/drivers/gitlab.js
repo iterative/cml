@@ -103,14 +103,20 @@ class Gitlab {
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/merge_requests`;
     const prs = await this.request({ endpoint, method: 'GET' });
 
-    return prs.map((pr) => {
-      const { web_url: url, source_branch: source, target_branch: target } = pr;
-      return {
-        url,
-        source,
-        target
-      };
-    });
+    return prs
+      .filter((pr) => pr.state === 'opened')
+      .map((pr) => {
+        const {
+          web_url: url,
+          source_branch: source,
+          target_branch: target
+        } = pr;
+        return {
+          url,
+          source,
+          target
+        };
+      });
   }
 
   async checkCreate() {
