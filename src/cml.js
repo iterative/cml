@@ -270,7 +270,7 @@ class CML {
       if (regex.test(data)) {
         const date = new Date();
         const log = {
-          id: 'dummy',
+          job: 'dummy',
           status: entity,
           date: date.toISOString(),
           repo: this.repo
