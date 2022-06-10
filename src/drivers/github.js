@@ -329,7 +329,7 @@ class Github {
     return this.parseRunner(runner);
   }
 
-  runnerParseLogEntities() {
+  runnerLogStatusPatterns() {
     return {
       ready: /Listening for Jobs/,
       job_started: /Running job/,

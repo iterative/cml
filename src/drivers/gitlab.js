@@ -246,7 +246,7 @@ class Gitlab {
     };
   }
 
-  runnerParseLogEntities() {
+  runnerLogStatusPatterns() {
     return {
       ready: /Starting runner for/,
       job_started: /"job":.+received/,

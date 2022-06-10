@@ -264,23 +264,23 @@ class CML {
     data = data.toString('utf8');
 
     const logs = [];
-    const entities = await getDriver(this).runnerParseLogEntities();
-    for (const [entity, rule] of Object.entries(entities)) {
-      const regex = new RegExp(rule);
+    const patterns = await getDriver(this).runnerLogStatusPatterns();
+    for (const [status, pattern] of Object.entries(patterns)) {
+      const regex = new RegExp(pattern);
       if (regex.test(data)) {
         const date = new Date();
         const log = {
           job: 'dummy',
-          status: entity,
+          status,
           date: date.toISOString(),
           repo: this.repo
         };
 
-        if (entity === 'job_ended') log.success = false;
+        if (status === 'job_ended') log.success = false;
 
         log.level = log.success ? 'info' : 'error';
 
-        if (entity === 'job_ended_succeded') {
+        if (status === 'job_ended_succeded') {
           logs[logs.length - 1].success = true;
         } else {
           logs.push(log);

@@ -266,7 +266,7 @@ class BitbucketCloud {
     return href;
   }
 
-  runnerParseLogEntities() {
+  runnerLogStatusPatterns() {
     return {
       ready: /Updating runner status to "ONLINE"/,
       job_started: /Getting step StepId/,
