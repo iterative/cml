@@ -272,7 +272,7 @@ const runLocal = async (opts) => {
   proc.stderr.on('data', dataHandler);
   proc.stdout.on('data', dataHandler);
   proc.on('disconnect', () =>
-    shutdown({ ...opts, error: new Error('runner disconnected') })
+    shutdown({ ...opts, error: new Error('runner proccess lost') })
   );
   proc.on('close', (exit) => {
     const reason = `runner closed with exit code ${exit}`;
