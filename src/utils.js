@@ -1,8 +1,10 @@
 const fs = require('fs');
 const PATH = require('path');
+const { Buffer } = require('buffer');
 const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
+const winston = require('winston');
 
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
@@ -182,6 +184,40 @@ const gpuPresent = async () => {
   return gpu;
 };
 
+const tfCapture = async (command, args = [], options = {}) => {
+  return new Promise((resolve, reject) => {
+    const stderrCollection = [];
+    const tfProc = require('child_process').spawn(command, args, options);
+    tfProc.stdout.on('data', (buf) => {
+      const parse = (line) => {
+        if (line === '') return;
+        try {
+          const { '@level': level, '@message': message } = JSON.parse(line);
+          if (level === 'error') {
+            winston.error(`terraform error: ${message}`);
+          } else {
+            winston.info(message);
+          }
+        } catch (err) {
+          winston.info(line);
+        }
+      };
+      buf.toString('utf8').split('\n').forEach(parse);
+    });
+    tfProc.stderr.on('data', (buf) => {
+      stderrCollection.push(buf);
+    });
+    tfProc.on('close', (code) => {
+      if (code !== 0) {
+        const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
+        reject(stderrOutput);
+      }
+      resolve();
+    });
+  });
+};
+
+exports.tfCapture = tfCapture;
 exports.waitForever = waitForever;
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;

@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
-const { exec } = require('./utils');
+const { exec, tfCapture } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
 
@@ -37,7 +37,22 @@ const init = async (opts = {}) => {
 
 const apply = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+  const { env } = process;
+  if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
+  try {
+    await tfCapture(
+      'terraform',
+      [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+      {
+        cwd: process.cwd(),
+        env,
+        shell: true
+      }
+    );
+  } catch (rejectionLogs) {
+    process.stdout.write(rejectionLogs);
+    throw new Error('terraform apply error');
+  }
 };
 
 const destroy = async (opts = {}) => {
