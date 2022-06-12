@@ -7,6 +7,8 @@ const stripAnsi = require('strip-ansi');
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
 
+const waitForever = () => new Promise((resolve) => resolve);
+
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
     require('child_process').exec(
@@ -180,6 +182,7 @@ const gpuPresent = async () => {
   return gpu;
 };
 
+exports.waitForever = waitForever;
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;

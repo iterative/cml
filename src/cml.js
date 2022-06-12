@@ -8,12 +8,11 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const uuid = require('uuid');
 const winston = require('winston');
-const waitForever = require('wait-forever');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri } = require('./utils');
+const { upload, exec, watermarkUri, waitForever } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -184,8 +183,9 @@ class CML {
 
     let userReport = testReport;
     try {
-      if (!userReport)
+      if (!userReport) {
         userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+      }
     } catch (err) {
       if (!watch) throw err;
     }
@@ -193,14 +193,14 @@ class CML {
     let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
 
-    const publishLocalFiles = () => async (tree) => {
+    const publishLocalFiles = async (tree) => {
       const nodes = [];
 
       visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
 
       const visitor = async (node) => {
         if (node.url && node.alt !== 'CML watermark') {
-          if (!triggerFile) watcher.add(node.url);
+          if (!triggerFile && watch) watcher.add(node.url);
           try {
             const url = new URL(
               await this.publish({ ...opts, path: node.url, session })
@@ -216,8 +216,13 @@ class CML {
       await Promise.all(nodes.map(visitor));
     };
 
-    if (publish)
-      report = String(await remark().use(publishLocalFiles).process(report));
+    if (publish) {
+      report = String(
+        await remark()
+          .use(() => publishLocalFiles)
+          .process(report)
+      );
+    }
 
     if (watch) {
       let lock;
@@ -228,8 +233,9 @@ class CML {
         try {
           winston.info(`watcher event: ${event} ${path}`);
           await this.commentCreate({ ...opts, update: true, watch: false });
-          if (event !== 'unlink' && path === triggerFile)
+          if (event !== 'unlink' && path === triggerFile) {
             await fs.promises.unlink(triggerFile);
+          }
         } catch (err) {
           winston.warn(err);
         }
