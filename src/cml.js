@@ -473,6 +473,9 @@ class CML {
     }
 
     const title = `CML PR for ${target} ${shaShort}`;
+    if (skipCI) {
+      title += ' [skip ci]';
+    }
     const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
