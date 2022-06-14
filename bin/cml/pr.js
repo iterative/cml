@@ -39,6 +39,20 @@ exports.builder = (yargs) =>
         conflicts: ['merge', 'rebase'],
         description: 'Try to squash-merge the pull request upon creation.'
       },
+      title: {
+        type: 'string',
+        description: 'Title of the created pull request'
+      },
+      body: {
+        type: 'string',
+        description:
+          'Description/body of created pull request [string or file]. Ex "My cml pr", "reports/experiment-results.md"'
+      },
+      message: {
+        type: 'string',
+        description:
+          'commit message for the new commit used to open the pull request'
+      },
       remote: {
         type: 'string',
         default: GIT_REMOTE,
