@@ -8,6 +8,8 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const uuid = require('uuid');
 const winston = require('winston');
+const remark = require('remark');
+const visit = require('unist-util-visit');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
@@ -155,9 +157,6 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
-    const { remark } = await import('remark');
-    const { visit } = await import('unist-util-visit');
-
     const triggerSha = await this.triggerSha();
     const {
       commitSha: inCommitSha = triggerSha,
