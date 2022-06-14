@@ -142,7 +142,8 @@ exports.builder = (yargs) =>
         type: 'string',
         alias: 'f',
         description:
-          'Append the output to the given file. Create it if does not exist.'
+          'Append the output to the given file. Create it if does not exist.',
+        hidden: true
       },
       rmWatermark: {
         type: 'boolean',
