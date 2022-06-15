@@ -1,4 +1,5 @@
 const { execSync, spawnSync } = require('child_process');
+const fs = require('fs');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
@@ -409,21 +410,11 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-<<<<<<< HEAD
       skipCi,
-||||||| parent of b64ef3b (This is a combination of 18 commits.)
-=======
       branch,
->>>>>>> b64ef3b (This is a combination of 18 commits.)
       message,
       title,
       body: description,
-<<<<<<< HEAD
-||||||| parent of b64ef3b (This is a combination of 18 commits.)
-      skipCI,
-=======
-      skipCi,
->>>>>>> b64ef3b (This is a combination of 18 commits.)
       merge,
       rebase,
       squash
@@ -490,6 +481,13 @@ class CML {
       }
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
+    }
+    let description = body;
+    if (body) {
+      const canRead = await fs.promises.access(body, fs.constants.R_OK);
+      if (canRead) {
+        description = (await fs.promises.readFile(body)).toString('utf8');
+      }
     }
 
     const url = await driver.prCreate({
