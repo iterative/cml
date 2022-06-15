@@ -39,6 +39,10 @@ exports.builder = (yargs) =>
         conflicts: ['merge', 'rebase'],
         description: 'Try to squash-merge the pull request upon creation.'
       },
+      branch: {
+        type: 'string',
+        description: 'set Custom branch name for pull request'
+      },
       title: {
         type: 'string',
         description: 'Title of the created pull request'

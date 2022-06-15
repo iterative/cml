@@ -409,10 +409,21 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
+<<<<<<< HEAD
       skipCi,
+||||||| parent of b64ef3b (This is a combination of 18 commits.)
+=======
+      branch,
+>>>>>>> b64ef3b (This is a combination of 18 commits.)
       message,
       title,
       body: description,
+<<<<<<< HEAD
+||||||| parent of b64ef3b (This is a combination of 18 commits.)
+      skipCI,
+=======
+      skipCi,
+>>>>>>> b64ef3b (This is a combination of 18 commits.)
       merge,
       rebase,
       squash
@@ -446,7 +457,7 @@ class CML {
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
-    const source = `${target}-cml-pr-${shaShort}`;
+    const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
       await exec(
@@ -473,7 +484,8 @@ class CML {
       } else {
         commitMessage = `CML PR for ${shaShort}`;
       }
-      if (skipCi || !(merge || rebase || squash)) {
+      winston.info('skipci, ' + skipCi);
+      if (skipCi || !message || !(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
