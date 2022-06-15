@@ -414,7 +414,7 @@ class CML {
       branch,
       message,
       title,
-      body: description,
+      body,
       merge,
       rebase,
       squash
