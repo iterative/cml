@@ -485,7 +485,7 @@ class CML {
         commitMessage = `CML PR for ${shaShort}`;
       }
       winston.info('skipci, ' + skipCi);
-      if (skipCi || !message || !(merge || rebase || squash)) {
+      if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
