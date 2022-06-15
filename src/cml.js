@@ -484,8 +484,7 @@ class CML {
     let description;
     if (body) {
       try {
-        const buf = await fs.promises.readFile(body);
-        description = buf.toString('utf8');
+        description = (await fs.promises.readFile(body)).toString('utf8');
       } catch (err) {
         winston.debug(`"${body}" is not a readable file, passing it through`);
         description = body;
