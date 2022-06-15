@@ -410,6 +410,9 @@ class CML {
       globs = ['dvc.lock', '.gitignore'],
       md,
       skipCi,
+      message,
+      title,
+      body: description,
       merge,
       rebase,
       squash
@@ -460,11 +463,16 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
+      let commitMessage;
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
+      if (message) {
+        commitMessage = message;
+      } else {
+        commitMessage = `CML PR for ${shaShort}`;
+      }
       if (skipCi || !(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
@@ -472,16 +480,15 @@ class CML {
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
-    const description = `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-  `;
-
     const url = await driver.prCreate({
       source,
       target,
-      title,
-      description,
+      title: title || `CML PR for ${target} ${shaShort}`,
+      description:
+        description ||
+        `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+      `,
       autoMerge: merge
         ? 'merge'
         : rebase
