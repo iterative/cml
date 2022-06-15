@@ -488,7 +488,7 @@ class CML {
         const buf = await fs.promises.readFile(body);
         console.log(buf);
         console.log(buf.toString('utf8'));
-        description = buf.toString('uft8');
+        description = buf.toString('utf8');
         winston.info('desc: ' + description);
       } catch (err) {
         console.log(err);
