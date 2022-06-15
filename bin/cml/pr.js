@@ -41,11 +41,11 @@ exports.builder = (yargs) =>
       },
       branch: {
         type: 'string',
-        description: 'set Custom branch name for pull request'
+        description: 'Set a custom branch name for pull request.'
       },
       title: {
         type: 'string',
-        description: 'Title of the created pull request'
+        description: 'Title of the created pull request.'
       },
       body: {
         type: 'string',
@@ -55,7 +55,7 @@ exports.builder = (yargs) =>
       message: {
         type: 'string',
         description:
-          'commit message for the new commit used to open the pull request'
+          'The commit message for the new commit used to open the pull request'
       },
       remote: {
         type: 'string',
