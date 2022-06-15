@@ -475,7 +475,6 @@ class CML {
       } else {
         commitMessage = `CML PR for ${shaShort}`;
       }
-      winston.info('skipci, ' + skipCi);
       if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
@@ -486,12 +485,8 @@ class CML {
     if (body) {
       try {
         const buf = await fs.promises.readFile(body);
-        console.log(buf);
-        console.log(buf.toString('utf8'));
         description = buf.toString('utf8');
-        winston.info('desc: ' + description);
       } catch (err) {
-        console.log(err);
         winston.debug(`"${body}" is not a readable file, passing it through`);
         description = body;
       }
