@@ -21,11 +21,10 @@ describe('CML e2e', () => {
                                                                              [boolean]
         --squash               Try to squash-merge the pull request upon creation.
                                                                              [boolean]
-        --branch               Set a custom branch name for pull request.     [string]
-        --title                Title of the created pull request.             [string]
-        --body                 Body for the created pull request [string].    [string]
-        --message              The commit message for the new commit used to open the
-                               pull request                                   [string]
+        --branch               Branch name for the pull request.              [string]
+        --title                Pull request title.                            [string]
+        --body                 Pull request description.                      [string]
+        --message              Commit message                                 [string]
         --remote               Sets git remote.           [string] [default: \\"origin\\"]
         --user-email           Sets git user email.
                                              [string] [default: \\"olivaw@iterative.ai\\"]

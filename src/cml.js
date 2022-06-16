@@ -480,17 +480,16 @@ class CML {
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
-    const description =
-      body ||
-      `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-    `;
 
     const url = await driver.prCreate({
       source,
       target,
       title: title || `CML PR for ${target} ${shaShort}`,
-      description,
+      description:
+        body ||
+        `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+      `,
       autoMerge: merge
         ? 'merge'
         : rebase
