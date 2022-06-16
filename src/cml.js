@@ -415,6 +415,7 @@ class CML {
       message,
       title,
       body,
+      bodyFile,
       merge,
       rebase,
       squash
@@ -481,13 +482,17 @@ class CML {
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
-    let description;
-    if (body) {
+    let description =
+      body ||
+      `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+    `;
+    if (bodyFile) {
       try {
-        description = (await fs.promises.readFile(body)).toString('utf8');
+        description = (await fs.promises.readFile(bodyFile)).toString('utf8');
       } catch (err) {
-        winston.debug(`"${body}" is not a readable file, passing it through`);
-        description = body;
+        winston.error(`"${bodyFile}" is not a readable file.`);
+        throw err;
       }
     }
 
@@ -495,11 +500,7 @@ class CML {
       source,
       target,
       title: title || `CML PR for ${target} ${shaShort}`,
-      description:
-        description ||
-        `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-      `,
+      description,
       autoMerge: merge
         ? 'merge'
         : rebase
