@@ -49,13 +49,7 @@ exports.builder = (yargs) =>
       },
       body: {
         type: 'string',
-        conflicts: ['bodyFile'],
         description: 'Body for the created pull request [string].'
-      },
-      bodyFile: {
-        type: 'string',
-        conflicts: ['body'],
-        description: 'Body for the created pull request [relative filename]'
       },
       message: {
         type: 'string',

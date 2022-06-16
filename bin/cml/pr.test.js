@@ -24,8 +24,6 @@ describe('CML e2e', () => {
         --branch               Set a custom branch name for pull request.     [string]
         --title                Title of the created pull request.             [string]
         --body                 Body for the created pull request [string].    [string]
-        --body-file            Body for the created pull request [relative filename]
-                                                                              [string]
         --message              The commit message for the new commit used to open the
                                pull request                                   [string]
         --remote               Sets git remote.           [string] [default: \\"origin\\"]

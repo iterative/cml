@@ -1,5 +1,4 @@
 const { execSync, spawnSync } = require('child_process');
-const fs = require('fs');
 const gitUrlParse = require('git-url-parse');
 const stripAuth = require('strip-url-auth');
 const globby = require('globby');
@@ -415,7 +414,6 @@ class CML {
       message,
       title,
       body,
-      bodyFile,
       merge,
       rebase,
       squash
@@ -482,19 +480,11 @@ class CML {
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
-    let description =
+    const description =
       body ||
       `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
     `;
-    if (bodyFile) {
-      try {
-        description = (await fs.promises.readFile(bodyFile)).toString('utf8');
-      } catch (err) {
-        winston.error(`"${bodyFile}" is not a readable file.`);
-        throw err;
-      }
-    }
 
     const url = await driver.prCreate({
       source,
