@@ -50,7 +50,7 @@ exports.builder = (yargs) =>
       body: {
         type: 'string',
         description:
-          'Description/body of created pull request [string or file]. Ex "My cml pr", "reports/experiment-results.md"'
+          'Body for the created pull request [string or filename].'
       },
       message: {
         type: 'string',
