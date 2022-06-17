@@ -464,16 +464,11 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      let commitMessage;
+      let commitMessage = message || `CML PR for ${shaShort}`;
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      if (message) {
-        commitMessage = message;
-      } else {
-        commitMessage = `CML PR for ${shaShort}`;
-      }
       if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
