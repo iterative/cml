@@ -15,7 +15,7 @@ let RUNNER_ID;
 let RUNNER_JOBS_RUNNING = [];
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
-const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
+const GHA_WORKFLOW_TIMEOUT = (35 * 24 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -321,9 +321,9 @@ const runLocal = async (opts) => {
         RUNNER_JOBS_RUNNING.forEach((job) => {
           if (
             new Date().getTime() - new Date(job.date).getTime() >
-            GH_5_MIN_TIMEOUT
+            GHA_WORKFLOW_TIMEOUT
           ) {
-            shutdown({ ...opts, reason: 'timeout:72h' });
+            shutdown({ ...opts, reason: 'timeout:35d' });
             clearInterval(watcherSeventyTwo);
           }
         });

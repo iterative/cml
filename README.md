@@ -411,7 +411,7 @@ environment variables for passing your cloud service credentials to the
 workflow.
 
 Note that `cml runner` will also automatically restart your jobs (whether from a
-[GitHub Actions 72-hour timeout](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration#usage-limits)
+[GitHub Actions 35 day workflow timeout](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration#usage-limits)
 or a
 [AWS EC2 spot instance interruption](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html)).
 
@@ -438,7 +438,7 @@ jobs:
   train-model:
     needs: deploy-runner
     runs-on: [self-hosted, cml-gpu]
-    timeout-minutes: 4320 # 72h
+    timeout-minutes: 4320 # 72h - up to 50400 (35d) supported
     container:
       image: docker://iterativeai/cml:0-dvc2-base1-gpu
       options: --gpus all
