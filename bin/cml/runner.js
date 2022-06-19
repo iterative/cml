@@ -322,12 +322,18 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  const acpiSock = net.connect('/var/run/acpid.socket');
-  acpiSock.on('data', (buf) => {
-    const data = buf.toString().toLowerCase();
-    if (data.includes('power') && data.includes('button'))
-      shutdown({ ...opts, reason: 'ACPI shutdown' });
-  });
+  try {
+    const acpiSock = net.connect('/var/run/acpid.socket');
+    acpiSock.on('data', (buf) => {
+      const data = buf.toString().toLowerCase();
+      if (data.includes('power') && data.includes('button'))
+        shutdown({ ...opts, reason: 'ACPI shutdown' });
+    });
+  } catch (err) {
+    winston.warn(
+      `Error setting ACPI socket: ${err.message}. Package acpi is a requirement.`
+    );
+  }
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
