@@ -266,6 +266,15 @@ class BitbucketCloud {
     return href;
   }
 
+  runnerLogStatusPatterns() {
+    return {
+      ready: /Updating runner status to "ONLINE"/,
+      job_started: /Getting step StepId/,
+      job_ended: /Completing step with result/,
+      job_ended_succeded: /Completing step with result Result{status=PASSED/
+    };
+  }
+
   async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
     winston.warn(
       'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'

@@ -329,6 +329,15 @@ class Github {
     return this.parseRunner(runner);
   }
 
+  runnerLogStatusPatterns() {
+    return {
+      ready: /Listening for Jobs/,
+      job_started: /Running job/,
+      job_ended: /completed with result/,
+      job_ended_succeded: /completed with result: Succeeded/
+    };
+  }
+
   parseRunner(runner) {
     const { id, name, busy, status, labels } = runner;
     return {
