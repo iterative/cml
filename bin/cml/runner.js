@@ -1,10 +1,11 @@
 const { join } = require('path');
 const { homedir } = require('os');
 const fs = require('fs').promises;
-const { SpotNotifier } = require('ec2-spot-notification');
+const net = require('net');
 const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
+
 const CML = require('../../src/cml').default;
 const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
@@ -295,16 +296,6 @@ const runLocal = async (opts) => {
   }
 
   if (!noRetry) {
-    try {
-      winston.info(`EC2 id ${await SpotNotifier.instanceId()}`);
-      SpotNotifier.on('termination', () =>
-        shutdown({ ...opts, reason: 'spot_termination' })
-      );
-      SpotNotifier.start();
-    } catch (err) {
-      winston.warn('SpotNotifier can not be started.');
-    }
-
     if (cml.driver === 'github') {
       const watcherSeventyTwo = setInterval(() => {
         RUNNER_JOBS_RUNNING.forEach((job) => {
@@ -329,6 +320,13 @@ const run = async (opts) => {
 
   ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach((signal) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
+  });
+
+  const acpiSock = net.connect('/var/run/acpid.socket');
+  acpiSock.on('data', (buf) => {
+    const data = buf.toString().toLowerCase();
+    if (data.includes('power') && data.includes('button'))
+      shutdown({ ...opts, reason: 'ACPI shutdown' });
   });
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
