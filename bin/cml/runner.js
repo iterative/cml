@@ -377,7 +377,6 @@ const run = async (opts) => {
   }
 
   if (reuseIdle) {
-    // get runner by labels
     winston.info(
       `Checking for existing idle runner matching labels: ${labels}.`
     );
