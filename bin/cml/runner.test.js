@@ -94,6 +94,9 @@ describe('CML e2e', () => {
         --reuse                                   Don't launch a new runner if an
                                                   existing one has the same name or
                                                   overlapping labels         [boolean]
+        --reuse-idle                              Same behavoir as reuse but creates a
+                                                  runner if matching runners are busy.
+                                                                             [boolean]
         --docker-volumes                          Docker volumes. This feature is only
                                                   supported in GitLab
                                                                  [array] [default: []]
