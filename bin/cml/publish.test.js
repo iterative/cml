@@ -22,8 +22,6 @@ describe('CML e2e', () => {
             --rm-watermark  Avoid CML watermark.                             [boolean]
             --mime-type     Specifies the mime-type. If not set guess it from the
                             content.                                          [string]
-        -f, --file          Append the output to the given file. Create it if does not
-                            exist.                                            [string]
             --repo          Specifies the repo to be used. If not specified is
                             extracted from the CI ENV.                        [string]
             --token         Personal access token to be used. If not specified,
