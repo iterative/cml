@@ -378,9 +378,15 @@ const run = async (opts) => {
 
   if (reuseIdle) {
     // get runner by labels
+    winston.info(
+      `Checking for existing idle runner matching labels: ${labels}.`
+    );
     const res = await cml.runnersByLabels({ labels, runners });
     const availableRunner = res.find((runner) => runner.online && !runner.busy);
-    if (availableRunner) process.exit(0);
+    if (availableRunner) {
+      winston.info('Found matching idle runner.', availableRunner);
+      process.exit(0);
+    }
   }
 
   winston.info(`Preparing workdir ${workdir}...`);
