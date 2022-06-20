@@ -341,6 +341,7 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
+    reuseIdle,
     dockerVolumes
   } = opts;
 
@@ -373,6 +374,13 @@ const run = async (opts) => {
       `Reusing existing online runners with the ${labels} labels...`
     );
     process.exit(0);
+  }
+
+  if (reuseIdle) {
+    // get runner by labels
+    const res = await cml.runnersByLabels({ labels, runners });
+    const availableRunner = res.find((runner) => runner.online && !runner.busy);
+    if (availableRunner) process.exit(0);
   }
 
   winston.info(`Preparing workdir ${workdir}...`);
@@ -445,12 +453,20 @@ exports.builder = (yargs) =>
       },
       single: {
         type: 'boolean',
+        conflicts: ['reuse', 'reuseIdle'],
         description: 'Exit after running a single job'
       },
       reuse: {
         type: 'boolean',
+        conflicts: ['single', 'reuseIdle'],
         description:
           "Don't launch a new runner if an existing one has the same name or overlapping labels"
+      },
+      reuseIdle: {
+        type: 'boolean',
+        conflicts: ['reuse', 'single'],
+        description:
+          'Same behavoir as reuse but creates a runner if matching runners are busy.'
       },
       workdir: {
         type: 'string',
