@@ -399,171 +399,166 @@ exports.handler = async (opts) => {
   }
 };
 
-exports.builder = (yargs) =>
-  yargs.env('CML_RUNNER').options(
-    kebabcaseKeys({
-      driver: {
-        type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description:
-          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-      },
-      repo: {
-        type: 'string',
-        description:
-          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-      },
-      labels: {
-        type: 'string',
-        default: 'cml',
-        description:
-          'One or more user-defined labels for this runner (delimited with commas)'
-      },
-      idleTimeout: {
-        type: 'string',
-        default: '5 minutes',
-        coerce: (val) =>
-          /^-?\d+$/.test(val) ? parseInt(val) : timestring(val),
-        description:
-          'Time to wait for jobs before shutting down (e.g. "5min"). Use "never" to disable'
-      },
-      name: {
-        type: 'string',
-        default: `cml-${randid()}`,
-        defaultDescription: 'cml-{ID}',
-        description: 'Name displayed in the repository once registered'
-      },
-      noRetry: {
-        type: 'boolean',
-        description:
-          'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
-      },
-      single: {
-        type: 'boolean',
-        description: 'Exit after running a single job'
-      },
-      reuse: {
-        type: 'boolean',
-        description:
-          "Don't launch a new runner if an existing one has the same name or overlapping labels"
-      },
-      workdir: {
-        type: 'string',
-        hidden: true,
-        alias: 'path',
-        description: 'Runner working directory'
-      },
-      dockerVolumes: {
-        type: 'array',
-        default: [],
-        description: 'Docker volumes. This feature is only supported in GitLab'
-      },
-      cloud: {
-        type: 'string',
-        choices: ['aws', 'azure', 'gcp', 'kubernetes'],
-        description: 'Cloud to deploy the runner'
-      },
-      cloudRegion: {
-        type: 'string',
-        default: 'us-west',
-        description:
-          'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
-      },
-      cloudType: {
-        type: 'string',
-        description:
-          'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
-      },
-      cloudPermissionSet: {
-        type: 'string',
-        default: '',
-        description:
-          'Specifies the instance profile in AWS or instance service account in GCP'
-      },
-      cloudMetadata: {
-        type: 'array',
-        string: true,
-        default: [],
-        coerce: (items) => {
-          const keyValuePairs = items.map((item) => [
-            ...item.split(/=(.+)/),
-            null
-          ]);
-          return Object.fromEntries(keyValuePairs);
-        },
-        description:
-          'Key Value pairs to associate cml-runner instance on the provider i.e. tags/labels "key=value"'
-      },
-      cloudGpu: {
-        type: 'string',
-        description:
-          'GPU type. Choices: k80, v100, or native types e.g. nvidia-tesla-t4',
-        coerce: (val) => (val === 'nogpu' ? undefined : val)
-      },
-      cloudHddSize: {
-        type: 'number',
-        description: 'HDD size in GB'
-      },
-      cloudSshPrivate: {
-        type: 'string',
-        coerce: (val) => val && val.replace(/\n/g, '\\n'),
-        description:
-          'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
-      },
-      cloudSpot: {
-        type: 'boolean',
-        description: 'Request a spot instance'
-      },
-      cloudSpotPrice: {
-        type: 'number',
-        default: -1,
-        description:
-          'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
-      },
-      cloudStartupScript: {
-        type: 'string',
-        description:
-          'Run the provided Base64-encoded Linux shell script during the instance initialization'
-      },
-      cloudAwsSecurityGroup: {
-        type: 'string',
-        default: '',
-        description: 'Specifies the security group in AWS'
-      },
-      cloudAwsSubnet: {
-        type: 'string',
-        default: '',
-        description: 'Specifies the subnet to use within AWS',
-        alias: 'cloud-aws-subnet-id'
-      },
-      tpiVersion: {
-        type: 'string',
-        default: '>= 0.9.10',
-        description:
-          'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
-        hidden: true
-      },
-      cmlVersion: {
-        type: 'string',
-        default: require('../../package.json').version,
-        description: 'CML version to load on TPI instance',
-        hidden: true
-      },
-      tfResource: {
-        hidden: true,
-        alias: 'tf_resource'
-      },
-      destroyDelay: {
-        type: 'number',
-        default: 10,
-        hidden: true,
-        description:
-          'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
-      }
-    })
-  );
+exports.builder = (yargs) => yargs.env('CML_RUNNER').options(options);
+
+const options = kebabcaseKeys({
+  driver: {
+    type: 'string',
+    choices: ['github', 'gitlab', 'bitbucket'],
+    description:
+      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+  },
+  repo: {
+    type: 'string',
+    description:
+      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+  },
+  token: {
+    type: 'string',
+    description:
+      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+  },
+  labels: {
+    type: 'string',
+    default: 'cml',
+    description:
+      'One or more user-defined labels for this runner (delimited with commas)'
+  },
+  idleTimeout: {
+    type: 'string',
+    default: '5 minutes',
+    coerce: (val) => (/^-?\d+$/.test(val) ? parseInt(val) : timestring(val)),
+    description:
+      'Time to wait for jobs before shutting down (e.g. "5min"). Use "never" to disable'
+  },
+  name: {
+    type: 'string',
+    default: `cml-${randid()}`,
+    defaultDescription: 'cml-{ID}',
+    description: 'Name displayed in the repository once registered'
+  },
+  noRetry: {
+    type: 'boolean',
+    description:
+      'Do not restart workflow terminated due to instance disposal or GitHub Actions timeout'
+  },
+  single: {
+    type: 'boolean',
+    description: 'Exit after running a single job'
+  },
+  reuse: {
+    type: 'boolean',
+    description:
+      "Don't launch a new runner if an existing one has the same name or overlapping labels"
+  },
+  workdir: {
+    type: 'string',
+    hidden: true,
+    alias: 'path',
+    description: 'Runner working directory'
+  },
+  dockerVolumes: {
+    type: 'array',
+    default: [],
+    description: 'Docker volumes. This feature is only supported in GitLab'
+  },
+  cloud: {
+    type: 'string',
+    choices: ['aws', 'azure', 'gcp', 'kubernetes'],
+    description: 'Cloud to deploy the runner'
+  },
+  cloudRegion: {
+    type: 'string',
+    default: 'us-west',
+    description:
+      'Region where the instance is deployed. Choices: [us-east, us-west, eu-west, eu-north]. Also accepts native cloud regions'
+  },
+  cloudType: {
+    type: 'string',
+    description:
+      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+  },
+  cloudPermissionSet: {
+    type: 'string',
+    default: '',
+    description:
+      'Specifies the instance profile in AWS or instance service account in GCP'
+  },
+  cloudMetadata: {
+    type: 'array',
+    string: true,
+    default: [],
+    coerce: (items) => {
+      const keyValuePairs = items.map((item) => [...item.split(/=(.+)/), null]);
+      return Object.fromEntries(keyValuePairs);
+    },
+    description:
+      'Key Value pairs to associate cml-runner instance on the provider i.e. tags/labels "key=value"'
+  },
+  cloudGpu: {
+    type: 'string',
+    description:
+      'GPU type. Choices: k80, v100, or native types e.g. nvidia-tesla-t4',
+    coerce: (val) => (val === 'nogpu' ? undefined : val)
+  },
+  cloudHddSize: {
+    type: 'number',
+    description: 'HDD size in GB'
+  },
+  cloudSshPrivate: {
+    type: 'string',
+    coerce: (val) => val && val.replace(/\n/g, '\\n'),
+    description:
+      'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
+  },
+  cloudSpot: {
+    type: 'boolean',
+    description: 'Request a spot instance'
+  },
+  cloudSpotPrice: {
+    type: 'number',
+    default: -1,
+    description:
+      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+  },
+  cloudStartupScript: {
+    type: 'string',
+    description:
+      'Run the provided Base64-encoded Linux shell script during the instance initialization'
+  },
+  cloudAwsSecurityGroup: {
+    type: 'string',
+    default: '',
+    description: 'Specifies the security group in AWS'
+  },
+  cloudAwsSubnet: {
+    type: 'string',
+    default: '',
+    description: 'Specifies the subnet to use within AWS',
+    alias: 'cloud-aws-subnet-id'
+  },
+  tpiVersion: {
+    type: 'string',
+    default: '>= 0.9.10',
+    description:
+      'Pin the iterative/iterative terraform provider to a specific version. i.e. "= 0.10.4" See: https://www.terraform.io/language/expressions/version-constraints',
+    hidden: true
+  },
+  cmlVersion: {
+    type: 'string',
+    default: require('../../package.json').version,
+    description: 'CML version to load on TPI instance',
+    hidden: true
+  },
+  tfResource: {
+    hidden: true,
+    alias: 'tf_resource'
+  },
+  destroyDelay: {
+    type: 'number',
+    default: 10,
+    hidden: true,
+    description:
+      'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
+  }
+});
