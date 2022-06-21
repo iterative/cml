@@ -1,8 +1,8 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
-const CML = require('../../src/cml').default;
+const CML = require('../../../src/cml').default;
 
-exports.command = 'send-github-check <markdown file>';
+exports.command = 'create <markdown file>';
 exports.description = 'Create a check report';
 
 exports.handler = async (opts) => {
@@ -13,9 +13,9 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs.env('CML_SEND_GITHUB_CHECK').options(options);
+  yargs.env('CML_SEND_GITHUB_CHECK').options(exports.options);
 
-const options = kebabcaseKeys({
+exports.options = kebabcaseKeys({
   commitSha: {
     type: 'string',
     alias: 'head-sha',

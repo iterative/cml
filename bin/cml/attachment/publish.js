@@ -2,10 +2,10 @@ const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const winston = require('winston');
 
-const CML = require('../../src/cml').default;
+const CML = require('../../../src/cml').default;
 
 exports.command = 'publish <asset>';
-exports.description = false;
+exports.description = 'publish an asset';
 
 exports.handler = async (opts) => {
   if (opts.gitlabUploads) {
@@ -29,9 +29,9 @@ exports.handler = async (opts) => {
   else await fs.writeFile(file, output);
 };
 
-exports.builder = (yargs) => yargs.env('CML_PUBLISH').options(options);
+exports.builder = (yargs) => yargs.env('CML_PUBLISH').options(exports.options);
 
-const options = kebabcaseKeys({
+exports.options = kebabcaseKeys({
   md: {
     type: 'boolean',
     description: 'Output in markdown format [title || name](url).'

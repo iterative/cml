@@ -1,10 +1,10 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 
-const CML = require('../../src/cml').default;
+const CML = require('../../../src/cml').default;
 
-exports.command = 'send-comment <markdown file>';
-exports.description = 'Comment on a commit';
+exports.command = 'create <markdown file>';
+exports.description = 'Create a report';
 
 exports.handler = async (opts) => {
   const path = opts.markdownfile;
@@ -13,9 +13,10 @@ exports.handler = async (opts) => {
   console.log(await cml.commentCreate({ ...opts, report }));
 };
 
-exports.builder = (yargs) => yargs.env('CML_SEND_COMMENT').options(options);
+exports.builder = (yargs) =>
+  yargs.env('CML_SEND_COMMENT').options(exports.options);
 
-const options = kebabcaseKeys({
+exports.options = kebabcaseKeys({
   pr: {
     type: 'boolean',
     description:

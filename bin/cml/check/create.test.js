@@ -1,4 +1,4 @@
-const { exec } = require('../../src/utils');
+const { exec } = require('../../../src/utils');
 const fs = require('fs').promises;
 
 describe('CML e2e', () => {
@@ -36,22 +36,18 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-github-check <markdown file>
 
-      Create a check report
-
       Options:
         --help                    Show help                                  [boolean]
         --version                 Show version number                        [boolean]
         --log                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                  Platform where the repository is hosted. If not
+        --driver                  Forge where the repository is hosted. If not
                                   specified, it will be inferred from the environment
                                    [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --repo                    Repository to be used for registering the runner. If
-                                  not specified, it will be inferred from the
-                                  environment                                 [string]
-        --token                   Personal access token to register a self-hosted
-                                  runner on the repository. If not specified, it will
-                                  be inferred from the environment            [string]
+        --repo                    Repository. If not specified, it will be inferred
+                                  from the environment                        [string]
+        --token                   Personal access token. If not specified, it will be
+                                  inferred from the environment               [string]
         --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
                                                                               [string]
         --conclusion              Sets the conclusion status of the check.

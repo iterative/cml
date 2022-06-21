@@ -1,4 +1,4 @@
-const { exec } = require('../../src/utils');
+const { exec } = require('../../../src/utils');
 
 describe('CML e2e', () => {
   test('cml-ci --help', async () => {
@@ -7,21 +7,18 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js ci
 
-      Fixes specific CI setups
-
       Options:
         --help        Show help                                              [boolean]
         --version     Show version number                                    [boolean]
         --log         Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver      Platform where the repository is hosted. If not specified, it
-                      will be inferred from the environment
+        --driver      Forge where the repository is hosted. If not specified, it will
+                      be inferred from the environment
                                    [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --repo        Repository to be used for registering the runner. If not
-                      specified, it will be inferred from the environment     [string]
-        --token       Personal access token to register a self-hosted runner on the
-                      repository. If not specified, it will be inferred from the
+        --repo        Repository. If not specified, it will be inferred from the
                       environment                                             [string]
+        --token       Personal access token. If not specified, it will be inferred
+                      from the environment                                    [string]
         --unshallow   Fetch as much as possible, converting a shallow repository to a
                       complete one.                                          [boolean]
         --user-email  Set Git user email.    [string] [default: \\"olivaw@iterative.ai\\"]

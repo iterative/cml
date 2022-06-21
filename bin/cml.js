@@ -51,7 +51,7 @@ const handleError = (message, error) => {
   process.exit(1);
 };
 
-const options = {
+exports.options = {
   log: {
     type: 'string',
     description: 'Maximum log level',
@@ -63,17 +63,17 @@ const options = {
     type: 'string',
     choices: ['github', 'gitlab', 'bitbucket'],
     description:
-      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
+      'Forge where the repository is hosted. If not specified, it will be inferred from the environment'
   },
   repo: {
     type: 'string',
     description:
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
+      'Repository. If not specified, it will be inferred from the environment'
   },
   token: {
     type: 'string',
     description:
-      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
+      'Personal access token. If not specified, it will be inferred from the environment'
   }
 };
 
@@ -97,8 +97,9 @@ for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
 yargs
   .fail(handleError)
   .env('CML')
-  .options(options)
-  .commandDir('./cml', { exclude: /\.test\.js$/ })
+  .options(exports.options)
+  .commandDir('./cml')
+  .commandDir('./legacy')
   .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
   .recommendCommands()
   .demandCommand()

@@ -5,7 +5,7 @@ const { homedir } = require('os');
 const tempy = require('tempy');
 
 const winston = require('winston');
-const { exec, watermarkUri, sleep } = require('../../src/utils');
+const { exec, watermarkUri, sleep } = require('../../../src/utils');
 
 const closeFd = (fd) => {
   try {
@@ -41,8 +41,8 @@ exports.tbLink = async (opts = {}) => {
   throw new Error(`Tensorboard took too long. ${error}`);
 };
 
-exports.command = 'tensorboard-dev';
-exports.description = 'Get a tensorboard link';
+exports.command = 'start';
+exports.description = 'Start the tensorboard agent and get a link';
 
 exports.handler = async (opts) => {
   const {
@@ -105,9 +105,10 @@ exports.handler = async (opts) => {
   process.exit(0);
 };
 
-exports.builder = (yargs) => yargs.env('CML_TENSORBOARD_DEV').options(options);
+exports.builder = (yargs) =>
+  yargs.env('CML_TENSORBOARD_DEV').options(exports.options);
 
-const options = kebabcaseKeys({
+exports.options = kebabcaseKeys({
   credentials: {
     type: 'string',
     alias: 'c',
