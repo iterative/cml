@@ -263,14 +263,7 @@ class Gitlab {
 
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const {
-      source,
-      target,
-      title,
-      description,
-      skipCi,
-      autoMerge
-    } = opts;
+    const { source, target, title, description, skipCi, autoMerge } = opts;
 
     const prTitle = skipCi ? title + ' [skip ci]' : title;
     const endpoint = `/projects/${projectPath}/merge_requests`;
