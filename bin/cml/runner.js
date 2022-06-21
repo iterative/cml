@@ -472,7 +472,7 @@ exports.builder = (yargs) =>
         type: 'boolean',
         conflicts: ['reuse', 'single'],
         description:
-          'Same behavoir as reuse but creates a runner if matching runners are busy.'
+          'Only creates a new runner if the matching labels dont exist or are already busy.'
       },
       workdir: {
         type: 'string',
