@@ -13,8 +13,9 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     strategy:
-      repos:
-        - cml-playground
+      matrix:
+        repos:
+          - cml-playground
     steps:
       - name: Trigger external actions
         run: |

@@ -252,6 +252,15 @@ class Gitlab {
     };
   }
 
+  runnerLogStatusPatterns() {
+    return {
+      ready: /Starting runner for/,
+      job_started: /"job":.+received/,
+      job_ended: /"duration_s":/,
+      job_ended_succeded: /"duration_s":.+Job succeeded/
+    };
+  }
+
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
     const {

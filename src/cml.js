@@ -257,77 +257,38 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  parseRunnerLog(opts = {}) {
+  async parseRunnerLog(opts = {}) {
     let { data } = opts;
-    if (!data) return;
+    if (!data) return [];
 
-    const date = new Date();
+    data = data.toString('utf8');
 
-    try {
-      data = data.toString('utf8');
+    const logs = [];
+    const patterns = await getDriver(this).runnerLogStatusPatterns();
+    for (const [status, pattern] of Object.entries(patterns)) {
+      const regex = new RegExp(pattern);
+      if (regex.test(data)) {
+        const date = new Date();
+        const log = {
+          job: 'dummy',
+          status,
+          date: date.toISOString(),
+          repo: this.repo
+        };
 
-      let log = {
-        level: 'info',
-        date: date.toISOString(),
-        repo: this.repo
-      };
-
-      if (this.driver === GITHUB) {
-        const id = 'gh';
-        if (data.includes('Running job')) {
-          log.job = id;
-          log.status = 'job_started';
-        } else if (data.includes('completed with result')) {
-          log.job = id;
-          log.status = 'job_ended';
-          log.success = data.includes('Succeeded');
-        } else if (data.includes('Listening for Jobs')) {
-          log.status = 'ready';
-        }
-
-        const [, message] = data.split(/[A-Z]:\s/);
-        return { ...log, message: (message || data).replace(/\n/g, '') };
-      }
-
-      if (this.driver === GITLAB) {
-        const { msg, job, duration_s: duration } = JSON.parse(data);
-        log = { ...log, job };
-
-        if (msg.endsWith('received')) {
-          log.status = 'job_started';
-        } else if (duration) {
-          log.status = 'job_ended';
-          log.success = msg.includes('Job succeeded');
-        } else if (msg.includes('Starting runner for')) {
-          log.status = 'ready';
-        }
-        return log;
-      }
-
-      if (this.driver === BB) {
-        const id = 'bb';
-        if (data.includes('Getting step StepId{accountUuid={')) {
-          log.job = id;
-          log.status = 'job_started';
-        } else if (
-          data.includes('Completing step with result Result{status=')
-        ) {
-          log.job = id;
-          log.status = 'job_ended';
-          log.success = data.includes('status=PASSED');
-        } else if (data.includes('Updating runner status to "ONLINE"')) {
-          log.status = 'ready';
-        }
+        if (status === 'job_ended') log.success = false;
 
         log.level = log.success ? 'info' : 'error';
-        return log.status ? log : null;
+
+        if (status === 'job_ended_succeded') {
+          logs[logs.length - 1].success = true;
+        } else {
+          logs.push(log);
+        }
       }
-    } catch (err) {
-      winston.warn(`Failed parsing log: ${err.message}`);
-      winston.warn(
-        `Original log bytes, as Base64: ${Buffer.from(data).toString('base64')}`
-      );
     }
+
+    return logs;
   }
 
   async startRunner(opts = {}) {
@@ -465,7 +426,7 @@ class CML {
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
       let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCI || !(merge || rebase || squash)) {
+      if (skipCi || !(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
