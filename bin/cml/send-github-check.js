@@ -44,15 +44,5 @@ const options = kebabcaseKeys({
     type: 'string',
     default: 'CML Report',
     description: 'Sets title of the check.'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      "GITHUB_TOKEN or Github App token. Personal access token won't work"
   }
 });

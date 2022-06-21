@@ -23,7 +23,15 @@ describe('command-line interface tests', () => {
         --help     Show help                                                 [boolean]
         --version  Show version number                                       [boolean]
         --log      Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]"
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --driver   Platform where the repository is hosted. If not specified, it will
+                   be inferred from the environment
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+        --repo     Repository to be used for registering the runner. If not specified,
+                   it will be inferred from the environment                   [string]
+        --token    Personal access token to register a self-hosted runner on the
+                   repository. If not specified, it will be inferred from the
+                   environment                                                [string]"
     `);
   });
 });

@@ -65,20 +65,5 @@ const options = kebabcaseKeys({
     description:
       'Append the output to the given file. Create it if does not exist.',
     hidden: true
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If not specified, extracted from ENV REPO_TOKEN, GITLAB_TOKEN, GITHUB_TOKEN, or BITBUCKET_TOKEN.'
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab', 'bitbucket'],
-    description: 'If not specify it infers it from the ENV.'
   }
 });

@@ -36,20 +36,5 @@ const options = kebabcaseKeys({
     type: 'boolean',
     description:
       'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab', 'bitbucket'],
-    description: 'If not specify it infers it from the ENV.'
   }
 });

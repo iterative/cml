@@ -402,22 +402,6 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) => yargs.env('CML_RUNNER').options(options);
 
 const options = kebabcaseKeys({
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab', 'bitbucket'],
-    description:
-      'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-  },
   labels: {
     type: 'string',
     default: 'cml',

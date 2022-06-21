@@ -28,20 +28,5 @@ const options = kebabcaseKeys({
     type: 'string',
     default: GIT_USER_NAME,
     description: 'Set Git user name.'
-  },
-  repo: {
-    type: 'string',
-    description:
-      'Set repository to be used. If unspecified, inferred from the environment.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If unspecified, inferred from the environment.'
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab', 'bitbucket'],
-    description: 'If unspecified, inferred from the environment.'
   }
 });
