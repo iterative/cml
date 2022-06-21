@@ -5,7 +5,7 @@ const winston = require('winston');
 const CML = require('../../src/cml').default;
 
 exports.command = 'publish <asset>';
-exports.description = 'Upload an image to build a report';
+exports.description = false;
 
 exports.handler = async (opts) => {
   if (opts.gitlabUploads) {

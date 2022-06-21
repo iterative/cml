@@ -11,7 +11,6 @@ describe('command-line interface tests', () => {
         cml.js ci                                 Fixes specific CI setups
         cml.js pr <glob path...>                  Create a pull request with the
                                                   specified files
-        cml.js publish <asset>                    Upload an image to build a report
         cml.js rerun-workflow                     Reruns a workflow given the jobId or
                                                   workflow Id
         cml.js runner                             Launch and register a self-hosted
