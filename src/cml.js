@@ -409,7 +409,7 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-      skipCi: skipCI,
+      skipCi,
       merge,
       rebase,
       squash
@@ -482,7 +482,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       target,
       title,
       description,
-      skipCi: skipCI,
+      skipCi,
       autoMerge: merge
         ? 'merge'
         : rebase

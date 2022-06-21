@@ -259,11 +259,11 @@ class Gitlab {
       target,
       title,
       description,
-      skipCi: skipCI,
+      skipCi,
       autoMerge
     } = opts;
 
-    const prTitle = skipCI ? title + ' [skip ci]' : title;
+    const prTitle = skipCi ? title + ' [skip ci]' : title;
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
     body.append('source_branch', source);
