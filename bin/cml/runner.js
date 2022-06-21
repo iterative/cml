@@ -377,6 +377,10 @@ const run = async (opts) => {
   }
 
   if (reuseIdle) {
+    if (driver === 'bitbucket') {
+      winston.error('cml runner flag --reuse-idle is unsupported by bitbucket');
+      process.exit(1);
+    }
     winston.info(
       `Checking for existing idle runner matching labels: ${labels}.`
     );
