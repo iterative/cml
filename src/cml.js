@@ -443,6 +443,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       target,
       title,
       description,
+      skipCi,
       autoMerge: merge
         ? 'merge'
         : rebase
