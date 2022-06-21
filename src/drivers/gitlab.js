@@ -222,7 +222,6 @@ class Gitlab {
   async runners(opts = {}) {
     const endpoint = `/runners?per_page=100`;
     const runners = await this.request({ endpoint, method: 'GET' });
-    console.log(runners);
     return await Promise.all(
       runners.map(async ({ id, description, online }) => ({
         id,

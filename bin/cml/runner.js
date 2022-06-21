@@ -380,15 +380,10 @@ const run = async (opts) => {
     winston.info(
       `Checking for existing idle runner matching labels: ${labels}.`
     );
-
-    const res = await cml.runnersByLabels({ labels, runners });
-    console.log(res);
-    process.exit(0);
-
-    const availableRunner = await cml
-      .runnersByLabels({ labels, runners })
-      .find((runner) => runner.online && !runner.busy);
-    console.log(availableRunner);
+    const currentRunners = await cml.runnersByLabels({ labels, runners });
+    const availableRunner = currentRunners.find(
+      (runner) => runner.online && !runner.busy
+    );
     if (availableRunner) {
       winston.info('Found matching idle runner.', availableRunner);
       process.exit(0);
