@@ -254,13 +254,21 @@ class Gitlab {
 
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { source, target, title, description, autoMerge } = opts;
+    const {
+      source,
+      target,
+      title,
+      description,
+      skipCi: skipCI,
+      autoMerge
+    } = opts;
 
+    const prTitle = skipCI ? title + ' [skip ci]' : title;
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
     body.append('source_branch', source);
     body.append('target_branch', target);
-    body.append('title', title);
+    body.append('title', prTitle);
     body.append('description', description);
 
     const { web_url: url, iid } = await this.request({

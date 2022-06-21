@@ -409,7 +409,7 @@ class CML {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
       md,
-      skipCi,
+      skipCi: skipCI,
       merge,
       rebase,
       squash
@@ -465,7 +465,7 @@ class CML {
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
       let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCi || !(merge || rebase || squash)) {
+      if (skipCI || !(merge || rebase || squash)) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
@@ -473,9 +473,6 @@ class CML {
     }
 
     const title = `CML PR for ${target} ${shaShort}`;
-    if (skipCi) {
-      title += ' [skip ci]';
-    }
     const description = `
 Automated commits for ${this.repo}/commit/${sha} created by CML.
   `;
@@ -485,6 +482,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
       target,
       title,
       description,
+      skipCi: skipCI,
       autoMerge: merge
         ? 'merge'
         : rebase
