@@ -1,6 +1,6 @@
 const { options, handler } = require('./pr/create');
 
-exports.command = 'pr';
+exports.command = 'pr <glob path...>';
 exports.description = 'Manage pull requests';
 exports.handler = handler;
 exports.builder = (yargs) =>
@@ -9,4 +9,5 @@ exports.builder = (yargs) =>
     .recommendCommands()
     .env('CML_PR')
     .options(options)
+    .check(({ globpath }) => globpath)
     .strict();

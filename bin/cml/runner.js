@@ -9,4 +9,5 @@ exports.builder = (yargs) =>
     .recommendCommands()
     .env('CML_RUNNER')
     .options(options)
+    .check(() => process.argv.some((arg) => arg.startsWith('-')))
     .strict();
