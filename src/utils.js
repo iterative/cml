@@ -61,8 +61,8 @@ const fetchUploadData = async (opts) => {
 };
 
 const upload = async (opts) => {
-  const { path } = opts;
-  const endpoint = 'https://asset.cml.dev';
+  const { path, domain } = opts;
+  const endpoint = `https://${domain}`;
 
   const { mime, size, data: body } = await fetchUploadData(opts);
   const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
