@@ -32,10 +32,9 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_PUBLISH').options(
     kebabcaseKeys({
-      domain: {
+      url: {
         type: 'string',
-        description: 'Self-Hosted domain',
-        default: 'asset.cml.dev',
+        description: 'Self-Hosted URL',
         hidden: true
       },
       md: {
