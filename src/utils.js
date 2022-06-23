@@ -9,6 +9,8 @@ const winston = require('winston');
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
 
+const waitForever = () => new Promise((resolve) => resolve);
+
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
     require('child_process').exec(
@@ -31,7 +33,6 @@ const mimeType = async (opts) => {
   const { path, buffer } = opts;
   const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
   if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
-  FileMagic.defaulFlags = MagicFlags.MAGIC_PRESERVE_ATIME;
   const fileMagic = await FileMagic.getInstance();
 
   let tmppath;
@@ -61,17 +62,19 @@ const fetchUploadData = async (opts) => {
 };
 
 const upload = async (opts) => {
-  const { path } = opts;
+  const { path, session } = opts;
   const endpoint = 'https://asset.cml.dev';
 
   const { mime, size, data: body } = await fetchUploadData(opts);
   const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
 
   const headers = {
-    'Content-length': size,
+    'Content-Length': size,
     'Content-Type': mime,
     'Content-Disposition': `inline; filename="${filename}"`
   };
+
+  if (session) headers['Content-Address-Seed'] = `${session}:${path}`;
 
   const response = await fetch(endpoint, { method: 'POST', headers, body });
   const uri = await response.text();
@@ -215,6 +218,7 @@ const tfCapture = async (command, args = [], options = {}) => {
 };
 
 exports.tfCapture = tfCapture;
+exports.waitForever = waitForever;
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;
