@@ -53,7 +53,7 @@ exports.builder = (yargs) =>
       },
       message: {
         type: 'string',
-        description: 'Commit message'
+        description: 'Commit message.'
       },
       remote: {
         type: 'string',
