@@ -32,6 +32,13 @@ describe('Comment integration tests', () => {
                                   specified commit                           [boolean]
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
+        --publish                 Upload local files and images linked from the
+                                  Markdown report                            [boolean]
+        --watch                   Watch for changes and automatically update the
+                                  report                                     [boolean]
+        --native                  Uses driver's native capabilities to upload assets
+                                  instead of CML's storage. Not available on GitHub.
+                                                                             [boolean]
         --update                  Update the last CML comment (if any) instead of
                                   creating a new one                         [boolean]
         --rm-watermark            Avoid watermark. CML needs a watermark to be able to
