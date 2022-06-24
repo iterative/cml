@@ -453,6 +453,10 @@ class CML {
       globs = ['dvc.lock', '.gitignore'],
       md,
       skipCi,
+      branch,
+      message,
+      title,
+      body,
       merge,
       rebase,
       squash
@@ -486,7 +490,7 @@ class CML {
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
-    const source = `${target}-cml-pr-${shaShort}`;
+    const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
       await exec(
@@ -507,24 +511,23 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCi || !(merge || rebase || squash)) {
+      let commitMessage = message || `CML PR for ${shaShort}`;
+      if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
-    const description = `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-  `;
-
     const url = await driver.prCreate({
       source,
       target,
-      title,
-      description,
+      title: title || `CML PR for ${target} ${shaShort}`,
+      description:
+        body ||
+        `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+      `,
       skipCi,
       autoMerge: merge
         ? 'merge'
