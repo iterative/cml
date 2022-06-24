@@ -4,13 +4,17 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
-
+const fs = require('fs');
+const chokidar = require('chokidar');
+const uuid = require('uuid');
 const winston = require('winston');
+const remark = require('remark');
+const visit = require('unist-util-visit');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri } = require('./utils');
+const { upload, exec, watermarkUri, waitForever } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -20,6 +24,19 @@ const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
+
+const session = uuid.v4();
+
+const watcher = chokidar.watch([], {
+  persistent: true,
+  followSymlinks: true,
+  disableGlobbing: true,
+  ignoreInitial: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 500
+  }
+});
 
 const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -142,11 +159,15 @@ class CML {
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {
-      report: userReport,
       commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
-      pr
+      pr,
+      publish,
+      markdownFile,
+      report: testReport,
+      watch,
+      triggerFile
     } = opts;
 
     const commitSha =
@@ -159,8 +180,69 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    const report = `${userReport}\n\n${watermark}`;
+    let userReport = testReport;
+    try {
+      if (!userReport) {
+        userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+      }
+    } catch (err) {
+      if (!watch) throw err;
+    }
+
+    let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
+
+    const publishLocalFiles = async (tree) => {
+      const nodes = [];
+
+      visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
+
+      const visitor = async (node) => {
+        if (node.url && node.alt !== 'CML watermark') {
+          if (!triggerFile && watch) watcher.add(node.url);
+          try {
+            const url = new URL(
+              await this.publish({ ...opts, path: node.url, session })
+            );
+            url.searchParams.set('cache-bypass', uuid.v4());
+            node.url = url.toString();
+          } catch (err) {
+            if (err.code !== 'ENOENT') throw err;
+          }
+        }
+      };
+
+      await Promise.all(nodes.map(visitor));
+    };
+
+    if (publish) {
+      report = String(
+        await remark()
+          .use(() => publishLocalFiles)
+          .process(report)
+      );
+    }
+
+    if (watch) {
+      let lock;
+      watcher.add(triggerFile || markdownFile);
+      watcher.on('all', async (event, path) => {
+        if (lock) return;
+        lock = true;
+        try {
+          winston.info(`watcher event: ${event} ${path}`);
+          await this.commentCreate({ ...opts, update: true, watch: false });
+          if (event !== 'unlink' && path === triggerFile) {
+            await fs.promises.unlink(triggerFile);
+          }
+        } catch (err) {
+          winston.warn(err);
+        }
+        lock = false;
+      });
+      winston.info('watching for file changes...');
+      await waitForever();
+    }
 
     let comment;
     const updatableComment = (comments) => {
@@ -371,6 +453,10 @@ class CML {
       globs = ['dvc.lock', '.gitignore'],
       md,
       skipCi,
+      branch,
+      message,
+      title,
+      body,
       merge,
       rebase,
       squash
@@ -404,7 +490,7 @@ class CML {
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
-    const source = `${target}-cml-pr-${shaShort}`;
+    const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
       await exec(
@@ -425,24 +511,24 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCi || !(merge || rebase || squash)) {
+      let commitMessage = message || `CML PR for ${shaShort}`;
+      if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
-    const description = `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-  `;
-
     const url = await driver.prCreate({
       source,
       target,
-      title,
-      description,
+      title: title || `CML PR for ${target} ${shaShort}`,
+      description:
+        body ||
+        `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+      `,
+      skipCi,
       autoMerge: merge
         ? 'merge'
         : rebase
