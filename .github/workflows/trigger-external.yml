@@ -25,8 +25,8 @@ jobs:
         run: |
           curl --silent --show-error \
             --request POST \
-            --headers "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
-            --headers "Accept: application/vnd.github.v3+json" \
+            --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
+            --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
             --data '{"event_type":"pr", "client_payload": {"branch":"${{ github.ref_name }}"}}'
   trigger:
@@ -43,7 +43,7 @@ jobs:
         run: |
           curl --silent --show-error \
             --request POST \
-            --headers "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
-            --headers "Accept: application/vnd.github.v3+json" \
+            --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
+            --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
             --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name || github.event.inputs.tag }}"}}'
