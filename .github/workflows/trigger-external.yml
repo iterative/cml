@@ -9,8 +9,30 @@ on:
   release:
     types:
       - published
+  pull_request:
+    branches:
+      - master
 jobs:
+  pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repos:
+          - cml-playground
+    steps:
+      - name: Trigger external actions
+        run: |
+          curl --silent --show-error \
+            --request POST \
+            --headers "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
+            --headers "Accept: application/vnd.github.v3+json" \
+            --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
+            --data '{"event_type":"pr", "client_payload": {"branch":"${{ github.ref_name }}"}}'
   trigger:
+    if:
+      ${{ github.event_name == 'release' || github.event_name ==
+      'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
