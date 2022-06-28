@@ -192,7 +192,6 @@ class BitbucketCloud {
   async unregisterRunner(opts = {}) {
     const { projectPath } = this;
     const { runnerId, name } = opts;
-    console.log('runnerId', runnerId);
     const endpoint = `/repositories/${projectPath}/pipelines-config/runners/${runnerId}`;
 
     try {
