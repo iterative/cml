@@ -380,10 +380,7 @@ class BitbucketCloud {
     if (!id && jobId)
       winston.warn('BitBucket Cloud does not support pipelineRerun by jobId!');
 
-    const {
-      target
-      // state: { name: status }
-    } = await this.request({
+    const { target } = await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/${id}`,
       method: 'GET'
     });
