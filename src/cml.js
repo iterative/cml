@@ -258,33 +258,48 @@ class CML {
   }
 
   async parseRunnerLog(opts = {}) {
-    let { data } = opts;
+    let { data, name } = opts;
     if (!data) return [];
 
     data = data.toString('utf8');
 
+    const parseId = (key) => {
+      if (patterns[key]) {
+        const regex = patterns[key];
+        const matches = regex.exec(data) || [];
+        return matches[1];
+      }
+    };
+
+    const driver = await getDriver(this);
     const logs = [];
-    const patterns = await getDriver(this).runnerLogStatusPatterns();
-    for (const [status, pattern] of Object.entries(patterns)) {
-      const regex = new RegExp(pattern);
+    const patterns = driver.runnerLogPatterns();
+    for (const status of ['ready', 'job_started', 'job_ended']) {
+      const regex = patterns[status];
       if (regex.test(data)) {
         const date = new Date();
         const log = {
-          job: 'dummy',
           status,
           date: date.toISOString(),
           repo: this.repo
         };
 
-        if (status === 'job_ended') log.success = false;
+        if (status === 'job_started') {
+          log.job = parseId('job');
+          log.pipeline = parseId('pipeline');
+
+          if (this.driver === GITHUB) {
+            const { id: runnerId } = await this.runnerByName({ name });
+            const { id } = await driver.runnerJob({ runnerId });
+            log.job = id;
+          }
+        }
+
+        if (status === 'job_ended')
+          log.success = patterns.job_ended_succeded.test(data);
 
         log.level = log.success ? 'info' : 'error';
-
-        if (status === 'job_ended_succeded') {
-          logs[logs.length - 1].success = true;
-        } else {
-          logs.push(log);
-        }
+        logs.push(log);
       }
     }
 
@@ -332,9 +347,8 @@ class CML {
     );
   }
 
-  async runnerJob(opts = {}) {
-    const { runnerId, status = 'running' } = opts;
-    return await getDriver(this).job({ status, runnerId });
+  async runnerJob({ name, status = 'running' } = {}) {
+    return await getDriver(this).runnerJob({ status, name });
   }
 
   async repoTokenCheck() {
@@ -457,10 +471,6 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
 
   async pipelineRerun(opts) {
     return await getDriver(this).pipelineRerun(opts);
-  }
-
-  async pipelineRestart(opts) {
-    return await getDriver(this).pipelineRestart(opts);
   }
 
   async pipelineJobs(opts) {

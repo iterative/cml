@@ -252,12 +252,13 @@ class Gitlab {
     };
   }
 
-  runnerLogStatusPatterns() {
+  runnerLogPatterns() {
     return {
       ready: /Starting runner for/,
       job_started: /"job":.+received/,
       job_ended: /"duration_s":/,
-      job_ended_succeded: /"duration_s":.+Job succeeded/
+      job_ended_succeded: /"duration_s":.+Job succeeded/,
+      job: /"job":([0-9]+),"/
     };
   }
 
@@ -387,60 +388,33 @@ class Gitlab {
     });
   }
 
-  async pipelineRerun(opts = {}) {
+  async pipelineRerun({ id = CI_PIPELINE_ID, jobId } = {}) {
     const projectPath = await this.projectPath();
-    const { id = CI_PIPELINE_ID } = opts;
+
+    if (!id && jobId) {
+      ({
+        pipeline: { id }
+      } = await this.request({
+        endpoint: `/projects/${projectPath}/jobs/${jobId}`
+      }));
+    }
 
     const { status } = await this.request({
       endpoint: `/projects/${projectPath}/pipelines/${id}`,
       method: 'GET'
     });
 
-    if (status === 'running') return;
-
-    const jobs = await this.request({
-      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
-    });
-
-    await Promise.all(
-      jobs.map(async (job) => {
-        return this.request({
-          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
-          method: 'POST'
-        });
-      })
-    );
-  }
-
-  async pipelineRestart(opts = {}) {
-    const projectPath = await this.projectPath();
-    const { jobId } = opts;
-
-    const {
-      pipeline: { id }
-    } = await this.request({
-      endpoint: `/projects/${projectPath}/jobs/${jobId}`
-    });
-
-    let status;
-    while (!status || status === 'running')
-      ({ status } = await this.request({
+    if (status === 'running') {
+      await this.request({
         endpoint: `/projects/${projectPath}/pipelines/${id}/cancel`,
         method: 'POST'
-      }));
+      });
+    }
 
-    const jobs = await this.request({
-      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/retry`,
+      method: 'POST'
     });
-
-    await Promise.all(
-      jobs.map(async (job) => {
-        return this.request({
-          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
-          method: 'POST'
-        });
-      })
-    );
   }
 
   async pipelineJobs(opts = {}) {

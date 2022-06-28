@@ -12,9 +12,9 @@ const tf = require('../../src/terraform');
 
 let cml;
 let RUNNER;
-let RUNNER_JOBS_RUNNING = [];
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
+const RUNNER_JOBS_RUNNING = [];
 const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
@@ -47,14 +47,15 @@ const shutdown = async (opts) => {
 
   const retryWorkflows = async () => {
     try {
-      if (!noRetry) {
-        if (RUNNER_JOBS_RUNNING.length > 0) {
-          await Promise.all(
-            RUNNER_JOBS_RUNNING.map(
-              async (job) => await cml.pipelineRestart({ jobId: job.id })
-            )
-          );
-        }
+      if (!noRetry && RUNNER_JOBS_RUNNING.length > 0) {
+        winston.info(`Still pending jobs, retrying workflow...`);
+
+        await Promise.all(
+          RUNNER_JOBS_RUNNING.map(
+            async (job) =>
+              await cml.pipelineRerun({ id: job.pipeline, jobId: job.id })
+          )
+        );
       }
     } catch (err) {
       winston.error(err);
@@ -242,20 +243,17 @@ const runLocal = async (opts) => {
   }
 
   const dataHandler = async (data) => {
-    const logs = await cml.parseRunnerLog({ data });
+    const logs = await cml.parseRunnerLog({ data, name });
     for (const log of logs) {
       winston.info('runner status', log);
 
       if (log.status === 'job_started') {
-        RUNNER_JOBS_RUNNING.push({ id: log.job, date: log.date });
+        const { job: id, pipeline, date } = log;
+        RUNNER_JOBS_RUNNING.push({ id, pipeline, date });
       }
 
       if (log.status === 'job_ended') {
-        const { job: jobId } = log;
-        RUNNER_JOBS_RUNNING = RUNNER_JOBS_RUNNING.filter(
-          (job) => job.id !== jobId
-        );
-
+        RUNNER_JOBS_RUNNING.pop();
         if (single) await shutdown({ ...opts, reason: 'single job' });
       }
     }
@@ -322,17 +320,19 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  const acpiSock = net.connect('/var/run/acpid.socket');
-  acpiSock.on('error', (err) => {
-    winston.warn(
-      `Error setting ACPI socket: ${err.message}. Package acpi is a requirement.`
-    );
-  });
-  acpiSock.on('data', (buf) => {
-    const data = buf.toString().toLowerCase();
-    if (data.includes('power') && data.includes('button'))
-      shutdown({ ...opts, reason: 'ACPI shutdown' });
-  });
+  if (process.platform === 'linux') {
+    const acpiSock = net.connect('/var/run/acpid.socket');
+    acpiSock.on('error', (err) => {
+      winston.warn(
+        `Error setting ACPI socket: ${err.message}. Package acpi is a requirement.`
+      );
+    });
+    acpiSock.on('data', (buf) => {
+      const data = buf.toString().toLowerCase();
+      if (data.includes('power') && data.includes('button'))
+        shutdown({ ...opts, reason: 'ACPI shutdown' });
+    });
+  }
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
