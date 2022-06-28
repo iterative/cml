@@ -32,6 +32,11 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_PUBLISH').options(
     kebabcaseKeys({
+      url: {
+        type: 'string',
+        description: 'Self-Hosted URL',
+        hidden: true
+      },
       md: {
         type: 'boolean',
         description: 'Output in markdown format [title || name](url).'
