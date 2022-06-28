@@ -96,6 +96,7 @@
     "tempy": "^0.6.0",
     "timestring": "^6.0.0",
     "unist-util-visit": "^2.0.3",
+    "uuid": "^8.3.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
     "yargs": "^17.2.1"
