@@ -370,7 +370,7 @@ class CML {
           log.job = parseId('job');
           log.pipeline = parseId('pipeline');
 
-          if (this.driver === GITHUB) {
+          if (name && this.driver === GITHUB) {
             const { id: runnerId } = await this.runnerByName({ name });
             const { id } = await driver.runnerJob({ runnerId });
             log.job = id;
