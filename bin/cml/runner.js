@@ -324,7 +324,7 @@ const run = async (opts) => {
     const acpiSock = net.connect('/var/run/acpid.socket');
     acpiSock.on('error', (err) => {
       winston.warn(
-        `Error setting ACPI socket: ${err.message}. Package acpi is a requirement.`
+        `Error connecting to ACPI socket: ${err.message}. The acpid.sercive helps with instance termination detection.`
       );
     });
     acpiSock.on('data', (buf) => {
