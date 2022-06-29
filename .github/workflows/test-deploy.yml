@@ -15,6 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
+  check-lock:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - uses: actions/setup-node@v2
+      - name: check lock
+        run: |
+          test $(cat package-lock.json | jq .lockfileVersion) == "2"
   lint:
     needs: authorize
     runs-on: ubuntu-latest
