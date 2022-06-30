@@ -1,0 +1,8 @@
+bin/cml.js runner \
+    --token=glpat-1GxbzUFdgFmnYK2yzUa2 \
+    --repo=https://gitlab.com/dacbd/example_cml \
+    --driver=gitlab \
+    --reuse-idle \
+    --cloud=aws \
+    --cloud-region=us-west \
+    --cloud-type=t3.small
