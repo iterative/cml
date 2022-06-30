@@ -244,6 +244,20 @@ const runLocal = async (opts) => {
     await tf.saveTfState({ tfstate, path });
   }
 
+  if (process.platform === 'linux') {
+    const acpiSock = net.connect('/var/run/acpid.socket');
+    acpiSock.on('error', (err) => {
+      winston.warn(
+        `Error connecting to ACPI socket: ${err.message}. The acpid.sercive helps with instance termination detection.`
+      );
+    });
+    acpiSock.on('data', (buf) => {
+      const data = buf.toString().toLowerCase();
+      if (data.includes('power') && data.includes('button'))
+        shutdown({ ...opts, reason: 'ACPI shutdown' });
+    });
+  }
+
   const dataHandler = async (data) => {
     const logs = await cml.parseRunnerLog({ data, name });
     for (const log of logs) {
@@ -321,20 +335,6 @@ const run = async (opts) => {
   ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach((signal) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
-
-  if (process.platform === 'linux') {
-    const acpiSock = net.connect('/var/run/acpid.socket');
-    acpiSock.on('error', (err) => {
-      winston.warn(
-        `Error connecting to ACPI socket: ${err.message}. The acpid.sercive helps with instance termination detection.`
-      );
-    });
-    acpiSock.on('data', (buf) => {
-      const data = buf.toString().toLowerCase();
-      if (data.includes('power') && data.includes('button'))
-        shutdown({ ...opts, reason: 'ACPI shutdown' });
-    });
-  }
 
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
