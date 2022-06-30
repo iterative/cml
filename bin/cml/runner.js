@@ -246,6 +246,9 @@ const runLocal = async (opts) => {
 
   if (process.platform === 'linux') {
     const acpiSock = net.connect('/var/run/acpid.socket');
+    acpiSock.on('connect', () => {
+      winston.info('Connected to acpid serivce.');
+    });
     acpiSock.on('error', (err) => {
       winston.warn(
         `Error connecting to ACPI socket: ${err.message}. The acpid.sercive helps with instance termination detection.`
@@ -253,8 +256,9 @@ const runLocal = async (opts) => {
     });
     acpiSock.on('data', (buf) => {
       const data = buf.toString().toLowerCase();
-      if (data.includes('power') && data.includes('button'))
+      if (data.includes('power') && data.includes('button')) {
         shutdown({ ...opts, reason: 'ACPI shutdown' });
+      }
     });
   }
 
