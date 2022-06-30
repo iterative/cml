@@ -372,9 +372,7 @@ class CML {
 
           if (name && this.driver === GITHUB) {
             const { id: runnerId } = await this.runnerByName({ name });
-            const res = await driver.runnerJob({ runnerId });
-            console.log(res);
-            const { id } = res;
+            const { id } = await driver.runnerJob({ runnerId });
             log.job = id;
           }
         }
