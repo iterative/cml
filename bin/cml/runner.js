@@ -245,11 +245,11 @@ const runLocal = async (opts) => {
   if (process.platform === 'linux') {
     const acpiSock = net.connect('/var/run/acpid.socket');
     acpiSock.on('connect', () => {
-      winston.info('Connected to acpid serivce.');
+      winston.info('Connected to acpid service.');
     });
     acpiSock.on('error', (err) => {
       winston.warn(
-        `Error connecting to ACPI socket: ${err.message}. The acpid.sercive helps with instance termination detection.`
+        `Error connecting to ACPI socket: ${err.message}. The acpid.service helps with instance termination detection.`
       );
     });
     acpiSock.on('data', (buf) => {
