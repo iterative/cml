@@ -210,6 +210,8 @@ const runCloud = async (opts) => {
 
 const runLocal = async (opts) => {
   winston.info(`Launching ${cml.driver} runner`);
+  console.log('runLocal opts to follow');
+  console.log(opts);
   const {
     workdir,
     name,
