@@ -15,6 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
+  check-lock:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - name: check that npm lock file is on version 2
+        run: jq --exit-status .lockfileVersion==2 < package-lock.json
   lint:
     needs: authorize
     runs-on: ubuntu-latest

@@ -341,6 +341,7 @@ const run = async (opts) => {
     labels,
     name,
     reuse,
+    reuseIdle,
     dockerVolumes
   } = opts;
 
@@ -373,6 +374,24 @@ const run = async (opts) => {
       `Reusing existing online runners with the ${labels} labels...`
     );
     process.exit(0);
+  }
+
+  if (reuseIdle) {
+    if (driver === 'bitbucket') {
+      winston.error('cml runner flag --reuse-idle is unsupported by bitbucket');
+      process.exit(1);
+    }
+    winston.info(
+      `Checking for existing idle runner matching labels: ${labels}.`
+    );
+    const currentRunners = await cml.runnersByLabels({ labels, runners });
+    const availableRunner = currentRunners.find(
+      (runner) => runner.online && !runner.busy
+    );
+    if (availableRunner) {
+      winston.info('Found matching idle runner.', availableRunner);
+      process.exit(0);
+    }
   }
 
   winston.info(`Preparing workdir ${workdir}...`);
@@ -428,12 +447,20 @@ exports.options = kebabcaseKeys({
   },
   single: {
     type: 'boolean',
+    conflicts: ['reuse', 'reuseIdle'],
     description: 'Exit after running a single job'
   },
   reuse: {
     type: 'boolean',
+    conflicts: ['single', 'reuseIdle'],
     description:
       "Don't launch a new runner if an existing one has the same name or overlapping labels"
+  },
+  reuseIdle: {
+    type: 'boolean',
+    conflicts: ['reuse', 'single'],
+    description:
+      'Only creates a new runner if the matching labels dont exist or are already busy.'
   },
   workdir: {
     type: 'string',
