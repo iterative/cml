@@ -1,5 +1,6 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
+  "postCreateCommand": "npm ci",
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
