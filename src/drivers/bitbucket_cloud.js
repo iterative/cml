@@ -266,12 +266,14 @@ class BitbucketCloud {
     return href;
   }
 
-  runnerLogStatusPatterns() {
+  runnerLogPatterns() {
     return {
       ready: /Updating runner status to "ONLINE"/,
       job_started: /Getting step StepId/,
       job_ended: /Completing step with result/,
-      job_ended_succeded: /Completing step with result Result{status=PASSED/
+      job_ended_succeded: /Completing step with result Result{status=PASSED/,
+      pipeline: /pipelineUuid=({.+}), /,
+      job: /stepUuid=({.+})}/
     };
   }
 
@@ -372,35 +374,28 @@ class BitbucketCloud {
     }
   }
 
-  async pipelineRestart(opts = {}) {
-    winston.warn('BitBucket Cloud does not support workflowRestart yet!');
-  }
-
-  async pipelineJobs(opts = {}) {
-    winston.warn('BitBucket Cloud does not support pipelineJobs yet!');
-
-    return [];
-  }
-
-  async pipelineRerun(opts = {}) {
+  async pipelineRerun({ id = BITBUCKET_PIPELINE_UUID, jobId } = {}) {
     const { projectPath } = this;
-    const { id = BITBUCKET_PIPELINE_UUID } = opts;
 
-    const {
-      target,
-      state: { name: status }
-    } = await this.request({
+    if (!id && jobId)
+      winston.warn('BitBucket Cloud does not support pipelineRerun by jobId!');
+
+    const { target } = await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/${id}`,
       method: 'GET'
     });
-
-    if (status !== 'COMPLETED') return;
 
     await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/`,
       method: 'POST',
       body: JSON.stringify({ target })
     });
+  }
+
+  async pipelineJobs(opts = {}) {
+    winston.warn('BitBucket Cloud does not support pipelineJobs yet!');
+
+    return [];
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {
