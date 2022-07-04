@@ -1,0 +1,8 @@
+{
+  "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  }
+}
