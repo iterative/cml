@@ -63,9 +63,19 @@ describe('CML e2e', () => {
         --version                                 Show version number        [boolean]
         --log                                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --docker-volumes                          Docker volumes. This feature is only
-                                                  supported in GitLab
-                                                                 [array] [default: []]
+        --driver                                  Platform where the repository is
+                                                  hosted. If not specified, it will be
+                                                  inferred from the environment
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+        --repo                                    Repository to be used for
+                                                  registering the runner. If not
+                                                  specified, it will be inferred from
+                                                  the environment             [string]
+        --token                                   Personal access token to register a
+                                                  self-hosted runner on the
+                                                  repository. If not specified, it
+                                                  will be inferred from the
+                                                  environment                 [string]
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]
@@ -84,19 +94,12 @@ describe('CML e2e', () => {
         --reuse                                   Don't launch a new runner if an
                                                   existing one has the same name or
                                                   overlapping labels         [boolean]
-        --driver                                  Platform where the repository is
-                                                  hosted. If not specified, it will be
-                                                  inferred from the environment
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --repo                                    Repository to be used for
-                                                  registering the runner. If not
-                                                  specified, it will be inferred from
-                                                  the environment             [string]
-        --token                                   Personal access token to register a
-                                                  self-hosted runner on the
-                                                  repository. If not specified, it
-                                                  will be inferred from the
-                                                  environment                 [string]
+        --reuse-idle                              Only creates a new runner if the
+                                                  matching labels dont exist or are
+                                                  already busy.              [boolean]
+        --docker-volumes                          Docker volumes. This feature is only
+                                                  supported in GitLab
+                                                                 [array] [default: []]
         --cloud                                   Cloud to deploy the runner
                                [string] [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
         --cloud-region                            Region where the instance is

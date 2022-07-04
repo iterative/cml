@@ -4,13 +4,17 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
-
+const fs = require('fs');
+const chokidar = require('chokidar');
+const uuid = require('uuid');
 const winston = require('winston');
+const remark = require('remark');
+const visit = require('unist-util-visit');
 
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri } = require('./utils');
+const { upload, exec, watermarkUri, waitForever } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -20,6 +24,19 @@ const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
+
+const session = uuid.v4();
+
+const watcher = chokidar.watch([], {
+  persistent: true,
+  followSymlinks: true,
+  disableGlobbing: true,
+  ignoreInitial: true,
+  awaitWriteFinish: {
+    stabilityThreshold: 2000,
+    pollInterval: 500
+  }
+});
 
 const uriNoTrailingSlash = (uri) => {
   return uri.endsWith('/') ? uri.substr(0, uri.length - 1) : uri;
@@ -142,11 +159,15 @@ class CML {
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {
-      report: userReport,
       commitSha: inCommitSha = triggerSha,
       rmWatermark,
       update,
-      pr
+      pr,
+      publish,
+      markdownFile,
+      report: testReport,
+      watch,
+      triggerFile
     } = opts;
 
     const commitSha =
@@ -159,8 +180,69 @@ class CML {
       ? ''
       : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
 
-    const report = `${userReport}\n\n${watermark}`;
+    let userReport = testReport;
+    try {
+      if (!userReport) {
+        userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+      }
+    } catch (err) {
+      if (!watch) throw err;
+    }
+
+    let report = `${userReport}\n\n${watermark}`;
     const drv = getDriver(this);
+
+    const publishLocalFiles = async (tree) => {
+      const nodes = [];
+
+      visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
+
+      const visitor = async (node) => {
+        if (node.url && node.alt !== 'CML watermark') {
+          if (!triggerFile && watch) watcher.add(node.url);
+          try {
+            const url = new URL(
+              await this.publish({ ...opts, path: node.url, session })
+            );
+            url.searchParams.set('cache-bypass', uuid.v4());
+            node.url = url.toString();
+          } catch (err) {
+            if (err.code !== 'ENOENT') throw err;
+          }
+        }
+      };
+
+      await Promise.all(nodes.map(visitor));
+    };
+
+    if (publish) {
+      report = String(
+        await remark()
+          .use(() => publishLocalFiles)
+          .process(report)
+      );
+    }
+
+    if (watch) {
+      let lock;
+      watcher.add(triggerFile || markdownFile);
+      watcher.on('all', async (event, path) => {
+        if (lock) return;
+        lock = true;
+        try {
+          winston.info(`watcher event: ${event} ${path}`);
+          await this.commentCreate({ ...opts, update: true, watch: false });
+          if (event !== 'unlink' && path === triggerFile) {
+            await fs.promises.unlink(triggerFile);
+          }
+        } catch (err) {
+          winston.warn(err);
+        }
+        lock = false;
+      });
+      winston.info('watching for file changes...');
+      await waitForever();
+    }
 
     let comment;
     const updatableComment = (comments) => {
@@ -257,77 +339,53 @@ class CML {
     return await getDriver(this).runnerToken();
   }
 
-  parseRunnerLog(opts = {}) {
-    let { data } = opts;
-    if (!data) return;
+  async parseRunnerLog(opts = {}) {
+    let { data, name } = opts;
+    if (!data) return [];
 
-    const date = new Date();
+    data = data.toString('utf8');
 
-    try {
-      data = data.toString('utf8');
-
-      let log = {
-        level: 'info',
-        date: date.toISOString(),
-        repo: this.repo
-      };
-
-      if (this.driver === GITHUB) {
-        const id = 'gh';
-        if (data.includes('Running job')) {
-          log.job = id;
-          log.status = 'job_started';
-        } else if (data.includes('completed with result')) {
-          log.job = id;
-          log.status = 'job_ended';
-          log.success = data.includes('Succeeded');
-        } else if (data.includes('Listening for Jobs')) {
-          log.status = 'ready';
-        }
-
-        const [, message] = data.split(/[A-Z]:\s/);
-        return { ...log, message: (message || data).replace(/\n/g, '') };
+    const parseId = (key) => {
+      if (patterns[key]) {
+        const regex = patterns[key];
+        const matches = regex.exec(data) || [];
+        return matches[1];
       }
+    };
 
-      if (this.driver === GITLAB) {
-        const { msg, job, duration_s: duration } = JSON.parse(data);
-        log = { ...log, job };
+    const driver = await getDriver(this);
+    const logs = [];
+    const patterns = driver.runnerLogPatterns();
+    for (const status of ['ready', 'job_started', 'job_ended']) {
+      const regex = patterns[status];
+      if (regex.test(data)) {
+        const date = new Date();
+        const log = {
+          status,
+          date: date.toISOString(),
+          repo: this.repo
+        };
 
-        if (msg.endsWith('received')) {
-          log.status = 'job_started';
-        } else if (duration) {
-          log.status = 'job_ended';
-          log.success = msg.includes('Job succeeded');
-        } else if (msg.includes('Starting runner for')) {
-          log.status = 'ready';
+        if (status === 'job_started') {
+          log.job = parseId('job');
+          log.pipeline = parseId('pipeline');
+
+          if (name && this.driver === GITHUB) {
+            const { id: runnerId } = await this.runnerByName({ name });
+            const { id } = await driver.runnerJob({ runnerId });
+            log.job = id;
+          }
         }
-        return log;
-      }
 
-      if (this.driver === BB) {
-        const id = 'bb';
-        if (data.includes('Getting step StepId{accountUuid={')) {
-          log.job = id;
-          log.status = 'job_started';
-        } else if (
-          data.includes('Completing step with result Result{status=')
-        ) {
-          log.job = id;
-          log.status = 'job_ended';
-          log.success = data.includes('status=PASSED');
-        } else if (data.includes('Updating runner status to "ONLINE"')) {
-          log.status = 'ready';
-        }
+        if (status === 'job_ended')
+          log.success = patterns.job_ended_succeded.test(data);
 
         log.level = log.success ? 'info' : 'error';
-        return log.status ? log : null;
+        logs.push(log);
       }
-    } catch (err) {
-      winston.warn(`Failed parsing log: ${err.message}`);
-      winston.warn(
-        `Original log bytes, as Base64: ${Buffer.from(data).toString('base64')}`
-      );
     }
+
+    return logs;
   }
 
   async startRunner(opts = {}) {
@@ -371,9 +429,8 @@ class CML {
     );
   }
 
-  async runnerJob(opts = {}) {
-    const { runnerId, status = 'running' } = opts;
-    return await getDriver(this).job({ status, runnerId });
+  async runnerJob({ name, status = 'running' } = {}) {
+    return await getDriver(this).runnerJob({ status, name });
   }
 
   async repoTokenCheck() {
@@ -410,6 +467,10 @@ class CML {
       globs = ['dvc.lock', '.gitignore'],
       md,
       skipCi,
+      branch,
+      message,
+      title,
+      body,
       merge,
       rebase,
       squash
@@ -443,7 +504,7 @@ class CML {
     const shaShort = sha.substr(0, 8);
 
     const target = await this.branch();
-    const source = `${target}-cml-pr-${shaShort}`;
+    const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
       await exec(
@@ -464,24 +525,24 @@ class CML {
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
       await exec(`git add ${paths.join(' ')}`);
-      let commitMessage = `CML PR for ${shaShort}`;
-      if (skipCi || !(merge || rebase || squash)) {
+      let commitMessage = message || `CML PR for ${shaShort}`;
+      if (skipCi || (!message && !(merge || rebase || squash))) {
         commitMessage += ' [skip ci]';
       }
       await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 
-    const title = `CML PR for ${target} ${shaShort}`;
-    const description = `
-Automated commits for ${this.repo}/commit/${sha} created by CML.
-  `;
-
     const url = await driver.prCreate({
       source,
       target,
-      title,
-      description,
+      title: title || `CML PR for ${target} ${shaShort}`,
+      description:
+        body ||
+        `
+Automated commits for ${this.repo}/commit/${sha} created by CML.
+      `,
+      skipCi,
       autoMerge: merge
         ? 'merge'
         : rebase
@@ -496,10 +557,6 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
 
   async pipelineRerun(opts) {
     return await getDriver(this).pipelineRerun(opts);
-  }
-
-  async pipelineRestart(opts) {
-    return await getDriver(this).pipelineRestart(opts);
   }
 
   async pipelineJobs(opts) {

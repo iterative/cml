@@ -39,6 +39,22 @@ exports.builder = (yargs) =>
         conflicts: ['merge', 'rebase'],
         description: 'Try to squash-merge the pull request upon creation.'
       },
+      branch: {
+        type: 'string',
+        description: 'Branch name for the pull request.'
+      },
+      title: {
+        type: 'string',
+        description: 'Pull request title.'
+      },
+      body: {
+        type: 'string',
+        description: 'Pull request description.'
+      },
+      message: {
+        type: 'string',
+        description: 'Commit message.'
+      },
       remote: {
         type: 'string',
         default: GIT_REMOTE,

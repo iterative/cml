@@ -226,6 +226,13 @@ class Gitlab {
       runners.map(async ({ id, description, online }) => ({
         id,
         name: description,
+        busy:
+          (
+            await this.request({
+              endpoint: `/runners/${id}/jobs`,
+              method: 'GET'
+            })
+          ).filter((job) => job.status === 'running').length > 0,
         labels: (
           await this.request({ endpoint: `/runners/${id}`, method: 'GET' })
         ).tag_list,
@@ -252,15 +259,26 @@ class Gitlab {
     };
   }
 
+  runnerLogPatterns() {
+    return {
+      ready: /Starting runner for/,
+      job_started: /"job":.+received/,
+      job_ended: /"duration_s":/,
+      job_ended_succeded: /"duration_s":.+Job succeeded/,
+      job: /"job":([0-9]+),"/
+    };
+  }
+
   async prCreate(opts = {}) {
     const projectPath = await this.projectPath();
-    const { source, target, title, description, autoMerge } = opts;
+    const { source, target, title, description, skipCi, autoMerge } = opts;
 
+    const prTitle = skipCi ? title + ' [skip ci]' : title;
     const endpoint = `/projects/${projectPath}/merge_requests`;
     const body = new URLSearchParams();
     body.append('source_branch', source);
     body.append('target_branch', target);
-    body.append('title', title);
+    body.append('title', prTitle);
     body.append('description', description);
 
     const { web_url: url, iid } = await this.request({
@@ -378,60 +396,33 @@ class Gitlab {
     });
   }
 
-  async pipelineRerun(opts = {}) {
+  async pipelineRerun({ id = CI_PIPELINE_ID, jobId } = {}) {
     const projectPath = await this.projectPath();
-    const { id = CI_PIPELINE_ID } = opts;
+
+    if (!id && jobId) {
+      ({
+        pipeline: { id }
+      } = await this.request({
+        endpoint: `/projects/${projectPath}/jobs/${jobId}`
+      }));
+    }
 
     const { status } = await this.request({
       endpoint: `/projects/${projectPath}/pipelines/${id}`,
       method: 'GET'
     });
 
-    if (status === 'running') return;
-
-    const jobs = await this.request({
-      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
-    });
-
-    await Promise.all(
-      jobs.map(async (job) => {
-        return this.request({
-          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
-          method: 'POST'
-        });
-      })
-    );
-  }
-
-  async pipelineRestart(opts = {}) {
-    const projectPath = await this.projectPath();
-    const { jobId } = opts;
-
-    const {
-      pipeline: { id }
-    } = await this.request({
-      endpoint: `/projects/${projectPath}/jobs/${jobId}`
-    });
-
-    let status;
-    while (!status || status === 'running')
-      ({ status } = await this.request({
+    if (status === 'running') {
+      await this.request({
         endpoint: `/projects/${projectPath}/pipelines/${id}/cancel`,
         method: 'POST'
-      }));
+      });
+    }
 
-    const jobs = await this.request({
-      endpoint: `/projects/${projectPath}/pipelines/${id}/jobs`
+    await this.request({
+      endpoint: `/projects/${projectPath}/pipelines/${id}/retry`,
+      method: 'POST'
     });
-
-    await Promise.all(
-      jobs.map(async (job) => {
-        return this.request({
-          endpoint: `/projects/${projectPath}/jobs/${job.id}/retry`,
-          method: 'POST'
-        });
-      })
-    );
   }
 
   async pipelineJobs(opts = {}) {
