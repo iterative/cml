@@ -1,6 +1,6 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
-  "postCreateCommand": "npm install --location=global",
+  "postCreateCommand": "npm ci && npm install --location=global",
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
