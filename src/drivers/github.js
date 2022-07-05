@@ -11,7 +11,7 @@ const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
 const ProxyAgent = require('proxy-agent');
 
-const { download, exec } = require('../utils');
+const { download, exec, sleep } = require('../utils');
 const winston = require('winston');
 
 const CHECK_TITLE = 'CML Report';
@@ -329,7 +329,56 @@ class Github {
     return this.parseRunner(runner);
   }
 
-  runnerLogStatusPatterns() {
+  async runnerJob({ runnerId, status = 'queued' } = {}) {
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const octokitClient = octokit(this.token, this.repo);
+
+    if (status === 'running') status = 'in_progress';
+
+    const workflowRuns = await octokitClient.paginate(
+      octokitClient.actions.listWorkflowRunsForRepo,
+      { owner, repo, status }
+    );
+
+    let runJobs = await Promise.all(
+      workflowRuns.map(
+        async ({ id }) =>
+          await octokitClient.paginate(
+            octokitClient.actions.listJobsForWorkflowRun,
+            { owner, repo, run_id: id, status }
+          )
+      )
+    );
+
+    runJobs = [].concat.apply([], runJobs);
+
+    for (const job of runJobs) {
+      const { id } = job;
+
+      while (!job.runner_id) {
+        const {
+          data: { runner_id: jobRunnerId }
+        } = await octokitClient.actions.getJobForWorkflowRun({
+          owner,
+          repo,
+          job_id: id
+        });
+
+        job.runner_id = jobRunnerId;
+        if (job.runner_id === runnerId) break;
+        sleep(1);
+      }
+    }
+
+    runJobs = runJobs.map((job) => {
+      const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
+      return { id, date, runId, runnerId };
+    });
+
+    return runJobs.find((job) => runnerId === job.runnerId);
+  }
+
+  runnerLogPatterns() {
     return {
       ready: /Listening for Jobs/,
       job_started: /Running job/,
@@ -559,12 +608,21 @@ class Github {
     });
   }
 
-  async pipelineRerun(opts = {}) {
-    const { id = GITHUB_RUN_ID } = opts;
+  async pipelineRerun({ id = GITHUB_RUN_ID, jobId } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { actions } = octokit(this.token, this.repo);
 
-    const {
+    if (!id && jobId) {
+      ({
+        data: { run_id: id }
+      } = await actions.getJobForWorkflowRun({
+        owner,
+        repo,
+        job_id: jobId
+      }));
+    }
+
+    let {
       data: { status }
     } = await actions.getWorkflowRun({
       owner,
@@ -572,45 +630,30 @@ class Github {
       run_id: id
     });
 
-    if (status !== 'running') {
-      await actions.reRunWorkflow({
+    if (status === 'in_progress') {
+      await actions.cancelWorkflowRun({
         owner,
         repo,
         run_id: id
       });
-    }
-  }
 
-  async pipelineRestart(opts = {}) {
-    const { jobId } = opts;
-    const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
-
-    const {
-      data: { run_id: runId }
-    } = await actions.getJobForWorkflowRun({
-      owner,
-      repo,
-      job_id: jobId
-    });
-
-    const {
-      data: { status }
-    } = await actions.getWorkflowRun({
-      owner,
-      repo,
-      run_id: runId
-    });
-
-    if (status !== 'running') {
-      try {
-        await actions.reRunWorkflow({
+      while (status === 'in_progress') {
+        ({
+          data: { status }
+        } = await actions.getWorkflowRun({
           owner,
           repo,
-          run_id: runId
-        });
-      } catch (err) {}
+          run_id: id
+        }));
+        await sleep(1);
+      }
     }
+
+    await actions.reRunWorkflow({
+      owner,
+      repo,
+      run_id: id
+    });
   }
 
   async pipelineJobs(opts = {}) {
@@ -634,46 +677,6 @@ class Github {
       const { id, started_at: date, run_id: runId, status } = job;
       return { id, date, runId, status };
     });
-  }
-
-  async job(opts = {}) {
-    const { time, runnerId } = opts;
-    const { owner, repo } = ownerRepo({ uri: this.repo });
-    const octokitClient = octokit(this.token, this.repo);
-
-    let { status = 'queued' } = opts;
-    if (status === 'running') status = 'in_progress';
-
-    const workflowRuns = await octokitClient.paginate(
-      octokitClient.actions.listWorkflowRunsForRepo,
-      { owner, repo, status }
-    );
-
-    let runJobs = await Promise.all(
-      workflowRuns.map(
-        async ({ id }) =>
-          await octokitClient.paginate(
-            octokitClient.actions.listJobsForWorkflowRun,
-            { owner, repo, run_id: id, status }
-          )
-      )
-    );
-
-    runJobs = [].concat.apply([], runJobs).map((job) => {
-      const { id, started_at: date, run_id: runId, runner_id: runnerId } = job;
-      return { id, date, runId, runnerId };
-    });
-
-    if (time) {
-      const job = runJobs.reduce((prev, curr) => {
-        const diffTime = (job) => Math.abs(new Date(job.date).getTime() - time);
-        return diffTime(curr) < diffTime(prev) ? curr : prev;
-      });
-
-      return job;
-    }
-
-    return runJobs.find((job) => runnerId === job.runnerId);
   }
 
   async updateGitConfig({ userName, userEmail } = {}) {
