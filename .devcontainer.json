@@ -1,6 +1,6 @@
 {
   "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
-  "postCreateCommand": "npm ci",
+  "postCreateCommand": "npm ci && echo alias cml=\\\"node $PWD/bin/cml.js\\\" >> /etc/bash.bashrc",
   "hostRequirements": {
     "cpus": 4,
     "memory": "8gb",
