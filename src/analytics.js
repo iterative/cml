@@ -5,6 +5,7 @@ const fs = require('fs').promises;
 const fetch = require('node-fetch');
 const ProxyAgent = require('proxy-agent');
 const { v4: uuidv4, v5: uuidv5 } = require('uuid');
+const appdirs = require('appdirs');
 const winston = require('winston');
 
 const { version: VERSION } = require('../package.json');
@@ -86,8 +87,8 @@ const userId = async () => {
   }
 
   let id = uuidv4();
-  const newPath = '';
-  const oldPath = '';
+  const oldPath = appdirs.userConfigDir('dvc/user_id', 'iterative');
+  const newPath = appdirs.userConfigDir('iterative/telemetry');
   if (path.exists(newPath)) {
     id = await fs.readFile(newPath);
   } else {

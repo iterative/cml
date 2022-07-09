@@ -73,6 +73,7 @@
     "@octokit/graphql": "^4.8.0",
     "@octokit/plugin-throttling": "^3.5.2",
     "@octokit/rest": "18.0.0",
+    "appdirs": "^1.1.0",
     "chokidar": "^3.5.3",
     "colors": "1.4.0",
     "exponential-backoff": "^3.1.0",
