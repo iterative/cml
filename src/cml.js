@@ -199,10 +199,14 @@ class CML {
 
       const visitor = async (node) => {
         if (node.url && node.alt !== 'CML watermark') {
-          if (!triggerFile && watch) watcher.add(node.url);
+          const absolutePath = path.resolve(
+            path.dirname(markdownFile),
+            node.url
+          );
+          if (!triggerFile && watch) watcher.add(absolutePath);
           try {
             const url = new URL(
-              await this.publish({ ...opts, path: node.url, session })
+              await this.publish({ ...opts, path: absolutePath, session })
             );
             url.searchParams.set('cache-bypass', uuid.v4());
             node.url = url.toString();

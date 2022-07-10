@@ -15,7 +15,7 @@ let RUNNER;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
 const RUNNER_JOBS_RUNNING = [];
-const GH_5_MIN_TIMEOUT = (72 * 60 - 5) * 60 * 1000;
+const GH_5_MIN_TIMEOUT = (35 * 24 * 60 - 5) * 60 * 1000;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -319,7 +319,7 @@ const runLocal = async (opts) => {
             new Date().getTime() - new Date(job.date).getTime() >
             GH_5_MIN_TIMEOUT
           ) {
-            shutdown({ ...opts, reason: 'timeout:72h' });
+            shutdown({ ...opts, reason: 'timeout:35days' });
             clearInterval(watcherSeventyTwo);
           }
         });
@@ -399,6 +399,12 @@ const run = async (opts) => {
       winston.info('Found matching idle runner.', availableRunner);
       process.exit(0);
     }
+  }
+
+  if (driver === 'github') {
+    winston.warn(
+      'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
+    );
   }
 
   winston.info(`Preparing workdir ${workdir}...`);
