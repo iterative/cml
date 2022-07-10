@@ -156,7 +156,7 @@ class CML {
     return branch || (await exec(`git branch --show-current`));
   }
 
-  driver() {
+  getDriver() {
     return getDriver(this);
   }
 

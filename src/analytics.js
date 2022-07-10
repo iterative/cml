@@ -20,7 +20,7 @@ const {
 
   GITHUB_SERVER_URL,
   GITHUB_REPOSITORY_OWNER,
-  // GITHUB_ACTOR,
+  GITHUB_ACTOR,
   CI_SERVER_URL,
   CI_PROJECT_ROOT_NAMESPACE,
   GITLAB_USER_NAME,
@@ -78,12 +78,15 @@ const groupId = async () => {
   return await deterministic(rawId);
 };
 
-const userId = async () => {
+const userId = async ({ cml } = {}) => {
   if (isCI()) {
     let rawId;
     const ci = guessCI();
     if (ci === 'github') {
-      // TODO: GITHUB_ACTOR
+      const { name, login, id } = await cml
+        .getDriver()
+        .user({ name: GITHUB_ACTOR });
+      rawId = `${name || ''} ${login} ${id}`;
     } else if (ci === 'gitlab') {
       rawId = `${GITLAB_USER_NAME} ${GITLAB_USER_LOGIN} ${GITLAB_USER_ID}`;
     } else if (ci === 'bitbucket') {
@@ -129,13 +132,14 @@ const OS = () => {
 const jitsuEventPayload = async ({
   action = '',
   error = '',
-  extra = {}
+  extra = {},
+  cml
 } = {}) => {
   const { cloud: backend = '', ...extraRest } = extra;
   extraRest.ci = guessCI();
 
   return {
-    user_id: await userId(),
+    user_id: await userId({ cml }),
     group_id: await groupId(),
     action,
     interface: 'cli',
@@ -151,14 +155,13 @@ const jitsuEventPayload = async ({
 };
 
 const send = async ({
+  event,
   endpoint = TPI_ANALYTICS_ENDPOINT,
   token = TPI_ANALYTICS_TOKEN
 } = {}) => {
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;
-
-    const payload = await jitsuEventPayload();
-    if (payload.id === ID_DO_NOT_TRACK) return;
+    if (event.id === ID_DO_NOT_TRACK) return;
 
     await fetch(endpoint, {
       method: 'POST',
@@ -166,7 +169,7 @@ const send = async ({
         'X-Auth-Toke': token,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(event),
       agent: new ProxyAgent()
     });
   } catch (err) {

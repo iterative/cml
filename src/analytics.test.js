@@ -1,7 +1,11 @@
 const { send, jitsuEventPayload, isCI } = require('./analytics');
+const CML = require('../src/cml').default;
+
+const { TEST_GITHUB_TOKEN: TOKEN, TEST_GITHUB_REPO: REPO } = process.env;
 
 describe('analytics tests', () => {
   test('userId', async () => {
+    const cml = new CML({ repo: REPO, token: TOKEN });
     const action = 'test';
     const cloud = 'azure';
     const more = { one: 1, two: 2 };
@@ -9,7 +13,7 @@ describe('analytics tests', () => {
     const error = 'Ouch!';
     const regex = /\d+\.\d+\.\d+/;
 
-    const pl = await jitsuEventPayload({ action, error, extra });
+    const pl = await jitsuEventPayload({ action, error, extra, cml });
     expect(pl.user_id.length).toBe(36);
     expect(pl.action).toBe(action);
     expect(pl.interface).toBe('cli');
@@ -33,7 +37,10 @@ describe('analytics tests', () => {
   test('Send should never fail', async () => {
     let error = null;
     try {
-      await send({ endpoint: 'https://notfound.cml.dev' });
+      const cml = new CML({ repo: REPO, token: TOKEN });
+      const action = 'test';
+      const event = await jitsuEventPayload({ action, error, cml });
+      await send({ event, endpoint: 'https://notfound.cml.dev' });
     } catch (err) {
       error = err;
     }
