@@ -4,12 +4,14 @@ const fs = require('fs').promises;
 
 const fetch = require('node-fetch');
 const ProxyAgent = require('proxy-agent');
-const { v4: uuidv4, v5: uuidv5 } = require('uuid');
-const appdirs = require('appdirs');
+const { promisify } = require('util');
+const { scrypt } = require('crypto');
+const { v4: uuidv4, v5: uuidv5, parse } = require('uuid');
+const { userConfigDir } = require('appdirs');
 const winston = require('winston');
 
 const { version: VERSION } = require('../package.json');
-const { exec } = require('./utils');
+const { exec, fileExists } = require('./utils');
 
 const {
   TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
@@ -32,8 +34,16 @@ const {
 
 const ID_DO_NOT_TRACK = 'do-not-track';
 
-const deterministic = (str) => {
-  return uuidv5(str, 'iterative.ai');
+const deterministic = async (data) => {
+  const namespace = uuidv5('iterative.ai', uuidv5.DNS);
+  const name = await promisify(scrypt)(data, parse(namespace), 8, {
+    N: 1 << 16,
+    r: 8,
+    p: 1,
+    maxmem: 128 * 1024 ** 2
+  });
+
+  return uuidv5(name.toString('hex'), namespace);
 };
 
 const guessCI = () => {
@@ -50,7 +60,7 @@ const isCI = () => {
   return ci > 0;
 };
 
-const groupId = () => {
+const groupId = async () => {
   if (!isCI()) return '';
 
   const ci = guessCI();
@@ -63,7 +73,7 @@ const groupId = () => {
     rawId = BITBUCKET_WORKSPACE;
   }
 
-  return deterministic(rawId);
+  return await deterministic(rawId);
 };
 
 const userId = async () => {
@@ -83,26 +93,27 @@ const userId = async () => {
       rawId = await exec(`git log -1 --pretty=format:'%ae'`);
     }
 
-    return deterministic(rawId);
+    return await deterministic(rawId);
   }
 
   let id = uuidv4();
-  const oldPath = appdirs.userConfigDir('dvc/user_id', 'iterative');
-  const newPath = appdirs.userConfigDir('iterative/telemetry');
-  if (path.exists(newPath)) {
-    id = await fs.readFile(newPath);
+  const oldPath = userConfigDir('dvc/user_id', 'iterative');
+  const newPath = userConfigDir('iterative/telemetry');
+
+  if (await fileExists(newPath)) {
+    id = (await fs.readFile(newPath)).toString('utf-8');
   } else {
-    if (path.exists(oldPath)) {
-      const json = await fs.readFile(oldPath);
-      ({ id } = JSON.parse(json));
+    if (await fileExists(oldPath)) {
+      const json = (await fs.readFile(oldPath)).toString('utf-8');
+      ({ user_id: id } = JSON.parse(json));
     }
 
-    await fs.mkdir(path.diname(newPath), { recursive: true });
+    await fs.mkdir(path.dirname(newPath), { recursive: true });
     await fs.writeFile(newPath, id);
   }
 
-  if (!path.exists(oldPath) && id !== ID_DO_NOT_TRACK) {
-    await fs.mkdir(path.diname(oldPath), { recursive: true });
+  if (!(await fileExists(oldPath)) && id !== ID_DO_NOT_TRACK) {
+    await fs.mkdir(path.dirname(oldPath), { recursive: true });
     await fs.writeFile(oldPath, JSON.stringify({ user_id: id }));
   }
 
@@ -116,13 +127,18 @@ const OS = () => {
   return process.platform;
 };
 
-const jitsuEventPayload = async ({ action, extra = {}, error = '' } = {}) => {
-  extra.ci = guessCI();
-  const { backend, ...extraRest } = extra;
+const jitsuEventPayload = async ({
+  action = '',
+  error = '',
+  extra = {}
+} = {}) => {
+  const { cloud: backend = '', ...extraRest } = extra;
+  extraRest.ci = guessCI();
 
+  console.log(extraRest);
   return {
-    user_id: userId(),
-    groupId: groupId(),
+    user_id: await userId(),
+    group_id: await groupId(),
     action,
     interface: 'cli',
     tool_name: 'cml',
@@ -132,27 +148,31 @@ const jitsuEventPayload = async ({ action, extra = {}, error = '' } = {}) => {
     os_version: os.release(),
     backend,
     error,
-    extra: { ...extraRest }
+    extra: extraRest
   };
 };
 
-const send = async () => {
+const send = async ({
+  endpoint = TPI_ANALYTICS_ENDPOINT,
+  token = TPI_ANALYTICS_TOKEN
+} = {}) => {
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;
 
     const payload = await jitsuEventPayload();
     if (payload.id === ID_DO_NOT_TRACK) return;
 
-    await fetch(TPI_ANALYTICS_ENDPOINT, {
+    await fetch(endpoint, {
       method: 'POST',
       headers: {
-        'X-Auth-Toke': TPI_ANALYTICS_TOKEN,
+        'X-Auth-Toke': token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload),
       agent: new ProxyAgent()
     });
   } catch (err) {
+    console.log(`Send analytics failed: ${err.message}`);
     winston.debug(`Send analytics failed: ${err.message}`);
   }
 };

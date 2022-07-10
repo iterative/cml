@@ -216,6 +216,12 @@ const tfCapture = async (command, args = [], options = {}) => {
   });
 };
 
+const fileExists = (path) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false
+  );
+
 exports.tfCapture = tfCapture;
 exports.waitForever = waitForever;
 exports.exec = exec;
@@ -228,3 +234,4 @@ exports.watermarkUri = watermarkUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
 exports.gpuPresent = gpuPresent;
+exports.fileExists = fileExists;
