@@ -156,6 +156,10 @@ class CML {
     return branch || (await exec(`git branch --show-current`));
   }
 
+  driver() {
+    return getDriver(this);
+  }
+
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {

@@ -59,7 +59,7 @@ const guessCI = () => {
 
 const isCI = () => {
   const ci = guessCI();
-  return ci > 0;
+  return ci.length > 0;
 };
 
 const groupId = async () => {
@@ -82,7 +82,6 @@ const userId = async () => {
   if (isCI()) {
     let rawId;
     const ci = guessCI();
-
     if (ci === 'github') {
       // TODO: GITHUB_ACTOR
     } else if (ci === 'gitlab') {
