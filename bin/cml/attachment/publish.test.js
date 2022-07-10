@@ -13,20 +13,19 @@ describe('CML e2e', () => {
             --version       Show version number                              [boolean]
             --log           Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver        Forge where the repository is hosted. If not specified, it
-                            will be inferred from the environment
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-            --repo          Repository. If not specified, it will be inferred from the
-                            environment                                       [string]
-            --token         Personal access token. If not specified, it will be
-                            inferred from the environment                     [string]
-            --md            Output in markdown format [title || name](url).  [boolean]
-        -t, --title         Markdown title [title](url) or ![](url title).    [string]
+            --driver        Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+            --repo          Repository URL or slug
+                                        [string] [default: infer from the environment]
+            --token         Personal access token
+                                        [string] [default: infer from the environment]
+            --md            Output in markdown format [title || name](url)   [boolean]
+        -t, --title         Markdown title [title](url) or ![](url title)     [string]
             --native        Uses driver's native capabilities to upload assets instead
-                            of CML's storage. Not available on GitHub.       [boolean]
-            --rm-watermark  Avoid CML watermark.                             [boolean]
-            --mime-type     Specifies the mime-type. If not set guess it from the
-                            content.                                          [string]"
+                            of CML's storage; not available on GitHub        [boolean]
+            --rm-watermark  Avoid CML watermark                              [boolean]
+            --mime-type     MIME type [string] [default: infer from the file contents]"
     `);
   });
 

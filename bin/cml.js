@@ -62,18 +62,18 @@ exports.options = {
   driver: {
     type: 'string',
     choices: ['github', 'gitlab', 'bitbucket'],
-    description:
-      'Forge where the repository is hosted. If not specified, it will be inferred from the environment'
+    defaultDescription: 'infer from the environment',
+    description: 'Forge where the repository is hosted'
   },
   repo: {
     type: 'string',
-    description:
-      'Repository URL or slug. If unspecified, inferred from the environment.'
+    defaultDescription: 'infer from the environment',
+    description: 'Repository URL or slug'
   },
   token: {
     type: 'string',
-    description:
-      'Personal access token. If unspecified, inferred from the environment.'
+    defaultDescription: 'infer from the environment',
+    description: 'Personal access token'
   }
 };
 

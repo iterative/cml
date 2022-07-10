@@ -17,16 +17,16 @@ exports.options = kebabcaseKeys({
   unshallow: {
     type: 'boolean',
     description:
-      'Fetch as much as possible, converting a shallow repository to a complete one.'
+      'Fetch as much as possible, converting a shallow repository to a complete one'
   },
   userEmail: {
     type: 'string',
     default: GIT_USER_EMAIL,
-    description: 'Set Git user email.'
+    description: 'Git user email'
   },
   userName: {
     type: 'string',
     default: GIT_USER_NAME,
-    description: 'Set Git user name.'
+    description: 'Git user name'
   }
 });

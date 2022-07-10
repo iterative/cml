@@ -42,7 +42,7 @@ exports.options = kebabcaseKeys({
   native: {
     type: 'boolean',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
   },
   update: {
     type: 'boolean',
@@ -52,6 +52,6 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
+      'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality'
   }
 });

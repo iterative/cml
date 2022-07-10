@@ -19,7 +19,8 @@ exports.options = kebabcaseKeys({
   commitSha: {
     type: 'string',
     alias: 'head-sha',
-    description: 'Commit SHA linked to this comment. Defaults to HEAD.'
+    defaultDescription: 'HEAD',
+    description: 'Commit SHA linked to this comment'
   },
   conclusion: {
     type: 'string',
@@ -32,17 +33,17 @@ exports.options = kebabcaseKeys({
       'timed_out'
     ],
     default: 'success',
-    description: 'Sets the conclusion status of the check.'
+    description: 'Conclusion status of the check'
   },
   status: {
     type: 'string',
     choices: ['queued', 'in_progress', 'completed'],
     default: 'completed',
-    description: 'Sets the status of the check.'
+    description: 'Status of the check'
   },
   title: {
     type: 'string',
     default: 'CML Report',
-    description: 'Sets title of the check.'
+    description: 'Title of the check'
   }
 });

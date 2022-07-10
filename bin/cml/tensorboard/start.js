@@ -114,39 +114,39 @@ exports.options = kebabcaseKeys({
     alias: 'c',
     required: true,
     description:
-      'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+      'TB credentials as json, usually found at ~/.config/tensorboard/credentials/uploader-creds.json'
   },
   logdir: {
     type: 'string',
-    description: 'Directory containing the logs to process.'
+    description: 'Directory containing the logs to process'
   },
   name: {
     type: 'string',
-    description: 'Tensorboard experiment title. Max 100 characters.'
+    description: 'Tensorboard experiment title; max 100 characters'
   },
   description: {
     type: 'string',
     description:
-      'Tensorboard experiment description. Markdown format. Max 600 characters.'
+      'Tensorboard experiment description in Markdown format; max 600 characters'
   },
   md: {
     type: 'boolean',
-    description: 'Output as markdown [title || name](url).'
+    description: 'Output as markdown [title || name](url)'
   },
   title: {
     type: 'string',
     alias: 't',
-    description: 'Markdown title, if not specified, param name will be used.'
+    description: 'Markdown title, if not specified, param name will be used'
   },
   file: {
     type: 'string',
     alias: 'f',
     description:
-      'Append the output to the given file. Create it if does not exist.',
+      'Append the output to the given file or create it if does not exist',
     hidden: true
   },
   rmWatermark: {
     type: 'boolean',
-    description: 'Avoid CML watermark.'
+    description: 'Avoid CML watermark'
   }
 });

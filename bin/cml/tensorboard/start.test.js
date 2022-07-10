@@ -62,25 +62,24 @@ describe('CML e2e', () => {
             --version       Show version number                              [boolean]
             --log           Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver        Forge where the repository is hosted. If not specified, it
-                            will be inferred from the environment
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-            --repo          Repository. If not specified, it will be inferred from the
-                            environment                                       [string]
-            --token         Personal access token. If not specified, it will be
-                            inferred from the environment                     [string]
-        -c, --credentials   TB credentials as json. Usually found at
-                            ~/.config/tensorboard/credentials/uploader-creds.json. If
-                            not specified will look for the json at the env variable
-                            TB_CREDENTIALS.                        [string] [required]
-            --logdir        Directory containing the logs to process.         [string]
-            --name          Tensorboard experiment title. Max 100 characters. [string]
-            --description   Tensorboard experiment description. Markdown format. Max
-                            600 characters.                                   [string]
-            --md            Output as markdown [title || name](url).         [boolean]
-        -t, --title         Markdown title, if not specified, param name will be used.
+            --driver        Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+            --repo          Repository URL or slug
+                                        [string] [default: infer from the environment]
+            --token         Personal access token
+                                        [string] [default: infer from the environment]
+        -c, --credentials   TB credentials as json, usually found at
+                            ~/.config/tensorboard/credentials/uploader-creds.json
+                                                                   [string] [required]
+            --logdir        Directory containing the logs to process          [string]
+            --name          Tensorboard experiment title; max 100 characters  [string]
+            --description   Tensorboard experiment description in Markdown format; max
+                            600 characters                                    [string]
+            --md            Output as markdown [title || name](url)          [boolean]
+        -t, --title         Markdown title, if not specified, param name will be used
                                                                               [string]
-            --rm-watermark  Avoid CML watermark.                             [boolean]"
+            --rm-watermark  Avoid CML watermark                              [boolean]"
     `);
   });
 
