@@ -24,11 +24,11 @@ exports.options = kebabcaseKeys({
     type: 'string',
     alias: 'head-sha',
     default: 'HEAD',
-    description: 'Commit SHA linked to this comment'
+    description: 'Commit SHA linked to this report'
   },
   publish: {
     type: 'boolean',
-    description: 'Upload local files and images linked from the Markdown report'
+    description: 'Upload local images which are inlined in the report'
   },
   watch: {
     type: 'boolean',
@@ -47,7 +47,7 @@ exports.options = kebabcaseKeys({
   update: {
     type: 'boolean',
     description:
-      'Update the last CML comment (if any) instead of creating a new one'
+      'Update the last CML report (if any) instead of creating a new one'
   },
   rmWatermark: {
     type: 'boolean',

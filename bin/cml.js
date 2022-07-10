@@ -68,12 +68,12 @@ exports.options = {
   repo: {
     type: 'string',
     description:
-      'Repository. If not specified, it will be inferred from the environment'
+      'Repository URL or slug. If unspecified, inferred from the environment.'
   },
   token: {
     type: 'string',
     description:
-      'Personal access token. If not specified, it will be inferred from the environment'
+      'Personal access token. If unspecified, inferred from the environment.'
   }
 };
 

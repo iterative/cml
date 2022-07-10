@@ -8,13 +8,13 @@ describe('command-line interface tests', () => {
       "cml.js <command>
 
       Commands:
-        cml.js check              Manage continuous integration checks
+        cml.js check              Manage CI checks (status reports)
         cml.js pr <glob path...>  Manage pull requests
         cml.js report             Manage reports
         cml.js repository         Manage repository settings
         cml.js runner             Manage continuous integration self-hosted runners
         cml.js tensorboard        Manage tensorboard.dev agents
-        cml.js workflow           Manage continuous integration workflows
+        cml.js workflow           Manage CI workflows
 
       Options:
         --help     Show help                                                 [boolean]
