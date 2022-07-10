@@ -85,8 +85,6 @@ const userId = async () => {
 
     if (ci === 'github') {
       // TODO: GITHUB_ACTOR
-      const { name, login, id } = {};
-      rawId = `${name} ${login} ${id}`;
     } else if (ci === 'gitlab') {
       rawId = `${GITLAB_USER_NAME} ${GITLAB_USER_LOGIN} ${GITLAB_USER_ID}`;
     } else if (ci === 'bitbucket') {
