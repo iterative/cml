@@ -35,6 +35,8 @@ const {
 const ID_DO_NOT_TRACK = 'do-not-track';
 
 const deterministic = async (data) => {
+  if (!data) throw new Error('data is not set calculating deterministic uuid');
+
   const namespace = uuidv5('iterative.ai', uuidv5.DNS);
   const name = await promisify(scrypt)(data, parse(namespace), 8, {
     N: 1 << 16,
