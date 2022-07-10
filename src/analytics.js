@@ -135,7 +135,6 @@ const jitsuEventPayload = async ({
   const { cloud: backend = '', ...extraRest } = extra;
   extraRest.ci = guessCI();
 
-  console.log(extraRest);
   return {
     user_id: await userId(),
     group_id: await groupId(),
@@ -172,7 +171,6 @@ const send = async ({
       agent: new ProxyAgent()
     });
   } catch (err) {
-    console.log(`Send analytics failed: ${err.message}`);
     winston.debug(`Send analytics failed: ${err.message}`);
   }
 };
