@@ -2,14 +2,22 @@ const kebabcaseKeys = require('kebabcase-keys');
 
 const { GIT_REMOTE, GIT_USER_NAME, GIT_USER_EMAIL } = require('../../src/cml');
 const CML = require('../../src/cml').default;
+const analytics = require('../../src/analytics');
 
 exports.command = 'pr <glob path...>';
 exports.description = 'Create a pull request with the specified files';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
-  const link = await cml.prCreate({ ...opts, globs: opts.globpath });
-  if (link) console.log(link);
+  const event = await analytics.jitsuEventPayload({ action: 'pr', cml });
+  try {
+    const link = await cml.prCreate({ ...opts, globs: opts.globpath });
+    if (link) console.log(link);
+    analytics.send({ event });
+  } catch (err) {
+    analytics.send({ ...event, error: err.message });
+    throw err;
+  }
 };
 
 exports.builder = (yargs) =>

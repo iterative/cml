@@ -2,13 +2,22 @@ const kebabcaseKeys = require('kebabcase-keys');
 
 const { GIT_USER_NAME, GIT_USER_EMAIL } = require('../../src/cml');
 const CML = require('../../src/cml').default;
+const analytics = require('../../src/analytics');
 
 exports.command = 'ci';
 exports.description = 'Fixes specific CI setups';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
-  console.log((await cml.ci(opts)) || '');
+  const event = await analytics.jitsuEventPayload({ action: 'ci', cml });
+
+  try {
+    console.log((await cml.ci(opts)) || '');
+    analytics.send({ event });
+  } catch (err) {
+    analytics.send({ ...event, error: err.message });
+    throw err;
+  }
 };
 
 exports.builder = (yargs) =>

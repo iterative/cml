@@ -7,10 +7,12 @@ const timestring = require('timestring');
 const winston = require('winston');
 
 const CML = require('../../src/cml').default;
+const analytics = require('../../src/analytics');
 const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
 
 let cml;
+let event;
 let RUNNER;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
@@ -92,6 +94,7 @@ const shutdown = async (opts) => {
 
   await destroyTerraform();
 
+  analytics.send({ ...event });
   process.exit(error ? 1 : 0);
 };
 
@@ -341,8 +344,6 @@ const run = async (opts) => {
   opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
     driver,
-    repo,
-    token,
     workdir,
     cloud,
     labels,
@@ -351,8 +352,6 @@ const run = async (opts) => {
     reuseIdle,
     dockerVolumes
   } = opts;
-
-  cml = new CML({ driver, repo, token });
 
   await cml.repoTokenCheck();
 
@@ -368,6 +367,7 @@ const run = async (opts) => {
         `Runner name ${name} is already in use. Please change the name or terminate the existing runner.`
       );
     winston.info(`Reusing existing runner named ${name}...`);
+    analytics.send({ ...event });
     process.exit(0);
   }
 
@@ -380,12 +380,14 @@ const run = async (opts) => {
     winston.info(
       `Reusing existing online runners with the ${labels} labels...`
     );
+    analytics.send({ ...event });
     process.exit(0);
   }
 
   if (reuseIdle) {
     if (driver === 'bitbucket') {
       winston.error('cml runner flag --reuse-idle is unsupported by bitbucket');
+      analytics.send({ ...event });
       process.exit(1);
     }
     winston.info(
@@ -397,6 +399,7 @@ const run = async (opts) => {
     );
     if (availableRunner) {
       winston.info('Found matching idle runner.', availableRunner);
+      analytics.send({ ...event });
       process.exit(0);
     }
   }
@@ -419,6 +422,10 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
+  const { driver, repo, token } = opts;
+  cml = new CML({ driver, repo, token });
+  event = await analytics.jitsuEventPayload({ action: 'runner', cml });
+
   if (process.env.RUNNER_NAME) {
     winston.warn(
       'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
@@ -428,6 +435,7 @@ exports.handler = async (opts) => {
     await run(opts);
   } catch (error) {
     await shutdown({ ...opts, error });
+    analytics.send({ ...event, error: error.message });
   }
 };
 

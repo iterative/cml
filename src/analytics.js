@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const fetch = require('node-fetch');
+const timeoutSignal = require('timeout-signal');
 const ProxyAgent = require('proxy-agent');
 const { promisify } = require('util');
 const { scrypt } = require('crypto');
@@ -14,7 +15,8 @@ const { version: VERSION } = require('../package.json');
 const { exec, fileExists } = require('./utils');
 
 const {
-  TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
+  // TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
+  TPI_ANALYTICS_ENDPOINT = 'http://broken.cml.dev:3004/',
   TPI_ANALYTICS_TOKEN = 's2s.jtyjusrpsww4k9b76rrjri.bl62fbzrb7nd9n6vn5bpqt',
   ITERATIVE_DO_NOT_TRACK,
 
@@ -79,47 +81,51 @@ const groupId = async () => {
 };
 
 const userId = async ({ cml } = {}) => {
-  if (isCI()) {
-    let rawId;
-    const ci = guessCI();
-    if (ci === 'github') {
-      const { name, login, id } = await cml
-        .getDriver()
-        .user({ name: GITHUB_ACTOR });
-      rawId = `${name || ''} ${login} ${id}`;
-    } else if (ci === 'gitlab') {
-      rawId = `${GITLAB_USER_NAME} ${GITLAB_USER_LOGIN} ${GITLAB_USER_ID}`;
-    } else if (ci === 'bitbucket') {
-      rawId = BITBUCKET_STEP_TRIGGERER_UUID;
+  try {
+    if (isCI()) {
+      let rawId;
+      const ci = guessCI();
+      if (ci === 'github') {
+        const { name, login, id } = await cml
+          .getDriver()
+          .user({ name: GITHUB_ACTOR });
+        rawId = `${name || ''} ${login} ${id}`;
+      } else if (ci === 'gitlab') {
+        rawId = `${GITLAB_USER_NAME} ${GITLAB_USER_LOGIN} ${GITLAB_USER_ID}`;
+      } else if (ci === 'bitbucket') {
+        rawId = BITBUCKET_STEP_TRIGGERER_UUID;
+      } else {
+        rawId = await exec(`git log -1 --pretty=format:'%ae'`);
+      }
+
+      return await deterministic(rawId);
+    }
+
+    let id = uuidv4();
+    const oldPath = userConfigDir('dvc/user_id', 'iterative');
+    const newPath = userConfigDir('iterative/telemetry');
+
+    if (await fileExists(newPath)) {
+      id = (await fs.readFile(newPath)).toString('utf-8');
     } else {
-      rawId = await exec(`git log -1 --pretty=format:'%ae'`);
+      if (await fileExists(oldPath)) {
+        const json = (await fs.readFile(oldPath)).toString('utf-8');
+        ({ user_id: id } = JSON.parse(json));
+      }
+
+      await fs.mkdir(path.dirname(newPath), { recursive: true });
+      await fs.writeFile(newPath, id);
     }
 
-    return await deterministic(rawId);
-  }
-
-  let id = uuidv4();
-  const oldPath = userConfigDir('dvc/user_id', 'iterative');
-  const newPath = userConfigDir('iterative/telemetry');
-
-  if (await fileExists(newPath)) {
-    id = (await fs.readFile(newPath)).toString('utf-8');
-  } else {
-    if (await fileExists(oldPath)) {
-      const json = (await fs.readFile(oldPath)).toString('utf-8');
-      ({ user_id: id } = JSON.parse(json));
+    if (!(await fileExists(oldPath)) && id !== ID_DO_NOT_TRACK) {
+      await fs.mkdir(path.dirname(oldPath), { recursive: true });
+      await fs.writeFile(oldPath, JSON.stringify({ user_id: id }));
     }
 
-    await fs.mkdir(path.dirname(newPath), { recursive: true });
-    await fs.writeFile(newPath, id);
+    return id;
+  } catch (err) {
+    winston.debug(`userId failure: ${err.message}`);
   }
-
-  if (!(await fileExists(oldPath)) && id !== ID_DO_NOT_TRACK) {
-    await fs.mkdir(path.dirname(oldPath), { recursive: true });
-    await fs.writeFile(oldPath, JSON.stringify({ user_id: id }));
-  }
-
-  return id;
 };
 
 const OS = () => {
@@ -161,12 +167,13 @@ const send = async ({
 } = {}) => {
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;
-    if (event.id === ID_DO_NOT_TRACK) return;
+    if (!event.id || event.id === ID_DO_NOT_TRACK) return;
 
     await fetch(endpoint, {
+      signal: timeoutSignal(5 * 1000),
       method: 'POST',
       headers: {
-        'X-Auth-Toke': token,
+        'X-Auth-Token': token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(event),
