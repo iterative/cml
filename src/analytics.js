@@ -15,8 +15,7 @@ const { version: VERSION } = require('../package.json');
 const { exec, fileExists } = require('./utils');
 
 const {
-  // TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
-  TPI_ANALYTICS_ENDPOINT = 'http://broken.cml.dev:3004/',
+  TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
   TPI_ANALYTICS_TOKEN = 's2s.jtyjusrpsww4k9b76rrjri.bl62fbzrb7nd9n6vn5bpqt',
   ITERATIVE_DO_NOT_TRACK,
 
