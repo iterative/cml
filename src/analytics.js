@@ -103,23 +103,28 @@ const userId = async ({ cml } = {}) => {
     let id = uuidv4();
     const oldPath = userConfigDir('dvc/user_id', 'iterative');
     const newPath = userConfigDir('iterative/telemetry');
+    const readId = async ({ fpath }) => {
+      const json = (await fs.readFile(fpath)).toString('utf-8');
+      const { user_id: id } = JSON.parse(json);
+
+      return id;
+    };
+
+    const writeId = async ({ fpath, id }) => {
+      await fs.mkdir(path.dirname(fpath), { recursive: true });
+      await fs.writeFile(fpath, JSON.stringify({ user_id: id }));
+    };
 
     if (await fileExists(newPath)) {
-      id = (await fs.readFile(newPath)).toString('utf-8');
+      id = await readId({ fpath: newPath });
     } else {
-      if (await fileExists(oldPath)) {
-        const json = (await fs.readFile(oldPath)).toString('utf-8');
-        ({ user_id: id } = JSON.parse(json));
-      }
+      if (await fileExists(oldPath)) id = await readId({ fpath: oldPath });
 
-      await fs.mkdir(path.dirname(newPath), { recursive: true });
-      await fs.writeFile(newPath, id);
+      await writeId({ fpath: newPath, id });
     }
 
-    if (!(await fileExists(oldPath)) && id !== ID_DO_NOT_TRACK) {
-      await fs.mkdir(path.dirname(oldPath), { recursive: true });
-      await fs.writeFile(oldPath, JSON.stringify({ user_id: id }));
-    }
+    if (!(await fileExists(oldPath)) && id !== ID_DO_NOT_TRACK)
+      await writeId({ fpath: oldPath, id });
 
     return id;
   } catch (err) {
