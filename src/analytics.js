@@ -140,23 +140,27 @@ const jitsuEventPayload = async ({
   extra = {},
   cml
 } = {}) => {
-  const { cloud: backend = '', ...extraRest } = extra;
-  extraRest.ci = guessCI();
+  try {
+    const { cloud: backend = '', ...extraRest } = extra;
+    extraRest.ci = guessCI();
 
-  return {
-    user_id: await userId({ cml }),
-    group_id: await groupId(),
-    action,
-    interface: 'cli',
-    tool_name: 'cml',
-    tool_version: VERSION,
-    tool_source: '',
-    os_name: OS(),
-    os_version: os.release(),
-    backend,
-    error,
-    extra: extraRest
-  };
+    return {
+      user_id: await userId({ cml }),
+      group_id: await groupId(),
+      action,
+      interface: 'cli',
+      tool_name: 'cml',
+      tool_version: VERSION,
+      tool_source: '',
+      os_name: OS(),
+      os_version: os.release(),
+      backend,
+      error,
+      extra: extraRest
+    };
+  } catch (err) {
+    return {};
+  }
 };
 
 const send = async ({
