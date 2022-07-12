@@ -1,25 +1,13 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
 const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
 
 exports.command = 'rerun-workflow';
 exports.description = 'Reruns a workflow given the jobId or workflow Id';
 
 exports.handler = async (opts) => {
   const cml = new CML(opts);
-  const event = await analytics.jitsuEventPayload({
-    action: 'rerun-workflow',
-    cml
-  });
-
-  try {
-    await cml.pipelineRerun(opts);
-    analytics.send({ event });
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  await cml.pipelineRerun(opts);
 };
 
 exports.builder = (yargs) =>
