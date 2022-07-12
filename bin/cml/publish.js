@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const winston = require('winston');
+
 const CML = require('../../src/cml').default;
 
 exports.command = 'publish <asset>';

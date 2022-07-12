@@ -6,9 +6,9 @@ exports.command = 'send-github-check <markdown file>';
 exports.description = 'Create a check report';
 
 exports.handler = async (opts) => {
-  const cml = new CML({ ...opts });
   const path = opts.markdownfile;
   const report = await fs.readFile(path, 'utf-8');
+  const cml = new CML({ ...opts });
   await cml.checkCreate({ ...opts, report });
 };
 

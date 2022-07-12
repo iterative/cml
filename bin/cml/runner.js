@@ -6,7 +6,6 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 
-const CML = require('../../src/cml').default;
 const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
 
@@ -416,16 +415,16 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
-  const { driver, repo, token } = opts;
-  cml = new CML({ driver, repo, token });
-
   if (process.env.RUNNER_NAME) {
     winston.warn(
       'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
     );
   }
-
-  await run(opts);
+  try {
+    await run(opts);
+  } catch (error) {
+    await shutdown({ ...opts, error });
+  }
 };
 
 exports.builder = (yargs) =>

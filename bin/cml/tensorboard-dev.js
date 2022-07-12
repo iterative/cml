@@ -83,8 +83,8 @@ exports.handler = async (opts) => {
 
   proc.unref();
   proc.on('exit', async (code) => {
-    const error = await fs.readFile(stderrPath, 'utf8');
     if (code) {
+      const error = await fs.readFile(stderrPath, 'utf8');
       winston.error(`Tensorboard failed with error: ${error}`);
     }
   });
