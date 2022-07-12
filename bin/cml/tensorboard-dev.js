@@ -101,7 +101,6 @@ exports.handler = async (opts) => {
   else await fs.appendFile(file, url);
 
   closeFd(stdoutFd) && closeFd(stderrFd);
-  process.exit(0);
 };
 
 exports.builder = (yargs) =>
