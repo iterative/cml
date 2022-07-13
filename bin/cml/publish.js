@@ -1,8 +1,8 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const winston = require('winston');
+
 const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
 
 exports.command = 'publish <asset>';
 exports.description = 'Upload an image to build a report';
@@ -19,24 +19,14 @@ exports.handler = async (opts) => {
 
   const path = opts.asset;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
-  const event = await analytics.jitsuEventPayload({
-    action: 'publish',
-    cml: new CML(opts)
+
+  const output = await cml.publish({
+    ...opts,
+    path
   });
 
-  try {
-    const output = await cml.publish({
-      ...opts,
-      path
-    });
-
-    if (!file) console.log(output);
-    else await fs.writeFile(file, output);
-    analytics.send({ event });
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  if (!file) console.log(output);
+  else await fs.writeFile(file, output);
 };
 
 exports.builder = (yargs) =>

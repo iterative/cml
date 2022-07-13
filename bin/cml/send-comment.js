@@ -1,27 +1,14 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
 const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
 
 exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
   opts.markdownFile = opts.markdownfile;
-
   const cml = new CML(opts);
-  const event = await analytics.jitsuEventPayload({
-    action: 'send-comment',
-    cml
-  });
-
-  try {
-    console.log(await cml.commentCreate(opts));
-    analytics.send({ event });
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  console.log(await cml.commentCreate(opts));
 };
 
 exports.builder = (yargs) =>

@@ -7,6 +7,11 @@ const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
 
+const CML = require('../src/cml').default;
+const analytics = require('../src/analytics');
+
+let event;
+
 const configureLogger = (level) => {
   winston.configure({
     format: process.stdout.isTTY
@@ -43,12 +48,21 @@ const runPlugin = async ({ $0: executable, command }) => {
 
 const handleError = (message, error) => {
   if (error) {
+    analytics.send({ error, event });
     winston.error(error);
   } else {
     yargs.showHelp();
     console.error('\n' + message);
   }
   process.exit(1);
+};
+
+const runTelemetry = async (opts) => {
+  event = await analytics.jitsuEventPayload({
+    action: opts._[0],
+    cml: new CML(opts)
+  });
+  analytics.send({ event });
 };
 
 const options = {
@@ -82,6 +96,7 @@ yargs
   .fail(handleError)
   .env('CML')
   .options(options)
+  .middleware(runTelemetry)
   .commandDir('./cml', { exclude: /\.test\.js$/ })
   .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
   .recommendCommands()
