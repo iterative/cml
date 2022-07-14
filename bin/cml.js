@@ -58,7 +58,7 @@ const setupLogger = (opts) => {
   });
 };
 
-const telemetry = async (opts) => {
+const setupTelemetry = async (opts) => {
   const { cml, cmlCommand: action } = opts;
   opts.telemetryEvent = await jitsuEventPayload({ action, cml });
 };
@@ -100,7 +100,7 @@ yargs
   .fail(handleError)
   .middleware(setupOpts)
   .middleware(setupLogger)
-  .middleware(telemetry)
+  .middleware(setupTelemetry)
   .commandDir('./cml', { exclude: /\.test\.js$/ })
   .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
   .recommendCommands()
