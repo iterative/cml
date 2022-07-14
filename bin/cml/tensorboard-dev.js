@@ -4,19 +4,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const winston = require('winston');
 const { exec, watermarkUri, sleep } = require('../../src/utils');
-
-const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
-
-const closeFd = (fd) => {
-  try {
-    fd.close();
-  } catch (err) {
-    winston.error(err.message);
-  }
-};
 
 exports.tbLink = async (opts = {}) => {
   const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
@@ -59,66 +47,55 @@ exports.handler = async (opts) => {
     rmWatermark
   } = opts;
 
-  const cml = new CML({ ...opts });
-  const event = await analytics.jitsuEventPayload({
-    action: 'tensorboard-dev',
-    cml
+  // set credentials
+  const path = `${homedir()}/.config/tensorboard/credentials`;
+  await fs.mkdir(path, { recursive: true });
+  await fs.writeFile(`${path}/uploader-creds.json`, credentials);
+
+  // launch tensorboard in background
+  const help = await exec('tensorboard dev upload -h');
+  const extraParamsFound =
+    (name || description) && help.indexOf('--description') >= 0;
+  const extraParams = extraParamsFound
+    ? `--name "${name}" --description "${description}"`
+    : '';
+  const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
+
+  const stdoutPath = tempy.file({ extension: 'log' });
+  const stdoutFd = await fs.open(stdoutPath, 'a');
+  const stderrPath = tempy.file({ extension: 'log' });
+  const stderrFd = await fs.open(stderrPath, 'a');
+
+  const proc = spawn(command, [], {
+    detached: true,
+    shell: true,
+    stdio: ['ignore', stdoutFd, stderrFd]
   });
 
-  try {
-    // set credentials
-    const path = `${homedir()}/.config/tensorboard/credentials`;
-    await fs.mkdir(path, { recursive: true });
-    await fs.writeFile(`${path}/uploader-creds.json`, credentials);
-
-    // launch  tensorboard on background
-    const help = await exec('tensorboard dev upload -h');
-    const extraParamsFound =
-      (name || description) && help.indexOf('--description') >= 0;
-    const extraParams = extraParamsFound
-      ? `--name "${name}" --description "${description}"`
-      : '';
-    const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
-
-    const stdoutPath = tempy.file({ extension: 'log' });
-    const stdoutFd = await fs.open(stdoutPath, 'a');
-    const stderrPath = tempy.file({ extension: 'log' });
-    const stderrFd = await fs.open(stderrPath, 'a');
-
-    const proc = spawn(command, [], {
-      detached: true,
-      shell: true,
-      stdio: ['ignore', stdoutFd, stderrFd]
-    });
-
-    proc.unref();
-    proc.on('exit', async (code) => {
+  proc.unref();
+  proc.on('exit', async (code) => {
+    if (code) {
       const error = await fs.readFile(stderrPath, 'utf8');
-      if (code) {
-        winston.error(`Tensorboard failed with error: ${error}`);
-      }
-      analytics.send({ ...event, error });
-      process.exit(code);
-    });
+      throw new Error(`Tensorboard failed with error: ${error}`);
+    }
+  });
 
-    const url = await exports.tbLink({
-      stdout: stdoutPath,
-      stderror: stderrPath,
-      title,
-      name,
-      rmWatermark,
-      md
-    });
-    if (!file) console.log(url);
-    else await fs.appendFile(file, url);
+  const url = await exports.tbLink({
+    stdout: stdoutPath,
+    stderror: stderrPath,
+    title,
+    name,
+    rmWatermark,
+    md
+  });
+  if (!file) console.log(url);
+  else await fs.appendFile(file, url);
 
-    closeFd(stdoutFd) && closeFd(stderrFd);
-    analytics.send({ ...event });
-    process.exit(0);
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  const { cml, telemetryEvent: event } = opts;
+  await cml.telemetrySend({ event });
+
+  stdoutFd.close();
+  stderrFd.close();
 };
 
 exports.builder = (yargs) =>

@@ -15,8 +15,8 @@ const { version: VERSION } = require('../package.json');
 const { exec, fileExists } = require('./utils');
 
 const {
-  TPI_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
-  TPI_ANALYTICS_TOKEN = 's2s.jtyjusrpsww4k9b76rrjri.bl62fbzrb7nd9n6vn5bpqt',
+  ITERATIVE_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
+  ITERATIVE_ANALYTICS_TOKEN = 's2s.jtyjusrpsww4k9b76rrjri.bl62fbzrb7nd9n6vn5bpqt',
   ITERATIVE_DO_NOT_TRACK,
 
   GITHUB_SERVER_URL,
@@ -170,8 +170,8 @@ const jitsuEventPayload = async ({
 
 const send = async ({
   event,
-  endpoint = TPI_ANALYTICS_ENDPOINT,
-  token = TPI_ANALYTICS_TOKEN
+  endpoint = ITERATIVE_ANALYTICS_ENDPOINT,
+  token = ITERATIVE_ANALYTICS_TOKEN
 } = {}) => {
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;

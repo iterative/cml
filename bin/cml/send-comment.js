@@ -1,32 +1,20 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
-const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
+const { repoOptions } = require('../../src/cml');
 
 exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
-  opts.markdownFile = opts.markdownfile;
-
-  const cml = new CML(opts);
-  const event = await analytics.jitsuEventPayload({
-    action: 'send-comment',
-    cml
-  });
-
-  try {
-    console.log(await cml.commentCreate(opts));
-    analytics.send({ event });
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  const { cml, telemetryEvent: event } = opts;
+  console.log(await opts.cml.commentCreate(opts));
+  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_SEND_COMMENT').options(
     kebabcaseKeys({
+      ...repoOptions,
       pr: {
         type: 'boolean',
         description:
@@ -66,21 +54,6 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description:
           'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
-      },
-      repo: {
-        type: 'string',
-        description:
-          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-      },
-      driver: {
-        type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description: 'If not specify it infers it from the ENV.'
       }
     })
   );

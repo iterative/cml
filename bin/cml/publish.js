@@ -1,8 +1,8 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const winston = require('winston');
-const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
+
+const { CML, repoOptions } = require('../../src/cml');
 
 exports.command = 'publish <asset>';
 exports.description = 'Upload an image to build a report';
@@ -15,33 +15,20 @@ exports.handler = async (opts) => {
     opts.native = true;
   }
 
-  const { file, repo, native } = opts;
-
-  const path = opts.asset;
+  const { telemetryEvent: event, file, repo, native, asset: path } = opts;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
-  const event = await analytics.jitsuEventPayload({
-    action: 'publish',
-    cml: new CML(opts)
-  });
+  const output = await cml.publish({ ...opts, path });
 
-  try {
-    const output = await cml.publish({
-      ...opts,
-      path
-    });
+  if (!file) console.log(output);
+  else await fs.writeFile(file, output);
 
-    if (!file) console.log(output);
-    else await fs.writeFile(file, output);
-    analytics.send({ event });
-  } catch (err) {
-    analytics.send({ ...event, error: err.message });
-    throw err;
-  }
+  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_PUBLISH').options(
     kebabcaseKeys({
+      ...repoOptions,
       url: {
         type: 'string',
         description: 'Self-Hosted URL',
@@ -85,16 +72,6 @@ exports.builder = (yargs) =>
         type: 'string',
         description:
           'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to be used. If not specified, extracted from ENV REPO_TOKEN, GITLAB_TOKEN, GITHUB_TOKEN, or BITBUCKET_TOKEN.'
-      },
-      driver: {
-        type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description: 'If not specify it infers it from the ENV.'
       }
     })
   );

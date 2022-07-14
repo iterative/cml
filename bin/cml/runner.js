@@ -6,18 +6,18 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 
-const CML = require('../../src/cml').default;
-const analytics = require('../../src/analytics');
 const { randid, sleep } = require('../../src/utils');
 const tf = require('../../src/terraform');
+const { repoOptions } = require('../../src/cml');
 
 let cml;
-let event;
 let RUNNER;
 let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
 const RUNNER_JOBS_RUNNING = [];
 const GH_5_MIN_TIMEOUT = (35 * 24 * 60 - 5) * 60 * 1000;
+
+const { RUNNER_NAME } = process.env;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -94,8 +94,7 @@ const shutdown = async (opts) => {
 
   await destroyTerraform();
 
-  analytics.send({ ...event });
-  process.exit(error ? 1 : 0);
+  if (error) throw new Error('failed');
 };
 
 const runCloud = async (opts) => {
@@ -332,6 +331,8 @@ const runLocal = async (opts) => {
 };
 
 const run = async (opts) => {
+  opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
+
   process.on('unhandledRejection', (reason) =>
     shutdown({ ...opts, error: new Error(reason) })
   );
@@ -341,7 +342,6 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
     driver,
     workdir,
@@ -355,11 +355,7 @@ const run = async (opts) => {
 
   await cml.repoTokenCheck();
 
-  if (dockerVolumes.length && cml.driver !== 'gitlab')
-    winston.warn('Parameters --docker-volumes is only supported in gitlab');
-
   const runners = await cml.runners();
-
   const runner = await cml.runnerByName({ name, runners });
   if (runner) {
     if (!reuse)
@@ -367,8 +363,7 @@ const run = async (opts) => {
         `Runner name ${name} is already in use. Please change the name or terminate the existing runner.`
       );
     winston.info(`Reusing existing runner named ${name}...`);
-    analytics.send({ ...event });
-    process.exit(0);
+    return;
   }
 
   if (
@@ -380,15 +375,14 @@ const run = async (opts) => {
     winston.info(
       `Reusing existing online runners with the ${labels} labels...`
     );
-    analytics.send({ ...event });
-    process.exit(0);
+    return;
   }
 
   if (reuseIdle) {
     if (driver === 'bitbucket') {
-      winston.error('cml runner flag --reuse-idle is unsupported by bitbucket');
-      analytics.send({ ...event });
-      process.exit(1);
+      throw new Error(
+        'cml runner flag --reuse-idle is unsupported by bitbucket'
+      );
     }
     winston.info(
       `Checking for existing idle runner matching labels: ${labels}.`
@@ -399,16 +393,22 @@ const run = async (opts) => {
     );
     if (availableRunner) {
       winston.info('Found matching idle runner.', availableRunner);
-      analytics.send({ ...event });
-      process.exit(0);
+      return;
     }
   }
 
-  if (driver === 'github') {
+  if (dockerVolumes.length && cml.driver !== 'gitlab')
+    winston.warn('Parameters --docker-volumes is only supported in gitlab');
+
+  if (driver === 'github')
     winston.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );
-  }
+
+  if (RUNNER_NAME)
+    winston.warn(
+      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
+    );
 
   winston.info(`Preparing workdir ${workdir}...`);
   await fs.mkdir(workdir, { recursive: true });
@@ -422,42 +422,20 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
-  const { driver, repo, token } = opts;
-  cml = new CML({ driver, repo, token });
-  event = await analytics.jitsuEventPayload({ action: 'runner', cml });
-
-  if (process.env.RUNNER_NAME) {
-    winston.warn(
-      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
-    );
-  }
+  ({ cml } = opts);
+  const { telemetryEvent: event } = opts;
   try {
     await run(opts);
+    await cml.telemetrySend({ event });
   } catch (error) {
     await shutdown({ ...opts, error });
-    analytics.send({ ...event, error: error.message });
   }
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_RUNNER').options(
     kebabcaseKeys({
-      driver: {
-        type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description:
-          'Platform where the repository is hosted. If not specified, it will be inferred from the environment'
-      },
-      repo: {
-        type: 'string',
-        description:
-          'Repository to be used for registering the runner. If not specified, it will be inferred from the environment'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to register a self-hosted runner on the repository. If not specified, it will be inferred from the environment'
-      },
+      ...repoOptions,
       labels: {
         type: 'string',
         default: 'cml',

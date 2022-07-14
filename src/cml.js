@@ -4,7 +4,7 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 const chokidar = require('chokidar');
 const uuid = require('uuid');
 const winston = require('winston');
@@ -15,6 +15,7 @@ const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
 const { upload, exec, watermarkUri, waitForever } = require('./utils');
+const analytics = require('../src/analytics');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -187,7 +188,7 @@ class CML {
     let userReport = testReport;
     try {
       if (!userReport) {
-        userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+        userReport = await fs.readFile(markdownFile, 'utf-8');
       }
     } catch (err) {
       if (!watch) throw err;
@@ -241,7 +242,7 @@ class CML {
           winston.info(`watcher event: ${event} ${path}`);
           await this.commentCreate({ ...opts, update: true, watch: false });
           if (event !== 'unlink' && path === triggerFile) {
-            await fs.promises.unlink(triggerFile);
+            await fs.unlink(triggerFile);
           }
         } catch (err) {
           winston.warn(err);
@@ -571,15 +572,38 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
     return await getDriver(this).pipelineJobs(opts);
   }
 
+  async telemetrySend({ event }) {
+    await analytics.send({ event });
+  }
+
   logError(e) {
     winston.error(e.message);
   }
 }
 
+const repoOptions = {
+  repo: {
+    type: 'string',
+    description:
+      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  },
+  token: {
+    type: 'string',
+    description:
+      'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
+  },
+  driver: {
+    type: 'string',
+    choices: ['github', 'gitlab', 'bitbucket'],
+    description: 'If not specify it infers it from the ENV.'
+  }
+};
+
 module.exports = {
   CML,
+  default: CML,
   GIT_USER_EMAIL,
   GIT_USER_NAME,
   GIT_REMOTE,
-  default: CML
+  repoOptions
 };

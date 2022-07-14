@@ -7,7 +7,36 @@ const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
 
-const configureLogger = (level) => {
+const CML = require('../src/cml').default;
+const { jitsuEventPayload, send } = require('../src/analytics');
+
+const setup = (opts) => {
+  const legacyEnvironmentVariables = {
+    TB_CREDENTIALS: 'CML_TENSORBOARD_DEV_CREDENTIALS',
+    DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
+    RUNNER_IDLE_TIMEOUT: 'CML_RUNNER_IDLE_TIMEOUT',
+    RUNNER_LABELS: 'CML_RUNNER_LABELS',
+    RUNNER_SINGLE: 'CML_RUNNER_SINGLE',
+    RUNNER_REUSE: 'CML_RUNNER_REUSE',
+    RUNNER_NO_RETRY: 'CML_RUNNER_NO_RETRY',
+    RUNNER_DRIVER: 'CML_RUNNER_DRIVER',
+    RUNNER_REPO: 'CML_RUNNER_REPO',
+    RUNNER_PATH: 'CML_RUNNER_PATH'
+  };
+
+  for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
+    if (process.env[oldName]) process.env[newName] = process.env[oldName];
+  }
+
+  const { markdownfile } = opts;
+  opts.markdownFile = markdownfile;
+  opts.cmlCommand = opts._[0];
+  opts.cml = new CML(opts);
+};
+
+const setupLogger = (opts) => {
+  const { log: level } = opts;
+
   winston.configure({
     format: process.stdout.isTTY
       ? winston.format.combine(
@@ -29,6 +58,11 @@ const configureLogger = (level) => {
   });
 };
 
+const telemetry = async (opts) => {
+  const { cml, cmlCommand: action } = opts;
+  opts.telemetryEvent = await jitsuEventPayload({ action, cml });
+};
+
 const runPlugin = async ({ $0: executable, command }) => {
   try {
     if (command === undefined) throw new Error('no command');
@@ -41,8 +75,10 @@ const runPlugin = async ({ $0: executable, command }) => {
   }
 };
 
-const handleError = (message, error) => {
+const handleError = async (message, error, opts) => {
   if (error) {
+    const { telemetryEvent } = opts;
+    await send({ ...telemetryEvent, error: error.message });
     winston.error(error);
   } else {
     yargs.showHelp();
@@ -51,37 +87,20 @@ const handleError = (message, error) => {
   process.exit(1);
 };
 
-const options = {
-  log: {
-    type: 'string',
-    description: 'Maximum log level',
-    coerce: (value) => configureLogger(value) && value,
-    choices: ['error', 'warn', 'info', 'debug'],
-    default: 'info'
-  }
-};
-
-const legacyEnvironmentVariables = {
-  TB_CREDENTIALS: 'CML_TENSORBOARD_DEV_CREDENTIALS',
-  DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
-  RUNNER_IDLE_TIMEOUT: 'CML_RUNNER_IDLE_TIMEOUT',
-  RUNNER_LABELS: 'CML_RUNNER_LABELS',
-  RUNNER_SINGLE: 'CML_RUNNER_SINGLE',
-  RUNNER_REUSE: 'CML_RUNNER_REUSE',
-  RUNNER_NO_RETRY: 'CML_RUNNER_NO_RETRY',
-  RUNNER_DRIVER: 'CML_RUNNER_DRIVER',
-  RUNNER_REPO: 'CML_RUNNER_REPO',
-  RUNNER_PATH: 'CML_RUNNER_PATH'
-};
-
-for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
-  if (process.env[oldName]) process.env[newName] = process.env[oldName];
-}
-
 yargs
-  .fail(handleError)
   .env('CML')
-  .options(options)
+  .options({
+    log: {
+      type: 'string',
+      description: 'Maximum log level',
+      choices: ['error', 'warn', 'info', 'debug'],
+      default: 'info'
+    }
+  })
+  .fail(handleError)
+  .middleware(setup)
+  .middleware(setupLogger)
+  .middleware(telemetry)
   .commandDir('./cml', { exclude: /\.test\.js$/ })
   .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
   .recommendCommands()
