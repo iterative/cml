@@ -10,7 +10,7 @@ const yargs = require('yargs');
 const CML = require('../src/cml').default;
 const { jitsuEventPayload, send } = require('../src/analytics');
 
-const setup = (opts) => {
+const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
     TB_CREDENTIALS: 'CML_TENSORBOARD_DEV_CREDENTIALS',
     DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
@@ -98,7 +98,7 @@ yargs
     }
   })
   .fail(handleError)
-  .middleware(setup)
+  .middleware(setupOpts)
   .middleware(setupLogger)
   .middleware(telemetry)
   .commandDir('./cml', { exclude: /\.test\.js$/ })
