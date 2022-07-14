@@ -8,7 +8,7 @@ const winston = require('winston');
 const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
-const { jitsuEventPayload, send } = require('../src/analytics');
+const { jitsuEventPayload } = require('../src/analytics');
 
 const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
@@ -77,8 +77,8 @@ const runPlugin = async ({ $0: executable, command }) => {
 
 const handleError = async (message, error, opts) => {
   if (error) {
-    const { telemetryEvent } = opts;
-    await send({ ...telemetryEvent, error: error.message });
+    const { telemetryEvent, cml } = opts;
+    await cml.telemetrySend({ ...telemetryEvent, error: error.message });
     winston.error(error);
   } else {
     yargs.showHelp();
