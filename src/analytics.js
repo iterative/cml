@@ -104,10 +104,13 @@ const userId = async ({ cml } = {}) => {
     const oldPath = userConfigDir('dvc/user_id', 'iterative');
     const newPath = userConfigDir('iterative/telemetry');
     const readId = async ({ fpath }) => {
-      const json = (await fs.readFile(fpath)).toString('utf-8');
-      const { user_id: id } = JSON.parse(json);
-
-      return id;
+      const content = (await fs.readFile(fpath)).toString('utf-8');
+      try {
+        const { user_id: id } = JSON.parse(content);
+        return id;
+      } catch (err) {
+        return content;
+      }
     };
 
     const writeId = async ({ fpath, id }) => {
