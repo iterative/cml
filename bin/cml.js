@@ -9,6 +9,7 @@ const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
 const { jitsuEventPayload } = require('../src/analytics');
+let OPTS;
 
 const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
@@ -32,6 +33,8 @@ const setupOpts = (opts) => {
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
   opts.cml = new CML(opts);
+
+  OPTS = opts;
 };
 
 const setupLogger = (opts) => {
@@ -64,21 +67,20 @@ const setupTelemetry = async (opts) => {
 };
 
 const runPlugin = async ({ $0: executable, command }) => {
-  try {
-    if (command === undefined) throw new Error('no command');
-    const path = which.sync(`${basename(executable)}-${command}`);
-    const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
-    process.exit(await pseudoexec(path, parameters));
-  } catch (error) {
-    yargs.showHelp();
-    winston.debug(error);
-  }
+  if (command === undefined) throw new Error('no command');
+  const path = which.sync(`${basename(executable)}-${command}`);
+  const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
+  process.exit(await pseudoexec(path, parameters));
 };
 
-const handleError = async (message, error, opts) => {
+const handleError = async (message, error, yargs) => {
   if (error) {
-    const { telemetryEvent, cml } = opts;
-    await cml.telemetrySend({ ...telemetryEvent, error: error.message });
+    const { telemetryEvent, cml, cmlCommand } = OPTS;
+    if (cml[cmlCommand]) {
+      const event = { ...telemetryEvent, error: error.message };
+      await cml.telemetrySend({ event });
+    }
+
     winston.error(error);
   } else {
     yargs.showHelp();
