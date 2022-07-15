@@ -1,9 +1,7 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 
-const {
-  repoOptions: { repo, driver }
-} = require('../../src/cml');
+const { repoOptions } = require('../../src/cml');
 
 exports.command = 'send-github-check <markdown file>';
 exports.description = 'Create a check report';
@@ -18,13 +16,12 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) =>
   yargs.env('CML_SEND_GITHUB_CHECK').options(
     kebabcaseKeys({
-      driver,
+      ...repoOptions,
       token: {
         type: 'string',
         description:
           "GITHUB_TOKEN or Github App token. Personal access token won't work"
       },
-      repo,
       commitSha: {
         type: 'string',
         alias: 'head-sha',
