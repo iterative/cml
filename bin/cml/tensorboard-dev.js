@@ -65,8 +65,8 @@ const launchAndWaitLink = async (opts = {}) => {
     md
   });
 
-  await stdoutFd.close();
-  await stderrFd.close();
+  stdoutFd.close();
+  stderrFd.close();
 
   return url;
 };
@@ -91,7 +91,7 @@ exports.handler = async (opts) => {
     ? `--name "${name}" --description "${description}"`
     : '';
 
-  const url = launchAndWaitLink({ ...opts, extraParams });
+  const url = await launchAndWaitLink({ ...opts, extraParams });
   if (!file) console.log(url);
   else await fs.appendFile(file, url);
 
