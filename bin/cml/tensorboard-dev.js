@@ -6,7 +6,7 @@ const tempy = require('tempy');
 
 const { exec, watermarkUri, sleep } = require('../../src/utils');
 
-exports.tbLink = async (opts = {}) => {
+const tbLink = async (opts = {}) => {
   const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
 
   let chrono = 0;
@@ -32,33 +32,9 @@ exports.tbLink = async (opts = {}) => {
   throw new Error(`Tensorboard took too long. ${error}`);
 };
 
-exports.command = 'tensorboard-dev';
-exports.description = 'Get a tensorboard link';
+const launchAndWaitLink = async (opts = {}) => {
+  const { md, logdir, name, title, rmWatermark, extraParams } = opts;
 
-exports.handler = async (opts) => {
-  const {
-    md,
-    file,
-    credentials,
-    logdir,
-    name,
-    description,
-    title,
-    rmWatermark
-  } = opts;
-
-  // set credentials
-  const path = `${homedir()}/.config/tensorboard/credentials`;
-  await fs.mkdir(path, { recursive: true });
-  await fs.writeFile(`${path}/uploader-creds.json`, credentials);
-
-  // launch tensorboard in background
-  const help = await exec('tensorboard dev upload -h');
-  const extraParamsFound =
-    (name || description) && help.indexOf('--description') >= 0;
-  const extraParams = extraParamsFound
-    ? `--name "${name}" --description "${description}"`
-    : '';
   const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
 
   const stdoutPath = tempy.file({ extension: 'log' });
@@ -88,14 +64,39 @@ exports.handler = async (opts) => {
     rmWatermark,
     md
   });
+
+  await stdoutFd.close();
+  await stderrFd.close();
+
+  return url;
+};
+
+exports.tbLink = tbLink;
+exports.command = 'tensorboard-dev';
+exports.description = 'Get a tensorboard link';
+
+exports.handler = async (opts) => {
+  const { file, credentials, name, description } = opts;
+
+  // set credentials
+  const path = `${homedir()}/.config/tensorboard/credentials`;
+  await fs.mkdir(path, { recursive: true });
+  await fs.writeFile(`${path}/uploader-creds.json`, credentials);
+
+  // launch tensorboard in background
+  const help = await exec('tensorboard dev upload -h');
+  const extraParamsFound =
+    (name || description) && help.indexOf('--description') >= 0;
+  const extraParams = extraParamsFound
+    ? `--name "${name}" --description "${description}"`
+    : '';
+
+  const url = launchAndWaitLink({ ...opts, extraParams });
   if (!file) console.log(url);
   else await fs.appendFile(file, url);
 
   const { cml, telemetryEvent: event } = opts;
   await cml.telemetrySend({ event });
-
-  stdoutFd.close();
-  stderrFd.close();
 };
 
 exports.builder = (yargs) =>
@@ -106,7 +107,7 @@ exports.builder = (yargs) =>
         alias: 'c',
         required: true,
         description:
-          'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable TB_CREDENTIALS.'
+          'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable CML_TENSORBOARD_DEV_CREDENTIALS.'
       },
       logdir: {
         type: 'string',
