@@ -702,6 +702,77 @@ class Github {
     return GITHUB_SHA;
   }
 
+  async workflowCheck() {
+    const WARNINGS = [];
+    const _DIR = '.github/workflows/';
+    const yaml = require('js-yaml');
+    const files = await fs.readdir(_DIR);
+    for (const file of files) {
+      const rawStr = await fs.readFile(`${_DIR}${file}`, 'utf8');
+      const doc = yaml.load(rawStr);
+      Object.keys(doc.jobs).forEach((job) => {
+        // does job contain timeout?
+        const timeoutVal = doc.jobs[job]['timeout-minutes'];
+        if (timeoutVal === undefined) return;
+
+        // does job have label runs-on "self-hosted" or "cml"
+        const runsOn = doc.jobs[job]['runs-on'];
+        switch (typeof runsOn) {
+          case 'string':
+            if (
+              runsOn !== 'self-hosted' &&
+              !runsOn.toLocaleLowerCase().includes('cml')
+            )
+              return;
+            break;
+          case 'object':
+            if (!Array.isArray(runsOn)) return; // shouldnt happen
+            if (
+              !runsOn
+                .map((v) => {
+                  return (
+                    v === 'self-hosted' || v.toLocaleLowerCase().includes('cml')
+                  );
+                })
+                .reduce((pv, v) => pv || v)
+            ) {
+              return;
+            }
+            break;
+          default:
+            return;
+        }
+
+        console.log('found timeout in job:', job);
+        // locate timeout for warning
+        const warning = (function (find) {
+          const lines = rawStr.split('\n');
+          for (const i in lines) {
+            if (lines[i].includes(find[0])) {
+              find.shift();
+              if (find.length === 0) {
+                return parseInt(i) + 1;
+              }
+            }
+          }
+          return -1;
+        })([`${job}:`, 'timeout-minutes:']);
+        if (warning !== -1) {
+          WARNINGS.push({
+            file: `${_DIR}${file}`,
+            line: warning
+          });
+        }
+      });
+    }
+    for (const warning of WARNINGS) {
+      console.log(
+        `::warning file=${warning.file},line=${warning.line},title=Possible Unexpected Behavoir using \`cml runner\`::GitHub Actions has updated timeout-minutes if your job is unlikely to longer than 6hrs then you should remove timeout-minutes, to have cml auto-restart for long training jobs change this value to: 50400 (35d)`
+      );
+    }
+    process.exit();
+  }
+
   get branch() {
     return branchName(GITHUB_HEAD_REF || GITHUB_REF);
   }

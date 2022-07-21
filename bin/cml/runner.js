@@ -405,6 +405,7 @@ const run = async (opts) => {
     winston.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );
+    await cml.workflowCheck();
   }
 
   winston.info(`Preparing workdir ${workdir}...`);
