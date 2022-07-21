@@ -767,7 +767,7 @@ class Github {
     }
     for (const warning of WARNINGS) {
       console.log(
-        `::warning file=${warning.file},line=${warning.line},title=Possible Unexpected Behavoir using \`cml runner\`::GitHub Actions has updated timeout-minutes if your job is unlikely to longer than 6hrs then you should remove timeout-minutes, to have cml auto-restart for long training jobs change this value to: 50400 (35d)`
+        `::warning file=${warning.file},line=${warning.line},title=Possible Unexpected Behavior using \`cml runner\`::GitHub Actions has updated timeout-minutes if your job is unlikely to longer than 6hrs then you should remove timeout-minutes, to have cml auto-restart for long training jobs change this value to: 50400 (35d)`
       );
     }
     process.exit();
