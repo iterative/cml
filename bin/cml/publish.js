@@ -15,7 +15,7 @@ exports.handler = async (opts) => {
     opts.native = true;
   }
 
-  const { telemetryEvent: event, file, repo, native, asset: path } = opts;
+  const { file, repo, native, asset: path, telemetryEvent: event } = opts;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
   const output = await cml.publish({ ...opts, path });
 
