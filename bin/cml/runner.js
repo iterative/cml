@@ -301,7 +301,7 @@ const runLocal = async (opts) => {
     const watcher = setInterval(async () => {
       const idle = RUNNER_JOBS_RUNNING.length === 0;
 
-      if (RUNNER_TIMER >= idleTimeout || RUNNER_SHUTTING_DOWN) {
+      if (RUNNER_TIMER >= idleTimeout) {
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
         clearInterval(watcher);
       }
@@ -311,7 +311,7 @@ const runLocal = async (opts) => {
   }
 
   if (!noRetry) {
-    if (cml.driver === 'github' || RUNNER_SHUTTING_DOWN) {
+    if (cml.driver === 'github') {
       const watcherSeventyTwo = setInterval(() => {
         RUNNER_JOBS_RUNNING.forEach((job) => {
           if (
