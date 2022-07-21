@@ -85,12 +85,12 @@ const handleError = async (message, error, yargs) => {
   console.error('\n' + message);
 };
 
-process.on('uncaughtException', (err) => {
-  handleError('', err, yargs);
+process.on('uncaughtException', async (err) => {
+  await handleError('', err, yargs);
 });
 
-process.on('unhandledRejection', (reason) => {
-  handleError('', new Error(reason), yargs);
+process.on('unhandledRejection', async (reason) => {
+  await handleError('', new Error(reason), yargs);
 });
 
 yargs
