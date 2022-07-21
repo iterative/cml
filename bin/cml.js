@@ -70,24 +70,28 @@ const runPlugin = async ({ $0: executable, command }) => {
   if (command === undefined) throw new Error('no command');
   const path = which.sync(`${basename(executable)}-${command}`);
   const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
-  process.exit(await pseudoexec(path, parameters));
+  await pseudoexec(path, parameters);
 };
 
 const handleError = async (message, error, yargs) => {
   if (error) {
-    const { telemetryEvent, cml, cmlCommand } = OPTS;
-    if (cml[cmlCommand]) {
-      const event = { ...telemetryEvent, error: error.message };
-      await cml.telemetrySend({ event });
-    }
-
-    winston.error(error);
-  } else {
-    yargs.showHelp();
-    console.error('\n' + message);
+    const { telemetryEvent, cml } = OPTS;
+    const event = { ...telemetryEvent, error: error.message };
+    await cml.telemetrySend({ event });
+    return;
   }
-  process.exit(1);
+
+  yargs.showHelp();
+  console.error('\n' + message);
 };
+
+process.on('uncaughtException', (err) => {
+  handleError('', err, yargs);
+});
+
+process.on('unhandledRejection', (reason) => {
+  handleError('', new Error(reason), yargs);
+});
 
 yargs
   .env('CML')

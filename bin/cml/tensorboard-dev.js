@@ -49,8 +49,8 @@ const launchAndWaitLink = async (opts = {}) => {
   });
 
   proc.unref();
-  proc.on('exit', async (code) => {
-    if (code) {
+  proc.on('exit', async (code, signal) => {
+    if (code || signal) {
       const error = await fs.readFile(stderrPath, 'utf8');
       throw new Error(`Tensorboard failed with error: ${error}`);
     }

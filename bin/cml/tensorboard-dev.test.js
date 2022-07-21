@@ -89,6 +89,10 @@ describe('CML e2e', () => {
         --logdir logs --name '${name}' --description '${desc}'`
     );
 
+    console.log(`node ./bin/cml.js tensorboard-dev --credentials '${CREDENTIALS}' \
+    --md --title '${title}' \
+    --logdir logs --name '${name}' --description '${desc}'`);
+
     const isRunning = await isTbRunning();
     await rmTbDevExperiment(output);
 

@@ -77,12 +77,6 @@ const shutdown = async (opts) => {
     }
   };
 
-  if (error) {
-    winston.error(error, { status: 'terminated' });
-  } else {
-    winston.info('runner status', { reason, status: 'terminated' });
-  }
-
   if (!cloud) {
     try {
       await unregisterRunner();
@@ -94,7 +88,10 @@ const shutdown = async (opts) => {
 
   await destroyTerraform();
 
-  if (error) throw new Error('failed');
+  if (error) throw error;
+
+  winston.info('runner status', { reason, status: 'terminated' });
+  process.exit(0);
 };
 
 const runCloud = async (opts) => {
@@ -304,7 +301,7 @@ const runLocal = async (opts) => {
     const watcher = setInterval(async () => {
       const idle = RUNNER_JOBS_RUNNING.length === 0;
 
-      if (RUNNER_TIMER >= idleTimeout) {
+      if (RUNNER_TIMER >= idleTimeout || RUNNER_SHUTTING_DOWN) {
         shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
         clearInterval(watcher);
       }
@@ -314,7 +311,7 @@ const runLocal = async (opts) => {
   }
 
   if (!noRetry) {
-    if (cml.driver === 'github') {
+    if (cml.driver === 'github' || RUNNER_SHUTTING_DOWN) {
       const watcherSeventyTwo = setInterval(() => {
         RUNNER_JOBS_RUNNING.forEach((job) => {
           if (
