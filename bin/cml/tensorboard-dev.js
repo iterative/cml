@@ -78,12 +78,10 @@ exports.description = 'Get a tensorboard link';
 exports.handler = async (opts) => {
   const { file, credentials, name, description } = opts;
 
-  // set credentials
   const path = `${homedir()}/.config/tensorboard/credentials`;
   await fs.mkdir(path, { recursive: true });
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
-  // launch tensorboard in background
   const help = await exec('tensorboard dev upload -h');
   const extraParamsFound =
     (name || description) && help.indexOf('--description') >= 0;
