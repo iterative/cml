@@ -703,6 +703,27 @@ class Github {
   }
 
   async workflowCheck() {
+    try {
+      // TODO post telemetery merge - only run if in ci?
+      await this.checkWorkflowForTimeoutMinutes();
+    } catch (err) {
+      // noop
+    }
+  }
+
+  get branch() {
+    return branchName(GITHUB_HEAD_REF || GITHUB_REF);
+  }
+
+  get userEmail() {
+    return 'action@github.com';
+  }
+
+  get userName() {
+    return 'GitHub Action';
+  }
+
+  async checkWorkflowForTimeoutMinutes() {
     const WARNINGS = [];
     const _DIR = '.github/workflows/';
     const yaml = require('js-yaml');
@@ -714,7 +735,6 @@ class Github {
         // does job contain timeout?
         const timeoutVal = doc.jobs[job]['timeout-minutes'];
         if (timeoutVal === undefined) return;
-
         // does job have label runs-on "self-hosted" or "cml"
         const runsOn = doc.jobs[job]['runs-on'];
         switch (typeof runsOn) {
@@ -735,15 +755,12 @@ class Github {
                   );
                 })
                 .reduce((pv, v) => pv || v)
-            ) {
+            )
               return;
-            }
             break;
           default:
             return;
         }
-
-        console.log('found timeout in job:', job);
         // locate timeout for warning
         const warning = (function (find) {
           const lines = rawStr.split('\n');
@@ -770,19 +787,6 @@ class Github {
         `::warning file=${warning.file},line=${warning.line},title=Possible Unexpected Behavior using "cml runner"::GitHub Actions has updated timeout-minutes if your job is unlikely to run longer than 6hrs then you should remove timeout-minutes, to have cml auto-restart for long training jobs change this value to: 50400 (35d)`
       );
     }
-    process.exit();
-  }
-
-  get branch() {
-    return branchName(GITHUB_HEAD_REF || GITHUB_REF);
-  }
-
-  get userEmail() {
-    return 'action@github.com';
-  }
-
-  get userName() {
-    return 'GitHub Action';
   }
 }
 
