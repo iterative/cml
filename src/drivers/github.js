@@ -738,6 +738,7 @@ class Github {
         // does job contain timeout?
         const timeoutVal = doc.jobs[job]['timeout-minutes'];
         if (timeoutVal === undefined) return;
+        if (parseInt(timeoutVal) === 50400) return;
         // does job have label runs-on "self-hosted" or "cml"
         const runsOn = doc.jobs[job]['runs-on'];
         switch (typeof runsOn) {
