@@ -131,7 +131,7 @@ const runCloud = async (opts) => {
       );
 
     const tfPath = workdir;
-    const tfMainPath = join(tfPath, 'main.tf');
+    const tfMainPath = join(tfPath, 'main.tf.json');
 
     const tpl = tf.iterativeCmlRunnerTpl({
       tpiVersion,
@@ -159,7 +159,7 @@ const runCloud = async (opts) => {
       dockerVolumes
     });
 
-    await fs.writeFile(tfMainPath, tpl);
+    await fs.writeFile(tfMainPath, JSON.stringify(tpl));
 
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
@@ -226,9 +226,9 @@ const runLocal = async (opts) => {
 
     const tfPath = workdir;
     await fs.mkdir(tfPath, { recursive: true });
-    const tfMainPath = join(tfPath, 'main.tf');
+    const tfMainPath = join(tfPath, 'main.tf.json');
     const tpl = tf.iterativeProviderTpl({ tpiVersion });
-    await fs.writeFile(tfMainPath, tpl);
+    await fs.writeFile(tfMainPath, JSON.stringify(tpl));
 
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });

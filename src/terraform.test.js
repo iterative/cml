@@ -3,39 +3,24 @@ const { iterativeCmlRunnerTpl } = require('./terraform');
 describe('Terraform tests', () => {
   test('default options', async () => {
     const output = iterativeCmlRunnerTpl({});
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {}
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-      }
-      "
+      }"
     `);
   });
 
@@ -58,39 +43,41 @@ describe('Terraform tests', () => {
       spotPrice: '0.0001',
       awsSecurityGroup: 'mysg'
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"aws_security_group\\": \\"mysg\\",
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 300
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        
-        aws_security_group = \\"mysg\\"
-        
-        
-        
-      }
-      "
+      }"
     `);
   });
 
@@ -112,39 +99,40 @@ describe('Terraform tests', () => {
       spot: true,
       spotPrice: '0.0001'
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 0,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 0
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        
-        
-        
-        
-        
-      }
-      "
+      }"
     `);
   });
 
@@ -165,44 +153,47 @@ describe('Terraform tests', () => {
       sshPrivate: 'myprivate',
       spot: true,
       spotPrice: '0.0001',
-      metadata: { one: 'value', two: null }
+      metadata: { one: 'value', two: null, 'no problem': 'with spaces' }
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"metadata\\": {
+                \\"one\\": \\"value\\",
+                \\"two\\": null,
+                \\"no problem\\": \\"with spaces\\"
+              },
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 300
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        
-        
-        
-        metadata = {
-          one = \\"value\\"
-          two = \\"\\"
-        }
-        
-      }
-      "
+      }"
     `);
   });
 
@@ -225,39 +216,44 @@ describe('Terraform tests', () => {
       spotPrice: '0.0001',
       dockerVolumes: ['/aa:/aa', '/bb:/bb']
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"cloud\\": \\"aws\\",
+              \\"docker_volumes\\": [
+                \\"/aa:/aa\\",
+                \\"/bb:/bb\\"
+              ],
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 300
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        
-        
-        
-        
-        docker_volumes = [\\"/aa:/aa\\",\\"/bb:/bb\\"]
-      }
-      "
+      }"
     `);
   });
 
@@ -281,39 +277,42 @@ describe('Terraform tests', () => {
       spotPrice: '0.0001',
       awsSecurityGroup: 'mysg'
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"aws_security_group\\": \\"mysg\\",
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"instance_permission_set\\": \\"arn:aws:iam::1:instance-profile/x\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 300
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        instance_permission_set = \\"arn:aws:iam::1:instance-profile/x\\"
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        
-        aws_security_group = \\"mysg\\"
-        
-        
-        
-      }
-      "
+      }"
     `);
   });
 
@@ -336,39 +335,41 @@ describe('Terraform tests', () => {
       spotPrice: '0.0001',
       startupScript: 'c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ='
     });
-    expect(output).toMatchInlineSnapshot(`
-      "terraform {
-        required_providers {
-          iterative = { source = \\"iterative/iterative\\" }
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"startup_script\\": \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\"
+            }
+          }
         }
-      }
-      provider \\"iterative\\" {}
-
-      resource \\"iterative_cml_runner\\" \\"runner\\" {
-        repo = \\"https://\\"
-        token = \\"abc\\"
-        driver = \\"gitlab\\"
-        labels = \\"mylabel\\"
-        
-        idle_timeout = 300
-        name = \\"myrunner\\"
-        single = \\"true\\"
-        cloud = \\"aws\\"
-        region = \\"west\\"
-        instance_type = \\"mymachinetype\\"
-        instance_gpu = \\"mygputype\\"
-        instance_hdd_size = 50
-        
-        ssh_private = \\"myprivate\\"
-        spot = true
-        spot_price = 0.0001
-        startup_script = \\"c3VkbyBlY2hvICdoZWxsbyB3b3JsZCcgPj4gL3Vzci9oZWxsby50eHQ=\\"
-        
-        
-        
-        
-      }
-      "
+      }"
     `);
   });
 });
