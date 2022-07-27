@@ -398,26 +398,25 @@ class BitbucketCloud {
     return [];
   }
 
-  async updateGitConfig({ userName, userEmail } = {}) {
+  async updateGitConfig({ userName, userEmail, remote } = {}) {
     const [user, password] = Buffer.from(this.token, 'base64')
       .toString('utf-8')
       .split(':');
+
     const repo = new URL(this.repo);
     repo.password = password;
     repo.username = user;
+    repo.protocol = 'https';
+    repo.pathname = repo.pathname.replace('.git', '');
 
     const command = `
     git config --unset user.name;
     git config --unset user.email;
     git config --unset push.default;
-    git config --unset http.http://${this.repo
-      .replace('https://', '')
-      .replace('.git', '')}.proxy;
+    git config --unset http.http://${repo.host}${repo.pathname}.proxy;
     git config user.name "${userName || this.userName}" &&
     git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url origin "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
+    git remote set-url ${remote} "${repo.toString()}"`;
 
     return command;
   }
