@@ -63,80 +63,57 @@ const destroy = async (opts = {}) => {
   );
 };
 
-const mapCloudMetadata = (metadata) =>
-  Object.entries(metadata).map(([key, value]) => `${key} = "${value || ''}"`);
-
-const iterativeProviderTpl = (opts = {}) => {
-  const { tpiVersion } = opts;
-  return `terraform {
-  required_providers {
-    iterative = { source = "iterative/iterative"${
-      tpiVersion ? `, version = "${tpiVersion}"` : ''
-    } }
+const iterativeProviderTpl = ({ tpiVersion }) => ({
+  terraform: {
+    required_providers: {
+      iterative: {
+        source: 'iterative/iterative',
+        ...(tpiVersion && { version: tpiVersion })
+      }
+    }
+  },
+  provider: {
+    iterative: {}
   }
-}
-provider "iterative" {}
-`;
-};
+});
 
-const iterativeCmlRunnerTpl = (opts = {}) => {
-  const {
-    repo,
-    token,
-    driver,
-    labels,
-    cmlVersion,
-    idleTimeout,
-    cloud,
-    region,
-    name,
-    single,
-    type,
-    permissionSet,
-    metadata,
-    gpu,
-    hddSize,
-    sshPrivate,
-    spot,
-    spotPrice,
-    startupScript,
-    awsSecurityGroup,
-    awsSubnet,
-    dockerVolumes
-  } = opts;
-
-  const template = `${iterativeProviderTpl(opts)}
-resource "iterative_cml_runner" "runner" {
-  ${repo ? `repo = "${repo}"` : ''}
-  ${token ? `token = "${token}"` : ''}
-  ${driver ? `driver = "${driver}"` : ''}
-  ${labels ? `labels = "${labels}"` : ''}
-  ${cmlVersion ? `cml_version = "${cmlVersion}"` : ''}
-  ${typeof idleTimeout !== 'undefined' ? `idle_timeout = ${idleTimeout}` : ''}
-  ${name ? `name = "${name}"` : ''}
-  ${single ? `single = "${single}"` : ''}
-  ${cloud ? `cloud = "${cloud}"` : ''}
-  ${region ? `region = "${region}"` : ''}
-  ${type ? `instance_type = "${type}"` : ''}
-  ${gpu ? `instance_gpu = "${gpu}"` : ''}
-  ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
-  ${permissionSet ? `instance_permission_set = "${permissionSet}"` : ''}
-  ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
-  ${spot ? `spot = ${spot}` : ''}
-  ${spotPrice ? `spot_price = ${spotPrice}` : ''}
-  ${startupScript ? `startup_script = "${startupScript}"` : ''}
-  ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
-  ${awsSubnet ? `aws_subnet_id = "${awsSubnet}"` : ''}
-  ${
-    metadata
-      ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
-      : ''
+const iterativeCmlRunnerTpl = (opts = {}) => ({
+  ...iterativeProviderTpl(opts),
+  resource: {
+    iterative_cml_runner: {
+      runner: {
+        ...(opts.awsSecurityGroup && {
+          aws_security_group: opts.awsSecurityGroup
+        }),
+        ...(opts.awsSubnet && { aws_subnet: opts.awsSubnet }),
+        ...(opts.cloud && { cloud: opts.cloud }),
+        ...(opts.cmlVersion && { cml_version: opts.cmlVersion }),
+        ...(opts.dockerVolumes && { docker_volumes: opts.dockerVolumes }),
+        ...(opts.driver && { driver: opts.driver }),
+        ...(opts.gpu && { instance_gpu: opts.gpu }),
+        ...(opts.hddSize && { instance_hdd_size: opts.hddSize }),
+        ...(typeof opts.idleTimeout !== 'undefined' && {
+          idle_timeout: opts.idleTimeout
+        }),
+        ...(opts.labels && { labels: opts.labels }),
+        ...(opts.metadata && { metadata: opts.metadata }),
+        ...(opts.name && { name: opts.name }),
+        ...(opts.permissionSet && {
+          instance_permission_set: opts.permissionSet
+        }),
+        ...(opts.region && { region: opts.region }),
+        ...(opts.repo && { repo: opts.repo }),
+        ...(opts.single && { single: opts.single }),
+        ...(opts.spot && { spot: opts.spot }),
+        ...(opts.spotPrice && { spot_price: opts.spotPrice }),
+        ...(opts.sshPrivate && { ssh_private: opts.sshPrivate }),
+        ...(opts.startupScript && { startup_script: opts.startupScript }),
+        ...(opts.token && { token: opts.token }),
+        ...(opts.type && { instance_type: opts.type })
+      }
+    }
   }
-  ${dockerVolumes ? `docker_volumes = ${JSON.stringify(dockerVolumes)}` : ''}
-}
-`;
-  return template;
-};
+});
 
 const checkMinVersion = async () => {
   const ver = await version();

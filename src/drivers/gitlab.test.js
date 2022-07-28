@@ -50,7 +50,8 @@ describe('Non Enviromental tests', () => {
     });
     const command = await client.updateGitConfig({
       userName: 'john',
-      userEmail: 'john@test.com'
+      userEmail: 'john@test.com',
+      remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
       "

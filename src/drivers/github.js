@@ -686,7 +686,7 @@ class Github {
     });
   }
 
-  async updateGitConfig({ userName, userEmail } = {}) {
+  async updateGitConfig({ userName, userEmail, remote } = {}) {
     const repo = new URL(this.repo);
     repo.password = this.token;
     repo.username = 'token';
@@ -695,7 +695,7 @@ class Github {
     git config --unset http.https://github.com/.extraheader;
     git config user.name "${userName || this.userName}" &&
     git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url origin "${repo.toString()}${
+    git remote set-url ${remote} "${repo.toString()}${
       repo.toString().endsWith('.git') ? '' : '.git'
     }"`;
 
