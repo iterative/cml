@@ -146,7 +146,7 @@ class CML {
     return branch || (await exec(`git branch --show-current`));
   }
 
-  get getDriver() {
+  getDriver() {
     const { driver, repo, token } = this;
     if (!driver) throw new Error('driver not set');
 
