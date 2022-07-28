@@ -86,7 +86,7 @@ const userId = async ({ cml } = {}) => {
       const ci = guessCI();
       if (ci === 'github') {
         const { name, login, id } = await cml
-          .driver()
+          .getDriver()
           .user({ name: GITHUB_ACTOR });
         rawId = `${name || ''} ${login} ${id}`;
       } else if (ci === 'gitlab') {
