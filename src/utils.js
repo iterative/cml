@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 const winston = require('winston');
+const uuid = require('uuid');
 
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
@@ -124,11 +125,18 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const watermarkUri = (opts = {}) => {
-  const { uri, type } = opts;
-  const url = new URL(uri);
-  url.searchParams.append('cml', type);
+const watermarkUri = ({ uri, type } = {}) => {
+  return uriParmam({ uri, param: 'cml', value: type });
+};
 
+const preventcacheUri = ({ uri } = {}) => {
+  return uriParmam({ uri, param: 'cache-bypass', value: uuid.v4() });
+};
+
+const uriParmam = (opts = {}) => {
+  const { uri, param, value } = opts;
+  const url = new URL(uri);
+  url.searchParams.set(param, value);
   return url.toString();
 };
 
@@ -225,6 +233,7 @@ exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
 exports.watermarkUri = watermarkUri;
+exports.preventcacheUri = preventcacheUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
 exports.gpuPresent = gpuPresent;
