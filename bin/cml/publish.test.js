@@ -90,7 +90,7 @@ describe('CML e2e', () => {
     );
 
     expect(output.startsWith('https://')).toBe(true);
-    expect(output.endsWith('json')).toBe(true);
+    expect(output.includes('cml=json')).toBe(true);
   });
 
   test('cml publish assets/test.svg in Gitlab storage', async () => {

@@ -6,7 +6,6 @@ const git = require('simple-git')('./');
 const path = require('path');
 const fs = require('fs').promises;
 const chokidar = require('chokidar');
-const uuid = require('uuid');
 const winston = require('winston');
 const remark = require('remark');
 const visit = require('unist-util-visit');
@@ -14,7 +13,13 @@ const visit = require('unist-util-visit');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri, waitForever } = require('./utils');
+const {
+  upload,
+  exec,
+  watermarkUri,
+  preventcacheUri,
+  waitForever
+} = require('./utils');
 const analytics = require('../src/analytics');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
@@ -25,8 +30,6 @@ const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
-
-const session = uuid.v4();
 
 const watcher = chokidar.watch([], {
   persistent: true,
@@ -206,11 +209,7 @@ class CML {
           );
           if (!triggerFile && watch) watcher.add(absolutePath);
           try {
-            const url = new URL(
-              await this.publish({ ...opts, path: absolutePath, session })
-            );
-            url.searchParams.set('cache-bypass', uuid.v4());
-            node.url = url.toString();
+            node.url = await this.publish({ ...opts, path: absolutePath });
           } catch (err) {
             if (err.code !== 'ENOENT') throw err;
           }
@@ -221,11 +220,13 @@ class CML {
     };
 
     if (publish) {
-      report = String(
+      report = (
         await remark()
           .use(() => publishLocalFiles)
           .process(report)
-      );
+      )
+        .toString()
+        .replace(/\\&(.+)=/g, '&$1=');
     }
 
     if (watch) {
@@ -294,15 +295,15 @@ class CML {
       }
     }
 
-    if (update)
+    if (update) {
       comment = updatableComment(await drv.commitComments({ commitSha }));
 
-    if (update && comment) {
-      return await drv.commentUpdate({
-        report,
-        id: comment.id,
-        commitSha
-      });
+      if (comment)
+        return await drv.commentUpdate({
+          report,
+          id: comment.id,
+          commitSha
+        });
     }
 
     return await drv.commentCreate({
@@ -331,6 +332,8 @@ class CML {
       const [, type] = mime.split('/');
       uri = watermarkUri({ uri, type });
     }
+
+    uri = preventcacheUri({ uri });
 
     if (md && mime.match('(image|video)/.*'))
       return `![](${uri}${title ? ` "${title}"` : ''})`;
