@@ -3,6 +3,7 @@ const { spawn } = require('child_process');
 const { resolve } = require('path');
 const fs = require('fs').promises;
 const fetch = require('node-fetch');
+const yaml = require('js-yaml');
 
 const github = require('@actions/github');
 const { Octokit } = require('@octokit/rest');
@@ -729,7 +730,6 @@ class Github {
     );
     const WARNINGS = [];
     const _DIR = '.github/workflows/';
-    const yaml = require('js-yaml');
     const files = await fs.readdir(_DIR);
     for (const file of files) {
       const rawStr = await fs.readFile(`${_DIR}${file}`, 'utf8');
