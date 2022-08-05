@@ -735,35 +735,39 @@ class Github {
       const rawStr = await fs.readFile(`${_DIR}${file}`, 'utf8');
       const doc = yaml.load(rawStr);
       Object.keys(doc.jobs).forEach((job) => {
-        // does job contain timeout?
         const timeoutVal = doc.jobs[job]['timeout-minutes'];
-        if (timeoutVal === undefined) return;
-        if (parseInt(timeoutVal) === 50400) return;
-        // does job have label runs-on "self-hosted" or "cml"
-        const runsOn = doc.jobs[job]['runs-on'];
-        switch (typeof runsOn) {
-          case 'string':
-            if (
-              runsOn !== 'self-hosted' &&
-              !runsOn.toLocaleLowerCase().includes('cml')
-            )
+        if (timeoutVal === undefined) return; // does job contain timeout?
+        if (parseInt(timeoutVal) === 50400) return; // 35 day timeout doesn't require warning
+        if (parseInt(timeoutVal) !== 4320) {
+          // if timeout is exactly 4320 likely because of cml
+          // if timeout is not 4320 double check for CML usage
+          // does job have label runs-on "self-hosted" or "cml"
+          const runsOn = doc.jobs[job]['runs-on'];
+          switch (typeof runsOn) {
+            case 'string':
+              if (
+                runsOn !== 'self-hosted' &&
+                !runsOn.toLocaleLowerCase().includes('cml')
+              )
+                return;
+              break;
+            case 'object':
+              if (!Array.isArray(runsOn)) return; // shouldnt happen
+              if (
+                !runsOn
+                  .map((v) => {
+                    return (
+                      v === 'self-hosted' ||
+                      v.toLocaleLowerCase().includes('cml')
+                    );
+                  })
+                  .reduce((pv, v) => pv || v)
+              )
+                return;
+              break;
+            default:
               return;
-            break;
-          case 'object':
-            if (!Array.isArray(runsOn)) return; // shouldnt happen
-            if (
-              !runsOn
-                .map((v) => {
-                  return (
-                    v === 'self-hosted' || v.toLocaleLowerCase().includes('cml')
-                  );
-                })
-                .reduce((pv, v) => pv || v)
-            )
-              return;
-            break;
-          default:
-            return;
+          }
         }
         // locate timeout for warning
         const warning = (function (find) {
