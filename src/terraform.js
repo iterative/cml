@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
+const winston = require('winston');
 const { exec, tfCapture } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
@@ -115,6 +116,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
       }
     }
   };
+  winston.debug(`terraform data: ${JSON.stringify(tfObj)}`);
   return tfObj;
 };
 
