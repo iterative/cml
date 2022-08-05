@@ -86,7 +86,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
           ...(opts.awsSecurityGroup && {
             aws_security_group: opts.awsSecurityGroup
           }),
-          ...(opts.awsSubnet && { aws_subnet: opts.awsSubnet }),
+          ...(opts.awsSubnet && { aws_subnet_id: opts.awsSubnet }),
           ...(opts.cloud && { cloud: opts.cloud }),
           ...(opts.cmlVersion && { cml_version: opts.cmlVersion }),
           ...(opts.dockerVolumes && { docker_volumes: opts.dockerVolumes }),
