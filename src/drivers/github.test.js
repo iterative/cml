@@ -43,7 +43,7 @@ describe('Non Enviromental tests', () => {
       repo: 'https://github.com/test/test',
       token: 'dXNlcjpwYXNz'
     });
-    const command = await client.updateGitConfig();
+    const command = await client.updateGitConfig({ remote: 'origin' });
     expect(command).toMatchInlineSnapshot(`
       "
           git config --unset http.https://github.com/.extraheader;
