@@ -78,7 +78,7 @@ const iterativeProviderTpl = ({ tpiVersion }) => ({
 });
 
 const iterativeCmlRunnerTpl = (opts = {}) => {
-  var obj = {
+  const tfObj = {
     ...iterativeProviderTpl(opts),
     resource: {
       iterative_cml_runner: {
@@ -115,8 +115,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
       }
     }
   };
-  console.log(JSON.stringify(obj));
-  return obj;
+  return tfObj;
 };
 
 const checkMinVersion = async () => {
