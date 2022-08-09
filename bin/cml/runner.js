@@ -419,11 +419,8 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
-  ({ cml } = opts);
-  const { telemetryEvent: event } = opts;
   try {
     await run(opts);
-    await cml.telemetrySend({ event });
   } catch (error) {
     await shutdown({ ...opts, error });
   }

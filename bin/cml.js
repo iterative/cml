@@ -9,7 +9,6 @@ const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
 const { jitsuEventPayload } = require('../src/analytics');
-let OPTS;
 
 const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
@@ -33,8 +32,6 @@ const setupOpts = (opts) => {
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
   opts.cml = new CML(opts);
-
-  OPTS = opts;
 };
 
 const setupLogger = (opts) => {
@@ -74,8 +71,8 @@ const runPlugin = async ({ $0: executable, command }) => {
 };
 
 const handleError = async (message, error, yargs) => {
-  if (error) {
-    const { telemetryEvent, cml } = OPTS;
+  if (error && yargs.parsed) {
+    const { telemetryEvent, cml } = await yargs.parsed.argv;
     const event = { ...telemetryEvent, error: error.message };
     await cml.telemetrySend({ event });
     return;
@@ -83,6 +80,11 @@ const handleError = async (message, error, yargs) => {
 
   yargs.showHelp();
   console.error('\n' + message);
+};
+
+const handleSuccess = async (opts) => {
+  const { telemetryEvent, cml } = await opts;
+  await cml.telemetrySend({ event: telemetryEvent });
 };
 
 process.on('uncaughtException', async (err) => {
@@ -93,23 +95,30 @@ process.on('unhandledRejection', async (reason) => {
   await handleError('', new Error(reason), yargs);
 });
 
-yargs
-  .env('CML')
-  .options({
-    log: {
-      type: 'string',
-      description: 'Maximum log level',
-      choices: ['error', 'warn', 'info', 'debug'],
-      default: 'info'
-    }
-  })
-  .fail(handleError)
-  .middleware(setupOpts)
-  .middleware(setupLogger)
-  .middleware(setupTelemetry)
-  .commandDir('./cml', { exclude: /\.test\.js$/ })
-  .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
-  .recommendCommands()
-  .demandCommand()
-  .strict()
-  .parse();
+handleSuccess(
+  yargs
+    .env('CML')
+    .options({
+      log: {
+        type: 'string',
+        description: 'Maximum log level',
+        choices: ['error', 'warn', 'info', 'debug'],
+        default: 'info'
+      }
+    })
+    .middleware(setupOpts)
+    .middleware(setupLogger)
+    .middleware(setupTelemetry)
+    .fail(handleError)
+    .commandDir('./cml', { exclude: /\.test\.js$/ })
+    .command(
+      '$0 <command>',
+      false,
+      (builder) => builder.strict(false),
+      runPlugin
+    )
+    .recommendCommands()
+    .demandCommand()
+    .strict()
+    .parse()
+);

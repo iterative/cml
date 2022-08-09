@@ -92,9 +92,6 @@ exports.handler = async (opts) => {
   const url = await launchAndWaitLink({ ...opts, extraParams });
   if (!file) console.log(url);
   else await fs.appendFile(file, url);
-
-  const { cml, telemetryEvent: event } = opts;
-  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>

@@ -15,14 +15,12 @@ exports.handler = async (opts) => {
     opts.native = true;
   }
 
-  const { file, repo, native, asset: path, telemetryEvent: event } = opts;
+  const { file, repo, native, asset: path } = opts;
   const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
   const output = await cml.publish({ ...opts, path });
 
   if (!file) console.log(output);
   else await fs.writeFile(file, output);
-
-  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>

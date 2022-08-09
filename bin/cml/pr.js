@@ -11,10 +11,9 @@ exports.command = 'pr <glob path...>';
 exports.description = 'Create a pull request with the specified files';
 
 exports.handler = async (opts) => {
-  const { cml, telemetryEvent: event, globpath: globs } = opts;
+  const { cml, globpath: globs } = opts;
   const link = await cml.prCreate({ ...opts, globs });
   console.log(link);
-  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>

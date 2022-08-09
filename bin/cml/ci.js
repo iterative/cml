@@ -6,9 +6,8 @@ exports.command = 'ci';
 exports.description = 'Fixes specific CI setups';
 
 exports.handler = async (opts) => {
-  const { cml, telemetryEvent: event } = opts;
+  const { cml } = opts;
   await cml.ci(opts);
-  await cml.telemetrySend({ event });
 };
 
 exports.builder = (yargs) =>
