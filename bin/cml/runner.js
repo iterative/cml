@@ -419,6 +419,7 @@ exports.command = 'runner';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
+  ({ cml } = opts);
   try {
     await run(opts);
   } catch (error) {
