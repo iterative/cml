@@ -152,7 +152,12 @@ const jitsuEventPayload = async ({
     const { cloud: backend = '', ...extraRest } = extra;
     extraRest.ci = guessCI();
 
-    const { release = os.release() } = await getos();
+    const osname = OS();
+    let { release = os.release() } = await getos();
+    if (osname === 'windows') {
+      const [major, minor, build] = release.split('.');
+      release = `${build}.${major}.${minor}-`;
+    }
 
     return {
       user_id: await userId({ cml }),
@@ -162,7 +167,7 @@ const jitsuEventPayload = async ({
       tool_name: 'cml',
       tool_version: VERSION,
       tool_source: '',
-      os_name: OS(),
+      os_name: osname,
       os_version: release,
       backend,
       error,
