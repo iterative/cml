@@ -12,7 +12,7 @@ const { userConfigDir } = require('appdirs');
 const winston = require('winston');
 
 const { version: VERSION } = require('../package.json');
-const { exec, fileExists } = require('./utils');
+const { exec, fileExists, getos } = require('./utils');
 
 const {
   ITERATIVE_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
@@ -152,6 +152,8 @@ const jitsuEventPayload = async ({
     const { cloud: backend = '', ...extraRest } = extra;
     extraRest.ci = guessCI();
 
+    const { release = os.release() } = await getos();
+
     return {
       user_id: await userId({ cml }),
       group_id: await groupId(),
@@ -161,7 +163,7 @@ const jitsuEventPayload = async ({
       tool_version: VERSION,
       tool_source: '',
       os_name: OS(),
-      os_version: os.release(),
+      os_version: release,
       backend,
       error,
       extra: extraRest
