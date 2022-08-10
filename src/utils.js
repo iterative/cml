@@ -6,9 +6,19 @@ const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 const winston = require('winston');
 const uuid = require('uuid');
+const getOS = require('getos');
 
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
+
+const getos = async () => {
+  return new Promise((resolve, reject) => {
+    getOS((err, os) => {
+      if (err) reject(err);
+      resolve(os);
+    });
+  });
+};
 
 const waitForever = () => new Promise((resolve) => resolve);
 
@@ -224,6 +234,12 @@ const tfCapture = async (command, args = [], options = {}) => {
   });
 };
 
+const fileExists = (path) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false
+  );
+
 exports.tfCapture = tfCapture;
 exports.waitForever = waitForever;
 exports.exec = exec;
@@ -237,3 +253,5 @@ exports.preventcacheUri = preventcacheUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
 exports.gpuPresent = gpuPresent;
+exports.fileExists = fileExists;
+exports.getos = getos;
