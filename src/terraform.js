@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
+const winston = require('winston');
 const { exec, tfCapture } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
@@ -77,43 +78,47 @@ const iterativeProviderTpl = ({ tpiVersion }) => ({
   }
 });
 
-const iterativeCmlRunnerTpl = (opts = {}) => ({
-  ...iterativeProviderTpl(opts),
-  resource: {
-    iterative_cml_runner: {
-      runner: {
-        ...(opts.awsSecurityGroup && {
-          aws_security_group: opts.awsSecurityGroup
-        }),
-        ...(opts.awsSubnet && { aws_subnet: opts.awsSubnet }),
-        ...(opts.cloud && { cloud: opts.cloud }),
-        ...(opts.cmlVersion && { cml_version: opts.cmlVersion }),
-        ...(opts.dockerVolumes && { docker_volumes: opts.dockerVolumes }),
-        ...(opts.driver && { driver: opts.driver }),
-        ...(opts.gpu && { instance_gpu: opts.gpu }),
-        ...(opts.hddSize && { instance_hdd_size: opts.hddSize }),
-        ...(typeof opts.idleTimeout !== 'undefined' && {
-          idle_timeout: opts.idleTimeout
-        }),
-        ...(opts.labels && { labels: opts.labels }),
-        ...(opts.metadata && { metadata: opts.metadata }),
-        ...(opts.name && { name: opts.name }),
-        ...(opts.permissionSet && {
-          instance_permission_set: opts.permissionSet
-        }),
-        ...(opts.region && { region: opts.region }),
-        ...(opts.repo && { repo: opts.repo }),
-        ...(opts.single && { single: opts.single }),
-        ...(opts.spot && { spot: opts.spot }),
-        ...(opts.spotPrice && { spot_price: opts.spotPrice }),
-        ...(opts.sshPrivate && { ssh_private: opts.sshPrivate }),
-        ...(opts.startupScript && { startup_script: opts.startupScript }),
-        ...(opts.token && { token: opts.token }),
-        ...(opts.type && { instance_type: opts.type })
+const iterativeCmlRunnerTpl = (opts = {}) => {
+  const tfObj = {
+    ...iterativeProviderTpl(opts),
+    resource: {
+      iterative_cml_runner: {
+        runner: {
+          ...(opts.awsSecurityGroup && {
+            aws_security_group: opts.awsSecurityGroup
+          }),
+          ...(opts.awsSubnet && { aws_subnet_id: opts.awsSubnet }),
+          ...(opts.cloud && { cloud: opts.cloud }),
+          ...(opts.cmlVersion && { cml_version: opts.cmlVersion }),
+          ...(opts.dockerVolumes && { docker_volumes: opts.dockerVolumes }),
+          ...(opts.driver && { driver: opts.driver }),
+          ...(opts.gpu && { instance_gpu: opts.gpu }),
+          ...(opts.hddSize && { instance_hdd_size: opts.hddSize }),
+          ...(typeof opts.idleTimeout !== 'undefined' && {
+            idle_timeout: opts.idleTimeout
+          }),
+          ...(opts.labels && { labels: opts.labels }),
+          ...(opts.metadata && { metadata: opts.metadata }),
+          ...(opts.name && { name: opts.name }),
+          ...(opts.permissionSet && {
+            instance_permission_set: opts.permissionSet
+          }),
+          ...(opts.region && { region: opts.region }),
+          ...(opts.repo && { repo: opts.repo }),
+          ...(opts.single && { single: opts.single }),
+          ...(opts.spot && { spot: opts.spot }),
+          ...(opts.spotPrice && { spot_price: opts.spotPrice }),
+          ...(opts.sshPrivate && { ssh_private: opts.sshPrivate }),
+          ...(opts.startupScript && { startup_script: opts.startupScript }),
+          ...(opts.token && { token: opts.token }),
+          ...(opts.type && { instance_type: opts.type })
+        }
       }
     }
-  }
-});
+  };
+  winston.debug(`terraform data: ${JSON.stringify(tfObj)}`);
+  return tfObj;
+};
 
 const checkMinVersion = async () => {
   const ver = await version();

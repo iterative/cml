@@ -534,7 +534,6 @@ exports.builder = (yargs) =>
       },
       cloudSshPrivate: {
         type: 'string',
-        coerce: (val) => val && val.replace(/\n/g, '\\n'),
         description:
           'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
       },
