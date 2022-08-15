@@ -185,7 +185,7 @@ const send = async ({
 } = {}) => {
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;
-    if (!event.id || event.id === ID_DO_NOT_TRACK) return;
+    if (!event.user_id || event.user_id === ID_DO_NOT_TRACK) return;
 
     await fetch(endpoint, {
       signal: timeoutSignal(5 * 1000),
