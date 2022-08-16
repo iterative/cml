@@ -65,8 +65,9 @@ const setupTelemetry = async (opts) => {
 
 const runPlugin = async ({ $0: executable, command }) => {
   if (command === undefined) throw new Error('no command');
+  const { argv } = process.argv;
   const path = which.sync(`${basename(executable)}-${command}`);
-  const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
+  const parameters = argv.slice(argv.indexOf(command) + 1); // HACK
   await pseudoexec(path, parameters);
 };
 
