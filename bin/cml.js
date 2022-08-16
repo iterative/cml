@@ -44,14 +44,14 @@ const setupLogger = (opts) => {
           winston.format.simple()
         )
       : winston.format.combine(
-          winston.format.errors({ stack: false }),
+          winston.format.errors({ stack: true }),
           winston.format.json()
         ),
     transports: [
       new winston.transports.Console({
         stderrLevels: Object.keys(winston.config.npm.levels),
-        handleExceptions: false,
-        handleRejections: false,
+        handleExceptions: true,
+        handleRejections: true,
         level
       })
     ]
