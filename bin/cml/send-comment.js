@@ -6,9 +6,8 @@ exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
-  const { cml, telemetryEvent: event } = opts;
-  console.log(await opts.cml.commentCreate(opts));
-  await cml.telemetrySend({ event });
+  const { cml } = opts;
+  console.log(await cml.commentCreate(opts));
 };
 
 exports.builder = (yargs) =>

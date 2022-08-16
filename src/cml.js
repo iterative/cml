@@ -20,7 +20,6 @@ const {
   preventcacheUri,
   waitForever
 } = require('./utils');
-const analytics = require('../src/analytics');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -570,10 +569,6 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
 
   async pipelineJobs(opts) {
     return await this.getDriver().pipelineJobs(opts);
-  }
-
-  async telemetrySend({ event }) {
-    await analytics.send({ event });
   }
 
   logError(e) {
