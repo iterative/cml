@@ -8,8 +8,7 @@ const winston = require('winston');
 const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
-const { jitsuEventPayload } = require('../src/analytics');
-let OPTS;
+const { jitsuEventPayload, send } = require('../src/analytics');
 
 const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
@@ -33,8 +32,6 @@ const setupOpts = (opts) => {
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
   opts.cml = new CML(opts);
-
-  OPTS = opts;
 };
 
 const setupLogger = (opts) => {
@@ -68,48 +65,55 @@ const setupTelemetry = async (opts) => {
 
 const runPlugin = async ({ $0: executable, command }) => {
   if (command === undefined) throw new Error('no command');
+  const { argv } = process.argv;
   const path = which.sync(`${basename(executable)}-${command}`);
-  const parameters = process.argv.slice(process.argv.indexOf(command) + 1); // HACK
+  const parameters = argv.slice(argv.indexOf(command) + 1); // HACK
   await pseudoexec(path, parameters);
 };
 
-const handleError = async (message, error, yargs) => {
-  if (error) {
-    const { telemetryEvent, cml } = OPTS;
-    const event = { ...telemetryEvent, error: error.message };
-    await cml.telemetrySend({ event });
-    return;
+const handleError = (message, error) => {
+  if (!error) {
+    yargs.showHelp();
+    console.error('\n' + message);
+    process.exit(1);
   }
-
-  yargs.showHelp();
-  console.error('\n' + message);
 };
 
-process.on('uncaughtException', async (err) => {
-  await handleError('', err, yargs);
-});
+(async () => {
+  try {
+    await yargs
+      .env('CML')
+      .options({
+        log: {
+          type: 'string',
+          description: 'Maximum log level',
+          choices: ['error', 'warn', 'info', 'debug'],
+          default: 'info'
+        }
+      })
+      .fail(handleError)
+      .middleware(setupOpts)
+      .middleware(setupLogger)
+      .middleware(setupTelemetry)
+      .commandDir('./cml', { exclude: /\.test\.js$/ })
+      .command(
+        '$0 <command>',
+        false,
+        (builder) => builder.strict(false),
+        runPlugin
+      )
+      .recommendCommands()
+      .demandCommand()
+      .strict()
+      .parse();
 
-process.on('unhandledRejection', async (reason) => {
-  await handleError('', new Error(reason), yargs);
-});
-
-yargs
-  .env('CML')
-  .options({
-    log: {
-      type: 'string',
-      description: 'Maximum log level',
-      choices: ['error', 'warn', 'info', 'debug'],
-      default: 'info'
-    }
-  })
-  .fail(handleError)
-  .middleware(setupOpts)
-  .middleware(setupLogger)
-  .middleware(setupTelemetry)
-  .commandDir('./cml', { exclude: /\.test\.js$/ })
-  .command('$0 <command>', false, (builder) => builder.strict(false), runPlugin)
-  .recommendCommands()
-  .demandCommand()
-  .strict()
-  .parse();
+    const { telemetryEvent } = yargs.parsed.argv;
+    await send({ event: telemetryEvent });
+  } catch (err) {
+    const { telemetryEvent } = yargs.parsed.argv;
+    const event = { ...telemetryEvent, error: err.message };
+    await send({ event });
+    winston.error({ err });
+    process.exit(1);
+  }
+})();

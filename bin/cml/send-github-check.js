@@ -7,10 +7,9 @@ exports.command = 'send-github-check <markdown file>';
 exports.description = 'Create a check report';
 
 exports.handler = async (opts) => {
-  const { cml, telemetryEvent: event, markdownfile } = opts;
+  const { cml, markdownfile } = opts;
   const report = await fs.readFile(markdownfile, 'utf-8');
-  await opts.cml.checkCreate({ ...opts, report });
-  await cml.telemetrySend({ event });
+  await cml.checkCreate({ ...opts, report });
 };
 
 exports.builder = (yargs) =>

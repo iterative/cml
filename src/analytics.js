@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const fetch = require('node-fetch');
-const timeoutSignal = require('timeout-signal');
 const ProxyAgent = require('proxy-agent');
 const { promisify } = require('util');
 const { scrypt } = require('crypto');
@@ -187,8 +186,10 @@ const send = async ({
     if (ITERATIVE_DO_NOT_TRACK) return;
     if (!event.user_id || event.user_id === ID_DO_NOT_TRACK) return;
 
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 5 * 1000);
     await fetch(endpoint, {
-      signal: timeoutSignal(5 * 1000),
+      signal: controller.signal,
       method: 'POST',
       headers: {
         'X-Auth-Token': token,
@@ -197,6 +198,7 @@ const send = async ({
       body: JSON.stringify(event),
       agent: new ProxyAgent()
     });
+    clearInterval(id);
   } catch (err) {
     winston.debug(`Send analytics failed: ${err.message}`);
   }
