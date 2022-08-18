@@ -14,13 +14,13 @@ describe('CML e2e', () => {
         --version  Show version number                                       [boolean]
         --log      Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --repo     Specifies the repo to be used. If not specified is extracted from
-                   the CI ENV.                                                [string]
-        --token    Personal access token to be used. If not specified is extracted
-                   from ENV REPO_TOKEN.                                       [string]
-        --driver   If not specify it infers it from the ENV.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --id       Specifies the run Id to be rerun.                          [string]"
+        --driver   Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+        --repo     Repository URL or slug
+                                        [string] [default: infer from the environment]
+        --token    Personal access token[string] [default: infer from the environment]
+        --id       Run identifier to be rerun                                 [string]"
     `);
   });
 });

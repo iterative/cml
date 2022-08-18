@@ -468,7 +468,7 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     conflicts: ['reuse', 'single'],
     description:
-      'Only creates a new runner if the matching labels dont exist or are already busy.'
+      "Creates a new runner only if the matching labels don't exist or are already busy"
   },
   workdir: {
     type: 'string',
@@ -479,7 +479,7 @@ exports.options = kebabcaseKeys({
   dockerVolumes: {
     type: 'array',
     default: [],
-    description: 'Docker volumes. This feature is only supported in GitLab'
+    description: 'Docker volumes, only supported in GitLab'
   },
   cloud: {
     type: 'string',

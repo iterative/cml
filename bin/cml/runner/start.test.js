@@ -56,7 +56,7 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js runner
 
-      Manage continuous integration self-hosted runners
+      Manage self-hosted (cloud & on-premise) CI runners
 
       Commands:
         cml.js runner runner  Launch and register a self-hosted runner
@@ -66,15 +66,13 @@ describe('CML e2e', () => {
         --version                                 Show version number        [boolean]
         --log                                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --repo                                    Specifies the repo to be used. If
-                                                  not specified is extracted from the
-                                                  CI ENV.                     [string]
-        --token                                   Personal access token to be used. If
-                                                  not specified is extracted from ENV
-                                                  REPO_TOKEN.                 [string]
-        --driver                                  If not specify it infers it from the
-                                                  ENV.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+        --driver                                  Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+        --repo                                    Repository URL or slug
+                                        [string] [default: infer from the environment]
+        --token                                   Personal access token
+                                        [string] [default: infer from the environment]
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]
@@ -93,12 +91,11 @@ describe('CML e2e', () => {
         --reuse                                   Don't launch a new runner if an
                                                   existing one has the same name or
                                                   overlapping labels         [boolean]
-        --reuse-idle                              Only creates a new runner if the
-                                                  matching labels dont exist or are
-                                                  already busy.              [boolean]
-        --docker-volumes                          Docker volumes. This feature is only
-                                                  supported in GitLab
-                                                                 [array] [default: []]
+        --reuse-idle                              Creates a new runner only if the
+                                                  matching labels don't exist or are
+                                                  already busy               [boolean]
+        --docker-volumes                          Docker volumes, only supported in
+                                                  GitLab         [array] [default: []]
         --cloud                                   Cloud to deploy the runner
                                [string] [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
         --cloud-region                            Region where the instance is

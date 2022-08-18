@@ -10,7 +10,7 @@ exports.description = 'Publish an asset';
 exports.handler = async (opts) => {
   if (opts.gitlabUploads) {
     winston.warn(
-      '--gitlab-uploads will be deprecated soon. Use --native instead.'
+      '--gitlab-uploads will be deprecated soon, use --native instead'
     );
     opts.native = true;
   }
@@ -34,17 +34,17 @@ exports.options = kebabcaseKeys({
   },
   md: {
     type: 'boolean',
-    description: 'Output in markdown format [title || name](url).'
+    description: 'Output in markdown format [title || name](url)'
   },
   title: {
     type: 'string',
     alias: 't',
-    description: 'Markdown title [title](url) or ![](url title).'
+    description: 'Markdown title [title](url) or ![](url title)'
   },
   native: {
     type: 'boolean',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
   },
   gitlabUploads: {
     type: 'boolean',
@@ -56,14 +56,14 @@ exports.options = kebabcaseKeys({
   },
   mimeType: {
     type: 'string',
-    description:
-      'Specifies the mime-type. If not set guess it from the content.'
+    defaultDescription: 'infer from the file contents',
+    description: 'MIME type'
   },
   file: {
     type: 'string',
     alias: 'f',
     description:
-      'Append the output to the given file. Create it if does not exist.',
+      'Append the output to the given file or create it if does not exist',
     hidden: true
   },
   repo: {

@@ -20,11 +20,11 @@ exports.options = kebabcaseKeys({
     type: 'string',
     alias: 'head-sha',
     default: 'HEAD',
-    description: 'Commit SHA linked to this comment'
+    description: 'Commit SHA linked to this report'
   },
   publish: {
     type: 'boolean',
-    description: 'Upload local files and images linked from the Markdown report'
+    description: 'Upload local images which are inlined in the Markdown report'
   },
   watch: {
     type: 'boolean',
@@ -38,16 +38,16 @@ exports.options = kebabcaseKeys({
   native: {
     type: 'boolean',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage. Not available on GitHub."
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
   },
   update: {
     type: 'boolean',
     description:
-      'Update the last CML comment (if any) instead of creating a new one'
+      'Update the last CML report (if any) instead of creating a new one'
   },
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
+      'Avoid watermark; CML needs a watermark to be able to distinguish CML reports from other comments'
   }
 });

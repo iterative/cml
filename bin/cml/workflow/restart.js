@@ -13,6 +13,6 @@ exports.builder = (yargs) => yargs.env('CML_WORKFLOW').options(exports.options);
 exports.options = kebabcaseKeys({
   id: {
     type: 'string',
-    description: 'Specifies the run Id to be rerun.'
+    description: 'Run identifier to be rerun'
   }
 });

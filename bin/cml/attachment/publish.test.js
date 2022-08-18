@@ -13,19 +13,20 @@ describe('CML e2e', () => {
             --version       Show version number                              [boolean]
             --log           Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --driver        Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
             --repo          Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.                        [string]
-            --token         Personal access token to be used. If not specified is
-                            extracted from ENV REPO_TOKEN.                    [string]
-            --driver        If not specify it infers it from the ENV.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-            --md            Output in markdown format [title || name](url).  [boolean]
-        -t, --title         Markdown title [title](url) or ![](url title).    [string]
+                            extracted from the CI ENV.
+                                        [string] [default: infer from the environment]
+            --token         Personal access token
+                                        [string] [default: infer from the environment]
+            --md            Output in markdown format [title || name](url)   [boolean]
+        -t, --title         Markdown title [title](url) or ![](url title)     [string]
             --native        Uses driver's native capabilities to upload assets instead
-                            of CML's storage. Not available on GitHub.       [boolean]
+                            of CML's storage; not available on GitHub        [boolean]
             --rm-watermark  Avoid CML watermark.                             [boolean]
-            --mime-type     Specifies the mime-type. If not set guess it from the
-                            content.                                          [string]"
+            --mime-type     MIME type [string] [default: infer from the file contents]"
     `);
   });
 

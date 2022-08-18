@@ -1,7 +1,7 @@
 const { options, handler } = require('./runner/start');
 
 exports.command = 'runner';
-exports.description = 'Manage continuous integration self-hosted runners';
+exports.description = 'Manage self-hosted (cloud & on-premise) CI runners';
 exports.handler = handler;
 exports.builder = (yargs) =>
   yargs

@@ -90,20 +90,21 @@ const handleError = (message, error) => {
           choices: ['error', 'warn', 'info', 'debug'],
           default: 'info'
         },
-        repo: {
-          type: 'string',
-          description:
-            'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-        },
-        token: {
-          type: 'string',
-          description:
-            'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-        },
         driver: {
           type: 'string',
           choices: ['github', 'gitlab', 'bitbucket'],
-          description: 'If not specify it infers it from the ENV.'
+          defaultDescription: 'infer from the environment',
+          description: 'Forge where the repository is hosted'
+        },
+        repo: {
+          type: 'string',
+          defaultDescription: 'infer from the environment',
+          description: 'Repository URL or slug'
+        },
+        token: {
+          type: 'string',
+          defaultDescription: 'infer from the environment',
+          description: 'Personal access token'
         }
       })
       .fail(handleError)

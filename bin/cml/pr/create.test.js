@@ -18,27 +18,27 @@ describe('CML e2e', () => {
         --version              Show version number                           [boolean]
         --log                  Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --repo                 Specifies the repo to be used. If not specified is
-                               extracted from the CI ENV.                     [string]
-        --token                Personal access token to be used. If not specified is
-                               extracted from ENV REPO_TOKEN.                 [string]
-        --driver               If not specify it infers it from the ENV.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --md                   Output in markdown format [](url).            [boolean]
+        --driver               Forge where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+        --repo                 Repository URL or slug
+                                        [string] [default: infer from the environment]
+        --token                Personal access token
+                                        [string] [default: infer from the environment]
+        --md                   Output in markdown format [](url)             [boolean]
         --skip-ci              Force skip CI for the created commit (if any) [boolean]
-        --merge, --auto-merge  Try to merge the pull request upon creation.  [boolean]
-        --rebase               Try to rebase-merge the pull request upon creation.
+        --merge, --auto-merge  Try to merge the pull request upon creation   [boolean]
+        --rebase               Try to rebase-merge the pull request upon creation
                                                                              [boolean]
-        --squash               Try to squash-merge the pull request upon creation.
+        --squash               Try to squash-merge the pull request upon creation
                                                                              [boolean]
-        --branch               Branch name for the pull request.              [string]
-        --title                Pull request title.                            [string]
-        --body                 Pull request description.                      [string]
-        --message              Commit message.                                [string]
-        --remote               Sets git remote.           [string] [default: \\"origin\\"]
-        --user-email           Sets git user email.
-                                             [string] [default: \\"olivaw@iterative.ai\\"]
-        --user-name            Sets git user name.   [string] [default: \\"Olivaw[bot]\\"]"
+        --branch               Pull request branch name                       [string]
+        --title                Pull request title                             [string]
+        --body                 Pull request description                       [string]
+        --message              Commit message                                 [string]
+        --remote               Git remote                 [string] [default: \\"origin\\"]
+        --user-email           Git user email[string] [default: \\"olivaw@iterative.ai\\"]
+        --user-name            Git user name         [string] [default: \\"Olivaw[bot]\\"]"
     `);
   });
 });
