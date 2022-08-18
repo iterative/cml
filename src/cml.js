@@ -4,9 +4,8 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
 const chokidar = require('chokidar');
-const uuid = require('uuid');
 const winston = require('winston');
 const remark = require('remark');
 const visit = require('unist-util-visit');
@@ -14,7 +13,13 @@ const visit = require('unist-util-visit');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
-const { upload, exec, watermarkUri, waitForever } = require('./utils');
+const {
+  upload,
+  exec,
+  watermarkUri,
+  preventcacheUri,
+  waitForever
+} = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
@@ -24,8 +29,6 @@ const GIT_REMOTE = 'origin';
 const GITHUB = 'github';
 const GITLAB = 'gitlab';
 const BB = 'bitbucket';
-
-const session = uuid.v4();
 
 const watcher = chokidar.watch([], {
   persistent: true,
@@ -74,17 +77,6 @@ const inferDriver = (opts = {}) => {
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
   if (BITBUCKET_REPO_UUID) return BB;
-};
-
-const getDriver = (opts) => {
-  const { driver, repo, token } = opts;
-  if (!driver) throw new Error('driver not set');
-
-  if (driver === GITHUB) return new Github({ repo, token });
-  if (driver === GITLAB) return new Gitlab({ repo, token });
-  if (driver === BB) return new BitbucketCloud({ repo, token });
-
-  throw new Error(`driver ${driver} unknown!`);
 };
 
 const fixGitSafeDirectory = () => {
@@ -147,13 +139,24 @@ class CML {
   }
 
   async triggerSha() {
-    const { sha } = getDriver(this);
+    const { sha } = this.getDriver();
     return sha || (await this.revParse());
   }
 
   async branch() {
-    const { branch } = getDriver(this);
+    const { branch } = this.getDriver();
     return branch || (await exec(`git branch --show-current`));
+  }
+
+  getDriver() {
+    const { driver, repo, token } = this;
+    if (!driver) throw new Error('driver not set');
+
+    if (driver === GITHUB) return new Github({ repo, token });
+    if (driver === GITLAB) return new Gitlab({ repo, token });
+    if (driver === BB) return new BitbucketCloud({ repo, token });
+
+    throw new Error(`driver ${driver} unknown!`);
   }
 
   async commentCreate(opts = {}) {
@@ -183,14 +186,14 @@ class CML {
     let userReport = testReport;
     try {
       if (!userReport) {
-        userReport = await fs.promises.readFile(markdownFile, 'utf-8');
+        userReport = await fs.readFile(markdownFile, 'utf-8');
       }
     } catch (err) {
       if (!watch) throw err;
     }
 
     let report = `${userReport}\n\n${watermark}`;
-    const drv = getDriver(this);
+    const drv = this.getDriver();
 
     const publishLocalFiles = async (tree) => {
       const nodes = [];
@@ -205,11 +208,7 @@ class CML {
           );
           if (!triggerFile && watch) watcher.add(absolutePath);
           try {
-            const url = new URL(
-              await this.publish({ ...opts, path: absolutePath, session })
-            );
-            url.searchParams.set('cache-bypass', uuid.v4());
-            node.url = url.toString();
+            node.url = await this.publish({ ...opts, path: absolutePath });
           } catch (err) {
             if (err.code !== 'ENOENT') throw err;
           }
@@ -220,11 +219,13 @@ class CML {
     };
 
     if (publish) {
-      report = String(
+      report = (
         await remark()
           .use(() => publishLocalFiles)
           .process(report)
-      );
+      )
+        .toString()
+        .replace(/\\&(.+)=/g, '&$1=');
     }
 
     if (watch) {
@@ -237,7 +238,7 @@ class CML {
           winston.info(`watcher event: ${event} ${path}`);
           await this.commentCreate({ ...opts, update: true, watch: false });
           if (event !== 'unlink' && path === triggerFile) {
-            await fs.promises.unlink(triggerFile);
+            await fs.unlink(triggerFile);
           }
         } catch (err) {
           winston.warn(err);
@@ -293,15 +294,15 @@ class CML {
       }
     }
 
-    if (update)
+    if (update) {
       comment = updatableComment(await drv.commitComments({ commitSha }));
 
-    if (update && comment) {
-      return await drv.commentUpdate({
-        report,
-        id: comment.id,
-        commitSha
-      });
+      if (comment)
+        return await drv.commentUpdate({
+          report,
+          id: comment.id,
+          commitSha
+        });
     }
 
     return await drv.commentCreate({
@@ -313,7 +314,7 @@ class CML {
   async checkCreate(opts = {}) {
     const { headSha = await this.triggerSha() } = opts;
 
-    return await getDriver(this).checkCreate({ ...opts, headSha });
+    return await this.getDriver().checkCreate({ ...opts, headSha });
   }
 
   async publish(opts = {}) {
@@ -321,7 +322,7 @@ class CML {
 
     let mime, uri;
     if (native) {
-      ({ mime, uri } = await getDriver(this).upload(opts));
+      ({ mime, uri } = await this.getDriver().upload(opts));
     } else {
       ({ mime, uri } = await upload(opts));
     }
@@ -330,6 +331,8 @@ class CML {
       const [, type] = mime.split('/');
       uri = watermarkUri({ uri, type });
     }
+
+    uri = preventcacheUri({ uri });
 
     if (md && mime.match('(image|video)/.*'))
       return `![](${uri}${title ? ` "${title}"` : ''})`;
@@ -340,7 +343,7 @@ class CML {
   }
 
   async runnerToken() {
-    return await getDriver(this).runnerToken();
+    return await this.getDriver().runnerToken();
   }
 
   async parseRunnerLog(opts = {}) {
@@ -357,7 +360,7 @@ class CML {
       }
     };
 
-    const driver = await getDriver(this);
+    const driver = await this.getDriver();
     const logs = [];
     const patterns = driver.runnerLogPatterns();
     for (const status of ['ready', 'job_started', 'job_ended']) {
@@ -393,22 +396,22 @@ class CML {
   }
 
   async startRunner(opts = {}) {
-    return await getDriver(this).startRunner(opts);
+    return await this.getDriver().startRunner(opts);
   }
 
   async registerRunner(opts = {}) {
-    return await getDriver(this).registerRunner(opts);
+    return await this.getDriver().registerRunner(opts);
   }
 
   async unregisterRunner(opts = {}) {
     const { id: runnerId } = (await this.runnerByName(opts)) || {};
     if (!runnerId) throw new Error(`Runner not found`);
 
-    return await getDriver(this).unregisterRunner({ runnerId, ...opts });
+    return await this.getDriver().unregisterRunner({ runnerId, ...opts });
   }
 
   async runners(opts = {}) {
-    return await getDriver(this).runners(opts);
+    return await this.getDriver().runners(opts);
   }
 
   async runnerByName(opts = {}) {
@@ -420,7 +423,7 @@ class CML {
   }
 
   async runnerById(opts = {}) {
-    return await getDriver(this).runnerById(opts);
+    return await this.getDriver().runnerById(opts);
   }
 
   async runnersByLabels(opts = {}) {
@@ -434,7 +437,7 @@ class CML {
   }
 
   async runnerJob({ name, status = 'running' } = {}) {
-    return await getDriver(this).runnerJob({ status, name });
+    return await this.getDriver().runnerJob({ status, name });
   }
 
   async repoTokenCheck() {
@@ -451,11 +454,12 @@ class CML {
     const {
       unshallow = false,
       userEmail = GIT_USER_EMAIL,
-      userName = GIT_USER_NAME
+      userName = GIT_USER_NAME,
+      remote = GIT_REMOTE
     } = opts;
 
-    const driver = getDriver(this);
-    await exec(await driver.updateGitConfig({ userName, userEmail }));
+    const driver = this.getDriver();
+    await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
     if (unshallow) {
       if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
         await exec('git fetch --unshallow');
@@ -465,7 +469,7 @@ class CML {
   }
 
   async prCreate(opts = {}) {
-    const driver = getDriver(this);
+    const driver = this.getDriver();
     const {
       remote = GIT_REMOTE,
       globs = ['dvc.lock', '.gitignore'],
@@ -560,11 +564,11 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 
   async pipelineRerun(opts) {
-    return await getDriver(this).pipelineRerun(opts);
+    return await this.getDriver().pipelineRerun(opts);
   }
 
   async pipelineJobs(opts) {
-    return await getDriver(this).pipelineJobs(opts);
+    return await this.getDriver().pipelineJobs(opts);
   }
 
   logError(e) {
@@ -572,10 +576,29 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 }
 
+const repoOptions = {
+  repo: {
+    type: 'string',
+    description:
+      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
+  },
+  token: {
+    type: 'string',
+    description:
+      'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
+  },
+  driver: {
+    type: 'string',
+    choices: ['github', 'gitlab', 'bitbucket'],
+    description: 'If not specify it infers it from the ENV.'
+  }
+};
+
 module.exports = {
   CML,
+  default: CML,
   GIT_USER_EMAIL,
   GIT_USER_NAME,
   GIT_REMOTE,
-  default: CML
+  repoOptions
 };

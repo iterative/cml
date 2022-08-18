@@ -1,20 +1,21 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
-const CML = require('../../../src/cml').default;
-
 exports.command = 'restart';
-exports.description = 'Restarts a workflow given the jobId or workflowId';
+exports.description = 'Restart a workflow given the jobId or workflowId';
+
+const { repoOptions } = require('../../../src/cml');
 
 exports.handler = async (opts) => {
-  const cml = new CML(opts);
+  const { cml } = opts;
   await cml.pipelineRerun(opts);
 };
 
-exports.builder = (yargs) => yargs.env('CML_CI').options(exports.options);
+exports.builder = (yargs) => yargs.env('CML_WORKFLOW').options(exports.options);
 
 exports.options = kebabcaseKeys({
+  ...repoOptions,
   id: {
     type: 'string',
-    description: 'Run identifier to be rerun'
+    description: 'Specifies the run Id to be rerun.'
   }
 });

@@ -4,18 +4,9 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const winston = require('winston');
 const { exec, watermarkUri, sleep } = require('../../../src/utils');
 
-const closeFd = (fd) => {
-  try {
-    fd.close();
-  } catch (err) {
-    winston.error(err.message);
-  }
-};
-
-exports.tbLink = async (opts = {}) => {
+const tbLink = async (opts = {}) => {
   const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
 
   let chrono = 0;
@@ -41,33 +32,9 @@ exports.tbLink = async (opts = {}) => {
   throw new Error(`Tensorboard took too long. ${error}`);
 };
 
-exports.command = 'start';
-exports.description = 'Start the tensorboard agent and get a link';
+const launchAndWaitLink = async (opts = {}) => {
+  const { md, logdir, name, title, rmWatermark, extraParams } = opts;
 
-exports.handler = async (opts) => {
-  const {
-    md,
-    file,
-    credentials,
-    logdir,
-    name,
-    description,
-    title,
-    rmWatermark
-  } = opts;
-
-  // set credentials
-  const path = `${homedir()}/.config/tensorboard/credentials`;
-  await fs.mkdir(path, { recursive: true });
-  await fs.writeFile(`${path}/uploader-creds.json`, credentials);
-
-  // launch  tensorboard on background
-  const help = await exec('tensorboard dev upload -h');
-  const extraParamsFound =
-    (name || description) && help.indexOf('--description') >= 0;
-  const extraParams = extraParamsFound
-    ? `--name "${name}" --description "${description}"`
-    : '';
   const command = `tensorboard dev upload --logdir ${logdir} ${extraParams}`;
 
   const stdoutPath = tempy.file({ extension: 'log' });
@@ -82,12 +49,11 @@ exports.handler = async (opts) => {
   });
 
   proc.unref();
-  proc.on('exit', async (code) => {
-    if (code) {
+  proc.on('exit', async (code, signal) => {
+    if (code || signal) {
       const error = await fs.readFile(stderrPath, 'utf8');
-      winston.error(`Tensorboard failed with error: ${error}`);
+      throw new Error(`Tensorboard failed with error: ${error}`);
     }
-    process.exit(code);
   });
 
   const url = await exports.tbLink({
@@ -98,15 +64,38 @@ exports.handler = async (opts) => {
     rmWatermark,
     md
   });
+
+  stdoutFd.close();
+  stderrFd.close();
+
+  return url;
+};
+
+exports.tbLink = tbLink;
+exports.command = 'start';
+exports.description = 'Start the tensorboard agent and get a link';
+
+exports.handler = async (opts) => {
+  const { file, credentials, name, description } = opts;
+
+  const path = `${homedir()}/.config/tensorboard/credentials`;
+  await fs.mkdir(path, { recursive: true });
+  await fs.writeFile(`${path}/uploader-creds.json`, credentials);
+
+  const help = await exec('tensorboard dev upload -h');
+  const extraParamsFound =
+    (name || description) && help.indexOf('--description') >= 0;
+  const extraParams = extraParamsFound
+    ? `--name "${name}" --description "${description}"`
+    : '';
+
+  const url = await launchAndWaitLink({ ...opts, extraParams });
   if (!file) console.log(url);
   else await fs.appendFile(file, url);
-
-  closeFd(stdoutFd) && closeFd(stderrFd);
-  process.exit(0);
 };
 
 exports.builder = (yargs) =>
-  yargs.env('CML_TENSORBOARD_DEV').options(exports.options);
+  yargs.env('CML_TENSORBOARD').options(exports.options);
 
 exports.options = kebabcaseKeys({
   credentials: {
@@ -114,39 +103,39 @@ exports.options = kebabcaseKeys({
     alias: 'c',
     required: true,
     description:
-      'TB credentials as json, usually found at ~/.config/tensorboard/credentials/uploader-creds.json'
+      'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable CML_TENSORBOARD_DEV_CREDENTIALS.'
   },
   logdir: {
     type: 'string',
-    description: 'Directory containing the logs to process'
+    description: 'Directory containing the logs to process.'
   },
   name: {
     type: 'string',
-    description: 'Tensorboard experiment title; max 100 characters'
+    description: 'Tensorboard experiment title. Max 100 characters.'
   },
   description: {
     type: 'string',
     description:
-      'Tensorboard experiment description in Markdown format; max 600 characters'
+      'Tensorboard experiment description. Markdown format. Max 600 characters.'
   },
   md: {
     type: 'boolean',
-    description: 'Output as markdown [title || name](url)'
+    description: 'Output as markdown [title || name](url).'
   },
   title: {
     type: 'string',
     alias: 't',
-    description: 'Markdown title, if not specified, param name will be used'
+    description: 'Markdown title, if not specified, param name will be used.'
   },
   file: {
     type: 'string',
     alias: 'f',
     description:
-      'Append the output to the given file or create it if does not exist',
+      'Append the output to the given file. Create it if does not exist.',
     hidden: true
   },
   rmWatermark: {
     type: 'boolean',
-    description: 'Avoid CML watermark'
+    description: 'Avoid CML watermark.'
   }
 });

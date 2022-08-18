@@ -1,32 +1,38 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
-const { GIT_USER_NAME, GIT_USER_EMAIL } = require('../../../src/cml');
-const CML = require('../../../src/cml').default;
+const {
+  GIT_USER_NAME,
+  GIT_USER_EMAIL,
+  repoOptions
+} = require('../../../src/cml');
 
 exports.command = 'configure';
 exports.description = 'Configure the cloned repository';
 
 exports.handler = async (opts) => {
-  const cml = new CML(opts);
-  console.log((await cml.ci(opts)) || '');
+  const { cml, telemetryEvent: event } = opts;
+  await cml.ci(opts);
+  await cml.telemetrySend({ event });
 };
 
-exports.builder = (yargs) => yargs.env('CML_CI').options(exports.options);
+exports.builder = (yargs) =>
+  yargs.env('CML_REPOSITORY').options(exports.options);
 
 exports.options = kebabcaseKeys({
+  ...repoOptions,
   unshallow: {
     type: 'boolean',
     description:
-      'Fetch as much as possible, converting a shallow repository to a complete one'
+      'Fetch as much as possible, converting a shallow repository to a complete one.'
   },
   userEmail: {
     type: 'string',
     default: GIT_USER_EMAIL,
-    description: 'Git user email'
+    description: 'Set Git user email.'
   },
   userName: {
     type: 'string',
     default: GIT_USER_NAME,
-    description: 'Git user name'
+    description: 'Set Git user name.'
   }
 });

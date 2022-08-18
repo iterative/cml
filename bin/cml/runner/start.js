@@ -6,9 +6,9 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 
-const CML = require('../../../src/cml').default;
 const { randid, sleep } = require('../../../src/utils');
 const tf = require('../../../src/terraform');
+const { repoOptions } = require('../../../src/cml');
 
 let cml;
 let RUNNER;
@@ -16,6 +16,8 @@ let RUNNER_SHUTTING_DOWN = false;
 let RUNNER_TIMER = 0;
 const RUNNER_JOBS_RUNNING = [];
 const GH_5_MIN_TIMEOUT = (35 * 24 * 60 - 5) * 60 * 1000;
+
+const { RUNNER_NAME } = process.env;
 
 const shutdown = async (opts) => {
   if (RUNNER_SHUTTING_DOWN) return;
@@ -75,12 +77,6 @@ const shutdown = async (opts) => {
     }
   };
 
-  if (error) {
-    winston.error(error, { status: 'terminated' });
-  } else {
-    winston.info('runner status', { reason, status: 'terminated' });
-  }
-
   if (!cloud) {
     try {
       await unregisterRunner();
@@ -92,7 +88,10 @@ const shutdown = async (opts) => {
 
   await destroyTerraform();
 
-  process.exit(error ? 1 : 0);
+  if (error) throw error;
+
+  winston.info('runner status', { reason, status: 'terminated' });
+  process.exit(0);
 };
 
 const runCloud = async (opts) => {
@@ -132,7 +131,7 @@ const runCloud = async (opts) => {
       );
 
     const tfPath = workdir;
-    const tfMainPath = join(tfPath, 'main.tf');
+    const tfMainPath = join(tfPath, 'main.tf.json');
 
     const tpl = tf.iterativeCmlRunnerTpl({
       tpiVersion,
@@ -160,7 +159,7 @@ const runCloud = async (opts) => {
       dockerVolumes
     });
 
-    await fs.writeFile(tfMainPath, tpl);
+    await fs.writeFile(tfMainPath, JSON.stringify(tpl));
 
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
@@ -227,9 +226,9 @@ const runLocal = async (opts) => {
 
     const tfPath = workdir;
     await fs.mkdir(tfPath, { recursive: true });
-    const tfMainPath = join(tfPath, 'main.tf');
+    const tfMainPath = join(tfPath, 'main.tf.json');
     const tpl = tf.iterativeProviderTpl({ tpiVersion });
-    await fs.writeFile(tfMainPath, tpl);
+    await fs.writeFile(tfMainPath, JSON.stringify(tpl));
 
     await tf.init({ dir: tfPath });
     await tf.apply({ dir: tfPath });
@@ -329,6 +328,8 @@ const runLocal = async (opts) => {
 };
 
 const run = async (opts) => {
+  opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
+
   process.on('unhandledRejection', (reason) =>
     shutdown({ ...opts, error: new Error(reason) })
   );
@@ -338,11 +339,8 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  opts.workdir = opts.workdir || `${homedir()}/.cml/${opts.name}`;
   const {
     driver,
-    repo,
-    token,
     workdir,
     cloud,
     labels,
@@ -352,15 +350,9 @@ const run = async (opts) => {
     dockerVolumes
   } = opts;
 
-  cml = new CML({ driver, repo, token });
-
   await cml.repoTokenCheck();
 
-  if (dockerVolumes.length && cml.driver !== 'gitlab')
-    winston.warn('Parameters --docker-volumes is only supported in gitlab');
-
   const runners = await cml.runners();
-
   const runner = await cml.runnerByName({ name, runners });
   if (runner) {
     if (!reuse)
@@ -368,7 +360,7 @@ const run = async (opts) => {
         `Runner name ${name} is already in use. Please change the name or terminate the existing runner.`
       );
     winston.info(`Reusing existing runner named ${name}...`);
-    process.exit(0);
+    return;
   }
 
   if (
@@ -380,13 +372,14 @@ const run = async (opts) => {
     winston.info(
       `Reusing existing online runners with the ${labels} labels...`
     );
-    process.exit(0);
+    return;
   }
 
   if (reuseIdle) {
     if (driver === 'bitbucket') {
-      winston.error('cml runner flag --reuse-idle is unsupported by bitbucket');
-      process.exit(1);
+      throw new Error(
+        'cml runner flag --reuse-idle is unsupported by bitbucket'
+      );
     }
     winston.info(
       `Checking for existing idle runner matching labels: ${labels}.`
@@ -397,15 +390,22 @@ const run = async (opts) => {
     );
     if (availableRunner) {
       winston.info('Found matching idle runner.', availableRunner);
-      process.exit(0);
+      return;
     }
   }
 
-  if (driver === 'github') {
+  if (dockerVolumes.length && cml.driver !== 'gitlab')
+    winston.warn('Parameters --docker-volumes is only supported in gitlab');
+
+  if (driver === 'github')
     winston.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );
-  }
+
+  if (RUNNER_NAME)
+    winston.warn(
+      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
+    );
 
   winston.info(`Preparing workdir ${workdir}...`);
   await fs.mkdir(workdir, { recursive: true });
@@ -415,15 +415,11 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-exports.command = 'start';
-exports.description = 'Start and register a self-hosted runner';
+exports.command = 'runner';
+exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
-  if (process.env.RUNNER_NAME) {
-    winston.warn(
-      'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
-    );
-  }
+  ({ cml } = opts);
   try {
     await run(opts);
   } catch (error) {
@@ -434,6 +430,7 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) => yargs.env('CML_RUNNER').options(exports.options);
 
 exports.options = kebabcaseKeys({
+  ...repoOptions,
   labels: {
     type: 'string',
     default: 'cml',
@@ -473,7 +470,7 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     conflicts: ['reuse', 'single'],
     description:
-      "Creates a new runner only if the matching labels don't exist or are already busy"
+      'Only creates a new runner if the matching labels dont exist or are already busy.'
   },
   workdir: {
     type: 'string',
@@ -484,7 +481,7 @@ exports.options = kebabcaseKeys({
   dockerVolumes: {
     type: 'array',
     default: [],
-    description: 'Docker volumes, only supported in GitLab'
+    description: 'Docker volumes. This feature is only supported in GitLab'
   },
   cloud: {
     type: 'string',
@@ -531,7 +528,6 @@ exports.options = kebabcaseKeys({
   },
   cloudSshPrivate: {
     type: 'string',
-    coerce: (val) => val && val.replace(/\n/g, '\\n'),
     description:
       'Custom private RSA SSH key. If not provided an automatically generated throwaway key will be used'
   },

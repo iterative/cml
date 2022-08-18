@@ -21,29 +21,28 @@ describe('Comment integration tests', () => {
         --version                 Show version number                        [boolean]
         --log                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                  Forge where the repository is hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-        --repo                    Repository URL or slug
-                                        [string] [default: infer from the environment]
-        --token                   Personal access token
-                                        [string] [default: infer from the environment]
+        --repo                    Specifies the repo to be used. If not specified is
+                                  extracted from the CI ENV.                  [string]
+        --token                   Personal access token to be used. If not specified
+                                  is extracted from ENV REPO_TOKEN.           [string]
+        --driver                  If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
         --pr                      Post to an existing PR/MR associated with the
                                   specified commit                           [boolean]
-        --commit-sha, --head-sha  Commit SHA linked to this report
+        --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
-        --publish                 Upload local images which are inlined in the report
-                                                                             [boolean]
+        --publish                 Upload local files and images linked from the
+                                  Markdown report                            [boolean]
         --watch                   Watch for changes and automatically update the
                                   report                                     [boolean]
         --native                  Uses driver's native capabilities to upload assets
-                                  instead of CML's storage; not available on GitHub
+                                  instead of CML's storage. Not available on GitHub.
                                                                              [boolean]
-        --update                  Update the last CML report (if any) instead of
+        --update                  Update the last CML comment (if any) instead of
                                   creating a new one                         [boolean]
         --rm-watermark            Avoid watermark. CML needs a watermark to be able to
                                   distinguish CML reports from other comments in order
-                                  to provide extra functionality             [boolean]"
+                                  to provide extra functionality.            [boolean]"
     `);
   });
 

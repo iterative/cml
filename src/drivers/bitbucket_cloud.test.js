@@ -41,12 +41,13 @@ describe('Non Enviromental tests', () => {
 
   test('updateGitConfig', async () => {
     const client = new BitbucketCloud({
-      repo: 'https://bitbucket.org/test/test',
+      repo: 'http://bitbucket.org/test/test',
       token: 'dXNlcjpwYXNz'
     });
     const command = await client.updateGitConfig({
       userName: 'john',
-      userEmail: 'john@test.com'
+      userEmail: 'john@test.com',
+      remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
       "
@@ -56,7 +57,7 @@ describe('Non Enviromental tests', () => {
           git config --unset http.http://bitbucket.org/test/test.proxy;
           git config user.name \\"john\\" &&
           git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test.git\\""
+          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test\\""
     `);
   });
 });

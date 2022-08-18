@@ -41,22 +41,22 @@ describe('CML e2e', () => {
         --version                 Show version number                        [boolean]
         --log                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                  Forge where the repository is hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-        --repo                    Repository URL or slug
-                                        [string] [default: infer from the environment]
-        --token                   Personal access token
-                                        [string] [default: infer from the environment]
-        --commit-sha, --head-sha  Commit SHA linked to this comment
-                                                              [string] [default: HEAD]
-        --conclusion              Conclusion status of the check
+        --repo                    Specifies the repo to be used. If not specified is
+                                  extracted from the CI ENV.                  [string]
+        --token                   GITHUB_TOKEN or Github App token. Personal access
+                                  token won't work                            [string]
+        --driver                  If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
+        --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
+                                                                              [string]
+        --conclusion              Sets the conclusion status of the check.
            [string] [choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                                                      \\"timed_out\\"] [default: \\"success\\"]
-        --status                  Status of the check
+        --status                  Sets the status of the check.
                     [string] [choices: \\"queued\\", \\"in_progress\\", \\"completed\\"] [default:
                                                                           \\"completed\\"]
-        --title                   Title of the check  [string] [default: \\"CML Report\\"]"
+        --title                   Sets title of the check.
+                                                      [string] [default: \\"CML Report\\"]"
     `);
   });
 });
