@@ -2,7 +2,7 @@ const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 const winston = require('winston');
 
-const { CML, repoOptions } = require('../../../src/cml');
+const { CML } = require('../../../src/cml');
 
 exports.command = 'publish <asset>';
 exports.description = 'Publish an asset';
@@ -27,7 +27,6 @@ exports.builder = (yargs) =>
   yargs.env('CML_ATTACHMENT').options(exports.options);
 
 exports.options = kebabcaseKeys({
-  ...repoOptions,
   url: {
     type: 'string',
     description: 'Self-Hosted URL',

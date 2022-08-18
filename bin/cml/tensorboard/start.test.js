@@ -62,6 +62,12 @@ describe('CML e2e', () => {
             --version       Show version number                              [boolean]
             --log           Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --repo          Specifies the repo to be used. If not specified is
+                            extracted from the CI ENV.                        [string]
+            --token         Personal access token to be used. If not specified is
+                            extracted from ENV REPO_TOKEN.                    [string]
+            --driver        If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
         -c, --credentials   TB credentials as json. Usually found at
                             ~/.config/tensorboard/credentials/uploader-creds.json. If
                             not specified will look for the json at the env variable

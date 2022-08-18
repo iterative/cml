@@ -3,8 +3,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const {
   GIT_REMOTE,
   GIT_USER_NAME,
-  GIT_USER_EMAIL,
-  repoOptions
+  GIT_USER_EMAIL
 } = require('../../../src/cml');
 
 exports.command = 'create <glob path...>';
@@ -19,7 +18,6 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) => yargs.env('CML_PR').options(exports.options);
 
 exports.options = kebabcaseKeys({
-  ...repoOptions,
   md: {
     type: 'boolean',
     description: 'Output in markdown format [](url).'

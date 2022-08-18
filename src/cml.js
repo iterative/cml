@@ -576,29 +576,10 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 }
 
-const repoOptions = {
-  repo: {
-    type: 'string',
-    description:
-      'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-  },
-  token: {
-    type: 'string',
-    description:
-      'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-  },
-  driver: {
-    type: 'string',
-    choices: ['github', 'gitlab', 'bitbucket'],
-    description: 'If not specify it infers it from the ENV.'
-  }
-};
-
 module.exports = {
   CML,
   default: CML,
   GIT_USER_EMAIL,
   GIT_USER_NAME,
-  GIT_REMOTE,
-  repoOptions
+  GIT_REMOTE
 };

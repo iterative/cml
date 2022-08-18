@@ -8,7 +8,6 @@ const winston = require('winston');
 
 const { randid, sleep } = require('../../../src/utils');
 const tf = require('../../../src/terraform');
-const { repoOptions } = require('../../../src/cml');
 
 let cml;
 let RUNNER;
@@ -430,7 +429,6 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) => yargs.env('CML_RUNNER').options(exports.options);
 
 exports.options = kebabcaseKeys({
-  ...repoOptions,
   labels: {
     type: 'string',
     default: 'cml',

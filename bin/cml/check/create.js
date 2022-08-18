@@ -1,8 +1,6 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 
-const { repoOptions } = require('../../../src/cml');
-
 exports.command = 'create <markdown file>';
 exports.description = 'Create a check report';
 
@@ -15,7 +13,6 @@ exports.handler = async (opts) => {
 exports.builder = (yargs) => yargs.env('CML_CHECK').options(exports.options);
 
 exports.options = kebabcaseKeys({
-  ...repoOptions,
   token: {
     type: 'string',
     description:
