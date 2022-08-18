@@ -94,7 +94,7 @@ const handleError = (message, error) => {
           type: 'string',
           choices: ['github', 'gitlab', 'bitbucket'],
           defaultDescription: 'infer from the environment',
-          description: 'Forge where the repository is hosted'
+          description: 'Git provider where the repository is hosted'
         },
         repo: {
           type: 'string',

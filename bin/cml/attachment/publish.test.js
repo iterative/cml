@@ -13,7 +13,7 @@ describe('CML e2e', () => {
             --version       Show version number                              [boolean]
             --log           Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver        Forge where the repository is hosted
+            --driver        Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
             --repo          Specifies the repo to be used. If not specified is
