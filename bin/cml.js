@@ -46,7 +46,6 @@ const setupOpts = (opts) => {
     }
   }
 
-  console.error(process.env);
 
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
