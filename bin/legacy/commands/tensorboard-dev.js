@@ -1,4 +1,4 @@
-const { builder, handler } = require('../cml/tensorboard/start');
+const { builder, handler } = require('../../cml/tensorboard/start');
 
 exports.command = 'tensorboard-dev';
 exports.description = false;

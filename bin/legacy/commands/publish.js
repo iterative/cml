@@ -1,4 +1,4 @@
-const { builder, handler } = require('../cml/asset/publish');
+const { builder, handler } = require('../../cml/asset/publish');
 
 exports.command = 'publish <asset>';
 exports.description = false;

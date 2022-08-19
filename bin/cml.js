@@ -130,7 +130,7 @@ const handleError = (message, error) => {
       .middleware(setupLogger)
       .middleware(setupTelemetry)
       .commandDir('./cml')
-      .commandDir('./legacy')
+      .commandDir('./legacy/commands')
       .command(
         '$0 <command>',
         false,

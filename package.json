@@ -34,13 +34,13 @@
   },
   "bin": {
     "cml": "bin/cml.js",
-    "cml-send-github-check": "bin/legacy.js",
-    "cml-send-comment": "bin/legacy.js",
-    "cml-publish": "bin/legacy.js",
-    "cml-tensorboard-dev": "bin/legacy.js",
-    "cml-runner": "bin/legacy.js",
-    "cml-cloud-runner-entrypoint": "bin/legacy.js",
-    "cml-pr": "bin/legacy.js"
+    "cml-send-github-check": "bin/legacy/link.js",
+    "cml-send-comment": "bin/legacy/link.js",
+    "cml-publish": "bin/legacy/link.js",
+    "cml-tensorboard-dev": "bin/legacy/link.js",
+    "cml-runner": "bin/legacy/link.js",
+    "cml-cloud-runner-entrypoint": "bin/legacy/link.js",
+    "cml-pr": "bin/legacy/link.js"
   },
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
