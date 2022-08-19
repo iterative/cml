@@ -39,7 +39,6 @@
     "cml-publish": "bin/legacy/link.js",
     "cml-tensorboard-dev": "bin/legacy/link.js",
     "cml-runner": "bin/legacy/link.js",
-    "cml-cloud-runner-entrypoint": "bin/legacy/link.js",
     "cml-pr": "bin/legacy/link.js"
   },
   "scripts": {
