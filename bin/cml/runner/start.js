@@ -414,7 +414,7 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
-exports.command = 'runner';
+exports.command = 'start';
 exports.description = 'Launch and register a self-hosted runner';
 
 exports.handler = async (opts) => {
