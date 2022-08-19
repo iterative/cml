@@ -28,6 +28,26 @@ const setupOpts = (opts) => {
     if (process.env[oldName]) process.env[newName] = process.env[oldName];
   }
 
+  const legacyEnvironmentPrefixes = {
+    CML_CI: 'CML_REPOSITORY',
+    CML_PUBLISH: 'CML_ASSET',
+    CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
+    CML_SEND_COMMENT: 'CML_REPORT',
+    CML_SEND_GITHUB_CHECK: 'CML_CHECK',
+    CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
+  };
+
+  for (const [oldPrefix, newPrefix] of Object.entries(
+    legacyEnvironmentPrefixes
+  )) {
+    for (const key in process.env) {
+      if (key.startsWith(`${oldPrefix}_`))
+        process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
+    }
+  }
+
+  console.error(process.env);
+
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
