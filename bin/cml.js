@@ -46,7 +46,6 @@ const setupOpts = (opts) => {
     }
   }
 
-
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
