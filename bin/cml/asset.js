@@ -1,8 +1,8 @@
-exports.command = 'attachment';
+exports.command = 'asset';
 exports.description = false;
 exports.builder = (yargs) =>
   yargs
-    .commandDir('./attachment', { exclude: /\.test\.js$/ })
+    .commandDir('./asset', { exclude: /\.test\.js$/ })
     .recommendCommands()
     .demandCommand()
     .strict();

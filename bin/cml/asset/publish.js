@@ -23,8 +23,7 @@ exports.handler = async (opts) => {
   else await fs.writeFile(file, output);
 };
 
-exports.builder = (yargs) =>
-  yargs.env('CML_ATTACHMENT').options(exports.options);
+exports.builder = (yargs) => yargs.env('CML_ASSET').options(exports.options);
 
 exports.options = kebabcaseKeys({
   url: {
