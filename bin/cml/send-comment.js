@@ -1,19 +1,19 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
-const CML = require('../../src/cml').default;
+const { repoOptions } = require('../../src/cml');
 
 exports.command = 'send-comment <markdown file>';
 exports.description = 'Comment on a commit';
 
 exports.handler = async (opts) => {
-  opts.markdownFile = opts.markdownfile;
-  const cml = new CML(opts);
+  const { cml } = opts;
   console.log(await cml.commentCreate(opts));
 };
 
 exports.builder = (yargs) =>
   yargs.env('CML_SEND_COMMENT').options(
     kebabcaseKeys({
+      ...repoOptions,
       pr: {
         type: 'boolean',
         description:
@@ -53,21 +53,6 @@ exports.builder = (yargs) =>
         type: 'boolean',
         description:
           'Avoid watermark. CML needs a watermark to be able to distinguish CML reports from other comments in order to provide extra functionality.'
-      },
-      repo: {
-        type: 'string',
-        description:
-          'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
-      },
-      token: {
-        type: 'string',
-        description:
-          'Personal access token to be used. If not specified is extracted from ENV REPO_TOKEN.'
-      },
-      driver: {
-        type: 'string',
-        choices: ['github', 'gitlab', 'bitbucket'],
-        description: 'If not specify it infers it from the ENV.'
       }
     })
   );
