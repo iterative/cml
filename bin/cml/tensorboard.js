@@ -1,5 +1,5 @@
 exports.command = 'tensorboard';
-exports.description = 'Manage tensorboard.dev agents';
+exports.description = 'Manage tensorboard.dev connections';
 exports.builder = (yargs) =>
   yargs
     .options({
