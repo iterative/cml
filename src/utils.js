@@ -5,9 +5,20 @@ const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 const winston = require('winston');
+const uuid = require('uuid');
+const getOS = require('getos');
 
 const { FileMagic, MagicFlags } = require('@npcz/magic');
 const tempy = require('tempy');
+
+const getos = async () => {
+  return new Promise((resolve, reject) => {
+    getOS((err, os) => {
+      if (err) reject(err);
+      resolve(os);
+    });
+  });
+};
 
 const waitForever = () => new Promise((resolve) => resolve);
 
@@ -124,11 +135,18 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const watermarkUri = (opts = {}) => {
-  const { uri, type } = opts;
-  const url = new URL(uri);
-  url.searchParams.append('cml', type);
+const watermarkUri = ({ uri, type } = {}) => {
+  return uriParmam({ uri, param: 'cml', value: type });
+};
 
+const preventcacheUri = ({ uri } = {}) => {
+  return uriParmam({ uri, param: 'cache-bypass', value: uuid.v4() });
+};
+
+const uriParmam = (opts = {}) => {
+  const { uri, param, value } = opts;
+  const url = new URL(uri);
+  url.searchParams.set(param, value);
   return url.toString();
 };
 
@@ -216,6 +234,12 @@ const tfCapture = async (command, args = [], options = {}) => {
   });
 };
 
+const fileExists = (path) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false
+  );
+
 exports.tfCapture = tfCapture;
 exports.waitForever = waitForever;
 exports.exec = exec;
@@ -225,6 +249,9 @@ exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
 exports.watermarkUri = watermarkUri;
+exports.preventcacheUri = preventcacheUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
 exports.gpuPresent = gpuPresent;
+exports.fileExists = fileExists;
+exports.getos = getos;

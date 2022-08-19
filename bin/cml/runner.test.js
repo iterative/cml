@@ -63,19 +63,15 @@ describe('CML e2e', () => {
         --version                                 Show version number        [boolean]
         --log                                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                                  Platform where the repository is
-                                                  hosted. If not specified, it will be
-                                                  inferred from the environment
+        --repo                                    Specifies the repo to be used. If
+                                                  not specified is extracted from the
+                                                  CI ENV.                     [string]
+        --token                                   Personal access token to be used. If
+                                                  not specified is extracted from ENV
+                                                  REPO_TOKEN.                 [string]
+        --driver                                  If not specify it infers it from the
+                                                  ENV.
                                    [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
-        --repo                                    Repository to be used for
-                                                  registering the runner. If not
-                                                  specified, it will be inferred from
-                                                  the environment             [string]
-        --token                                   Personal access token to register a
-                                                  self-hosted runner on the
-                                                  repository. If not specified, it
-                                                  will be inferred from the
-                                                  environment                 [string]
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]

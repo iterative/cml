@@ -43,6 +43,12 @@ describe('CML e2e', () => {
         --version                 Show version number                        [boolean]
         --log                     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --repo                    Specifies the repo to be used. If not specified is
+                                  extracted from the CI ENV.                  [string]
+        --token                   GITHUB_TOKEN or Github App token. Personal access
+                                  token won't work                            [string]
+        --driver                  If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
         --commit-sha, --head-sha  Commit SHA linked to this comment. Defaults to HEAD.
                                                                               [string]
         --conclusion              Sets the conclusion status of the check.
@@ -52,11 +58,7 @@ describe('CML e2e', () => {
                     [string] [choices: \\"queued\\", \\"in_progress\\", \\"completed\\"] [default:
                                                                           \\"completed\\"]
         --title                   Sets title of the check.
-                                                      [string] [default: \\"CML Report\\"]
-        --repo                    Specifies the repo to be used. If not specified is
-                                  extracted from the CI ENV.                  [string]
-        --token                   GITHUB_TOKEN or Github App token. Personal access
-                                  token won't work                            [string]"
+                                                      [string] [default: \\"CML Report\\"]"
     `);
   });
 });

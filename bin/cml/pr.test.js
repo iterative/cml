@@ -14,6 +14,12 @@ describe('CML e2e', () => {
         --version              Show version number                           [boolean]
         --log                  Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --repo                 Specifies the repo to be used. If not specified is
+                               extracted from the CI ENV.                     [string]
+        --token                Personal access token to be used. If not specified is
+                               extracted from ENV REPO_TOKEN.                 [string]
+        --driver               If not specify it infers it from the ENV.
+                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]
         --md                   Output in markdown format [](url).            [boolean]
         --skip-ci              Force skip CI for the created commit (if any) [boolean]
         --merge, --auto-merge  Try to merge the pull request upon creation.  [boolean]
@@ -28,13 +34,7 @@ describe('CML e2e', () => {
         --remote               Sets git remote.           [string] [default: \\"origin\\"]
         --user-email           Sets git user email.
                                              [string] [default: \\"olivaw@iterative.ai\\"]
-        --user-name            Sets git user name.   [string] [default: \\"Olivaw[bot]\\"]
-        --repo                 Specifies the repo to be used. If not specified is
-                               extracted from the CI ENV.                     [string]
-        --token                Personal access token to be used. If not specified in
-                               extracted from ENV REPO_TOKEN.                 [string]
-        --driver               If not specify it infers it from the ENV.
-                                   [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"]"
+        --user-name            Sets git user name.   [string] [default: \\"Olivaw[bot]\\"]"
     `);
   });
 });
