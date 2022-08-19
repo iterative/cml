@@ -13,7 +13,7 @@ describe('command-line interface tests', () => {
         cml.js report             Manage reports
         cml.js repository         Manage repository settings
         cml.js runner             Manage self-hosted (cloud & on-premise) CI runners
-        cml.js tensorboard        Manage tensorboard.dev agents
+        cml.js tensorboard        Manage tensorboard.dev connections
         cml.js workflow           Manage continuous integration workflows
 
       Options:
