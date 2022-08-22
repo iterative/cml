@@ -71,66 +71,8 @@ describe('CML e2e', () => {
         --token   Personal access token [string] [default: infer from the environment]
 
       Options:
-        --help                                    Show help                  [boolean]
-        --version                                 Show version number        [boolean]
-        --labels                                  One or more user-defined labels for
-                                                  this runner (delimited with commas)
-                                                             [string] [default: \\"cml\\"]
-        --idle-timeout                            Time to wait for jobs before
-                                                  shutting down (e.g. \\"5min\\"). Use
-                                                  \\"never\\" to disable
-                                                       [string] [default: \\"5 minutes\\"]
-        --name                                    Name displayed in the repository
-                                                  once registered
-                                                          [string] [default: cml-{ID}]
-        --no-retry                                Do not restart workflow terminated
-                                                  due to instance disposal or GitHub
-                                                  Actions timeout            [boolean]
-        --single                                  Exit after running a single job
-                                                                             [boolean]
-        --reuse                                   Don't launch a new runner if an
-                                                  existing one has the same name or
-                                                  overlapping labels         [boolean]
-        --reuse-idle                              Creates a new runner only if the
-                                                  matching labels don't exist or are
-                                                  already busy               [boolean]
-        --docker-volumes                          Docker volumes, only supported in
-                                                  GitLab         [array] [default: []]
-        --cloud                                   Cloud to deploy the runner
-                               [string] [choices: \\"aws\\", \\"azure\\", \\"gcp\\", \\"kubernetes\\"]
-        --cloud-region                            Region where the instance is
-                                                  deployed. Choices: [us-east,
-                                                  us-west, eu-west, eu-north]. Also
-                                                  accepts native cloud regions
-                                                         [string] [default: \\"us-west\\"]
-        --cloud-type                              Instance type. Choices: [m, l, xl].
-                                                  Also supports native types like i.e.
-                                                  t2.micro                    [string]
-        --cloud-permission-set                    Specifies the instance profile in
-                                                  AWS or instance service account in
-                                                  GCP           [string] [default: \\"\\"]
-        --cloud-metadata                          Key Value pairs to associate
-                                                  cml-runner instance on the provider
-                                                  i.e. tags/labels \\"key=value\\"
-                                                                 [array] [default: []]
-        --cloud-gpu                               GPU type. Choices: k80, v100, or
-                                                  native types e.g. nvidia-tesla-t4
-                                                                              [string]
-        --cloud-hdd-size                          HDD size in GB              [number]
-        --cloud-ssh-private                       Custom private RSA SSH key. If not
-                                                  provided an automatically generated
-                                                  throwaway key will be used  [string]
-        --cloud-spot                              Request a spot instance    [boolean]
-        --cloud-spot-price                        Maximum spot instance bidding price
-                                                  in USD. Defaults to the current spot
-                                                  bidding price [number] [default: -1]
-        --cloud-startup-script                    Run the provided Base64-encoded
-                                                  Linux shell script during the
-                                                  instance initialization     [string]
-        --cloud-aws-security-group                Specifies the security group in AWS
-                                                                [string] [default: \\"\\"]
-        --cloud-aws-subnet,                       Specifies the subnet to use within
-        --cloud-aws-subnet-id                     AWS           [string] [default: \\"\\"]"
+        --help     Show help                                                 [boolean]
+        --version  Show version number                                       [boolean]"
     `);
   });
 

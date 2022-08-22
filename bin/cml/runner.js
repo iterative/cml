@@ -8,6 +8,13 @@ exports.builder = (yargs) =>
     .commandDir('./runner', { exclude: /\.test\.js$/ })
     .recommendCommands()
     .env('CML_RUNNER')
-    .options(options)
+    .options(
+      Object.fromEntries(
+        Object.entries(options).map(([key, value]) => [
+          key,
+          { ...value, hidden: true }
+        ])
+      )
+    )
     .check(() => process.argv.some((arg) => arg.startsWith('-')))
     .strict();

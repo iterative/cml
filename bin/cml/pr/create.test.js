@@ -23,22 +23,8 @@ describe('CML e2e', () => {
         --token   Personal access token [string] [default: infer from the environment]
 
       Options:
-        --help                 Show help                                     [boolean]
-        --version              Show version number                           [boolean]
-        --md                   Output in markdown format [](url)             [boolean]
-        --skip-ci              Force skip CI for the created commit (if any) [boolean]
-        --merge, --auto-merge  Try to merge the pull request upon creation   [boolean]
-        --rebase               Try to rebase-merge the pull request upon creation
-                                                                             [boolean]
-        --squash               Try to squash-merge the pull request upon creation
-                                                                             [boolean]
-        --branch               Pull request branch name                       [string]
-        --title                Pull request title                             [string]
-        --body                 Pull request description                       [string]
-        --message              Commit message                                 [string]
-        --remote               Git remote                 [string] [default: \\"origin\\"]
-        --user-email           Git user email[string] [default: \\"olivaw@iterative.ai\\"]
-        --user-name            Git user name         [string] [default: \\"Olivaw[bot]\\"]"
+        --help     Show help                                                 [boolean]
+        --version  Show version number                                       [boolean]"
     `);
   });
 });

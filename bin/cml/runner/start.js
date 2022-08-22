@@ -553,8 +553,7 @@ exports.options = kebabcaseKeys({
     type: 'string',
     default: '',
     description: 'Specifies the subnet to use within AWS',
-    alias: 'cloud-aws-subnet-id',
-    global: false
+    alias: 'cloud-aws-subnet-id'
   },
   tpiVersion: {
     type: 'string',
