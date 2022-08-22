@@ -16,17 +16,18 @@ describe('command-line interface tests', () => {
         cml.js workflow           Manage continuous integration workflows
         cml.js ci                 Prepare Git repository for CML operations
 
-      Options:
-        --help     Show help                                                 [boolean]
-        --version  Show version number                                       [boolean]
-        --log      Maximum log level
+      Global Options:
+        --log     Maximum log level
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver   Git provider where the repository is hosted
+        --driver  Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-        --repo     Repository URL or slug
-                                        [string] [default: infer from the environment]
-        --token    Personal access token[string] [default: infer from the environment]"
+        --repo    Repository URL or slug[string] [default: infer from the environment]
+        --token   Personal access token [string] [default: infer from the environment]
+
+      Options:
+        --help     Show help                                                 [boolean]
+        --version  Show version number                                       [boolean]"
     `);
   });
 });

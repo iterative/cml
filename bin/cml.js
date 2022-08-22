@@ -106,23 +106,27 @@ const handleError = (message, error) => {
           type: 'string',
           description: 'Maximum log level',
           choices: ['error', 'warn', 'info', 'debug'],
-          default: 'info'
+          default: 'info',
+          group: 'Global Options:'
         },
         driver: {
           type: 'string',
           choices: ['github', 'gitlab', 'bitbucket'],
           defaultDescription: 'infer from the environment',
-          description: 'Git provider where the repository is hosted'
+          description: 'Git provider where the repository is hosted',
+          group: 'Global Options:'
         },
         repo: {
           type: 'string',
           defaultDescription: 'infer from the environment',
-          description: 'Repository URL or slug'
+          description: 'Repository URL or slug',
+          group: 'Global Options:'
         },
         token: {
           type: 'string',
           defaultDescription: 'infer from the environment',
-          description: 'Personal access token'
+          description: 'Personal access token',
+          group: 'Global Options:'
         }
       })
       .fail(handleError)

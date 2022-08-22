@@ -61,19 +61,18 @@ describe('CML e2e', () => {
       Commands:
         cml.js runner start  Launch and register a self-hosted runner
 
+      Global Options:
+        --log     Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --driver  Git provider where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+        --repo    Repository URL or slug[string] [default: infer from the environment]
+        --token   Personal access token [string] [default: infer from the environment]
+
       Options:
         --help                                    Show help                  [boolean]
         --version                                 Show version number        [boolean]
-        --log                                     Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                                  Git provider where the repository is
-                                                  hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-        --repo                                    Repository URL or slug
-                                        [string] [default: infer from the environment]
-        --token                                   Personal access token
-                                        [string] [default: infer from the environment]
         --labels                                  One or more user-defined labels for
                                                   this runner (delimited with commas)
                                                              [string] [default: \\"cml\\"]

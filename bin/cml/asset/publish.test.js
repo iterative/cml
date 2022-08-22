@@ -8,19 +8,20 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js publish <asset>
 
+      Global Options:
+            --log     Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --driver  Git provider where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+            --repo    Specifies the repo to be used. If not specified is extracted
+                      from the CI ENV.  [string] [default: infer from the environment]
+            --token   Personal access token
+                                        [string] [default: infer from the environment]
+
       Options:
             --help          Show help                                        [boolean]
             --version       Show version number                              [boolean]
-            --log           Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver        Git provider where the repository is hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-            --repo          Specifies the repo to be used. If not specified is
-                            extracted from the CI ENV.
-                                        [string] [default: infer from the environment]
-            --token         Personal access token
-                                        [string] [default: infer from the environment]
             --md            Output in markdown format [title || name](url)   [boolean]
         -t, --title         Markdown title [title](url) or ![](url title)     [string]
             --native        Uses driver's native capabilities to upload assets instead

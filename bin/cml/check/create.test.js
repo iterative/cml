@@ -36,19 +36,19 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-github-check <markdown file>
 
+      Global Options:
+        --log     Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+        --driver  Git provider where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+        --repo    Repository URL or slug[string] [default: infer from the environment]
+        --token   GITHUB_TOKEN or Github App token. Personal access token won't work
+                                        [string] [default: infer from the environment]
+
       Options:
         --help                    Show help                                  [boolean]
         --version                 Show version number                        [boolean]
-        --log                     Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver                  Git provider where the repository is hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-        --repo                    Repository URL or slug
-                                        [string] [default: infer from the environment]
-        --token                   GITHUB_TOKEN or Github App token. Personal access
-                                  token won't work
-                                        [string] [default: infer from the environment]
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                               [string] [default: HEAD]
         --conclusion              Conclusion status of the check

@@ -57,18 +57,20 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js tensorboard-dev
 
+      Global Options:
+            --log     Maximum log level
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --driver  Git provider where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+            --repo    Repository URL or slug
+                                        [string] [default: infer from the environment]
+            --token   Personal access token
+                                        [string] [default: infer from the environment]
+
       Options:
             --help          Show help                                        [boolean]
             --version       Show version number                              [boolean]
-            --log           Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver        Git provider where the repository is hosted
-          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
-                                                                          environment]
-            --repo          Repository URL or slug
-                                        [string] [default: infer from the environment]
-            --token         Personal access token
-                                        [string] [default: infer from the environment]
         -c, --credentials   TensorBoard credentials as JSON, usually found at
                             ~/.config/tensorboard/credentials/uploader-creds.json
                                                                    [string] [required]
