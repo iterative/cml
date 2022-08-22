@@ -2,16 +2,15 @@ const kebabcaseKeys = require('kebabcase-keys');
 
 const { GIT_USER_NAME, GIT_USER_EMAIL } = require('../../../src/cml');
 
-exports.command = 'configure';
-exports.description = 'Configure the cloned repository';
+exports.command = 'prepare';
+exports.description = 'Prepare the cloned repository';
 
 exports.handler = async (opts) => {
   const { cml } = opts;
   await cml.ci(opts);
 };
 
-exports.builder = (yargs) =>
-  yargs.env('CML_REPOSITORY').options(exports.options);
+exports.builder = (yargs) => yargs.env('CML_REPO').options(exports.options);
 
 exports.options = kebabcaseKeys({
   unshallow: {

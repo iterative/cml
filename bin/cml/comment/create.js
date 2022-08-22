@@ -1,14 +1,14 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
 exports.command = 'create <markdown file>';
-exports.description = 'Create a report';
+exports.description = 'Create a comment';
 
 exports.handler = async (opts) => {
   const { cml } = opts;
   console.log(await cml.commentCreate(opts));
 };
 
-exports.builder = (yargs) => yargs.env('CML_REPORT').options(exports.options);
+exports.builder = (yargs) => yargs.env('CML_COMMENT').options(exports.options);
 
 exports.options = kebabcaseKeys({
   pr: {
@@ -20,15 +20,15 @@ exports.options = kebabcaseKeys({
     type: 'string',
     alias: 'head-sha',
     default: 'HEAD',
-    description: 'Commit SHA linked to this report'
+    description: 'Commit SHA linked to this comment'
   },
   publish: {
     type: 'boolean',
-    description: 'Upload local images which are inlined in the Markdown report'
+    description: 'Upload local images which are inlined in the Markdown comment'
   },
   watch: {
     type: 'boolean',
-    description: 'Watch for changes and automatically update the report'
+    description: 'Watch for changes and automatically update the comment'
   },
   triggerFile: {
     type: 'string',
@@ -43,11 +43,11 @@ exports.options = kebabcaseKeys({
   update: {
     type: 'boolean',
     description:
-      'Update the last CML report (if any) instead of creating a new one'
+      'Update the last CML comment (if any) instead of creating a new one'
   },
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark; CML needs a watermark to be able to distinguish CML reports from other comments'
+      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
   }
 });

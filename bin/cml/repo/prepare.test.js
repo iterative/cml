@@ -7,6 +7,8 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js ci
 
+      Prepare Git repository for CML operations
+
       Options:
         --help        Show help                                              [boolean]
         --version     Show version number                                    [boolean]

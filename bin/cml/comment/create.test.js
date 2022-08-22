@@ -30,19 +30,19 @@ describe('Comment integration tests', () => {
                                         [string] [default: infer from the environment]
         --pr                      Post to an existing PR/MR associated with the
                                   specified commit                           [boolean]
-        --commit-sha, --head-sha  Commit SHA linked to this report
+        --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
         --publish                 Upload local images which are inlined in the
-                                  Markdown report                            [boolean]
+                                  Markdown comment                           [boolean]
         --watch                   Watch for changes and automatically update the
-                                  report                                     [boolean]
+                                  comment                                    [boolean]
         --native                  Uses driver's native capabilities to upload assets
                                   instead of CML's storage; not available on GitHub
                                                                              [boolean]
-        --update                  Update the last CML report (if any) instead of
+        --update                  Update the last CML comment (if any) instead of
                                   creating a new one                         [boolean]
         --rm-watermark            Avoid watermark; CML needs a watermark to be able to
-                                  distinguish CML reports from other comments[boolean]"
+                                  distinguish CML comments from others       [boolean]"
     `);
   });
 
