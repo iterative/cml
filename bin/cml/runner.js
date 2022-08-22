@@ -12,7 +12,7 @@ exports.builder = (yargs) =>
       Object.fromEntries(
         Object.entries(options).map(([key, value]) => [
           key,
-          { ...value, hidden: true }
+          { ...value, hidden: true, global: false }
         ])
       )
     )
