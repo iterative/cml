@@ -1,6 +1,6 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
-exports.command = 'restart';
+exports.command = 'rerun';
 exports.description = 'Restart a workflow given the jobId or workflowId';
 
 exports.handler = async (opts) => {

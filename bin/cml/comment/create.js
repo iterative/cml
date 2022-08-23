@@ -24,7 +24,7 @@ exports.options = kebabcaseKeys({
   },
   publish: {
     type: 'boolean',
-    description: 'Upload local images which are inlined in the Markdown comment'
+    description: 'Upload any local images found in the Markdown report'
   },
   watch: {
     type: 'boolean',
