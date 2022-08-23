@@ -29,10 +29,10 @@ const setupOpts = (opts) => {
   }
 
   const legacyEnvironmentPrefixes = {
-    CML_CI: 'CML_REPOSITORY',
+    CML_CI: 'CML_REPO',
     CML_PUBLISH: 'CML_ASSET',
     CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
-    CML_SEND_COMMENT: 'CML_REPORT',
+    CML_SEND_COMMENT: 'CML_COMMENT',
     CML_SEND_GITHUB_CHECK: 'CML_CHECK',
     CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
   };
