@@ -17,10 +17,9 @@ describe('CML e2e', () => {
                                                                           environment]
         --repo    Repository URL or slug[string] [default: infer from the environment]
         --token   Personal access token [string] [default: infer from the environment]
+        --help    Show help                                                  [boolean]
 
       Options:
-        --help        Show help                                              [boolean]
-        --version     Show version number                                    [boolean]
         --unshallow   Fetch as much as possible, converting a shallow repository to a
                       complete one                                           [boolean]
         --user-email  Git user email         [string] [default: \\"olivaw@iterative.ai\\"]

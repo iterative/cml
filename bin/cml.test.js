@@ -24,9 +24,9 @@ describe('command-line interface tests', () => {
                                                                           environment]
         --repo    Repository URL or slug[string] [default: infer from the environment]
         --token   Personal access token [string] [default: infer from the environment]
+        --help    Show help                                                  [boolean]
 
       Options:
-        --help     Show help                                                 [boolean]
         --version  Show version number                                       [boolean]"
     `);
   });

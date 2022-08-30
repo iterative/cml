@@ -18,10 +18,9 @@ describe('CML e2e', () => {
                       from the CI ENV.  [string] [default: infer from the environment]
             --token   Personal access token
                                         [string] [default: infer from the environment]
+            --help    Show help                                              [boolean]
 
       Options:
-            --help          Show help                                        [boolean]
-            --version       Show version number                              [boolean]
             --md            Output in markdown format [title || name](url)   [boolean]
         -t, --title         Markdown title [title](url) or ![](url title)     [string]
             --native        Uses driver's native capabilities to upload assets instead

@@ -69,10 +69,7 @@ describe('CML e2e', () => {
                                                                           environment]
         --repo    Repository URL or slug[string] [default: infer from the environment]
         --token   Personal access token [string] [default: infer from the environment]
-
-      Options:
-        --help     Show help                                                 [boolean]
-        --version  Show version number                                       [boolean]"
+        --help    Show help                                                  [boolean]"
     `);
   });
 

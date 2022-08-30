@@ -45,10 +45,9 @@ describe('CML e2e', () => {
         --repo    Repository URL or slug[string] [default: infer from the environment]
         --token   GITHUB_TOKEN or Github App token. Personal access token won't work
                                         [string] [default: infer from the environment]
+        --help    Show help                                                  [boolean]
 
       Options:
-        --help                    Show help                                  [boolean]
-        --version                 Show version number                        [boolean]
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                               [string] [default: HEAD]
         --conclusion              Conclusion status of the check
