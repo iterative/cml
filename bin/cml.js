@@ -129,6 +129,7 @@ const handleError = (message, error) => {
           group: 'Global Options:'
         }
       })
+      .global('version', false)
       .fail(handleError)
       .middleware(setupOpts)
       .middleware(setupLogger)
