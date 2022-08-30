@@ -17,7 +17,7 @@ describe('Comment integration tests', () => {
       "cml.js send-comment <markdown file>
 
       Global Options:
-        --log     Maximum log level
+        --log     Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
         --driver  Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the

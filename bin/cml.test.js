@@ -17,7 +17,7 @@ describe('command-line interface tests', () => {
         cml.js ci                 Prepare Git repository for CML operations
 
       Global Options:
-        --log     Maximum log level
+        --log     Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
         --driver  Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the

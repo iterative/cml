@@ -104,7 +104,7 @@ const handleError = (message, error) => {
       .options({
         log: {
           type: 'string',
-          description: 'Maximum log level',
+          description: 'Logging verbosity',
           choices: ['error', 'warn', 'info', 'debug'],
           default: 'info',
           group: 'Global Options:'
