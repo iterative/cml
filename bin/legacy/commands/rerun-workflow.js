@@ -1,4 +1,4 @@
-const { builder, handler } = require('../../cml/workflow/restart');
+const { builder, handler } = require('../../cml/workflow/rerun');
 
 exports.command = 'rerun-workflow';
 exports.description = false;

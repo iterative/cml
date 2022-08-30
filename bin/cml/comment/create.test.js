@@ -32,8 +32,8 @@ describe('Comment integration tests', () => {
                                   specified commit                           [boolean]
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
-        --publish                 Upload local images which are inlined in the
-                                  Markdown comment                           [boolean]
+        --publish                 Upload any local images found in the Markdown report
+                                                                             [boolean]
         --watch                   Watch for changes and automatically update the
                                   comment                                    [boolean]
         --native                  Uses driver's native capabilities to upload assets
