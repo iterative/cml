@@ -1,7 +1,7 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
 exports.command = 'rerun';
-exports.description = 'Restart a workflow given the jobId or workflowId';
+exports.description = 'Rerun a workflow given the jobId or workflowId';
 
 exports.handler = async (opts) => {
   const { cml } = opts;

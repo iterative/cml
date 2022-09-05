@@ -72,8 +72,8 @@ const launchAndWaitLink = async (opts = {}) => {
 };
 
 exports.tbLink = tbLink;
-exports.command = 'start';
-exports.description = 'Start the tensorboard agent and get a link';
+exports.command = 'connect';
+exports.description = 'Connect to tensorboard.dev and get a link';
 
 exports.handler = async (opts) => {
   const { file, credentials, name, description } = opts;
