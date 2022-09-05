@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const tempy = require('tempy');
 const { exec, isProcRunning, sleep } = require('../../../src/utils');
-const { tbLink } = require('./start');
+const { tbLink } = require('./connect');
 
 const CREDENTIALS =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
