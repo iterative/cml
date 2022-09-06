@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
 
-const { exec, watermarkUri, sleep } = require('../../src/utils');
+const { exec, watermarkUri, sleep } = require('../../../src/utils');
 
 const tbLink = async (opts = {}) => {
   const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
@@ -72,8 +72,8 @@ const launchAndWaitLink = async (opts = {}) => {
 };
 
 exports.tbLink = tbLink;
-exports.command = 'tensorboard-dev';
-exports.description = 'Get a tensorboard link';
+exports.command = 'connect';
+exports.description = 'Connect to tensorboard.dev and get a link';
 
 exports.handler = async (opts) => {
   const { file, credentials, name, description } = opts;
@@ -95,48 +95,47 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs.env('CML_TENSORBOARD_DEV').options(
-    kebabcaseKeys({
-      credentials: {
-        type: 'string',
-        alias: 'c',
-        required: true,
-        description:
-          'TB credentials as json. Usually found at ~/.config/tensorboard/credentials/uploader-creds.json. If not specified will look for the json at the env variable CML_TENSORBOARD_DEV_CREDENTIALS.'
-      },
-      logdir: {
-        type: 'string',
-        description: 'Directory containing the logs to process.'
-      },
-      name: {
-        type: 'string',
-        description: 'Tensorboard experiment title. Max 100 characters.'
-      },
-      description: {
-        type: 'string',
-        description:
-          'Tensorboard experiment description. Markdown format. Max 600 characters.'
-      },
-      md: {
-        type: 'boolean',
-        description: 'Output as markdown [title || name](url).'
-      },
-      title: {
-        type: 'string',
-        alias: 't',
-        description:
-          'Markdown title, if not specified, param name will be used.'
-      },
-      file: {
-        type: 'string',
-        alias: 'f',
-        description:
-          'Append the output to the given file. Create it if does not exist.',
-        hidden: true
-      },
-      rmWatermark: {
-        type: 'boolean',
-        description: 'Avoid CML watermark.'
-      }
-    })
-  );
+  yargs.env('CML_TENSORBOARD').options(exports.options);
+
+exports.options = kebabcaseKeys({
+  credentials: {
+    type: 'string',
+    alias: 'c',
+    required: true,
+    description:
+      'TensorBoard credentials as JSON, usually found at ~/.config/tensorboard/credentials/uploader-creds.json'
+  },
+  logdir: {
+    type: 'string',
+    description: 'Directory containing the logs to process'
+  },
+  name: {
+    type: 'string',
+    description: 'Tensorboard experiment title; max 100 characters'
+  },
+  description: {
+    type: 'string',
+    description:
+      'Tensorboard experiment description in Markdown format; max 600 characters'
+  },
+  md: {
+    type: 'boolean',
+    description: 'Output as markdown [title || name](url)'
+  },
+  title: {
+    type: 'string',
+    alias: 't',
+    description: 'Markdown title, if not specified, param name will be used'
+  },
+  file: {
+    type: 'string',
+    alias: 'f',
+    description:
+      'Append the output to the given file or create it if does not exist',
+    hidden: true
+  },
+  rmWatermark: {
+    type: 'boolean',
+    description: 'Avoid CML watermark'
+  }
+});

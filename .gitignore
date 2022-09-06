@@ -1,5 +1,4 @@
 node_modules/
-runner/
 .terraform/
 .cml/
 .DS_Store
