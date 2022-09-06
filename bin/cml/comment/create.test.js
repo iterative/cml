@@ -38,8 +38,6 @@ describe('Comment integration tests', () => {
         --native                  Uses driver's native capabilities to upload assets
                                   instead of CML's storage; not available on GitHub
                                                                              [boolean]
-        --update                  Update the last CML comment (if any) instead of
-                                  creating a new one                         [boolean]
         --rm-watermark            Avoid watermark; CML needs a watermark to be able to
                                   distinguish CML comments from others       [boolean]"
     `);

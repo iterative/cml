@@ -43,7 +43,8 @@ exports.options = kebabcaseKeys({
   update: {
     type: 'boolean',
     description:
-      'Update the last CML comment (if any) instead of creating a new one'
+      'Update the last CML comment (if any) instead of creating a new one',
+    hidden: true
   },
   rmWatermark: {
     type: 'boolean',

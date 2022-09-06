@@ -229,20 +229,26 @@ class CML {
     }
 
     if (watch) {
-      let lock;
+      let first = true;
+      let lock = false;
       watcher.add(triggerFile || markdownFile);
       watcher.on('all', async (event, path) => {
         if (lock) return;
         lock = true;
         try {
           winston.info(`watcher event: ${event} ${path}`);
-          await this.commentCreate({ ...opts, update: true, watch: false });
+          await this.commentCreate({
+            ...opts,
+            update: update || !first,
+            watch: false
+          });
           if (event !== 'unlink' && path === triggerFile) {
             await fs.unlink(triggerFile);
           }
         } catch (err) {
           winston.warn(err);
         }
+        first = false;
         lock = false;
       });
       winston.info('watching for file changes...');
