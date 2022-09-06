@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const tempy = require('tempy');
-const { exec, isProcRunning, sleep } = require('../../src/utils');
-const { tbLink } = require('./tensorboard-dev');
+const { exec, isProcRunning, sleep } = require('../../../src/utils');
+const { tbLink } = require('./connect');
 
 const CREDENTIALS =
   '{"refresh_token": "1//03FiVnGk2xhnNCgYIARAAGAMSNwF-L9IrPH8FOOVWEYUihFDToqxyLArxfnbKFmxEfhzys_KYVVzBisYlAy225w4HaX3ais5TV_Q", "token_uri": "https://oauth2.googleapis.com/token", "client_id": "373649185512-8v619h5kft38l4456nm2dj4ubeqsrvh6.apps.googleusercontent.com", "client_secret": "pOyAuU2yq2arsM98Bw5hwYtr", "scopes": ["openid", "https://www.googleapis.com/auth/userinfo.email"], "type": "authorized_user"}';
@@ -57,25 +57,30 @@ describe('CML e2e', () => {
     expect(output).toMatchInlineSnapshot(`
       "cml.js tensorboard-dev
 
-      Get a tensorboard link
+      Global Options:
+            --log     Logging verbosity
+                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
+            --driver  Git provider where the repository is hosted
+          [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
+                                                                          environment]
+            --repo    Repository URL or slug
+                                        [string] [default: infer from the environment]
+            --token   Personal access token
+                                        [string] [default: infer from the environment]
+            --help    Show help                                              [boolean]
 
       Options:
-            --help          Show help                                        [boolean]
-            --version       Show version number                              [boolean]
-            --log           Maximum log level
-                [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        -c, --credentials   TB credentials as json. Usually found at
-                            ~/.config/tensorboard/credentials/uploader-creds.json. If
-                            not specified will look for the json at the env variable
-                            TB_CREDENTIALS.                        [string] [required]
-            --logdir        Directory containing the logs to process.         [string]
-            --name          Tensorboard experiment title. Max 100 characters. [string]
-            --description   Tensorboard experiment description. Markdown format. Max
-                            600 characters.                                   [string]
-            --md            Output as markdown [title || name](url).         [boolean]
-        -t, --title         Markdown title, if not specified, param name will be used.
+        -c, --credentials   TensorBoard credentials as JSON, usually found at
+                            ~/.config/tensorboard/credentials/uploader-creds.json
+                                                                   [string] [required]
+            --logdir        Directory containing the logs to process          [string]
+            --name          Tensorboard experiment title; max 100 characters  [string]
+            --description   Tensorboard experiment description in Markdown format; max
+                            600 characters                                    [string]
+            --md            Output as markdown [title || name](url)          [boolean]
+        -t, --title         Markdown title, if not specified, param name will be used
                                                                               [string]
-            --rm-watermark  Avoid CML watermark.                             [boolean]"
+            --rm-watermark  Avoid CML watermark                              [boolean]"
     `);
   });
 

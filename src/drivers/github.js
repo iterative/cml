@@ -94,6 +94,13 @@ class Github {
     return ownerRepo({ uri });
   }
 
+  async user({ name: username } = {}) {
+    const { users } = octokit(this.token, this.repo);
+    const { data: user } = await users.getByUsername({ username });
+
+    return user;
+  }
+
   async commentCreate(opts = {}) {
     const { report: body, commitSha } = opts;
     const { repos } = octokit(this.token, this.repo);
