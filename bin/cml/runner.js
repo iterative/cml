@@ -1,4 +1,4 @@
-const { options, handler } = require('./runner/start');
+const { options, handler } = require('./runner/launch');
 
 exports.command = 'runner';
 exports.description = 'Manage self-hosted (cloud & on-premise) CI runners';

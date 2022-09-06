@@ -98,6 +98,7 @@ const handleError = (message, error) => {
 };
 
 (async () => {
+  setupLogger({ log: 'debug' });
   try {
     await yargs
       .env('CML')
@@ -151,9 +152,11 @@ const handleError = (message, error) => {
     const { telemetryEvent } = yargs.parsed.argv;
     await send({ event: telemetryEvent });
   } catch (err) {
-    const { telemetryEvent } = yargs.parsed.argv;
-    const event = { ...telemetryEvent, error: err.message };
-    await send({ event });
+    if (yargs.parsed.argv) {
+      const { telemetryEvent } = yargs.parsed.argv;
+      const event = { ...telemetryEvent, error: err.message };
+      await send({ event });
+    }
     winston.error({ err });
     process.exit(1);
   }
