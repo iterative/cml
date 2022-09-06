@@ -1,20 +1,13 @@
-const { exec } = require('../src/utils');
+const { exec } = require('../../../src/utils');
 
-describe('command-line interface tests', () => {
-  test('cml --help', async () => {
-    const output = await exec(`node ./bin/cml.js --help`);
+describe('CML e2e', () => {
+  test('cml-ci --help', async () => {
+    const output = await exec(
+      `echo none | node ./bin/cml.js rerun-workflow --help`
+    );
 
     expect(output).toMatchInlineSnapshot(`
-      "cml.js <command>
-
-      Commands:
-        cml.js check              Manage CI checks
-        cml.js comment            Manage comments
-        cml.js pr <glob path...>  Manage pull requests
-        cml.js runner             Manage self-hosted (cloud & on-premise) CI runners
-        cml.js tensorboard        Manage tensorboard.dev connections
-        cml.js workflow           Manage CI workflows
-        cml.js ci                 Prepare Git repository for CML operations
+      "cml.js rerun-workflow
 
       Global Options:
         --log     Logging verbosity
@@ -27,7 +20,7 @@ describe('command-line interface tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --version  Show version number                                       [boolean]"
+        --id  Run identifier to be rerun                                      [string]"
     `);
   });
 });

@@ -28,6 +28,24 @@ const setupOpts = (opts) => {
     if (process.env[oldName]) process.env[newName] = process.env[oldName];
   }
 
+  const legacyEnvironmentPrefixes = {
+    CML_CI: 'CML_REPO',
+    CML_PUBLISH: 'CML_ASSET',
+    CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
+    CML_SEND_COMMENT: 'CML_COMMENT',
+    CML_SEND_GITHUB_CHECK: 'CML_CHECK',
+    CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
+  };
+
+  for (const [oldPrefix, newPrefix] of Object.entries(
+    legacyEnvironmentPrefixes
+  )) {
+    for (const key in process.env) {
+      if (key.startsWith(`${oldPrefix}_`))
+        process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
+    }
+  }
+
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
   opts.cmlCommand = opts._[0];
@@ -80,22 +98,46 @@ const handleError = (message, error) => {
 };
 
 (async () => {
+  setupLogger({ log: 'debug' });
   try {
     await yargs
       .env('CML')
       .options({
         log: {
           type: 'string',
-          description: 'Maximum log level',
+          description: 'Logging verbosity',
           choices: ['error', 'warn', 'info', 'debug'],
-          default: 'info'
+          default: 'info',
+          group: 'Global Options:'
+        },
+        driver: {
+          type: 'string',
+          choices: ['github', 'gitlab', 'bitbucket'],
+          defaultDescription: 'infer from the environment',
+          description: 'Git provider where the repository is hosted',
+          group: 'Global Options:'
+        },
+        repo: {
+          type: 'string',
+          defaultDescription: 'infer from the environment',
+          description: 'Repository URL or slug',
+          group: 'Global Options:'
+        },
+        token: {
+          type: 'string',
+          defaultDescription: 'infer from the environment',
+          description: 'Personal access token',
+          group: 'Global Options:'
         }
       })
+      .global('version', false)
+      .group('help', 'Global Options:')
       .fail(handleError)
       .middleware(setupOpts)
       .middleware(setupLogger)
       .middleware(setupTelemetry)
-      .commandDir('./cml', { exclude: /\.test\.js$/ })
+      .commandDir('./cml')
+      .commandDir('./legacy/commands')
       .command(
         '$0 <command>',
         false,
@@ -110,9 +152,11 @@ const handleError = (message, error) => {
     const { telemetryEvent } = yargs.parsed.argv;
     await send({ event: telemetryEvent });
   } catch (err) {
-    const { telemetryEvent } = yargs.parsed.argv;
-    const event = { ...telemetryEvent, error: err.message };
-    await send({ event });
+    if (yargs.parsed.argv) {
+      const { telemetryEvent } = yargs.parsed.argv;
+      const event = { ...telemetryEvent, error: err.message };
+      await send({ event });
+    }
     winston.error({ err });
     process.exit(1);
   }
