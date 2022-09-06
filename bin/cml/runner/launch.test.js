@@ -59,7 +59,7 @@ describe('CML e2e', () => {
       Manage self-hosted (cloud & on-premise) CI runners
 
       Commands:
-        cml.js runner start  Launch and register a self-hosted runner
+        cml.js runner launch  Launch and register a self-hosted runner
 
       Global Options:
         --log     Logging verbosity
