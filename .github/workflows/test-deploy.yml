@@ -15,6 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo ✓
+  check-lock:
+    needs: authorize
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - name: check that npm lock file is on version 2
+        run: jq --exit-status .lockfileVersion==2 < package-lock.json
   lint:
     needs: authorize
     runs-on: ubuntu-latest
@@ -36,7 +45,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
-      - run: pip install tensorboard
+      - run: |
+          pip install tensorboard
+          pip install -I protobuf==3.20.1
       - run: npm ci
       - run: npm run test
         env:

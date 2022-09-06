@@ -2,10 +2,11 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const winston = require('winston');
 const { URL } = require('url');
+const { spawn } = require('child_process');
 const FormData = require('form-data');
 const ProxyAgent = require('proxy-agent');
 
-const { fetchUploadData } = require('../utils');
+const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
 
 const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
   process.env;
@@ -118,19 +119,112 @@ class BitbucketCloud {
   }
 
   async runnerToken() {
-    throw new Error('Bitbucket Cloud does not support runnerToken!');
+    return 'DUMMY';
+  }
+
+  async startRunner(opts) {
+    const { projectPath } = this;
+    const { workdir, name, labels } = opts;
+
+    winston.warn(
+      `Bitbucket runner is working under /tmp folder and not under ${workdir} as expected`
+    );
+
+    try {
+      const { uuid: accountId } = await this.request({ endpoint: `/user` });
+      const { uuid: repoId } = await this.request({
+        endpoint: `/repositories/${projectPath}`
+      });
+      const {
+        uuid,
+        oauth_client: { id, secret }
+      } = await this.registerRunner({ name, labels });
+
+      const gpu = await gpuPresent();
+      const command = `docker container run -t -a stderr -a stdout --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v /var/lib/docker/containers:/var/lib/docker/containers:ro \
+      -v /tmp:/tmp \
+      -e ACCOUNT_UUID=${accountId} \
+      -e REPOSITORY_UUID=${repoId} \
+      -e RUNNER_UUID=${uuid} \
+      -e OAUTH_CLIENT_ID=${id} \
+      -e OAUTH_CLIENT_SECRET=${secret} \
+      -e WORKING_DIRECTORY=/tmp \
+      --name ${name} \
+      ${gpu ? '--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all' : ''} \
+      docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
+
+      return spawn(command, { shell: true });
+    } catch (err) {
+      throw new Error(`Failed preparing runner: ${err.message}`);
+    }
   }
 
   async registerRunner(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support registerRunner!');
+    const { projectPath } = this;
+    const { name, labels } = opts;
+
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
+
+    const request = await this.request({
+      api: 'https://api.bitbucket.org/internal',
+      endpoint,
+      method: 'POST',
+      body: JSON.stringify({
+        labels: ['self.hosted'].concat(labels.split(',')),
+        name
+      })
+    });
+
+    let registered = false;
+    while (!registered) {
+      await sleep(1);
+      const runner = (await this.runners()).find(
+        (runner) => runner.name === name
+      );
+      if (runner) registered = true;
+    }
+
+    return request;
   }
 
   async unregisterRunner(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support unregisterRunner!');
+    const { projectPath } = this;
+    const { runnerId, name } = opts;
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners/${runnerId}`;
+
+    try {
+      await this.request({
+        api: 'https://api.bitbucket.org/internal',
+        endpoint,
+        method: 'DELETE'
+      });
+    } catch (err) {
+      if (!err.message.includes('invalid json response body')) {
+        throw err;
+      }
+    } finally {
+      await exec(`docker stop ${name}`);
+    }
   }
 
   async runners(opts = {}) {
-    throw new Error('Bitbucket Cloud does not support runners!');
+    const { projectPath } = this;
+
+    const endpoint = `/repositories/${projectPath}/pipelines-config/runners`;
+    const runners = await this.paginatedRequest({
+      api: 'https://api.bitbucket.org/internal',
+      endpoint
+    });
+
+    return runners.map(({ uuid: id, name, labels, state: { status } }) => ({
+      id,
+      name,
+      labels,
+      online: status === 'ONLINE',
+      busy: status === 'ONLINE'
+    }));
   }
 
   async runnerById(opts = {}) {
@@ -170,6 +264,17 @@ class BitbucketCloud {
     if (autoMerge)
       await this.prAutoMerge({ pullRequestId: id, mergeMode: autoMerge });
     return href;
+  }
+
+  runnerLogPatterns() {
+    return {
+      ready: /Updating runner status to "ONLINE"/,
+      job_started: /Getting step StepId/,
+      job_ended: /Completing step with result/,
+      job_ended_succeded: /Completing step with result Result{status=PASSED/,
+      pipeline: /pipelineUuid=({.+}), /,
+      job: /stepUuid=({.+})}/
+    };
   }
 
   async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
@@ -269,19 +374,16 @@ class BitbucketCloud {
     }
   }
 
-  async pipelineRerun(opts = {}) {
+  async pipelineRerun({ id = BITBUCKET_PIPELINE_UUID, jobId } = {}) {
     const { projectPath } = this;
-    const { id = BITBUCKET_PIPELINE_UUID } = opts;
 
-    const {
-      target,
-      state: { name: status }
-    } = await this.request({
+    if (!id && jobId)
+      winston.warn('BitBucket Cloud does not support pipelineRerun by jobId!');
+
+    const { target } = await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/${id}`,
       method: 'GET'
     });
-
-    if (status !== 'COMPLETED') return;
 
     await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/`,
@@ -290,34 +392,31 @@ class BitbucketCloud {
     });
   }
 
-  async pipelineRestart(opts = {}) {
-    throw new Error('BitBucket Cloud does not support workflowRestart!');
-  }
-
   async pipelineJobs(opts = {}) {
-    throw new Error('Not implemented');
+    winston.warn('BitBucket Cloud does not support pipelineJobs yet!');
+
+    return [];
   }
 
-  async updateGitConfig({ userName, userEmail } = {}) {
+  async updateGitConfig({ userName, userEmail, remote } = {}) {
     const [user, password] = Buffer.from(this.token, 'base64')
       .toString('utf-8')
       .split(':');
+
     const repo = new URL(this.repo);
     repo.password = password;
     repo.username = user;
+    repo.protocol = 'https';
+    repo.pathname = repo.pathname.replace('.git', '');
 
     const command = `
     git config --unset user.name;
     git config --unset user.email;
     git config --unset push.default;
-    git config --unset http.http://${this.repo
-      .replace('https://', '')
-      .replace('.git', '')}.proxy;
+    git config --unset http.http://${repo.host}${repo.pathname}.proxy;
     git config user.name "${userName || this.userName}" &&
     git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url origin "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
+    git remote set-url ${remote} "${repo.toString()}"`;
 
     return command;
   }
@@ -351,8 +450,8 @@ class BitbucketCloud {
   }
 
   async request(opts = {}) {
-    const { token, api } = this;
-    const { url, endpoint, method = 'GET', body } = opts;
+    const { token } = this;
+    const { url, endpoint, method = 'GET', body, api = this.api } = opts;
 
     if (!(url || endpoint))
       throw new Error('Bitbucket Cloud API endpoint not found');
@@ -362,8 +461,6 @@ class BitbucketCloud {
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
-    winston.debug(`${method} ${requestUrl}`);
-
     const response = await fetch(requestUrl, {
       method,
       headers,

@@ -1,5 +1,5 @@
-const { bin } = require('../package.json');
-const { exec } = require('../src/utils');
+const { bin } = require('../../package.json');
+const { exec } = require('../../src/utils');
 
 const commands = Object.keys(bin)
   .filter((command) => command.startsWith('cml-'))

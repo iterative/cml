@@ -68,8 +68,7 @@ requirement.
 ### Bitbucket
 
 Please see our docs on
-[CML with Bitbucket Cloud](https://github.com/iterative/cml/wiki/CML-with-Bitbucket-Cloud).
-_Bitbucket Server support estimated to arrive by mid 2021._
+[CML with Bitbucket Cloud](https://cml.dev/doc/usage?tab=Bitbucket).
 
 ### GitHub
 
@@ -104,7 +103,7 @@ jobs:
         run: |
           # Post reports as comments in GitHub PRs
           cat results.txt >> report.md
-          cml-send-comment report.md
+          cml send-comment report.md
 ```
 
 ## Usage
@@ -127,16 +126,16 @@ those reports to your CI system.
 
 | Function                | Description                                                      | Example Inputs                                              |
 | ----------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
-| `cml-runner`            | Launch a runner locally or hosted by a cloud provider            | See [Arguments](https://github.com/iterative/cml#arguments) |
-| `cml-publish`           | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
-| `cml-send-comment`      | Return CML report as a comment in your GitLab/GitHub workflow    | `<path to report> --head-sha <sha>`                         |
-| `cml-send-github-check` | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
-| `cml-pr`                | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
-| `cml-tensorboard-dev`   | Return a link to a Tensorboard.dev page                          | `--logdir <path to logs> --title <experiment title> --md`   |
+| `cml runner`            | Launch a runner locally or hosted by a cloud provider            | See [Arguments](https://github.com/iterative/cml#arguments) |
+| `cml publish`           | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
+| `cml send-comment`      | Return CML report as a comment in your GitLab/GitHub workflow    | `<path to report> --head-sha <sha>`                         |
+| `cml send-github-check` | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
+| `cml pr`                | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
+| `cml tensorboard-dev`   | Return a link to a Tensorboard.dev page                          | `--logdir <path to logs> --title <experiment title> --md`   |
 
 #### CML Reports
 
-The `cml-send-comment` command can be used to post reports. CML reports are
+The `cml send-comment` command can be used to post reports. CML reports are
 written in markdown ([GitHub](https://github.github.com/gfm),
 [GitLab](https://docs.gitlab.com/ee/user/markdown.html), or
 [Bitbucket](https://confluence.atlassian.com/bitbucketserver/markdown-syntax-guide-776639995.html)
@@ -154,11 +153,11 @@ cat results.txt >> report.md
 
 :framed_picture: **Images** Display images using the markdown or HTML. Note that
 if an image is an output of your ML workflow (i.e., it is produced by your
-workflow), you will need to use the `cml-publish` function to include it a CML
+workflow), you will need to use the `cml publish` function to include it a CML
 report. For example, if `graph.png` is output by `python train.py`, run:
 
 ```bash
-cml-publish graph.png --md >> report.md
+cml publish graph.png --md >> report.md
 ```
 
 ### Getting Started
@@ -201,8 +200,8 @@ jobs:
           python train.py
 
           cat metrics.txt >> report.md
-          cml-publish plot.png --md >> report.md
-          cml-send-comment report.md
+          cml publish plot.png --md >> report.md
+          cml send-comment report.md
 ```
 
 3. In your text editor of choice, edit line 16 of `train.py` to `depth = 5`.
@@ -221,7 +220,7 @@ git push origin experiment
 ![](https://static.iterative.ai/img/cml/make_pr.png)
 
 Shortly, you should see a comment from `github-actions` appear in the pull
-request with your CML report. This is a result of the `cml-send-comment`
+request with your CML report. This is a result of the `cml send-comment`
 function in your workflow.
 
 ![](https://static.iterative.ai/img/cml/first_report.png)
@@ -279,14 +278,16 @@ jobs:
           echo "## Plots" >> report.md
           echo "### Class confusions" >> report.md
           dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
-          vl2png vega.json -s 1.5 | cml-publish --md >> report.md
+          vl2png vega.json -s 1.5 > plot.png
+          cml publish --md plot.png >> report.md
 
           # Publish regularization function diff
           echo "### Effects of regularization" >> report.md
           dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
-          vl2png vega.json -s 1.5 | cml-publish --md >> report.md
+          vl2png vega.json -s 1.5 > plot.png
+          cml publish --md plot.png >> report.md
 
-          cml-send-comment report.md
+          cml send-comment report.md
 ```
 
 > :warning: If you're using DVC with cloud storage, take note of environment
@@ -314,7 +315,7 @@ env:
 > :point_right: `AWS_SESSION_TOKEN` is optional.
 
 > :point_right: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` can also be used
-> by `cml-runner` to launch EC2 instances. See [Environment Variables].
+> by `cml runner` to launch EC2 instances. See [Environment Variables].
 
 </details>
 
@@ -397,7 +398,7 @@ orchestrate your team's shared computing resources, or train in the cloud.
 #### Allocating Cloud Compute Resources with CML
 
 When a workflow requires computational resources (such as GPUs), CML can
-automatically allocate cloud instances using `cml-runner`. You can spin up
+automatically allocate cloud instances using `cml runner`. You can spin up
 instances on AWS, Azure, GCP, or Kubernetes.
 
 For example, the following workflow deploys a `g4dn.xlarge` instance on AWS EC2
@@ -405,12 +406,12 @@ and trains a model on the instance. After the job runs, the instance
 automatically shuts down.
 
 You might notice that this workflow is quite similar to the
-[basic use case](#usage) above. The only addition is `cml-runner` and a few
+[basic use case](#usage) above. The only addition is `cml runner` and a few
 environment variables for passing your cloud service credentials to the
 workflow.
 
-Note that `cml-runner` will also automatically restart your jobs (whether from a
-[GitHub Actions 72-hour timeout](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration#usage-limits)
+Note that `cml runner` will also automatically restart your jobs (whether from a
+[GitHub Actions 35-day workflow timeout](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration#usage-limits)
 or a
 [AWS EC2 spot instance interruption](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html)).
 
@@ -429,7 +430,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          cml-runner \
+          cml runner \
             --cloud=aws \
             --cloud-region=us-west \
             --cloud-type=g4dn.xlarge \
@@ -437,7 +438,7 @@ jobs:
   train-model:
     needs: deploy-runner
     runs-on: [self-hosted, cml-gpu]
-    timeout-minutes: 4320 # 72h
+    timeout-minutes: 50400 # 35 days
     container:
       image: docker://iterativeai/cml:0-dvc2-base1-gpu
       options: --gpus all
@@ -451,7 +452,7 @@ jobs:
           python train.py
 
           cat metrics.txt > report.md
-          cml-send-comment report.md
+          cml send-comment report.md
 ```
 
 In the workflow above, the `deploy-runner` step launches an EC2 `g4dn.xlarge`
@@ -460,7 +461,7 @@ newly-launched instance. See [Environment Variables] below for details on the
 `secrets` required.
 
 > :tada: **Note that jobs can use any Docker container!** To use functions such
-> as `cml-send-comment` from a job, the only requirement is to
+> as `cml send-comment` from a job, the only requirement is to
 > [have CML installed](#local-package).
 
 #### Docker Images
@@ -470,17 +471,17 @@ CUDA, `git`, `node` and other essentials for full-stack data science. Different
 versions of these essentials are available from different `iterativeai/cml`
 image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 
-| `{BASE_VER}` | Software included (`-gpu`)                      |
-| ------------ | ----------------------------------------------- |
-| 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7)   |
-| 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.0.3, CuDNN 8) |
+| `{BASE_VER}` | Software included (`-gpu`)                    |
+| ------------ | --------------------------------------------- |
+| 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7) |
+| 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.2, CuDNN 8) |
 
 For example, `docker://iterativeai/cml:0-dvc2-base1-gpu`, or
 `docker://ghcr.io/iterative/cml:0-dvc2-base1`.
 
 #### Arguments
 
-The `cml-runner` function accepts the following arguments:
+The `cml runner` function accepts the following arguments:
 
 ```
 --help                      Show help                                [boolean]
@@ -555,12 +556,12 @@ CML support proxy via known environment variables `http_proxy` and
 
 #### On-premise (Local) Runners
 
-This means using on-premise machines as self-hosted runners. The `cml-runner`
+This means using on-premise machines as self-hosted runners. The `cml runner`
 function is used to set up a local self-hosted runner. On a local machine or
 on-premise GPU cluster, [install CML as a package](#local-package) and then run:
 
 ```bash
-cml-runner \
+cml runner \
   --repo=$your_project_repository_url \
   --token=$PERSONAL_ACCESS_TOKEN \
   --labels="local,runner" \
