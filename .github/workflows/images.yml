@@ -4,7 +4,6 @@ on:
       test:
         required: false
         type: boolean
-    secrets: inherit
 jobs:
   images:
     runs-on: ubuntu-latest
