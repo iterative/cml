@@ -471,9 +471,9 @@ CUDA, `git`, `node` and other essentials for full-stack data science. Different
 versions of these essentials are available from different `iterativeai/cml`
 image tags. The tag convention is `{CML_VER}-dvc{DVC_VER}-base{BASE_VER}{-gpu}`:
 
-| `{BASE_VER}` | Software included (`-gpu`)                      |
-| ------------ | ----------------------------------------------- |
-| 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7)   |
+| `{BASE_VER}` | Software included (`-gpu`)                    |
+| ------------ | --------------------------------------------- |
+| 0            | Ubuntu 18.04, Python 2.7 (CUDA 10.1, CuDNN 7) |
 | 1            | Ubuntu 20.04, Python 3.8 (CUDA 11.2, CuDNN 8) |
 
 For example, `docker://iterativeai/cml:0-dvc2-base1-gpu`, or
