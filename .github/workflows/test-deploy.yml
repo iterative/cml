@@ -1,9 +1,7 @@
 name: Test & Deploy
 on:
-  schedule:
-    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
-  release:
-    types: [created]
+  schedule: [{ cron: '0 8 * * 1' }] # M H d m w (Mondays at 8:00)
+  release: { types: [created] }
   pull_request_target:
   workflow_dispatch:
 jobs:
@@ -22,13 +20,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - name: check that npm lock file is on version 2
+      - name: npm lock file is v2
         run: jq --exit-status .lockfileVersion==2 < package-lock.json
   lint:
     needs: authorize
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
@@ -38,7 +36,7 @@ jobs:
     needs: authorize
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
@@ -69,7 +67,7 @@ jobs:
         system: [ubuntu, macos, windows]
     runs-on: ${{ matrix.system }}-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - if: matrix.system == 'windows'
@@ -91,7 +89,7 @@ jobs:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v2
@@ -106,7 +104,7 @@ jobs:
       - name: install ldid
         run: |
           sudo apt install --yes libplist-dev
-          git clone --branch v2.1.5 git://git.saurik.com/ldid.git 
+          git clone --branch v2.1.5 git://git.saurik.com/ldid.git
           sudo g++ -pipe -o /usr/bin/ldid ldid/ldid.cpp -I. -x c ldid/{lookup2.c,sha1.h} -lplist -lcrypto
       - id: build
         name: build

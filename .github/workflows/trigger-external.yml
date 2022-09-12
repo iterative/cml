@@ -6,25 +6,19 @@ on:
         description: 'Tag to pass with repository_dispatch ex: "v0.15.1"'
         type: string
         required: true
-  release:
-    types:
-      - published
-  pull_request:
-    branches:
-      - master
+  release: { types: [published] }
+  pull_request: { branches: [master] }
 jobs:
   pr:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repos:
-          - cml-playground
+        repos: [cml-playground]
     steps:
       - name: Trigger external actions
         run: |
-          curl --silent --show-error \
-            --request POST \
+          curl --silent --show-error --request POST \
             --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
             --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
@@ -36,13 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        repos:
-          - cml-playground
+        repos: [cml-playground]
     steps:
       - name: Trigger external actions
         run: |
-          curl --silent --show-error \
-            --request POST \
+          curl --silent --show-error --request POST \
             --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
             --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
