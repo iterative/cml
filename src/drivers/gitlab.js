@@ -176,7 +176,8 @@ class Gitlab {
       single,
       labels,
       name,
-      dockerVolumes = []
+      dockerVolumes = [],
+      env
     } = opts;
 
     const gpu = await gpuPresent();
@@ -210,7 +211,7 @@ class Gitlab {
         ${dockerVolumesTpl} \
         ${single ? '--max-builds 1' : ''}`;
 
-      return spawn(command, { shell: true, env: {} });
+      return spawn(command, { shell: true, env });
     } catch (err) {
       if (err.message === 'Forbidden')
         err.message +=
