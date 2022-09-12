@@ -1,9 +1,26 @@
-const fetch = require('node-fetch');
 const fs = require('fs');
 const PATH = require('path');
-const mmm = require('mmmagic');
-const forge = require('node-forge');
+const { Buffer } = require('buffer');
+const fetch = require('node-fetch');
 const NodeSSH = require('node-ssh').NodeSSH;
+const stripAnsi = require('strip-ansi');
+const winston = require('winston');
+const uuid = require('uuid');
+const getOS = require('getos');
+
+const { FileMagic, MagicFlags } = require('@npcz/magic');
+const tempy = require('tempy');
+
+const getos = async () => {
+  return new Promise((resolve, reject) => {
+    getOS((err, os) => {
+      if (err) reject(err);
+      resolve(os);
+    });
+  });
+};
+
+const waitForever = () => new Promise((resolve) => resolve);
 
 const exec = async (command) => {
   return new Promise((resolve, reject) => {
@@ -11,6 +28,10 @@ const exec = async (command) => {
       command,
       { ...process.env },
       (error, stdout, stderr) => {
+        if (!process.stdout.isTTY) {
+          stdout = stripAnsi(stdout);
+          stderr = stripAnsi(stderr);
+        }
         if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
 
         resolve((stdout || stderr).slice(0, -1));
@@ -20,25 +41,25 @@ const exec = async (command) => {
 };
 
 const mimeType = async (opts) => {
-  return new Promise((resolve, reject) => {
-    const { path, buffer } = opts;
-    const magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-    const handler = (err, result) => {
-      if (err)
-        reject(
-          new Error(
-            `Failed guessing mime type of ${path ? `file ${path}` : `buffer`}`
-          )
-        );
+  const { path, buffer } = opts;
+  const magicFile = PATH.join(__dirname, '../assets/magic.mgc');
+  if (fs.existsSync(magicFile)) FileMagic.magicFile = magicFile;
+  const fileMagic = await FileMagic.getInstance();
 
-      if (result === 'image/svg') resolve('image/svg+xml');
+  let tmppath;
+  if (buffer) {
+    tmppath = tempy.file();
+    await fs.promises.writeFile(tmppath, buffer);
+  }
 
-      resolve(result);
-    };
+  const [mime] = (
+    fileMagic.detect(
+      buffer ? tmppath : path,
+      fileMagic.flags | MagicFlags.MAGIC_MIME
+    ) || []
+  ).split(';');
 
-    if (path) magic.detectFile(path, handler);
-    else magic.detect(buffer, handler);
-  });
+  return mime;
 };
 
 const fetchUploadData = async (opts) => {
@@ -52,19 +73,20 @@ const fetchUploadData = async (opts) => {
 };
 
 const upload = async (opts) => {
-  const { path } = opts;
-  const endpoint = 'https://asset.cml.dev';
+  const { path, session, url = 'https://asset.cml.dev' } = opts;
 
   const { mime, size, data: body } = await fetchUploadData(opts);
   const filename = path ? PATH.basename(path) : `file.${mime.split('/')[1]}`;
 
   const headers = {
-    'Content-length': size,
+    'Content-Length': size,
     'Content-Type': mime,
     'Content-Disposition': `inline; filename="${filename}"`
   };
 
-  const response = await fetch(endpoint, { method: 'POST', headers, body });
+  if (session) headers['Content-Address-Seed'] = `${session}:${path}`;
+
+  const response = await fetch(url, { method: 'POST', headers, body });
   const uri = await response.text();
 
   if (!uri)
@@ -113,19 +135,18 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const sshPublicFromPrivateRsa = (privateKey) => {
-  const forgePrivate = forge.pki.privateKeyFromPem(privateKey);
-  const forgePublic = forge.pki.setRsaPublicKey(forgePrivate.n, forgePrivate.e);
-  const sshPublic = forge.ssh.publicKeyToOpenSSH(forgePublic);
-
-  return sshPublic;
+const watermarkUri = ({ uri, type } = {}) => {
+  return uriParmam({ uri, param: 'cml', value: type });
 };
 
-const watermarkUri = (opts = {}) => {
-  const { uri, type } = opts;
-  const url = new URL(uri);
-  url.searchParams.append('cml', type);
+const preventcacheUri = ({ uri } = {}) => {
+  return uriParmam({ uri, param: 'cache-bypass', value: uuid.v4() });
+};
 
+const uriParmam = (opts = {}) => {
+  const { uri, param, value } = opts;
+  const url = new URL(uri);
+  url.searchParams.set(param, value);
   return url.toString();
 };
 
@@ -165,13 +186,72 @@ const sshConnection = async (opts) => {
   return ssh;
 };
 
+const gpuPresent = async () => {
+  let gpu = true;
+  try {
+    await exec('nvidia-smi');
+  } catch (err) {
+    try {
+      await exec('cuda-smi');
+    } catch (err) {
+      gpu = false;
+    }
+  }
+
+  return gpu;
+};
+
+const tfCapture = async (command, args = [], options = {}) => {
+  return new Promise((resolve, reject) => {
+    const stderrCollection = [];
+    const tfProc = require('child_process').spawn(command, args, options);
+    tfProc.stdout.on('data', (buf) => {
+      const parse = (line) => {
+        if (line === '') return;
+        try {
+          const { '@level': level, '@message': message } = JSON.parse(line);
+          if (level === 'error') {
+            winston.error(`terraform error: ${message}`);
+          } else {
+            winston.info(message);
+          }
+        } catch (err) {
+          winston.info(line);
+        }
+      };
+      buf.toString('utf8').split('\n').forEach(parse);
+    });
+    tfProc.stderr.on('data', (buf) => {
+      stderrCollection.push(buf);
+    });
+    tfProc.on('close', (code) => {
+      if (code !== 0) {
+        const stderrOutput = Buffer.concat(stderrCollection).toString('utf8');
+        reject(stderrOutput);
+      }
+      resolve();
+    });
+  });
+};
+
+const fileExists = (path) =>
+  fs.promises.stat(path).then(
+    () => true,
+    () => false
+  );
+
+exports.tfCapture = tfCapture;
+exports.waitForever = waitForever;
 exports.exec = exec;
 exports.fetchUploadData = fetchUploadData;
 exports.upload = upload;
 exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
-exports.sshPublicFromPrivateRsa = sshPublicFromPrivateRsa;
 exports.watermarkUri = watermarkUri;
+exports.preventcacheUri = preventcacheUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
+exports.gpuPresent = gpuPresent;
+exports.fileExists = fileExists;
+exports.getos = getos;

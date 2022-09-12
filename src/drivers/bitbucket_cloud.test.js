@@ -29,14 +29,35 @@ describe('Non Enviromental tests', () => {
 
   test('Publish', async () => {
     const path = `${__dirname}/../../assets/logo.png`;
-    await expect(client.upload({ path })).rejects.toThrow(
-      'Bitbucket Cloud does not support upload!'
-    );
+    const { uri } = await client.upload({ path });
+
+    expect(uri).not.toBeUndefined();
   });
 
   test('Runner token', async () => {
-    await expect(client.runnerToken()).rejects.toThrow(
-      'Bitbucket Cloud does not support runnerToken!'
-    );
+    const token = await client.runnerToken();
+    await expect(token).toBe('DUMMY');
+  });
+
+  test('updateGitConfig', async () => {
+    const client = new BitbucketCloud({
+      repo: 'http://bitbucket.org/test/test',
+      token: 'dXNlcjpwYXNz'
+    });
+    const command = await client.updateGitConfig({
+      userName: 'john',
+      userEmail: 'john@test.com',
+      remote: 'origin'
+    });
+    expect(command).toMatchInlineSnapshot(`
+      "
+          git config --unset user.name;
+          git config --unset user.email;
+          git config --unset push.default;
+          git config --unset http.http://bitbucket.org/test/test.proxy;
+          git config user.name \\"john\\" &&
+          git config user.email \\"john@test.com\\" &&
+          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test\\""
+    `);
   });
 });

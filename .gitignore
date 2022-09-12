@@ -1,5 +1,4 @@
 node_modules/
-runner/
 .terraform/
 .cml/
 .DS_Store
@@ -9,3 +8,4 @@ terraform.*
 !terraform.js
 !terraform.test.js
 crash.log
+/build

@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const { ltr } = require('semver');
-const { exec } = require('./utils');
+const winston = require('winston');
+const { exec, tfCapture } = require('./utils');
 
 const MIN_TF_VER = '0.14.0';
 
@@ -37,7 +38,22 @@ const init = async (opts = {}) => {
 
 const apply = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec(`terraform -chdir='${dir}' apply -auto-approve`);
+  const { env } = process;
+  if (env.TF_LOG_PROVIDER === undefined) env.TF_LOG_PROVIDER = 'DEBUG';
+  try {
+    await tfCapture(
+      'terraform',
+      [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+      {
+        cwd: process.cwd(),
+        env,
+        shell: true
+      }
+    );
+  } catch (rejectionLogs) {
+    process.stdout.write(rejectionLogs);
+    throw new Error('terraform apply error');
+  }
 };
 
 const destroy = async (opts = {}) => {
@@ -48,78 +64,60 @@ const destroy = async (opts = {}) => {
   );
 };
 
-const mapCloudMetadata = (metadata) =>
-  Object.entries(metadata).map(([key, value]) => `${key} = "${value || ''}"`);
-
-const iterativeProviderTpl = () => {
-  return `
-terraform {
-  required_providers {
-    iterative = {
-      source = "iterative/iterative"
+const iterativeProviderTpl = ({ tpiVersion }) => ({
+  terraform: {
+    required_providers: {
+      iterative: {
+        source: 'iterative/iterative',
+        ...(tpiVersion && { version: tpiVersion })
+      }
     }
+  },
+  provider: {
+    iterative: {}
   }
-}
-
-provider "iterative" {}
-`;
-};
+});
 
 const iterativeCmlRunnerTpl = (opts = {}) => {
-  const {
-    repo,
-    token,
-    driver,
-    labels,
-    idleTimeout,
-    cloud,
-    region,
-    name,
-    single,
-    type,
-    metadata,
-    gpu,
-    hddSize,
-    sshPrivate,
-    spot,
-    spotPrice,
-    startupScript,
-    awsSecurityGroup
-  } = opts;
-
-  const template = `
-${iterativeProviderTpl()}
-
-resource "iterative_cml_runner" "runner" {
-  ${repo ? `repo = "${repo}"` : ''}
-  ${token ? `token = "${token}"` : ''}
-  ${driver ? `driver = "${driver}"` : ''}
-  ${labels ? `labels = "${labels}"` : ''}
-  ${
-    typeof idleTimeout !== 'undefined' && idleTimeout >= 0
-      ? `idle_timeout = ${idleTimeout}`
-      : ''
-  }
-  ${name ? `name = "${name}"` : ''}
-  ${single ? `single = "${single}"` : ''}
-  ${cloud ? `cloud = "${cloud}"` : ''}
-  ${region ? `region = "${region}"` : ''}
-  ${type ? `instance_type = "${type}"` : ''}
-  ${gpu ? `instance_gpu = "${gpu}"` : ''}
-  ${hddSize ? `instance_hdd_size = ${hddSize}` : ''}
-  ${sshPrivate ? `ssh_private = "${sshPrivate}"` : ''}
-  ${spot ? `spot = ${spot}` : ''}
-  ${spotPrice ? `spot_price = ${spotPrice}` : ''}
-  ${startupScript ? `startup_script = "${startupScript}"` : ''}
-  ${awsSecurityGroup ? `aws_security_group = "${awsSecurityGroup}"` : ''}
-  ${
-    metadata
-      ? `metadata = {\n    ${mapCloudMetadata(metadata).join('\n    ')}\n  }`
-      : ''
-  }
-}
-`;
-  return template;
+  const tfObj = {
+    ...iterativeProviderTpl(opts),
+    resource: {
+      iterative_cml_runner: {
+        runner: {
+          ...(opts.awsSecurityGroup && {
+            aws_security_group: opts.awsSecurityGroup
+          }),
+          ...(opts.awsSubnet && { aws_subnet_id: opts.awsSubnet }),
+          ...(opts.cloud && { cloud: opts.cloud }),
+          ...(opts.cmlVersion && { cml_version: opts.cmlVersion }),
+          ...(opts.dockerVolumes && { docker_volumes: opts.dockerVolumes }),
+          ...(opts.driver && { driver: opts.driver }),
+          ...(opts.gpu && { instance_gpu: opts.gpu }),
+          ...(opts.hddSize && { instance_hdd_size: opts.hddSize }),
+          ...(typeof opts.idleTimeout !== 'undefined' && {
+            idle_timeout: opts.idleTimeout
+          }),
+          ...(opts.labels && { labels: opts.labels }),
+          ...(opts.metadata && { metadata: opts.metadata }),
+          ...(opts.name && { name: opts.name }),
+          ...(opts.permissionSet && {
+            instance_permission_set: opts.permissionSet
+          }),
+          ...(opts.region && { region: opts.region }),
+          ...(opts.repo && { repo: opts.repo }),
+          ...(opts.single && { single: opts.single }),
+          ...(opts.spot && { spot: opts.spot }),
+          ...(opts.spotPrice && { spot_price: opts.spotPrice }),
+          ...(opts.sshPrivate && { ssh_private: opts.sshPrivate }),
+          ...(opts.startupScript && { startup_script: opts.startupScript }),
+          ...(opts.token && { token: opts.token }),
+          ...(opts.type && { instance_type: opts.type })
+        }
+      }
+    }
+  };
+  winston.debug(`terraform data: ${JSON.stringify(tfObj)}`);
+  return tfObj;
 };
 
 const checkMinVersion = async () => {

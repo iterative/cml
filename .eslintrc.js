@@ -2,7 +2,8 @@ module.exports = {
   env: {
     browser: true,
     commonjs: true,
-    es6: true
+    es6: true,
+    jest: true
   },
   extends: ['standard', 'prettier'],
   globals: {
@@ -10,15 +11,12 @@ module.exports = {
     SharedArrayBuffer: 'readonly'
   },
   parserOptions: {
-    ecmaVersion: 2018
+    ecmaVersion: 2020
   },
   ignorePatterns: ['assets/', 'dist/', 'node_modules/'],
   rules: {
     camelcase: [1, { properties: 'never' }],
     'prettier/prettier': 'error'
   },
-  plugins: ['prettier'],
-  env: {
-    jest: true
-  }
+  plugins: ['prettier']
 };
