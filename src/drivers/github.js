@@ -250,7 +250,7 @@ class Github {
   }
 
   async startRunner(opts) {
-    const { workdir, single, name, labels } = opts;
+    const { workdir, single, name, labels, env } = opts;
 
     try {
       const runnerCfg = resolve(workdir, '.runner');
@@ -286,7 +286,7 @@ class Github {
 
       return spawn(resolve(workdir, 'run.sh'), {
         shell: true,
-        env: {}
+        env
       });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
