@@ -33,6 +33,7 @@ describe('Comment integration tests', () => {
                                                             [string] [default: \\"HEAD\\"]
         --publish                 Upload any local images found in the Markdown report
                                                                              [boolean]
+        --publish-url             Self-hosted image server URL                [string]
         --watch                   Watch for changes and automatically update the
                                   comment                                    [boolean]
         --native                  Uses driver's native capabilities to upload assets
