@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: iterative/setup-cml@v1
       - name: Bump version
         run: |
+          npm install -g .
           cml ci
           git checkout -b bump/$(npm version ${{ github.event.inputs.bump }})
       - name: Create PR
