@@ -167,6 +167,7 @@ class CML {
       update,
       pr,
       publish,
+      publishUrl,
       markdownFile,
       report: testReport,
       watch,
@@ -208,7 +209,11 @@ class CML {
           );
           if (!triggerFile && watch) watcher.add(absolutePath);
           try {
-            node.url = await this.publish({ ...opts, path: absolutePath });
+            node.url = await this.publish({
+              ...opts,
+              path: absolutePath,
+              url: publishUrl
+            });
           } catch (err) {
             if (err.code !== 'ENOENT') throw err;
           }
