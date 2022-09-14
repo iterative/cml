@@ -28,6 +28,7 @@ exports.options = kebabcaseKeys({
   },
   publishUrl: {
     type: 'string',
+    default: 'https://asset.cml.dev',
     description: 'Self-hosted image server URL'
   },
   watch: {

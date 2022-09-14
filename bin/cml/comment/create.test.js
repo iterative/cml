@@ -33,7 +33,8 @@ describe('Comment integration tests', () => {
                                                             [string] [default: \\"HEAD\\"]
         --publish                 Upload any local images found in the Markdown report
                                                                              [boolean]
-        --publish-url             Self-hosted image server URL                [string]
+        --publish-url             Self-hosted image server URL
+                                           [string] [default: \\"https://asset.cml.dev\\"]
         --watch                   Watch for changes and automatically update the
                                   comment                                    [boolean]
         --native                  Uses driver's native capabilities to upload assets
@@ -64,5 +65,12 @@ describe('Comment integration tests', () => {
 
     await fs.writeFile(path, report);
     await exec(`node ./bin/cml.js send-comment ${path}`);
+  });
+
+  test('cml send-comment --publish to current repo', async () => {
+    const report = `## Test Comment\n![](assets/logo.png)`;
+
+    await fs.writeFile(path, report);
+    await exec(`node ./bin/cml.js send-comment --publish ${path}`);
   });
 });
