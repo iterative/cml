@@ -1,7 +1,6 @@
 on:
   workflow_call:
     inputs:
-      test: { required: false, type: boolean }
 jobs:
   images:
     runs-on: ubuntu-latest
