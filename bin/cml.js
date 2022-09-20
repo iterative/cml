@@ -89,6 +89,7 @@ const setupTelemetry = async (opts, { parsed: { defaulted } }) => {
       native: 'plain',
       publishUrl: 'masked'
     }
+    // IMPORTANT!  --no-watermark and runner launch --reuse
   };
 
   const options = Object.fromEntries(
