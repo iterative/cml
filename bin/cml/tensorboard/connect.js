@@ -3,6 +3,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
+const winston = require('winston');
 
 const { exec, watermarkUri, sleep } = require('../../../src/utils');
 
@@ -28,8 +29,8 @@ const tbLink = async (opts = {}) => {
     chrono = chrono + chronoStep;
   }
 
-  const error = await fs.readFile(stderror, 'utf8');
-  throw new Error(`Tensorboard took too long. ${error}`);
+  winston.error(await fs.readFile(stderror, 'utf8'));
+  throw new Error(`Tensorboard took too long`);
 };
 
 const launchAndWaitLink = async (opts = {}) => {
@@ -51,8 +52,8 @@ const launchAndWaitLink = async (opts = {}) => {
   proc.unref();
   proc.on('exit', async (code, signal) => {
     if (code || signal) {
-      const error = await fs.readFile(stderrPath, 'utf8');
-      throw new Error(`Tensorboard failed with error: ${error}`);
+      winston.error(await fs.readFile(stderrPath, 'utf8'));
+      throw new Error(`Tensorboard failed with error ${code || signal}`);
     }
   });
 
