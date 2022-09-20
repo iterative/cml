@@ -3,6 +3,7 @@
 const { basename } = require('path');
 const { pseudoexec } = require('pseudoexec');
 
+const camelcaseKeys = require('camelcase-keys');
 const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
@@ -48,7 +49,6 @@ const setupOpts = (opts) => {
 
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
-  opts.cmlCommand = opts._[0];
   opts.cml = new CML(opts);
 };
 
@@ -76,9 +76,42 @@ const setupLogger = (opts) => {
   });
 };
 
-const setupTelemetry = async (opts) => {
-  const { cml, cmlCommand: action } = opts;
-  opts.telemetryEvent = await jitsuEventPayload({ action, cml });
+const setupTelemetry = async (opts, { parsed: { defaulted } }) => {
+  const { cml, _: command } = opts;
+  const action = command.join(':');
+
+  const allowedTelemetryOptions = {
+    'runner:launch': {
+      cloud: 'plain',
+      cloudStartupScript: 'masked'
+    },
+    'comment:create': {
+      native: 'plain',
+      publishUrl: 'masked'
+    }
+  };
+
+  const options = Object.fromEntries(
+    Object.entries(opts)
+      .filter(
+        ([key]) =>
+          Object.prototype.hasOwnProperty.call(
+            allowedTelemetryOptions[action] || {},
+            key
+          ) &&
+          !Object.prototype.hasOwnProperty.call(camelcaseKeys(defaulted), key)
+      )
+      .map(([key, value]) => [
+        key,
+        (allowedTelemetryOptions[action] || {})[key] === 'plain' ? value : '***'
+      ])
+  );
+
+  opts.telemetryEvent = await jitsuEventPayload({
+    action,
+    cml,
+    extra: { options }
+  });
 };
 
 const runPlugin = async ({ $0: executable, command }) => {
@@ -99,6 +132,7 @@ const handleError = (message, error) => {
 
 (async () => {
   setupLogger({ log: 'debug' });
+
   try {
     await yargs
       .env('CML')
