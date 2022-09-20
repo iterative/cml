@@ -12,7 +12,6 @@ describe('Comment integration tests', () => {
 
   test('cml send-comment --help', async () => {
     const output = await exec(`node ./bin/cml.js send-comment --help`);
-
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-comment <markdown file>
 
@@ -41,7 +40,9 @@ describe('Comment integration tests', () => {
                                   instead of CML's storage; not available on GitHub
                                                                              [boolean]
         --rm-watermark            Avoid watermark; CML needs a watermark to be able to
-                                  distinguish CML comments from others       [boolean]"
+                                  distinguish CML comments from others       [boolean]
+        --watermark-label         Label to add to watermarks for more selective
+                                  updates                       [string] [default: \\"\\"]"
     `);
   });
 

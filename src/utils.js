@@ -136,14 +136,14 @@ const isProcRunning = async (opts) => {
 };
 
 const watermarkUri = ({ uri, type } = {}) => {
-  return uriParmam({ uri, param: 'cml', value: type });
+  return uriParam({ uri, param: 'cml', value: type });
 };
 
 const preventcacheUri = ({ uri } = {}) => {
-  return uriParmam({ uri, param: 'cache-bypass', value: uuid.v4() });
+  return uriParam({ uri, param: 'cache-bypass', value: uuid.v4() });
 };
 
-const uriParmam = (opts = {}) => {
+const uriParam = (opts = {}) => {
   const { uri, param, value } = opts;
   const url = new URL(uri);
   url.searchParams.set(param, value);

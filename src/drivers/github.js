@@ -18,14 +18,15 @@ const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
 
 const {
-  GITHUB_REPOSITORY,
-  GITHUB_SHA,
-  GITHUB_REF,
-  GITHUB_HEAD_REF,
-  GITHUB_EVENT_NAME,
-  GITHUB_RUN_ID,
-  GITHUB_TOKEN,
   CI,
+  GITHUB_EVENT_NAME,
+  GITHUB_HEAD_REF,
+  GITHUB_REF,
+  GITHUB_REPOSITORY,
+  GITHUB_RUN_ID,
+  GITHUB_SHA,
+  GITHUB_TOKEN,
+  GITHUB_WORKFLOW,
   TPI_TASK
 } = process.env;
 
@@ -700,6 +701,14 @@ class Github {
     }"`;
 
     return command;
+  }
+
+  get workflowId() {
+    return GITHUB_WORKFLOW;
+  }
+
+  get runId() {
+    return GITHUB_RUN_ID;
   }
 
   get sha() {

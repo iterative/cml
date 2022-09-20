@@ -23,6 +23,7 @@ const {
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
+const WATERMARK_IMAGE = 'https://cml.dev/watermark.png';
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
@@ -159,19 +160,33 @@ class CML {
     throw new Error(`driver ${driver} unknown!`);
   }
 
+  watermark(driver, label = '') {
+    if (label === '') {
+      return `![](${WATERMARK_IMAGE} "CML watermark")`;
+    }
+    // Replace {workflow} and {run} placeholders in label with actual values.
+    const workflow = driver.workflowId;
+    const run = driver.runId;
+    label = label.replace('{workflow}', workflow);
+    label = label.replace('{run}', run);
+    label = `CML watermark ${label}`;
+    return `![](${WATERMARK_IMAGE} "${label}")`;
+  }
+
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {
       commitSha: inCommitSha = triggerSha,
-      rmWatermark,
-      update,
+      markdownFile,
       pr,
       publish,
       publishUrl,
-      markdownFile,
       report: testReport,
+      rmWatermark,
+      triggerFile,
+      update,
       watch,
-      triggerFile
+      watermarkScope
     } = opts;
 
     const commitSha =
@@ -180,9 +195,8 @@ class CML {
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
 
-    const watermark = rmWatermark
-      ? ''
-      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
+    const drv = this.getDriver();
+    const watermark = rmWatermark ? '' : this.watermark(drv, watermarkScope);
 
     let userReport = testReport;
     try {
@@ -194,7 +208,6 @@ class CML {
     }
 
     let report = `${userReport}\n\n${watermark}`;
-    const drv = this.getDriver();
 
     const publishLocalFiles = async (tree) => {
       const nodes = [];
@@ -202,7 +215,7 @@ class CML {
       visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
 
       const visitor = async (node) => {
-        if (node.url && node.alt !== 'CML watermark') {
+        if (node.url && node.title.startsWith('CML watermark')) {
           const absolutePath = path.resolve(
             path.dirname(markdownFile),
             node.url
@@ -263,7 +276,7 @@ class CML {
     let comment;
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
-        return body.includes('watermark.svg');
+        return body.includes(watermark);
       });
     };
 

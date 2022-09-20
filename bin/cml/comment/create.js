@@ -55,5 +55,10 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     description:
       'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
+  },
+  watermarkLabel: {
+    type: 'string',
+    description: 'Label to add to watermarks for more selective updates',
+    default: ''
   }
 });
