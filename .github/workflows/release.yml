@@ -8,7 +8,8 @@ on:
         description: Bump version number
         options: [major, minor, patch]
         default: patch
-  pull_request: { types: [closed] }
+  pull_request:
+    types: [closed]
 jobs:
   bump:
     if: github.event_name == 'workflow_dispatch'
