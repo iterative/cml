@@ -1,6 +1,4 @@
-on:
-  workflow_call:
-    inputs:
+on: workflow_call
 jobs:
   images:
     runs-on: ubuntu-latest
