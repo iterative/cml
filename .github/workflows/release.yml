@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: npm ci && npm install --global
       - run: |
           git config --global user.name Olivaw[bot]
           git config --global user.email 64868532+iterative-olivaw@users.noreply.github.com
