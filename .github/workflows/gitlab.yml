@@ -6,7 +6,7 @@ jobs:
     services:
       gitlab:
         image: docker://gitlab/gitlab-ce
-        ports: [8000:8000]
+        ports: ['8000:8000']
         env:
           GITLAB_OMNIBUS_CONFIG: |
             external_url 'http://localhost:8000/gitlab'
