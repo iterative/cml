@@ -466,15 +466,13 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     conflicts: ['single', 'reuseIdle'],
     description:
-      "Don't launch a new runner if an existing one has the same name or overlapping labels",
-    telemetry: 'name'
+      "Don't launch a new runner if an existing one has the same name or overlapping labels"
   },
   reuseIdle: {
     type: 'boolean',
     conflicts: ['reuse', 'single'],
     description:
-      "Creates a new runner only if the matching labels don't exist or are already busy",
-    telemetry: 'name'
+      "Creates a new runner only if the matching labels don't exist or are already busy"
   },
   workdir: {
     type: 'string',
@@ -491,7 +489,7 @@ exports.options = kebabcaseKeys({
     type: 'string',
     choices: ['aws', 'azure', 'gcp', 'kubernetes'],
     description: 'Cloud to deploy the runner',
-    telemetry: 'name+value'
+    telemetry: true
   },
   cloudRegion: {
     type: 'string',
@@ -544,14 +542,12 @@ exports.options = kebabcaseKeys({
     type: 'number',
     default: -1,
     description:
-      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price',
-    telemetry: 'name'
+      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
   },
   cloudStartupScript: {
     type: 'string',
     description:
-      'Run the provided Base64-encoded Linux shell script during the instance initialization',
-    telemetry: 'name'
+      'Run the provided Base64-encoded Linux shell script during the instance initialization'
   },
   cloudAwsSecurityGroup: {
     type: 'string',

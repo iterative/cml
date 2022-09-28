@@ -33,8 +33,7 @@ exports.options = kebabcaseKeys({
   publishUrl: {
     type: 'string',
     default: 'https://asset.cml.dev',
-    description: 'Self-hosted image server URL',
-    telemetry: 'name'
+    description: 'Self-hosted image server URL'
   },
   watch: {
     type: 'boolean',
@@ -48,8 +47,7 @@ exports.options = kebabcaseKeys({
   native: {
     type: 'boolean',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub",
-    telemetry: 'name'
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
   },
   update: {
     type: 'boolean',
@@ -60,7 +58,6 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
-    telemetry: 'name'
+      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
   }
 });
