@@ -48,15 +48,17 @@ describe('CML e2e', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --commit-sha, --head-sha  Commit SHA linked to this comment
+        --commit-sha, --head-sha, --head-sha  Commit SHA linked to this comment
                                                               [string] [default: HEAD]
-        --conclusion              Conclusion status of the check
+        --conclusion                          Conclusion status of the check
            [string] [choices: \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
+                 \\"timed_out\\", \\"success\\", \\"failure\\", \\"neutral\\", \\"cancelled\\", \\"skipped\\",
                                                      \\"timed_out\\"] [default: \\"success\\"]
-        --status                  Status of the check
-                    [string] [choices: \\"queued\\", \\"in_progress\\", \\"completed\\"] [default:
-                                                                          \\"completed\\"]
-        --title                   Title of the check  [string] [default: \\"CML Report\\"]"
+        --status                              Status of the check
+                    [string] [choices: \\"queued\\", \\"in_progress\\", \\"completed\\", \\"queued\\",
+                                    \\"in_progress\\", \\"completed\\"] [default: \\"completed\\"]
+        --title                               Title of the check
+                                                      [string] [default: \\"CML Report\\"]"
     `);
   });
 });
