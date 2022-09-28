@@ -1,11 +1,10 @@
 name: Test & Deploy
 on:
-  schedule:
-    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
-  release:
-    types: [created]
   pull_request_target:
   workflow_dispatch:
+  workflow_call:
+  schedule:
+    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
 jobs:
   authorize:
     environment:
@@ -99,7 +98,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run:
-          npm ${{ github.event_name == 'release' && 'publish' || 'publish
+          npm ${{ github.event_name == 'workflow_call' && 'publish' || 'publish
           --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -121,7 +120,7 @@ jobs:
           cp build/cml-linux{-x64,}
           cp build/cml-macos{-x64,}
       - uses: softprops/action-gh-release@v1
-        if: github.event_name == 'release'
+        if: github.event_name == 'workflow_call'
         with:
           files: |
             build/cml-alpine-arm64
