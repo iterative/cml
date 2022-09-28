@@ -22,7 +22,7 @@ describe('CML e2e', () => {
 
       Options:
             --md            Output in markdown format [title || name](url)   [boolean]
-        -t, -t, --title     Markdown title [title](url) or ![](url title)     [string]
+        -t, --title         Markdown title [title](url) or ![](url title)     [string]
             --native        Uses driver's native capabilities to upload assets instead
                             of CML's storage; not available on GitHub        [boolean]
             --rm-watermark  Avoid CML watermark.                             [boolean]

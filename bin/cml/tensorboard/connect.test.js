@@ -70,18 +70,17 @@ describe('CML e2e', () => {
             --help    Show help                                              [boolean]
 
       Options:
-        -c, -c, --credentials  TensorBoard credentials as JSON, usually found at
-                               ~/.config/tensorboard/credentials/uploader-creds.json
+        -c, --credentials   TensorBoard credentials as JSON, usually found at
+                            ~/.config/tensorboard/credentials/uploader-creds.json
                                                                    [string] [required]
-            --logdir           Directory containing the logs to process       [string]
-            --name             Tensorboard experiment title; max 100 characters
+            --logdir        Directory containing the logs to process          [string]
+            --name          Tensorboard experiment title; max 100 characters  [string]
+            --description   Tensorboard experiment description in Markdown format; max
+                            600 characters                                    [string]
+            --md            Output as markdown [title || name](url)          [boolean]
+        -t, --title         Markdown title, if not specified, param name will be used
                                                                               [string]
-            --description      Tensorboard experiment description in Markdown format;
-                               max 600 characters                             [string]
-            --md               Output as markdown [title || name](url)       [boolean]
-        -t, -t, --title        Markdown title, if not specified, param name will be
-                               used                                           [string]
-            --rm-watermark     Avoid CML watermark                           [boolean]"
+            --rm-watermark  Avoid CML watermark                              [boolean]"
     `);
   });
 

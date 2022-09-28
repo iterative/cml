@@ -14,7 +14,6 @@ exports.builder = (yargs) =>
   yargs
     .env('CML_CHECK')
     .option('options', { default: exports.options, hidden: true })
-    .options(exports.options)
     .options(exports.options);
 
 exports.options = kebabcaseKeys({
