@@ -173,9 +173,8 @@ const jitsuEventPayload = async ({
       extra: {
         ...extraRest,
         ci: guessCI(),
-        container: isDocker(),
-        container_image:
-          process.env._CML_CONTAINER_IMAGE === 'true' ? 'cml' : undefined
+        container:
+          process.env._CML_CONTAINER_IMAGE === 'true' ? 'cml' : isDocker()
       }
     };
   } catch (err) {
