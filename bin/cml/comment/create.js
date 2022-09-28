@@ -34,7 +34,7 @@ exports.options = kebabcaseKeys({
     type: 'string',
     default: 'https://asset.cml.dev',
     description: 'Self-hosted image server URL',
-    telemetry: 'presence'
+    telemetry: 'name'
   },
   watch: {
     type: 'boolean',
@@ -49,7 +49,7 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     description:
       "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub",
-    telemetry: 'presence'
+    telemetry: 'name'
   },
   update: {
     type: 'boolean',
@@ -61,6 +61,6 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     description:
       'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
-    telemetry: 'presence'
+    telemetry: 'name'
   }
 });

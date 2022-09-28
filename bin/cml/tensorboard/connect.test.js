@@ -34,7 +34,7 @@ describe('tbLink', () => {
       error = err;
     }
 
-    expect(error.message).toBe(`Tensorboard took too long. ${message}`);
+    expect(error.message).toBe(`Tensorboard took too long`);
   });
 
   test('valid url is returned', async () => {

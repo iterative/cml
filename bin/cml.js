@@ -82,10 +82,10 @@ const setupTelemetry = async (opts, { parsed: { defaulted } }) => {
   for (const [name, option] of Object.entries(opts.options)) {
     if (opts[name] && !defaulted[name]) {
       switch (option.telemetry) {
-        case 'presence':
+        case 'name':
           options[name] = null;
           break;
-        case 'full':
+        case 'name+value':
           options[name] = opts[name];
           break;
       }
