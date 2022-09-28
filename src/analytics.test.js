@@ -26,7 +26,7 @@ describe('analytics tests', () => {
     expect(pl.backend).toBe(cloud);
     expect(pl.error).toBe(error);
     expect(Object.keys(pl.extra).sort()).toEqual(
-      ['ci'].concat(Object.keys(more)).sort()
+      ['ci', 'container'].concat(Object.keys(more)).sort()
     );
 
     if (isCI()) {
