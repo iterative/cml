@@ -79,9 +79,18 @@ const setupTelemetry = async (opts, { parsed: { defaulted } }) => {
   const { cml, _: command } = opts;
 
   const options = {};
-  for (const [name, option] of Object.entries(opts.options))
-    if (opts[name] && !defaulted[name])
-      options[name] = option.telemetry ? opts[name] : null;
+  for (const [name, option] of Object.entries(opts.options)) {
+    if (opts[name] && !defaulted[name]) {
+      switch (option.telemetryData) {
+        case 'name':
+          options[name] = null;
+          break;
+        case 'full':
+          options[name] = opts[name];
+          break;
+      }
+    }
+  }
 
   opts.telemetryEvent = await jitsuEventPayload({
     action: command.join(':'),
