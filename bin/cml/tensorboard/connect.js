@@ -96,7 +96,11 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = (yargs) =>
-  yargs.env('CML_TENSORBOARD').options(exports.options);
+  yargs
+    .env('CML_TENSORBOARD')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options)
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   credentials: {
@@ -137,6 +141,7 @@ exports.options = kebabcaseKeys({
   },
   rmWatermark: {
     type: 'boolean',
-    description: 'Avoid CML watermark'
+    description: 'Avoid CML watermark',
+    telemetry: 'presence'
   }
 });

@@ -8,7 +8,12 @@ exports.handler = async (opts) => {
   console.log(await cml.commentCreate(opts));
 };
 
-exports.builder = (yargs) => yargs.env('CML_COMMENT').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_COMMENT')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options)
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   pr: {
@@ -29,7 +34,8 @@ exports.options = kebabcaseKeys({
   publishUrl: {
     type: 'string',
     default: 'https://asset.cml.dev',
-    description: 'Self-hosted image server URL'
+    description: 'Self-hosted image server URL',
+    telemetry: 'presence'
   },
   watch: {
     type: 'boolean',
@@ -43,7 +49,8 @@ exports.options = kebabcaseKeys({
   native: {
     type: 'boolean',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub",
+    telemetry: 'presence'
   },
   update: {
     type: 'boolean',
@@ -54,6 +61,7 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
+      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
+    telemetry: 'presence'
   }
 });
