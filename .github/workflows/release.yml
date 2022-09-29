@@ -35,3 +35,7 @@ jobs:
           ${{ github.head_ref }})
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+  package:
+    needs: release
+    secrets: inherit
+    uses: ./.github/workflows/test-deploy.yml
