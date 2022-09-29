@@ -157,7 +157,7 @@ const handleError = (message, error) => {
       const event = { ...telemetryEvent, error: err.message };
       await send({ event });
     }
-    winston.error({ err });
+    winston.error(err);
     process.exit(1);
   }
 })();
