@@ -186,7 +186,7 @@ class CML {
       triggerFile,
       update,
       watch,
-      watermarkScope
+      commentLabel
     } = opts;
 
     const commitSha =
@@ -196,7 +196,7 @@ class CML {
       throw new Error('watermarks are mandatory for updateable comments');
 
     const drv = this.getDriver();
-    const watermark = rmWatermark ? '' : this.watermark(drv, watermarkScope);
+    const watermark = rmWatermark ? '' : this.watermark(drv, commentLabel);
 
     let userReport = testReport;
     try {
@@ -214,8 +214,11 @@ class CML {
 
       visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
 
+      const isWatermark = (node) => {
+        return node.title && node.title.startsWith('CML watermark');
+      };
       const visitor = async (node) => {
-        if (node.url && node.title.startsWith('CML watermark')) {
+        if (node.url && !isWatermark(node)) {
           const absolutePath = path.resolve(
             path.dirname(markdownFile),
             node.url

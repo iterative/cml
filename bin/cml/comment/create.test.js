@@ -41,8 +41,8 @@ describe('Comment integration tests', () => {
                                                                              [boolean]
         --rm-watermark            Avoid watermark; CML needs a watermark to be able to
                                   distinguish CML comments from others       [boolean]
-        --watermark-label         Label to add to watermarks for more selective
-                                  updates                       [string] [default: \\"\\"]"
+        --comment-label           Label to add to watermarks for more selective
+                                  comment updates               [string] [default: \\"\\"]"
     `);
   });
 
