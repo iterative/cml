@@ -25,6 +25,28 @@ jobs:
           gh pr merge --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+      - timeout-minutes: 60
+        run: |
+          function check() {
+            printf 'binary: %s == ' "$1" >&2
+            curl --location https://github.com/iterative/cml/releases/latest/download/cml-linux-x64 --output cml && chmod a+x cml && ./cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+            printf 'image: %s == ' "$1" >&2
+            docker run --interactive ghcr.io/iterative/cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+            printf 'package: %s == ' "$1" >&2
+            npx @dvcorg/cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+          }
+          while ! check "$(npm version --json | jq --raw-output '.["@dvcorg/cml"]')"; do
+            timeout --preserve-status 64 sleep $((2**++exponent)) # exponential backoff
+          done
+      - if: failure()
+        run: |
+          echo "Release of <https://github.com/iterative/cml|cml> failed!" | jq --raw-input {text:.} |
+          curl --header content-type:application/json --data @- "$SLACK_WEBHOOK"
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   release:
     if: github.event.pull_request.merged && startsWith(github.head_ref, 'bump/')
     runs-on: ubuntu-latest
