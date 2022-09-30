@@ -1,4 +1,9 @@
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      release:
+        required: true
+        type: boolean
 jobs:
   images:
     runs-on: ubuntu-latest
@@ -89,7 +94,7 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push:
-            ${{ github.event_name == 'push' || github.event_name == 'schedule'
+            ${{ inputs.release || github.event_name == 'push' || github.event_name == 'schedule'
             || github.event_name == 'workflow_dispatch' }}
           context: ./
           file: ./Dockerfile

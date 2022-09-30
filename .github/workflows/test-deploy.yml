@@ -3,6 +3,10 @@ on:
   pull_request_target:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      release:
+        required: true
+        type: boolean
   schedule:
     - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
 jobs:
@@ -98,8 +102,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run:
-          npm ${{ github.event_name == 'workflow_call' && 'publish' || 'publish
-          --dry-run' }}
+          npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: install ldid
@@ -120,7 +123,7 @@ jobs:
           cp build/cml-linux{-x64,}
           cp build/cml-macos{-x64,}
       - uses: softprops/action-gh-release@v1
-        if: github.event_name == 'workflow_call'
+        if: inputs.release
         with:
           files: |
             build/cml-alpine-arm64
@@ -141,3 +144,5 @@ jobs:
     needs: packages
     secrets: inherit
     uses: ./.github/workflows/images.yml
+    with:
+      release: ${{ inputs.release }}
