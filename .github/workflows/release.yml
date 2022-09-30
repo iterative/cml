@@ -14,6 +14,7 @@ jobs:
   bump:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
       - run: |
@@ -25,6 +26,28 @@ jobs:
           gh pr merge --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+      - run: |
+          function verify() {
+            printf 'binary: %s == ' "$1" >&2
+            curl --location https://github.com/iterative/cml/releases/latest/download/cml-linux-x64 --output cml && chmod a+x cml && ./cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+            printf 'image: %s == ' "$1" >&2
+            docker run --interactive ghcr.io/iterative/cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+            printf 'package: %s == ' "$1" >&2
+            npx @dvcorg/cml --version |
+              tee /dev/stderr | fgrep -- "$1" || return 1
+          }
+          while ! verify $(npm version --json | jq --raw-output '.["@dvcorg/cml"]'); do
+            timeout --preserve-status 64 sleep $((2**++exponent)) # exponential backoff
+          done
+      - if: failure()
+        run: >
+          curl "$SLACK_WEBHOOK"
+          --header 'Content-type: application/json'
+          --data '{"text": "Release of <https://github.com/iterative/cml|cml> failed!"}'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   release:
     if: github.event.pull_request.merged && startsWith(github.head_ref, 'bump/')
     runs-on: ubuntu-latest
@@ -39,3 +62,7 @@ jobs:
     needs: release
     secrets: inherit
     uses: ./.github/workflows/test-deploy.yml
+  verify:
+    needs: bump
+    runs-on: ubuntu-latest
+    steps:
