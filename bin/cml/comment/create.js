@@ -16,6 +16,12 @@ exports.options = kebabcaseKeys({
     description:
       'Post to an existing PR/MR associated with the specified commit'
   },
+  issue: {
+    type: 'string',
+    description: 'Issue id to post comment to.',
+    default: '',
+    conflicts: ['pr']
+  },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
