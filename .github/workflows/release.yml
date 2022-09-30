@@ -62,7 +62,3 @@ jobs:
     needs: release
     secrets: inherit
     uses: ./.github/workflows/test-deploy.yml
-  verify:
-    needs: bump
-    runs-on: ubuntu-latest
-    steps:
