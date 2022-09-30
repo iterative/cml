@@ -163,6 +163,7 @@ class CML {
     const triggerSha = await this.triggerSha();
     const {
       commitSha: inCommitSha = triggerSha,
+      // issue: issueId,
       rmWatermark,
       update,
       pr,

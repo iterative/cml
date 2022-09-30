@@ -329,6 +329,40 @@ class Gitlab {
     }
   }
 
+  async issueCommentCreate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { issueId, report } = opts;
+
+    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'POST',
+      body
+    });
+
+    return `${this.repo}/-/issues/${issueId}#note_${id}`;
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { issueId, id: commentId, report } = opts;
+
+    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes/${commentId}`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: 'PUT',
+      body
+    });
+
+    return `${this.repo}/-/issues/${issueId}#note_${id}`;
+  }
+
   async prCommentCreate(opts = {}) {
     const projectPath = await this.projectPath();
     const { report, prNumber } = opts;

@@ -29,6 +29,33 @@ class BitbucketCloud {
     }
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { projectPath } = this;
+    const { issueId, report } = opts;
+    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/`;
+    return (
+      await this.request({
+        endpoint,
+        method: 'POST',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    const { projectPath } = this;
+    const { issueId, id, report } = opts;
+
+    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/${id}`;
+    return (
+      await this.request({
+        endpoint,
+        method: 'PUT',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
   async commentCreate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report } = opts;

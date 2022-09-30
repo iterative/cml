@@ -540,6 +540,40 @@ class Github {
     }
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { issueId, report } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.createComment({
+      owner,
+      repo,
+      report,
+      issue_number: issueId
+    });
+
+    return htmlUrl;
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    const { id, report } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.updateComment({
+      owner,
+      repo,
+      report,
+      comment_id: id
+    });
+
+    return htmlUrl;
+  }
+
   async prCommentCreate(opts = {}) {
     const { report: body, prNumber } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
