@@ -186,7 +186,7 @@ const send = async ({
   try {
     if (ITERATIVE_DO_NOT_TRACK) return;
     if (!event.user_id || event.user_id === ID_DO_NOT_TRACK) return;
-    
+
     // Exclude continuous integration tests and internal projects from analytics
     if (
       GITHUB_REPOSITORY.startsWith('iterative/') ||
@@ -195,7 +195,7 @@ const send = async ({
       ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE)
     )
       return;
-    
+
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), 5 * 1000);
     await fetch(endpoint, {
