@@ -10,6 +10,8 @@ on:
     types: [published]
   pull_request:
     branches: [master]
+  push:
+    tags: ['v*']
 jobs:
   pr:
     if: ${{ github.event_name == 'pull_request' }}
@@ -27,8 +29,7 @@ jobs:
             --data '{"event_type":"pr", "client_payload": {"branch":"${{ github.ref_name }}"}}'
   trigger:
     if:
-      ${{ github.event_name == 'release' || github.event_name ==
-      'workflow_dispatch' }}
+      ${{ github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,4 +41,4 @@ jobs:
             --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
             --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
-            --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name || github.event.inputs.tag }}"}}'
+            --data '{"event_type":"new-cml", "client_payload": {"tag":"${{ github.event.release.tag_name || github.event.inputs.tag || github.ref_name }}"}}'
