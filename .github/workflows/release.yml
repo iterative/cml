@@ -38,7 +38,7 @@ jobs:
             npx @dvcorg/cml --version |
               tee /dev/stderr | fgrep -- "$1" || return 1
           }
-          while ! check $(npm version --json | jq --raw-output '.["@dvcorg/cml"]'); do
+          while ! check "$(npm version --json | jq --raw-output '.["@dvcorg/cml"]')"; do
             timeout --preserve-status 64 sleep $((2**++exponent)) # exponential backoff
           done
       - if: failure()
