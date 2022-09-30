@@ -60,6 +60,7 @@ exports.options = kebabcaseKeys({
     type: 'string',
     description:
       'Label to add to watermarks for more selective comment updates',
-    default: ''
+    default: '',
+    conflicts: ['rmWatermark']
   }
 });
