@@ -192,7 +192,7 @@ const send = async ({
       GITHUB_REPOSITORY.startsWith('iterative/') ||
       ['iterative', 'iterative-test'].includes(GITHUB_REPOSITORY_OWNER) ||
       ['iterative.ai', 'iterative-test'].includes(CI_PROJECT_ROOT_NAMESPACE) ||
-      ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE) ||
+      ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE)
     )
       return;
     
