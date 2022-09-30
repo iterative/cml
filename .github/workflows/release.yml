@@ -14,7 +14,6 @@ jobs:
   bump:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
       - run: |
@@ -26,7 +25,8 @@ jobs:
           gh pr merge --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
-      - run: |
+      - timeout-minutes: 60
+        run: |
           function verify() {
             printf 'binary: %s == ' "$1" >&2
             curl --location https://github.com/iterative/cml/releases/latest/download/cml-linux-x64 --output cml && chmod a+x cml && ./cml --version |
