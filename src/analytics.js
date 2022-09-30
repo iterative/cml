@@ -21,6 +21,7 @@ const {
   GITHUB_SERVER_URL,
   GITHUB_REPOSITORY_OWNER,
   GITHUB_ACTOR,
+  GITHUB_REPOSITORY,
   CI_SERVER_URL,
   CI_PROJECT_ROOT_NAMESPACE,
   GITLAB_USER_NAME,
@@ -188,9 +189,10 @@ const send = async ({
     
     // Exclude continuous integration tests and internal projects from analytics
     if (
+      GITHUB_REPOSITORY.startsWith('iterative/') ||
       ['iterative', 'iterative-test'].includes(GITHUB_REPOSITORY_OWNER) ||
       ['iterative.ai', 'iterative-test'].includes(CI_PROJECT_ROOT_NAMESPACE) ||
-      ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE)
+      ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE) ||
     )
       return;
     
