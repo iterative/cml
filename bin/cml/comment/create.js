@@ -59,7 +59,7 @@ exports.options = kebabcaseKeys({
   commentLabel: {
     type: 'string',
     description:
-      'Label to add to watermarks for more selective comment updates',
+      'Comment identifier, where {workflow} and {run} are auto-replaced',
     default: '',
     conflicts: ['rmWatermark']
   }
