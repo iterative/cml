@@ -25,7 +25,7 @@ jobs:
           gh pr merge --auto --squash
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
-      - timeout-minutes: 60
+      - timeout-minutes: 1
         run: |
           function verify() {
             printf 'binary: %s == ' "$1" >&2
