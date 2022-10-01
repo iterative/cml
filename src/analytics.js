@@ -73,7 +73,7 @@ const groupId = async () => {
   } else if (ci === 'gitlab') {
     rawId = `${CI_SERVER_URL}/${CI_PROJECT_ROOT_NAMESPACE}`;
   } else if (ci === 'bitbucket') {
-    rawId = BITBUCKET_WORKSPACE;
+    rawId = `https://bitbucket.com/${BITBUCKET_WORKSPACE}`;
   }
 
   return await deterministic(rawId);
@@ -187,12 +187,19 @@ const send = async ({
     if (ITERATIVE_DO_NOT_TRACK) return;
     if (!event.user_id || event.user_id === ID_DO_NOT_TRACK) return;
 
+    // Exclude runs from GitHub Codespaces at Iterative
+    if (GITHUB_REPOSITORY.startsWith('iterative/')) return;
+
     // Exclude continuous integration tests and internal projects from analytics
     if (
-      GITHUB_REPOSITORY.startsWith('iterative/') ||
-      ['iterative', 'iterative-test'].includes(GITHUB_REPOSITORY_OWNER) ||
-      ['iterative.ai', 'iterative-test'].includes(CI_PROJECT_ROOT_NAMESPACE) ||
-      ['iterative-ai', 'iterative-test'].includes(BITBUCKET_WORKSPACE)
+      [
+        'dc16cd76-71b7-5afa-bf11-e85e02ee1554', // deterministic("https://github.com/iterative")
+        'b0e229bf-2598-54b7-a3e0-81869cdad579', // deterministic("https://github.com/iterative-test")
+        'd5aaeca4-fe6a-5c72-8aa7-6dcd65974973', // deterministic("https://gitlab.com/iterative.ai")
+        'b6df227b-5b3d-5190-a8fa-d272b617ee6c', // deterministic("https://gitlab.com/iterative-test")
+        '2c6415f0-cb5a-5e52-8c81-c5af4f11715d', // deterministic("https://bitbucket.com/iterative-ai")
+        'c0b86b90-d63c-5fb0-b84d-718d8e15f8d6' // deterministic("https://bitbucket.com/iterative-test")
+      ].includes(event.group_id)
     )
       return;
 
