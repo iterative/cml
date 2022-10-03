@@ -363,6 +363,22 @@ class Gitlab {
     return `${this.repo}/-/issues/${issueId}#note_${id}`;
   }
 
+  async issueComments(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { issueId } = opts;
+
+    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes`;
+
+    const comments = await this.request({
+      endpoint,
+      method: 'GET'
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
+  }
+
   async prCommentCreate(opts = {}) {
     const projectPath = await this.projectPath();
     const { report, prNumber } = opts;

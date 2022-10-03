@@ -56,6 +56,18 @@ class BitbucketCloud {
     ).links.html.href;
   }
 
+  async issueComments(opts = {}) {
+    const { projectPath } = this;
+    const { issueId } = opts;
+
+    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/`;
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
   async commentCreate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report } = opts;

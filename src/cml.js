@@ -163,7 +163,7 @@ class CML {
     const triggerSha = await this.triggerSha();
     const {
       commitSha: inCommitSha = triggerSha,
-      // issue: issueId,
+      issue: issueId,
       rmWatermark,
       update,
       pr,
@@ -267,6 +267,23 @@ class CML {
         return body.includes('watermark.svg');
       });
     };
+    // Create or update an issue comment.
+    if (issueId) {
+      if (update) {
+        comment = updatableComment(await drv.issueComments({ issueId }));
+
+        if (comment)
+          return await drv.issueCommentUpdate({
+            report,
+            id: comment.id,
+            issueId
+          });
+      }
+      return await drv.issueCommentCreate({
+        report,
+        issueId
+      });
+    }
 
     const isBB = this.driver === BB;
     if (pr || isBB) {
