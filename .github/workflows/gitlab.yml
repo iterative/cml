@@ -62,6 +62,7 @@ jobs:
       - name: Run cml-send-comment
         run: |
           node bin/cml.js send-comment \
+          --pr=false \
           --token=${{ github.token }} \
           --repo=http://localhost:8000/gitlab/root/test \
           --commit-sha=${{ steps.commit.outputs.hash }} \

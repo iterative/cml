@@ -14,7 +14,8 @@ exports.options = kebabcaseKeys({
   pr: {
     type: 'boolean',
     description:
-      'Post to an existing PR/MR associated with the specified commit'
+      'Post to an existing PR/MR associated with the specified commit',
+    default: true
   },
   commitSha: {
     type: 'string',
