@@ -186,7 +186,7 @@ class CML {
       triggerFile,
       update,
       watch,
-      label: commentLabel
+      id: commentLabel
     } = opts;
 
     const commitSha =
