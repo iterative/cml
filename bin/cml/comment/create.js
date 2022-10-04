@@ -14,12 +14,13 @@ exports.options = kebabcaseKeys({
   pr: {
     type: 'boolean',
     description:
-      'Post to an existing PR/MR associated with the specified commit'
+      'Post to an existing PR/MR associated with the specified commit',
+    conflicts: ['issue']
   },
   issue: {
     type: 'number',
-    description: 'Issue id to post comment to.',
-    conflicts: ['pr']
+    description: 'Post to the given issue number',
+    conflicts: ['pr', 'commitSha']
   },
   commitSha: {
     type: 'string',
