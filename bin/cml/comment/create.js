@@ -20,7 +20,7 @@ exports.options = kebabcaseKeys({
   issue: {
     type: 'number',
     description: 'Post to the given issue number',
-    conflicts: ['pr', 'commitSha']
+    conflicts: ['pr']
   },
   commitSha: {
     type: 'string',
