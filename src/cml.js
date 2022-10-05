@@ -186,7 +186,7 @@ class CML {
       triggerFile,
       update,
       watch,
-      id: commentLabel
+      commentTag
     } = opts;
 
     const commitSha =
@@ -196,7 +196,7 @@ class CML {
       throw new Error('watermarks are mandatory for updateable comments');
 
     const drv = this.getDriver();
-    const watermark = rmWatermark ? '' : this.watermark(drv, commentLabel);
+    const watermark = rmWatermark ? '' : this.watermark(drv, commentTag);
 
     let userReport = testReport;
     try {
