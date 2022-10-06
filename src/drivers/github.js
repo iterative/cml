@@ -550,7 +550,7 @@ class Github {
     } = await issues.createComment({
       owner,
       repo,
-      report,
+      body: report,
       issue_number: issueId
     });
 
@@ -567,7 +567,7 @@ class Github {
     } = await issues.updateComment({
       owner,
       repo,
-      report,
+      body: report,
       comment_id: id
     });
 
