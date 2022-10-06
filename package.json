@@ -44,9 +44,9 @@
   "scripts": {
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
-    "test": "yarn test:unit && yarn test:e2e",
-    "test:unit": "jest --forceExit",
-    "test:e2e": "jest -c jest.config.e2e.js --forceExit",
+    "test": "jest --forceExit",
+    "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
+    "test:e2e": "jest --testNamePattern='e2e.test.js$' --forceExit",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
@@ -125,10 +125,7 @@
     "globalSetup": "./tests/setup.js",
     "globalTeardown": "./tests/teardown.js",
     "testTimeout": 600000,
-    "collectCoverage": true,
-    "testPathIgnorePatterns": [
-      "e2e.test.js$"
-    ]
+    "collectCoverage": true
   },
   "pkg": {
     "bin": "bin/cml.js",
