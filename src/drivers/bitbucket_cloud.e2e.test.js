@@ -3,7 +3,7 @@ const {
   TEST_BBCLOUD_TOKEN: TOKEN,
   TEST_BBCLOUD_REPO: REPO,
   TEST_BBCLOUD_SHA: SHA,
-  TEST_BBCLOUD_ISSUE: ISSUE
+  TEST_BBCLOUD_ISSUE: ISSUE = 1
 } = process.env;
 
 describe('Non Enviromental tests', () => {
