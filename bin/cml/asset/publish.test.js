@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { exec } = require('../../../src/utils');
 
 describe('CML cli test', () => {
