@@ -2,7 +2,8 @@ const BitbucketCloud = require('./bitbucket_cloud');
 const {
   TEST_BBCLOUD_TOKEN: TOKEN,
   TEST_BBCLOUD_REPO: REPO,
-  TEST_BBCLOUD_SHA: SHA
+  TEST_BBCLOUD_SHA: SHA,
+  TEST_BBCLOUD_ISSUE: ISSUE
 } = process.env;
 
 describe('Non Enviromental tests', () => {
@@ -13,12 +14,20 @@ describe('Non Enviromental tests', () => {
     expect(client.token).toBe(TOKEN);
   });
 
+  test('Issue comment', async () => {
+    const report = '## Test comment';
+    const issueId = ISSUE;
+    const url = await client.issueCommentCreate({ report, issueId });
+
+    expect(url.startsWith('https://')).toBe(true);
+  });
+
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
     const url = await client.commentCreate({ report, commitSha });
 
-    expect(url.startsWith('https://')).toBe(true);
+    expect(url.startsWith(REPO)).toBe(true);
   });
 
   test('Check', async () => {

@@ -3,7 +3,8 @@ const GithubClient = require('./github');
 const {
   TEST_GITHUB_TOKEN: TOKEN,
   TEST_GITHUB_REPO: REPO,
-  TEST_GITHUB_SHA: SHA
+  TEST_GITHUB_SHA: SHA,
+  TEST_GITHUB_ISSUE: ISSUE
 } = process.env;
 
 describe('Non Enviromental tests', () => {
@@ -19,12 +20,20 @@ describe('Non Enviromental tests', () => {
     expect(repo).toBe(parts[parts.length - 1]);
   });
 
+  test('Issue comment', async () => {
+    const report = '## Test comment';
+    const issueId = ISSUE;
+    const url = await client.issueCommentCreate({ issueId, report });
+
+    expect(url.startsWith(REPO)).toBe(true);
+  });
+
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
     const url = await client.commentCreate({ report, commitSha });
 
-    expect(url.startsWith('https://')).toBe(true);
+    expect(url.startsWith(REPO)).toBe(true);
   });
 
   test('Publish', async () => {
