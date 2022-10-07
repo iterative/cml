@@ -339,7 +339,6 @@ const run = async (opts) => {
   });
 
   const {
-    driver,
     workdir,
     cloud,
     labels,
