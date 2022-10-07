@@ -16,6 +16,15 @@ exports.options = kebabcaseKeys({
     description:
       'Post to an existing PR/MR associated with the specified commit'
   },
+  watch: {
+    type: 'boolean',
+    description: 'Watch for changes and automatically update the comment'
+  },
+  triggerFile: {
+    type: 'string',
+    description: 'File used to trigger the watcher',
+    hidden: true
+  },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
@@ -31,17 +40,9 @@ exports.options = kebabcaseKeys({
     default: 'https://asset.cml.dev',
     description: 'Self-hosted image server URL'
   },
-  watch: {
+  publishNative: {
     type: 'boolean',
-    description: 'Watch for changes and automatically update the comment'
-  },
-  triggerFile: {
-    type: 'string',
-    description: 'File used to trigger the watcher',
-    hidden: true
-  },
-  native: {
-    type: 'boolean',
+    alias: 'native',
     description:
       "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
   },
