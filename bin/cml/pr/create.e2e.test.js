@@ -5,7 +5,7 @@ describe('CML e2e', () => {
     const output = await exec(`echo none | node ./bin/cml.js pr --help`);
 
     expect(output).toMatchInlineSnapshot(`
-      "cml.js pr <glob path...>
+      "cml.js pr
 
       Manage pull requests
 
