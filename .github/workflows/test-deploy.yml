@@ -145,4 +145,4 @@ jobs:
     secrets: inherit
     uses: ./.github/workflows/images.yml
     with:
-      release: ${{ inputs.release }}
+      release: ${{ inputs.release || false }}
