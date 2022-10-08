@@ -4,7 +4,7 @@ const { exec } = require('../../../src/utils');
 describe('CML e2e', () => {
   test('cml publish assets/logo.png --md', async () => {
     const output = await exec(`node ./bin/cml.js publish assets/logo.png --md`);
-
+    console.log(output);
     expect(output.startsWith('![](')).toBe(true);
   });
 
