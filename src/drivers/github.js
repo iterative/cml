@@ -70,7 +70,6 @@ const octokit = (token, repo) => {
   if (hostname !== 'github.com') {
     // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
     // as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
-
     octokitOptions.baseUrl = `https://${host}/api/v3`;
   }
 
