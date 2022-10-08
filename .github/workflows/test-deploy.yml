@@ -107,7 +107,7 @@ jobs:
       - run: |
           echo "$CONDA/bin" >> "$GITHUB_PATH"
           conda config --add channels conda-forge
-          conda install ldid
+          conda install ldid=2.1.2
       - run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
