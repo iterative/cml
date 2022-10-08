@@ -23,7 +23,7 @@ describe('Comment integration tests', () => {
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
         --publish                 Upload any local images found in the Markdown report
-                                                                             [boolean]
+                                                             [boolean] [default: true]
         --publish-url             Self-hosted image server URL
                                            [string] [default: \\"https://asset.cml.dev\\"]
         --watch                   Watch for changes and automatically update the
