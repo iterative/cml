@@ -66,11 +66,11 @@ const octokit = (token, repo) => {
       onAbuseLimit: throttleHandler
     }
   };
-
-  if (!repo.includes('github.com')) {
+  const { host, hostname } = new url.URL(repo);
+  if (hostname !== 'github.com') {
     // GitHub Enterprise, use the: repo URL host + '/api/v3' - as baseURL
     // as per: https://developer.github.com/enterprise/v3/enterprise-admin/#endpoint-urls
-    const { host } = new url.URL(repo);
+
     octokitOptions.baseUrl = `https://${host}/api/v3`;
   }
 
