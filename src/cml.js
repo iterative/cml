@@ -68,22 +68,16 @@ const inferToken = () => {
 
 const inferDriver = (opts = {}) => {
   const { repo } = opts;
-  console.log('!!!!! DEBUG !!!!!');
-  console.log(repo);
   if (repo) {
     const url = new URL(repo);
-    console.log(url);
     if (url.hostname === 'github.com') return GITHUB;
     if (url.hostname === 'gitlab.com') return GITLAB;
     if (/bitbucket\.(com|org)/.test(url.hostname)) return BB;
   }
 
-  console.log('!!!!! DEBUG !!!!!');
   if (GITHUB_REPOSITORY) return GITHUB;
   if (CI_PROJECT_URL) return GITLAB;
   if (BITBUCKET_REPO_UUID) return BB;
-
-  console.log('!!!!! DEBUG !!!!!');
 };
 
 const fixGitSafeDirectory = () => {
@@ -133,9 +127,6 @@ class CML {
     );
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
-    console.log('!!! VALUE !!!');
-    console.log(this.driver);
-    console.log('!!! VALUE !!!');
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
