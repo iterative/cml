@@ -1,0 +1,46 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        required: true
+        description: Bump version number
+        options: [major, minor, patch]
+        default: patch
+  pull_request:
+    types: [closed]
+jobs:
+  bump:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          git config --global user.name Olivaw[bot]
+          git config --global user.email 64868532+iterative-olivaw@users.noreply.github.com
+          git checkout -b bump/$(npm version ${{ github.event.inputs.bump }})
+          git push --set-upstream origin HEAD
+          gh pr create --title "Bump version to $(git describe --tags)" --body "Approve me 🤖"
+          gh pr merge --auto --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+  release:
+    if: github.event.pull_request.merged && startsWith(github.head_ref, 'bump/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: >
+          gh release create
+          --target ${{ github.event.pull_request.merge_commit_sha }}
+          {--title=CML\ ,}$(basename ${{ github.head_ref }})
+          --generate-notes
+          --draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
+  package:
+    needs: release
+    secrets: inherit
+    uses: ./.github/workflows/test-deploy.yml
+    with:
+      release: true

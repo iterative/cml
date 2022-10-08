@@ -24,7 +24,13 @@ exports.options = kebabcaseKeys({
   },
   publish: {
     type: 'boolean',
+    default: true,
     description: 'Upload any local images found in the Markdown report'
+  },
+  publishUrl: {
+    type: 'string',
+    default: 'https://asset.cml.dev',
+    description: 'Self-hosted image server URL'
   },
   watch: {
     type: 'boolean',
