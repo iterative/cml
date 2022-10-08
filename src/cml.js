@@ -133,6 +133,9 @@ class CML {
     );
     this.token = token || inferToken();
     this.driver = driver || inferDriver({ repo: this.repo });
+    console.log('!!! VALUE !!!');
+    console.log(this.driver);
+    console.log('!!! VALUE !!!');
   }
 
   async revParse({ ref = 'HEAD' } = {}) {
