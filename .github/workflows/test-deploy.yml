@@ -101,9 +101,7 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install
-      - run:
-          npm ${{ inputs.release && 'publish' || 'publish --dry-run' }} || ${{
-          inputs.release && 'true' || 'false' }}
+      - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: |
