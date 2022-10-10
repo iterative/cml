@@ -161,15 +161,12 @@ class CML {
   }
 
   watermark(driver, label = '') {
-    if (label === '') {
-      return `![](${WATERMARK_IMAGE} "CML watermark")`;
-    }
     // Replace {workflow} and {run} placeholders in label with actual values.
     const workflow = driver.workflowId;
     const run = driver.runId;
     label = label.replace('{workflow}', workflow);
     label = label.replace('{run}', run);
-    label = `CML watermark ${label}`;
+    label = `CML watermark ${label}`.trim();
     return `![](${WATERMARK_IMAGE} "${label}")`;
   }
 
