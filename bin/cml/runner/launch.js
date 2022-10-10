@@ -338,15 +338,8 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  const {
-    workdir,
-    cloud,
-    labels,
-    name,
-    reuse,
-    reuseIdle,
-    dockerVolumes
-  } = opts;
+  const { workdir, cloud, labels, name, reuse, reuseIdle, dockerVolumes } =
+    opts;
 
   await cml.repoTokenCheck();
 
