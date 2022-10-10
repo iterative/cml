@@ -403,9 +403,10 @@ class CML {
 
   async startRunner(opts = {}) {
     const env = {};
-    const sensitive =
-      ['_CML_RUNNER_SENSITIVE_ENV'] +
-      process.env._CML_RUNNER_SENSITIVE_ENV.split(':');
+    const sensitive = [
+      '_CML_RUNNER_SENSITIVE_ENV',
+      ...process.env._CML_RUNNER_SENSITIVE_ENV.split(':')
+    ];
     for (const variable in process.env)
       if (!sensitive.includes(variable)) env[variable] = process.env[variable];
     return await this.getDriver().startRunner({ ...opts, env });
