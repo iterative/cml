@@ -1,8 +1,8 @@
 on:
   workflow_call:
     inputs:
-      test:
-        required: false
+      release:
+        required: true
         type: boolean
 jobs:
   images:
@@ -27,7 +27,7 @@ jobs:
             base: 1
             dvc: 2
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           fetch-depth: 0
@@ -73,7 +73,7 @@ jobs:
           )"
           echo ::set-output name=tags::"${TAGS//$'\n'/'%0A'}"
       - uses: docker/setup-buildx-action@v1
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key:
@@ -94,7 +94,7 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push:
-            ${{ github.event_name == 'push' || github.event_name == 'schedule'
+            ${{ inputs.release || github.event_name == 'push' || github.event_name == 'schedule'
             || github.event_name == 'workflow_dispatch' }}
           context: ./
           file: ./Dockerfile
