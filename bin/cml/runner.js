@@ -16,5 +16,6 @@ exports.builder = (yargs) =>
         ])
       )
     )
+    .option('options', { default: options, hidden: true })
     .check(() => process.argv.some((arg) => arg.startsWith('-')))
     .strict();

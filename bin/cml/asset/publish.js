@@ -15,15 +15,19 @@ exports.handler = async (opts) => {
     opts.native = true;
   }
 
-  const { file, repo, native, asset: path } = opts;
-  const cml = new CML({ ...opts, repo: native ? repo : 'cml' });
+  const { file, asset: path } = opts;
+  const cml = new CML({ ...opts });
   const output = await cml.publish({ ...opts, path });
 
   if (!file) console.log(output);
   else await fs.writeFile(file, output);
 };
 
-exports.builder = (yargs) => yargs.env('CML_ASSET').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_ASSET')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   url: {
@@ -51,7 +55,8 @@ exports.options = kebabcaseKeys({
   },
   rmWatermark: {
     type: 'boolean',
-    description: 'Avoid CML watermark.'
+    description: 'Avoid CML watermark.',
+    telemetryData: 'name'
   },
   mimeType: {
     type: 'string',
