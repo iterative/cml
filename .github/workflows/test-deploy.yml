@@ -104,10 +104,8 @@ jobs:
       - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: |
-          echo "$CONDA/bin" >> "$GITHUB_PATH"
-          conda config --add channels conda-forge
-          conda install ldid=2.1.5
+      - uses: Homebrew/actions/setup-homebrew@29b2973f18e5aca5443f4b3d87f68eda7a27b22b
+      - run: brew install ldid
       - run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
