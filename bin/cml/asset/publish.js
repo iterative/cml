@@ -23,7 +23,11 @@ exports.handler = async (opts) => {
   else await fs.writeFile(file, output);
 };
 
-exports.builder = (yargs) => yargs.env('CML_ASSET').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_ASSET')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   url: {
@@ -51,7 +55,8 @@ exports.options = kebabcaseKeys({
   },
   rmWatermark: {
     type: 'boolean',
-    description: 'Avoid CML watermark.'
+    description: 'Avoid CML watermark.',
+    telemetryData: 'name'
   },
   mimeType: {
     type: 'string',
