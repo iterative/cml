@@ -77,7 +77,9 @@ const setupLogger = (opts) => {
 
 const setupTelemetry = async (opts, yargs) => {
   const { cml, _: command } = opts;
-  const { parsed: { defaulted } } = yargs;
+  const {
+    parsed: { defaulted }
+  } = yargs;
 
   const options = {};
   for (const [name, option] of Object.entries(opts.options)) {
