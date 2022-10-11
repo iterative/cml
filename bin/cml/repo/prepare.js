@@ -10,7 +10,11 @@ exports.handler = async (opts) => {
   await cml.ci(opts);
 };
 
-exports.builder = (yargs) => yargs.env('CML_REPO').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_REPO')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   unshallow: {

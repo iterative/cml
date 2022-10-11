@@ -8,7 +8,11 @@ exports.handler = async (opts) => {
   console.log(await cml.commentCreate(opts));
 };
 
-exports.builder = (yargs) => yargs.env('CML_COMMENT').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_COMMENT')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   pr: {
@@ -33,18 +37,21 @@ exports.options = kebabcaseKeys({
   },
   publish: {
     type: 'boolean',
+    default: true,
     description: 'Upload any local images found in the Markdown report'
   },
   publishUrl: {
     type: 'string',
     default: 'https://asset.cml.dev',
-    description: 'Self-hosted image server URL'
+    description: 'Self-hosted image server URL',
+    telemetryData: 'name'
   },
   publishNative: {
     type: 'boolean',
     alias: 'native',
     description:
-      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub"
+      "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub",
+    telemetryData: 'name'
   },
   update: {
     type: 'boolean',
@@ -55,6 +62,7 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description:
-      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
+      'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
+    telemetryData: 'name'
   }
 });

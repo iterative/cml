@@ -8,8 +8,9 @@ describe('analytics tests', () => {
     const cml = new CML({ repo: REPO, token: TOKEN });
     const action = 'test';
     const cloud = 'azure';
+    const container = 'cml';
     const more = { one: 1, two: 2 };
-    const extra = { cloud, ...more };
+    const extra = { cloud, container, ...more };
     const error = 'Ouch!';
     const regex = /\d+\.\d+\.\d+/;
 
@@ -25,7 +26,7 @@ describe('analytics tests', () => {
     expect(pl.backend).toBe(cloud);
     expect(pl.error).toBe(error);
     expect(Object.keys(pl.extra).sort()).toEqual(
-      ['ci'].concat(Object.keys(more)).sort()
+      ['ci', 'container'].concat(Object.keys(more)).sort()
     );
 
     if (isCI()) {
