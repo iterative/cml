@@ -104,6 +104,7 @@ jobs:
       - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Step required "thanks" to https://github.com/actions/runner-images/issues/6283
       - uses: Homebrew/actions/setup-homebrew@29b2973f18e5aca5443f4b3d87f68eda7a27b22b
       - run: brew install ldid
       - run: |
