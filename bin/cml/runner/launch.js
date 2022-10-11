@@ -338,16 +338,8 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  const {
-    driver,
-    workdir,
-    cloud,
-    labels,
-    name,
-    reuse,
-    reuseIdle,
-    dockerVolumes
-  } = opts;
+  const { workdir, cloud, labels, name, reuse, reuseIdle, dockerVolumes } =
+    opts;
 
   await cml.repoTokenCheck();
 
@@ -375,7 +367,7 @@ const run = async (opts) => {
   }
 
   if (reuseIdle) {
-    if (driver === 'bitbucket') {
+    if (cml.driver === 'bitbucket') {
       throw new Error(
         'cml runner flag --reuse-idle is unsupported by bitbucket'
       );
@@ -396,7 +388,7 @@ const run = async (opts) => {
   if (dockerVolumes.length && cml.driver !== 'gitlab')
     winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
-  if (driver === 'github')
+  if (cml.driver === 'github')
     winston.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );
@@ -426,7 +418,11 @@ exports.handler = async (opts) => {
   }
 };
 
-exports.builder = (yargs) => yargs.env('CML_RUNNER').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_RUNNER')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   labels: {
@@ -462,13 +458,15 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     conflicts: ['single', 'reuseIdle'],
     description:
-      "Don't launch a new runner if an existing one has the same name or overlapping labels"
+      "Don't launch a new runner if an existing one has the same name or overlapping labels",
+    telemetryData: 'name'
   },
   reuseIdle: {
     type: 'boolean',
     conflicts: ['reuse', 'single'],
     description:
-      "Creates a new runner only if the matching labels don't exist or are already busy"
+      "Creates a new runner only if the matching labels don't exist or are already busy",
+    telemetryData: 'name'
   },
   workdir: {
     type: 'string',
@@ -484,7 +482,8 @@ exports.options = kebabcaseKeys({
   cloud: {
     type: 'string',
     choices: ['aws', 'azure', 'gcp', 'kubernetes'],
-    description: 'Cloud to deploy the runner'
+    description: 'Cloud to deploy the runner',
+    telemetryData: 'full'
   },
   cloudRegion: {
     type: 'string',
@@ -537,12 +536,14 @@ exports.options = kebabcaseKeys({
     type: 'number',
     default: -1,
     description:
-      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price'
+      'Maximum spot instance bidding price in USD. Defaults to the current spot bidding price',
+    telemetryData: 'name'
   },
   cloudStartupScript: {
     type: 'string',
     description:
-      'Run the provided Base64-encoded Linux shell script during the instance initialization'
+      'Run the provided Base64-encoded Linux shell script during the instance initialization',
+    telemetryData: 'name'
   },
   cloudAwsSecurityGroup: {
     type: 'string',

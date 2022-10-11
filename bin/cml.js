@@ -48,7 +48,6 @@ const setupOpts = (opts) => {
 
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
-  opts.cmlCommand = opts._[0];
   opts.cml = new CML(opts);
 };
 
@@ -76,9 +75,29 @@ const setupLogger = (opts) => {
   });
 };
 
-const setupTelemetry = async (opts) => {
-  const { cml, cmlCommand: action } = opts;
-  opts.telemetryEvent = await jitsuEventPayload({ action, cml });
+const setupTelemetry = async (opts, yargs) => {
+  const { cml, _: command } = opts;
+
+  const options = {};
+  for (const [name, option] of Object.entries(opts.options)) {
+    // Skip options with default values (i.e. not explicitly set by users)
+    if (opts[name] && !yargs.parsed.defaulted[name]) {
+      switch (option.telemetryData) {
+        case 'name':
+          options[name] = null;
+          break;
+        case 'full':
+          options[name] = opts[name];
+          break;
+      }
+    }
+  }
+
+  opts.telemetryEvent = await jitsuEventPayload({
+    action: command.join(':'),
+    extra: { options },
+    cml
+  });
 };
 
 const runPlugin = async ({ $0: executable, command }) => {
@@ -99,6 +118,7 @@ const handleError = (message, error) => {
 
 (async () => {
   setupLogger({ log: 'debug' });
+
   try {
     await yargs
       .env('CML')

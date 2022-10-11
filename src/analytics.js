@@ -9,6 +9,7 @@ const { scrypt } = require('crypto');
 const { v4: uuidv4, v5: uuidv5, parse } = require('uuid');
 const { userConfigDir } = require('appdirs');
 const winston = require('winston');
+const isDocker = require('is-docker');
 
 const { version: VERSION } = require('../package.json');
 const { exec, fileExists, getos } = require('./utils');
@@ -150,7 +151,6 @@ const jitsuEventPayload = async ({
 } = {}) => {
   try {
     const { cloud: backend = '', ...extraRest } = extra;
-    extraRest.ci = guessCI();
 
     const osname = OS();
     let { release = os.release() } = await getos();
@@ -171,7 +171,12 @@ const jitsuEventPayload = async ({
       os_version: release,
       backend,
       error,
-      extra: extraRest
+      extra: {
+        ...extraRest,
+        ci: guessCI(),
+        container:
+          process.env._CML_CONTAINER_IMAGE === 'true' ? 'cml' : isDocker()
+      }
     };
   } catch (err) {
     return {};

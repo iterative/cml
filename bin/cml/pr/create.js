@@ -15,7 +15,11 @@ exports.handler = async (opts) => {
   console.log(link);
 };
 
-exports.builder = (yargs) => yargs.env('CML_PR').options(exports.options);
+exports.builder = (yargs) =>
+  yargs
+    .env('CML_PR')
+    .option('options', { default: exports.options, hidden: true })
+    .options(exports.options);
 
 exports.options = kebabcaseKeys({
   md: {

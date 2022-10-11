@@ -104,10 +104,9 @@ jobs:
       - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: |
-          sudo apt install --yes libplist-dev
-          git clone --branch v2.1.5 git://git.saurik.com/ldid.git
-          sudo g++ -pipe -o /usr/bin/ldid ldid/ldid.cpp -I. -x c ldid/{lookup2.c,sha1.h} -lplist -lcrypto
+      # Step required "thanks" to https://github.com/actions/runner-images/issues/6283
+      - uses: Homebrew/actions/setup-homebrew@29b2973f18e5aca5443f4b3d87f68eda7a27b22b
+      - run: brew install ldid
       - run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
