@@ -338,16 +338,8 @@ const run = async (opts) => {
     process.on(signal, () => shutdown({ ...opts, reason: signal }));
   });
 
-  const {
-    driver,
-    workdir,
-    cloud,
-    labels,
-    name,
-    reuse,
-    reuseIdle,
-    dockerVolumes
-  } = opts;
+  const { workdir, cloud, labels, name, reuse, reuseIdle, dockerVolumes } =
+    opts;
 
   await cml.repoTokenCheck();
 
@@ -375,7 +367,7 @@ const run = async (opts) => {
   }
 
   if (reuseIdle) {
-    if (driver === 'bitbucket') {
+    if (cml.driver === 'bitbucket') {
       throw new Error(
         'cml runner flag --reuse-idle is unsupported by bitbucket'
       );
@@ -396,7 +388,7 @@ const run = async (opts) => {
   if (dockerVolumes.length && cml.driver !== 'gitlab')
     winston.warn('Parameters --docker-volumes is only supported in gitlab');
 
-  if (driver === 'github')
+  if (cml.driver === 'github')
     winston.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );

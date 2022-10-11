@@ -69,9 +69,10 @@ const inferToken = () => {
 const inferDriver = (opts = {}) => {
   const { repo } = opts;
   if (repo) {
-    if (repo.includes('github.com')) return GITHUB;
-    if (repo.includes('gitlab.com')) return GITLAB;
-    if (/bitbucket\.(com|org)/.test(repo)) return BB;
+    const url = new URL(repo);
+    if (url.hostname === 'github.com') return GITHUB;
+    if (url.hostname === 'gitlab.com') return GITLAB;
+    if (/bitbucket\.(com|org)/.test(url.hostname)) return BB;
   }
 
   if (GITHUB_REPOSITORY) return GITHUB;

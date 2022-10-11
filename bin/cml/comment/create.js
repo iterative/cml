@@ -28,6 +28,7 @@ exports.options = kebabcaseKeys({
   },
   publish: {
     type: 'boolean',
+    default: true,
     description: 'Upload any local images found in the Markdown report'
   },
   publishUrl: {

@@ -3,6 +3,10 @@ on:
   pull_request_target:
   workflow_dispatch:
   workflow_call:
+    inputs:
+      release:
+        required: true
+        type: boolean
   schedule:
     - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
 jobs:
@@ -97,47 +101,28 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install
-      - run:
-          npm ${{ github.event_name == 'workflow_call' && 'publish' || 'publish
-          --dry-run' }}
+      - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: install ldid
-        run: |
+      - run: |
           sudo apt install --yes libplist-dev
           git clone --branch v2.1.5 git://git.saurik.com/ldid.git
           sudo g++ -pipe -o /usr/bin/ldid ldid/ldid.cpp -I. -x c ldid/{lookup2.c,sha1.h} -lplist -lcrypto
-      - id: build
-        name: build
-        run: |
-          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
+      - run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
           npx --yes pkg --no-bytecode --public-packages "*" --public package.json
-          rm assets/magic.mgc
-          for cmd in '' runner publish pr; do
-            build/cml-linux-x64 $cmd --version
-          done
+          for cmd in '' runner publish pr; do build/cml-linux-x64 $cmd --version; done
           cp build/cml-linux{-x64,}
           cp build/cml-macos{-x64,}
-      - uses: softprops/action-gh-release@v1
-        if: github.event_name == 'workflow_call'
-        with:
-          files: |
-            build/cml-alpine-arm64
-            build/cml-alpine-x64
-            build/cml-linux-arm64
-            build/cml-linuxstatic-arm64
-            build/cml-linuxstatic-x64
-            build/cml-linux-x64
-            build/cml-linux
-            build/cml-macos-arm64
-            build/cml-macos-x64
-            build/cml-macos
-            build/cml-win-arm64.exe
-            build/cml-win-x64.exe
+      - if: inputs.release
+        run:
+          find build -type f | xargs gh release upload $(basename ${{
+          github.head_ref }})
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
     needs: packages
     secrets: inherit
     uses: ./.github/workflows/images.yml
+    with:
+      release: ${{ inputs.release || false }}

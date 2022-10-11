@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.18.0",
+  "version": "0.18.5",
   "description": "<p align=\"center\"> <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "author": {
     "name": "Iterative Inc",
@@ -45,6 +45,8 @@
     "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
     "lint": "eslint ./",
     "test": "jest --forceExit",
+    "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
+    "test:e2e": "jest --testNamePattern='e2e.test.js$' --forceExit",
     "do_snapshots": "jest --updateSnapshot"
   },
   "husky": {
@@ -123,7 +125,8 @@
   "jest": {
     "globalSetup": "./tests/setup.js",
     "globalTeardown": "./tests/teardown.js",
-    "testTimeout": 600000
+    "testTimeout": 600000,
+    "collectCoverage": true
   },
   "pkg": {
     "bin": "bin/cml.js",

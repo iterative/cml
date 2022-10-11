@@ -20,7 +20,7 @@ jobs:
           git config --global user.name Olivaw[bot]
           git config --global user.email 64868532+iterative-olivaw@users.noreply.github.com
           git checkout -b bump/$(npm version ${{ github.event.inputs.bump }})
-          git push --set-upstream origin --follow-tags HEAD
+          git push --set-upstream origin HEAD
           gh pr create --title "Bump version to $(git describe --tags)" --body "Approve me 🤖"
           gh pr merge --auto --squash
         env:
@@ -30,12 +30,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run:
-          gh release create --draft --generate-notes {--title=CML\ ,}$(basename
-          ${{ github.head_ref }})
+      - run: >
+          gh release create --target ${{
+          github.event.pull_request.merge_commit_sha }} {--title=CML\
+          ,}$(basename ${{ github.head_ref }}) --generate-notes --draft
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
   package:
     needs: release
     secrets: inherit
     uses: ./.github/workflows/test-deploy.yml
+    with:
+      release: true
