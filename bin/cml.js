@@ -77,13 +77,11 @@ const setupLogger = (opts) => {
 
 const setupTelemetry = async (opts, yargs) => {
   const { cml, _: command } = opts;
-  const {
-    parsed: { defaulted }
-  } = yargs;
 
   const options = {};
   for (const [name, option] of Object.entries(opts.options)) {
-    if (opts[name] && !defaulted[name]) {
+    // Skip options with default values (i.e. not explicitly set by users)
+    if (opts[name] && !yargs.parsed.defaulted[name]) {
       switch (option.telemetryData) {
         case 'name':
           options[name] = null;
