@@ -94,9 +94,8 @@ jobs:
       - uses: docker/build-push-action@v2
         with:
           push:
-            ${{ inputs.release || github.event_name == 'push' ||
-            github.event_name == 'schedule' || github.event_name ==
-            'workflow_dispatch' }}
+            ${{ inputs.release || github.event_name == 'push' || github.event_name == 'schedule'
+            || github.event_name == 'workflow_dispatch' }}
           context: ./
           file: ./Dockerfile
           tags: |
