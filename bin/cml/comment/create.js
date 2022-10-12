@@ -57,10 +57,10 @@ exports.options = kebabcaseKeys({
     description:
       'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others'
   },
-  commentTag: {
+  watermarkTitle: {
     type: 'string',
     description:
-      'Comment tag for selective updates, {workflow} and {run} are auto-replaced',
+      'Watermark title to add to comments for selective updates, {workflow} and {run} are auto-replaced',
     default: '',
     conflicts: ['rmWatermark']
   }
