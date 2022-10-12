@@ -67,7 +67,7 @@ exports.options = kebabcaseKeys({
   watermarkTitle: {
     type: 'string',
     description:
-      'Watermark title to add to comments for selective updates, {workflow} and {run} are auto-replaced',
+      'Hidden comment marker (used for targeting in subsequent `cml comment update`); "{workflow}" & "{run}" are auto-replaced',
     default: '',
     conflicts: ['rmWatermark']
   }
