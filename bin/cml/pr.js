@@ -1,6 +1,6 @@
 const { options, handler } = require('./pr/create');
 
-exports.command = 'pr';
+exports.command = 'pr <glob path...>';
 exports.description = 'Manage pull requests';
 exports.handler = handler;
 exports.builder = (yargs) =>
