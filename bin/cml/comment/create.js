@@ -20,6 +20,12 @@ exports.options = kebabcaseKeys({
     description:
       'Post to an existing PR/MR associated with the specified commit'
   },
+  commitSha: {
+    type: 'string',
+    alias: 'head-sha',
+    default: 'HEAD',
+    description: 'Commit SHA linked to this comment'
+  },
   watch: {
     type: 'boolean',
     description: 'Watch for changes and automatically update the comment'
@@ -28,12 +34,6 @@ exports.options = kebabcaseKeys({
     type: 'string',
     description: 'File used to trigger the watcher',
     hidden: true
-  },
-  commitSha: {
-    type: 'string',
-    alias: 'head-sha',
-    default: 'HEAD',
-    description: 'Commit SHA linked to this comment'
   },
   publish: {
     type: 'boolean',

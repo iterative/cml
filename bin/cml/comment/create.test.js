@@ -20,10 +20,10 @@ describe('Comment integration tests', () => {
       Options:
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
-        --watch                     Watch for changes and automatically update the
-                                    comment                                  [boolean]
         --commit-sha, --head-sha    Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
+        --watch                     Watch for changes and automatically update the
+                                    comment                                  [boolean]
         --publish                   Upload any local images found in the Markdown
                                     report                   [boolean] [default: true]
         --publish-url               Self-hosted image server URL
