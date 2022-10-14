@@ -20,6 +20,7 @@ describe('Comment integration tests', () => {
       Options:
         --pr                      Post to an existing PR/MR associated with the
                                   specified commit                           [boolean]
+        --issue                   Post to the given issue number              [number]
         --commit-sha, --head-sha  Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
         --publish                 Upload any local images found in the Markdown report

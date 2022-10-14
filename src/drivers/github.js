@@ -539,6 +539,56 @@ class Github {
     }
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { issueId, report } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.createComment({
+      owner,
+      repo,
+      body: report,
+      issue_number: issueId
+    });
+
+    return htmlUrl;
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    const { id, report } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.updateComment({
+      owner,
+      repo,
+      body: report,
+      comment_id: id
+    });
+
+    return htmlUrl;
+  }
+
+  async issueComments(opts = {}) {
+    const { issueId } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const { data: comments } = await issues.listComments({
+      owner,
+      repo,
+      issue_number: issueId
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
+  }
+
   async prCommentCreate(opts = {}) {
     const { report: body, prNumber } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });

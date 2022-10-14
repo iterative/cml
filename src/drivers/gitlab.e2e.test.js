@@ -3,7 +3,8 @@ const GitlabClient = require('./gitlab');
 const {
   TEST_GITLAB_TOKEN: TOKEN,
   TEST_GITLAB_REPO: REPO,
-  TEST_GITLAB_SHA: SHA
+  TEST_GITLAB_SHA: SHA,
+  TEST_GITLAB_ISSUE: ISSUE = 1
 } = process.env;
 
 describe('Non Enviromental tests', () => {
@@ -12,6 +13,14 @@ describe('Non Enviromental tests', () => {
   test('test repo and token', async () => {
     expect(client.repo).toBe(REPO);
     expect(client.token).toBe(TOKEN);
+  });
+
+  test('Issue comment', async () => {
+    const report = '## Test comment';
+    const issueId = ISSUE;
+    const url = await client.issueCommentCreate({ issueId, report });
+
+    expect(url.startsWith(REPO)).toBe(true);
   });
 
   test('Comment', async () => {
