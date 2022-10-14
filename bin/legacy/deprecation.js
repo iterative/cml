@@ -9,8 +9,9 @@ const addDeprecationNotice = (opts = {}) => {
 
 const deprecationNotice = (opts, notice) => {
   const { cml } = opts;
-  if (cml.driver.warn) {
-    cml.driver.warn(notice);
+  const driver = cml.getDriver();
+  if (driver.warn) {
+    driver.warn(notice);
   } else {
     winston.warn(notice);
   }
