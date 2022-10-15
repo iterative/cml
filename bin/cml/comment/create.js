@@ -32,6 +32,15 @@ exports.options = kebabcaseKeys({
     default: 'HEAD',
     description: 'Commit SHA linked to this comment'
   },
+  watch: {
+    type: 'boolean',
+    description: 'Watch for changes and automatically update the comment'
+  },
+  triggerFile: {
+    type: 'string',
+    description: 'File used to trigger the watcher',
+    hidden: true
+  },
   publish: {
     type: 'boolean',
     default: true,
@@ -43,17 +52,9 @@ exports.options = kebabcaseKeys({
     description: 'Self-hosted image server URL',
     telemetryData: 'name'
   },
-  watch: {
+  publishNative: {
     type: 'boolean',
-    description: 'Watch for changes and automatically update the comment'
-  },
-  triggerFile: {
-    type: 'string',
-    description: 'File used to trigger the watcher',
-    hidden: true
-  },
-  native: {
-    type: 'boolean',
+    alias: 'native',
     description:
       "Uses driver's native capabilities to upload assets instead of CML's storage; not available on GitHub",
     telemetryData: 'name'
