@@ -17,24 +17,24 @@ describe('Comment integration tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --pr                      Post to an existing PR/MR associated with the
-                                  specified commit                           [boolean]
-        --commit-sha, --head-sha  Commit SHA linked to this comment
+        --pr                        Post to an existing PR/MR associated with the
+                                    specified commit                         [boolean]
+        --commit-sha, --head-sha    Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
-        --publish                 Upload any local images found in the Markdown report
-                                                             [boolean] [default: true]
-        --publish-url             Self-hosted image server URL
+        --watch                     Watch for changes and automatically update the
+                                    comment                                  [boolean]
+        --publish                   Upload any local images found in the Markdown
+                                    report                   [boolean] [default: true]
+        --publish-url               Self-hosted image server URL
                                            [string] [default: \\"https://asset.cml.dev\\"]
-        --watch                   Watch for changes and automatically update the
-                                  comment                                    [boolean]
-        --native                  Uses driver's native capabilities to upload assets
-                                  instead of CML's storage; not available on GitHub
+        --publish-native, --native  Uses driver's native capabilities to upload assets
+                                    instead of CML's storage; not available on GitHub
                                                                              [boolean]
-        --rm-watermark            Avoid watermark; CML needs a watermark to be able to
-                                  distinguish CML comments from others       [boolean]
-        --watermark-title         Hidden comment marker (used for targeting in
-                                  subsequent \`cml comment update\`); \\"{workflow}\\" &
-                                  \\"{run}\\" are auto-replaced     [string] [default: \\"\\"]"
+        --rm-watermark              Avoid watermark; CML needs a watermark to be able
+                                    to distinguish CML comments from others  [boolean]
+        --watermark-title           Hidden comment marker (used for targeting in
+                                    subsequent \`cml comment update\`); \\"{workflow}\\" &
+                                    \\"{run}\\" are auto-replaced   [string] [default: \\"\\"]"
     `);
   });
 });

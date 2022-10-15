@@ -710,6 +710,10 @@ class Github {
     return GITHUB_RUN_ID;
   }
 
+  warn(message) {
+    console.error(`::warning::${message}`);
+  }
+
   get sha() {
     if (GITHUB_EVENT_NAME === 'pull_request')
       return github.context.payload.pull_request.head.sha;
