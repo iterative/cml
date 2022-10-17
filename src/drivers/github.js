@@ -451,7 +451,11 @@ class Github {
       });
       return true;
     } catch (error) {
-      if (error.message === 'Branch not protected') {
+      const errors = [
+        'Branch not protected',
+        'Upgrade to GitHub Pro or make this repository public to enable this feature.'
+      ];
+      if (errors.includes(error.message)) {
         return false;
       }
       throw error;
@@ -700,6 +704,10 @@ class Github {
     }"`;
 
     return command;
+  }
+
+  warn(message) {
+    console.error(`::warning::${message}`);
   }
 
   get sha() {
