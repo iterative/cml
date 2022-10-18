@@ -18,6 +18,9 @@ describe('Comment integration tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
+        --target                    Forge object to create comment on, can be one of
+                                    pr, commit or issue.Specify 'issue#123' to create
+                                    a comment on a specific issue.            [string]
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
         --issue                     Post to the given issue number            [number]

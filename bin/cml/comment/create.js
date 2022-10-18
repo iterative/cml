@@ -18,6 +18,13 @@ exports.builder = (yargs) =>
     .options(exports.options);
 
 exports.options = kebabcaseKeys({
+  target: {
+    type: 'string',
+    description:
+      'Forge object to create comment on, can be one of pr, commit or issue.' +
+      "Specify 'issue#123' to create a comment on a specific issue.",
+    conflicts: ['pr', 'issue', 'commitSha']
+  },
   pr: {
     type: 'boolean',
     description:
