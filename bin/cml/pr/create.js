@@ -6,8 +6,11 @@ const {
   GIT_USER_EMAIL
 } = require('../../../src/cml');
 
+const DESCRIPTION = 'Create a pull request with the specified files';
+const DOCSURL = 'https://cml.dev/doc/ref/pr';
+
 exports.command = 'create <glob path...>';
-exports.description = 'Create a pull request with the specified files';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   const { cml, globpath: globs } = opts;

@@ -73,8 +73,12 @@ const launchAndWaitLink = async (opts = {}) => {
 };
 
 exports.tbLink = tbLink;
+
+const DESCRIPTION = 'Connect to tensorboard.dev and get a link';
+const DOCSURL = 'https://cml.dev/doc/ref/tensorboard';
+
 exports.command = 'connect';
-exports.description = 'Connect to tensorboard.dev and get a link';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   const { file, credentials, name, description } = opts;

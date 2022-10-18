@@ -404,8 +404,11 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
+const DESCRIPTION = 'Launch and register a self-hosted runner';
+const DOCSURL = 'https://cml.dev/doc/ref/runner';
+
 exports.command = 'launch';
-exports.description = 'Launch and register a self-hosted runner';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   ({ cml } = opts);
