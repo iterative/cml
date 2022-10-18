@@ -333,13 +333,15 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { issueId, report, id: commentId } = opts;
 
-    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes${ commentId ? `/${commentId}` : ''}`;
+    const endpoint =
+      `/projects/${projectPath}/issues/${issueId}/notes` +
+      `${commentId ? '/' + commentId : ''}`;
     const body = new URLSearchParams();
     body.append('body', report);
 
     const { id } = await this.request({
       endpoint,
-      method: commentId  ? 'PUT' : 'POST',
+      method: commentId ? 'PUT' : 'POST',
       body
     });
 
@@ -348,12 +350,12 @@ class Gitlab {
 
   async issueCommentCreate(opts = {}) {
     const { id, ...rest } = opts;
-    return this.issueCommentUpsert(rest)
+    return this.issueCommentUpsert(rest);
   }
-  
+
   async issueCommentUpdate(opts = {}) {
-    if (!opts.id) throw new Error('Id is missing updating comment')
-    return this.issueCommentUpsert(opts)
+    if (!opts.id) throw new Error('Id is missing updating comment');
+    return this.issueCommentUpsert(opts);
   }
 
   async issueComments(opts = {}) {

@@ -32,7 +32,10 @@ class BitbucketCloud {
   async issueCommentUpsert(opts = {}) {
     const { projectPath } = this;
     const { issueId, report, id } = opts;
-    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/${id ? `${id}/` : ''}`;
+
+    const endpoint =
+      `/repositories/${projectPath}/issues/${issueId}/` +
+      `comments/${id ? id + '/' : ''}`;
     return (
       await this.request({
         endpoint,
@@ -44,12 +47,12 @@ class BitbucketCloud {
 
   async issueCommentCreate(opts = {}) {
     const { id, ...rest } = opts;
-    return this.issueCommentUpsert(rest)
+    return this.issueCommentUpsert(rest);
   }
-  
+
   async issueCommentUpdate(opts = {}) {
-    if (!opts.id) throw new Error('Id is missing updating comment')
-    return this.issueCommentUpsert(opts)
+    if (!opts.id) throw new Error('Id is missing updating comment');
+    return this.issueCommentUpsert(opts);
   }
 
   async issueComments(opts = {}) {
