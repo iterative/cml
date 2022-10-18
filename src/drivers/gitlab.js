@@ -329,38 +329,31 @@ class Gitlab {
     }
   }
 
-  async issueCommentCreate(opts = {}) {
+  async issueCommentUpsert(opts = {}) {
     const projectPath = await this.projectPath();
-    const { issueId, report } = opts;
+    const { issueId, report, id: commentId } = opts;
 
-    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes`;
+    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes${ commentId ? `/${commentId}` : ''}`;
     const body = new URLSearchParams();
     body.append('body', report);
 
     const { id } = await this.request({
       endpoint,
-      method: 'POST',
+      method: commentId  ? 'PUT' : 'POST',
       body
     });
 
     return `${this.repo}/-/issues/${issueId}#note_${id}`;
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { id, ...rest } = opts;
+    return this.issueCommentUpsert(rest)
+  }
+  
   async issueCommentUpdate(opts = {}) {
-    const projectPath = await this.projectPath();
-    const { issueId, id: commentId, report } = opts;
-
-    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes/${commentId}`;
-    const body = new URLSearchParams();
-    body.append('body', report);
-
-    const { id } = await this.request({
-      endpoint,
-      method: 'PUT',
-      body
-    });
-
-    return `${this.repo}/-/issues/${issueId}#note_${id}`;
+    if (!opts.id) throw new Error('Id is missing updating comment')
+    return this.issueCommentUpsert(opts)
   }
 
   async issueComments(opts = {}) {
