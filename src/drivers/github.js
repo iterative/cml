@@ -558,6 +558,7 @@ class Github {
 
   async issueCommentUpdate(opts = {}) {
     const { id, report } = opts;
+    if (!id) throw new Error('Id is missing updating comment')
     const { owner, repo } = ownerRepo({ uri: this.repo });
     const { issues } = octokit(this.token, this.repo);
 
