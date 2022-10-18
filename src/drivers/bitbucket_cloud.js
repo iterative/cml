@@ -29,31 +29,27 @@ class BitbucketCloud {
     }
   }
 
-  async issueCommentCreate(opts = {}) {
+  async issueCommentUpsert(opts = {}) {
     const { projectPath } = this;
-    const { issueId, report } = opts;
-    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/`;
+    const { issueId, report, id } = opts;
+    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/${id ? `${id}/` : ''}`;
     return (
       await this.request({
         endpoint,
-        method: 'POST',
+        method: id ? 'PUT' : 'POST',
         body: JSON.stringify({ content: { raw: report } })
       })
     ).links.html.href;
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { id, ...rest } = opts;
+    return this.issueCommentUpsert(rest)
+  }
+  
   async issueCommentUpdate(opts = {}) {
-    const { projectPath } = this;
-    const { issueId, id, report } = opts;
-
-    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/${id}`;
-    return (
-      await this.request({
-        endpoint,
-        method: 'PUT',
-        body: JSON.stringify({ content: { raw: report } })
-      })
-    ).links.html.href;
+    if (!opts.id) throw new Error('Id is missing updating comment')
+    return this.issueCommentUpsert(opts)
   }
 
   async issueComments(opts = {}) {
