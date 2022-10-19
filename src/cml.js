@@ -471,7 +471,7 @@ class CML {
       remote = GIT_REMOTE
     } = opts;
 
-    if (isNaN(fetchDepth) || fetchDepth < 0) {
+    if (fetchDepth < 0) {
       fetchDepth = 0;
     }
 
