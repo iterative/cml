@@ -463,17 +463,13 @@ class CML {
   }
 
   async ci(opts = {}) {
-    let {
+    const {
       fetchDepth = 1,
       unshallow = false,
       userEmail = GIT_USER_EMAIL,
       userName = GIT_USER_NAME,
       remote = GIT_REMOTE
     } = opts;
-
-    if (fetchDepth < 0) {
-      fetchDepth = 0;
-    }
 
     const driver = this.getDriver();
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
