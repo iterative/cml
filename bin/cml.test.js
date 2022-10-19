@@ -44,7 +44,7 @@ describe('Valid Docs URLs', () => {
     'comment/update',
     'check/create',
     'asset/publish'
-  ])('Check Docs Links', async (cmd) => {
+  ])('Check Docs Link', async (cmd) => {
     const { DOCSURL } = require(`./cml/${cmd}`);
     const { status } = await fetch(DOCSURL);
     expect(status).toBe(200);
