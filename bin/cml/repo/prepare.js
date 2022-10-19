@@ -2,8 +2,11 @@ const kebabcaseKeys = require('kebabcase-keys');
 
 const { GIT_USER_NAME, GIT_USER_EMAIL } = require('../../../src/cml');
 
+const DESCRIPTION = 'Prepare the cloned repository';
+const DOCSURL = 'https://cml.dev/doc/ref/ci';
+
 exports.command = 'prepare';
-exports.description = 'Prepare the cloned repository';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   const { cml } = opts;
@@ -40,3 +43,4 @@ exports.options = kebabcaseKeys({
     description: 'Git user name'
   }
 });
+exports.DOCSURL = DOCSURL;
