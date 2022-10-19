@@ -12,6 +12,7 @@ describe('CML e2e', () => {
       Commands:
         cml.js pr create <glob path...>  Create a pull request with the specified
                                          files
+                                         https://cml.dev/doc/ref/pr
 
       Global Options:
         --log     Logging verbosity
