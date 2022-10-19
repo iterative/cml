@@ -1,4 +1,5 @@
 const { exec } = require('../src/utils');
+const fetch = require('node-fetch');
 
 describe('command-line interface tests', () => {
   test('cml --help', async () => {
@@ -29,5 +30,23 @@ describe('command-line interface tests', () => {
       Options:
         --version  Show version number                                       [boolean]"
     `);
+  });
+});
+
+describe('Valid Docs URLs', () => {
+  test.each([
+    'workflow/rerun',
+    'tensorboard/connect',
+    'runner/launch',
+    'repo/prepare',
+    'pr/create',
+    'comment/create',
+    'comment/update',
+    'check/create',
+    'asset/publish'
+  ])('Check Docs Links', async (cmd) => {
+    const { DOCSURL } = require(`./cml/${cmd}`);
+    const { status } = await fetch(DOCSURL);
+    expect(status).toBe(200);
   });
 });

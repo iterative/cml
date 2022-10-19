@@ -36,3 +36,4 @@ exports.options = kebabcaseKeys({
     description: 'Git user name'
   }
 });
+exports.DOCSURL = DOCSURL;

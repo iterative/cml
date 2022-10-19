@@ -79,3 +79,4 @@ exports.options = kebabcaseKeys({
       'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
   }
 });
+exports.DOCSURL = DOCSURL;

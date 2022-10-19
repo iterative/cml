@@ -23,3 +23,5 @@ exports.options = kebabcaseKeys({
     description: 'Run identifier to be rerun'
   }
 });
+
+exports.DOCSURL = DOCSURL;

@@ -56,3 +56,4 @@ exports.options = kebabcaseKeys({
     description: 'Title of the check'
   }
 });
+exports.DOCSURL = DOCSURL;

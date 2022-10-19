@@ -582,3 +582,4 @@ exports.options = kebabcaseKeys({
       'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
   }
 });
+exports.DOCSURL = DOCSURL;

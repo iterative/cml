@@ -69,3 +69,4 @@ exports.options = kebabcaseKeys({
     telemetryData: 'name'
   }
 });
+exports.DOCSURL = DOCSURL;

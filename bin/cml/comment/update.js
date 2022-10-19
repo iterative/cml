@@ -11,3 +11,4 @@ exports.handler = async (opts) => {
 };
 
 exports.builder = builder;
+exports.DOCSURL = DOCSURL;
