@@ -463,12 +463,17 @@ class CML {
   }
 
   async ci(opts = {}) {
-    const {
+    let {
+      fetchDepth = 1,
       unshallow = false,
       userEmail = GIT_USER_EMAIL,
       userName = GIT_USER_NAME,
       remote = GIT_REMOTE
     } = opts;
+
+    if (isNaN(fetchDepth) || fetchDepth < 0) {
+      fetchDepth = 0;
+    }
 
     const driver = this.getDriver();
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
@@ -477,7 +482,7 @@ class CML {
         await exec('git fetch --unshallow');
       }
     }
-    await exec('git fetch --all');
+    await exec(`git fetch --all --depth=${fetchDepth}`);
   }
 
   async prCreate(opts = {}) {
