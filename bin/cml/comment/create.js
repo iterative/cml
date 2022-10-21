@@ -1,7 +1,10 @@
 const kebabcaseKeys = require('kebabcase-keys');
 
+const DESCRIPTION = 'Create a comment';
+const DOCSURL = 'https://cml.dev/doc/ref/comment#create';
+
 exports.command = 'create <markdown file>';
-exports.description = 'Create a comment';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   const { cml } = opts;
@@ -73,3 +76,4 @@ exports.options = kebabcaseKeys({
     conflicts: ['rmWatermark']
   }
 });
+exports.DOCSURL = DOCSURL;
