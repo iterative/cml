@@ -29,8 +29,7 @@ describe('CML e2e', () => {
                             600 characters                                    [string]
             --md            Output as markdown [title || name](url)          [boolean]
         -t, --title         Markdown title, if not specified, param name will be used
-                                                                              [string]
-            --rm-watermark  Avoid CML watermark                              [boolean]"
+                                                                              [string]"
     `);
   });
 });
