@@ -6,7 +6,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
 const winston = require('winston');
 
-const { randid, sleep } = require('../../../src/utils');
+const { exec, randid, sleep } = require('../../../src/utils');
 const tf = require('../../../src/terraform');
 
 let cml;
@@ -23,15 +23,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const {
-    name,
-    workdir = '',
-    tfResource,
-    noRetry,
-    reason,
-    destroyDelay
-  } = opts;
-  const tfPath = workdir;
+  const { name, tfResource, noRetry, reason, destroyDelay } = opts;
 
   const unregisterRunner = async () => {
     if (!RUNNER) return;
@@ -63,16 +55,22 @@ const shutdown = async (opts) => {
     }
   };
 
-  const destroyTerraform = async () => {
+  const destroyLeo = async () => {
     if (!tfResource) return;
 
     winston.info(`Waiting ${destroyDelay} seconds to destroy`);
     await sleep(destroyDelay);
 
+    const { cloud, id, region } = JSON.parse(
+      Buffer.from(tfResource, 'base64').toString('utf-8')
+    ).instances[0].attributes;
+
     try {
-      winston.debug(await tf.destroy({ dir: tfPath }));
+      return await exec(
+        `leo destroy-runner --cloud=${cloud} --region=${region} ${id}`
+      );
     } catch (err) {
-      winston.error(`\tFailed destroying terraform: ${err.message}`);
+      winston.error(`\tFailed destroying with LEO: ${err.message}`);
     }
   };
 
@@ -85,7 +83,7 @@ const shutdown = async (opts) => {
     }
   }
 
-  await destroyTerraform();
+  await destroyLeo();
 
   if (error) throw error;
 
@@ -406,8 +404,11 @@ const run = async (opts) => {
   else await runLocal(opts);
 };
 
+const DESCRIPTION = 'Launch and register a self-hosted runner';
+const DOCSURL = 'https://cml.dev/doc/ref/runner';
+
 exports.command = 'launch';
-exports.description = 'Launch and register a self-hosted runner';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   ({ cml } = opts);
@@ -581,3 +582,4 @@ exports.options = kebabcaseKeys({
       'Seconds to wait for collecting logs on failure (https://github.com/iterative/cml/issues/413)'
   }
 });
+exports.DOCSURL = DOCSURL;

@@ -1,8 +1,11 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
 
+const DESCRIPTION = 'Create a check report';
+const DOCSURL = 'https://cml.dev/doc/ref/check';
+
 exports.command = 'create <markdown file>';
-exports.description = 'Create a check report';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   const { cml, markdownfile } = opts;
@@ -53,3 +56,4 @@ exports.options = kebabcaseKeys({
     description: 'Title of the check'
   }
 });
+exports.DOCSURL = DOCSURL;
