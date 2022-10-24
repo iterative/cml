@@ -186,13 +186,12 @@ class CML {
       throw new Error('watermarks are mandatory for updateable comments');
 
     // Create the watermark.
-    const genWatermark = ({ label, workflow, run } = opts) => {
+    const genWatermark = (opts = {}) => {
+      const { label = '', workflow, run } = opts;
       // Replace {workflow} and {run} placeholders in label with actual values.
-      label = label
-        .replace('{workflow}', workflow)
-        .replace('{run}', run)
-        .trim();
-      const title = `CML watermark ${label}`.trim();
+      const lbl = label.replace('{workflow}', workflow).replace('{run}', run);
+
+      const title = `CML watermark ${lbl}`.trim();
       return `![](${WATERMARK_IMAGE} "${title}")`;
     };
     const watermark = rmWatermark
