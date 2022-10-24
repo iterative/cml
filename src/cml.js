@@ -161,16 +161,6 @@ class CML {
     throw new Error(`driver ${driver} unknown!`);
   }
 
-  watermark(driver, label = '') {
-    // Replace {workflow} and {run} placeholders in label with actual values.
-    const workflow = driver.workflowId;
-    const run = driver.runId;
-    label = label.replace('{workflow}', workflow);
-    label = label.replace('{run}', run);
-    label = `CML watermark ${label}`.trim();
-    return `![](${WATERMARK_IMAGE} "${label}")`;
-  }
-
   async commentCreate(opts = {}) {
     const triggerSha = await this.triggerSha();
     const {
@@ -187,14 +177,31 @@ class CML {
       watermarkTitle
     } = opts;
 
+    const drv = this.getDriver();
+
     const commitSha =
       (await this.revParse({ ref: inCommitSha })) || inCommitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
 
-    const drv = this.getDriver();
-    const watermark = rmWatermark ? '' : this.watermark(drv, watermarkTitle);
+    // Create the watermark.
+    const genWatermark = ({ label, workflow, run } = opts) => {
+      // Replace {workflow} and {run} placeholders in label with actual values.
+      label = label
+        .replace('{workflow}', workflow)
+        .replace('{run}', run)
+        .trim();
+      const title = `CML watermark ${label}`.trim();
+      return `![](${WATERMARK_IMAGE} "${title}")`;
+    };
+    const watermark = rmWatermark
+      ? ''
+      : genWatermark({
+          label: watermarkTitle,
+          workflow: drv.workflowId,
+          run: drv.runId
+        });
 
     let userReport = testReport;
     try {
