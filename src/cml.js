@@ -475,10 +475,10 @@ class CML {
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
     if (unshallow) {
       if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-        return await exec('git fetch --unshallow');
+        fetchDepth = 0;
       }
     }
-    if (fetchDepth === 0) {
+    if (fetchDepth <= 0) {
       return await exec('git fetch --all --unshallow');
     }
     return await exec(`git fetch --all --depth=${fetchDepth}`);
