@@ -4,7 +4,6 @@ const stripAuth = require('strip-url-auth');
 const globby = require('globby');
 const git = require('simple-git')('./');
 const path = require('path');
-const escape = require('markdown-escape');
 const fs = require('fs').promises;
 const chokidar = require('chokidar');
 const winston = require('winston');
@@ -192,7 +191,7 @@ class CML {
       // Replace {workflow} and {run} placeholders in label with actual values.
       const lbl = label.replace('{workflow}', workflow).replace('{run}', run);
 
-      const title = escape(`CML watermark ${lbl}`.trim());
+      const title = `CML watermark ${lbl}`.trim();
       return `![](${WATERMARK_IMAGE} "${title}")`;
     };
     const watermark = rmWatermark
