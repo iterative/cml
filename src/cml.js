@@ -195,9 +195,17 @@ class CML {
       // Github appears to escape underscores and asterisks in markdown content.
       // Without escaping them, the watermark content in comments retrieved
       // from github will not match the input.
-      return `![](${WATERMARK_IMAGE} "${title}")`
-        .replace(/_/g, '\\_')
-        .replace(/\*/g, '\\*');
+      const patterns = [
+        [/_/g, '\\_'], // underscore
+        [/\*/g, '\\*'], // asterisk
+        [/\[/g, '\\['], // opening square bracket
+        [/</g, '\\<'] // opening angle bracket
+      ];
+      const watermark = `![](${WATERMARK_IMAGE} "${title}")`;
+      return patterns.reduce(
+        (label, pattern) => label.replace(pattern[0], pattern[1]),
+        watermark
+      );
     };
     const watermark = rmWatermark
       ? ''
