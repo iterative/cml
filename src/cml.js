@@ -192,7 +192,12 @@ class CML {
       const lbl = label.replace('{workflow}', workflow).replace('{run}', run);
 
       const title = `CML watermark ${lbl}`.trim();
-      return `![](${WATERMARK_IMAGE} "${title}")`;
+      // Github appears to escape underscores and asterisks in markdown content.
+      // Without escaping them, the watermark content in comments retrieved
+      // from github will not match the input.
+      return `![](${WATERMARK_IMAGE} "${title}")`
+        .replace(/_/g, '\\_')
+        .replace(/\*/g, '\\*');
     };
     const watermark = rmWatermark
       ? ''
