@@ -59,6 +59,7 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description: 'Avoid CML watermark.',
+    hidden: true,
     telemetryData: 'name'
   },
   mimeType: {
