@@ -66,6 +66,7 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     description:
       'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
+    hidden: true,
     telemetryData: 'name'
   },
   watermarkTitle: {
