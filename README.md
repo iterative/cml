@@ -130,7 +130,7 @@ those reports to your CI system.
 | `cml publish`             | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
 | `cml comment create`      | Return CML report as a comment in your GitLab/GitHub workflow    | `<path to report> --head-sha <sha>`                         |
 | `cml check create`        | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
-| `cml pr`                  | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
+| `cml pr create`           | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
 | `cml tensorboard connect` | Return a link to a Tensorboard.dev page                          | `--logdir <path to logs> --title <experiment title> --md`   |
 
 #### CML Reports
