@@ -20,12 +20,11 @@ describe('CML cli test', () => {
             --help    Show help                                              [boolean]
 
       Options:
-            --md            Output in markdown format [title || name](url)   [boolean]
-        -t, --title         Markdown title [title](url) or ![](url title)     [string]
-            --native        Uses driver's native capabilities to upload assets instead
-                            of CML's storage; not available on GitHub        [boolean]
-            --rm-watermark  Avoid CML watermark.                             [boolean]
-            --mime-type     MIME type [string] [default: infer from the file contents]"
+            --md         Output in markdown format [title || name](url)      [boolean]
+        -t, --title      Markdown title [title](url) or ![](url title)        [string]
+            --native     Uses driver's native capabilities to upload assets instead of
+                         CML's storage; not available on GitHub              [boolean]
+            --mime-type  MIME type    [string] [default: infer from the file contents]"
     `);
   });
 });

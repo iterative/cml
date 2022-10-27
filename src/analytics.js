@@ -145,7 +145,7 @@ const OS = () => {
 
 const jitsuEventPayload = async ({
   action = '',
-  error = '',
+  error,
   extra = {},
   cml
 } = {}) => {
