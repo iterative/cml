@@ -65,7 +65,7 @@ class Gitlab {
     return this.detectedBase;
   }
 
-  async commentCreate(opts = {}) {
+  async commitCommentCreate(opts = {}) {
     const { commitSha, report } = opts;
 
     const projectPath = await this.projectPath();
@@ -78,7 +78,7 @@ class Gitlab {
     return `${this.repo}/-/commit/${commitSha}`;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     throw new Error('GitLab does not support comment updates!');
   }
 
@@ -493,6 +493,16 @@ class Gitlab {
     return process.env.CI_COMMIT_SHA;
   }
 
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if ('CI_MERGE_REQUEST_IID' in process.env) {
+      return process.env.CI_MERGE_REQUEST_IID;
+    }
+    return null;
+  }
+
   get branch() {
     return process.env.CI_BUILD_REF_NAME;
   }
@@ -526,6 +536,10 @@ class Gitlab {
     if (raw) return response;
 
     return await response.json();
+  }
+
+  warn(message) {
+    console.error(message);
   }
 }
 

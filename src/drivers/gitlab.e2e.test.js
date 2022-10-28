@@ -26,7 +26,7 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-    const url = await client.commentCreate({
+    const url = await client.commitCommentCreate({
       report,
       commitSha
     });

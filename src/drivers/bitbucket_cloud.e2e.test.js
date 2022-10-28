@@ -25,7 +25,7 @@ describe('Non Enviromental tests', () => {
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-    const url = await client.commentCreate({ report, commitSha });
+    const url = await client.commitCommentCreate({ report, commitSha });
 
     expect(url.startsWith(REPO)).toBe(true);
   });

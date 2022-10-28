@@ -100,7 +100,7 @@ class Github {
     return user;
   }
 
-  async commentCreate(opts = {}) {
+  async commitCommentCreate(opts = {}) {
     const { report: body, commitSha } = opts;
     const { repos } = octokit(this.token, this.repo);
 
@@ -113,7 +113,7 @@ class Github {
     ).data.html_url;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     const { report: body, id } = opts;
     const { repos } = octokit(this.token, this.repo);
 
@@ -765,6 +765,16 @@ class Github {
       return github.context.payload.pull_request.head.sha;
 
     return GITHUB_SHA;
+  }
+
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if (['pull_request', 'pull_request_target'].includes(GITHUB_EVENT_NAME)) {
+      return github.context.payload.pull_request.number;
+    }
+    return null;
   }
 
   get branch() {
