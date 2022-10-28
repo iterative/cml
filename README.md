@@ -127,7 +127,6 @@ those reports to your CI system.
 | Function                  | Description                                                      | Example Inputs                                              |
 | ------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | `cml runner launch`       | Launch a runner locally or hosted by a cloud provider            | See [Arguments](https://github.com/iterative/cml#arguments) |
-| `cml publish`             | Publicly host an image for displaying in a CML report            | `<path to image> --title <image title> --md`                |
 | `cml comment create`      | Return CML report as a comment in your GitLab/GitHub workflow    | `<path to report> --head-sha <sha>`                         |
 | `cml check create`        | Return CML report as a check in GitHub                           | `<path to report> --head-sha <sha>`                         |
 | `cml pr create`           | Commit the given files to a new branch and create a pull request | `<path>...`                                                 |
@@ -485,22 +484,6 @@ For example, `iterativeai/cml:0-dvc2-base1-gpu`, or
 The `cml runner launch` function accepts the following arguments:
 
 ```
-cml runner launch
-
-Launch and register a self-hosted runner
-https://cml.dev/doc/ref/runner
-
-Global Options:
-  --log     Logging verbosity
-          [string] [choices: "error", "warn", "info", "debug"] [default: "info"]
-  --driver  Git provider where the repository is hosted
-    [string] [choices: "github", "gitlab", "bitbucket"] [default: infer from the
-                                                                    environment]
-  --repo    Repository URL or slug[string] [default: infer from the environment]
-  --token   Personal access token [string] [default: infer from the environment]
-  --help    Show help                                                  [boolean]
-
-Options:
   --labels                                  One or more user-defined labels for
                                             this runner (delimited with commas)
                                                        [string] [default: "cml"]
