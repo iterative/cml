@@ -68,6 +68,13 @@ exports.options = kebabcaseKeys({
       'Avoid watermark; CML needs a watermark to be able to distinguish CML comments from others',
     hidden: true,
     telemetryData: 'name'
+  },
+  watermarkTitle: {
+    type: 'string',
+    description:
+      'Hidden comment marker (used for targeting in subsequent `cml comment update`); "{workflow}" & "{run}" are auto-replaced',
+    default: '',
+    conflicts: ['rmWatermark']
   }
 });
 exports.DOCSURL = DOCSURL;
