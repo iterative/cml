@@ -469,7 +469,7 @@ class CML {
       userName = GIT_USER_NAME,
       remote = GIT_REMOTE
     } = opts;
-    let { fetchDepth = 1 } = opts;
+    let { fetchDepth } = opts;
 
     const driver = this.getDriver();
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
@@ -478,6 +478,7 @@ class CML {
         fetchDepth = 0;
       }
     }
+    console.log(fetchDepth);
     if (fetchDepth <= 0) {
       return await exec('git fetch --all --unshallow');
     }
