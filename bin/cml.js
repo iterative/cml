@@ -12,7 +12,7 @@ const { jitsuEventPayload, send } = require('../src/analytics');
 
 const setupOpts = (opts) => {
   const legacyEnvironmentVariables = {
-    TB_CREDENTIALS: 'CML_TENSORBOARD_DEV_CREDENTIALS',
+    TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
     DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
     RUNNER_IDLE_TIMEOUT: 'CML_RUNNER_IDLE_TIMEOUT',
     RUNNER_LABELS: 'CML_RUNNER_LABELS',
