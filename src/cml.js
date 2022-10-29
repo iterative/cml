@@ -478,11 +478,12 @@ class CML {
         fetchDepth = 0;
       }
     }
-    console.log(fetchDepth);
-    if (fetchDepth <= 0) {
-      return await exec('git fetch --all --unshallow');
+    if (fetchDepth !== undefined) {
+      if (fetchDepth <= 0) {
+        return await exec('git fetch --all --unshallow');
+      }
+      return await exec(`git fetch --all --depth=${fetchDepth}`);
     }
-    return await exec(`git fetch --all --depth=${fetchDepth}`);
   }
 
   async prCreate(opts = {}) {
