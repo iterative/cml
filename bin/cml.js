@@ -10,7 +10,7 @@ const yargs = require('yargs');
 const CML = require('../src/cml').default;
 const { jitsuEventPayload, send } = require('../src/analytics');
 
-const setupOpts = (opts) => {
+const aliasLegacyEnvironmentVariables = () => {
   const legacyEnvironmentVariables = {
     TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
     DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
@@ -45,7 +45,9 @@ const setupOpts = (opts) => {
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
   }
+}
 
+const setupOpts = (opts) => {
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
   opts.cml = new CML(opts);
@@ -117,6 +119,7 @@ const handleError = (message, error) => {
 };
 
 (async () => {
+  aliasLegacyEnvironmentVariables();
   setupLogger({ log: 'debug' });
 
   try {
