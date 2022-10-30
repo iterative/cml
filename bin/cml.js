@@ -45,7 +45,7 @@ const aliasLegacyEnvironmentVariables = () => {
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
   }
-}
+};
 
 const setupOpts = (opts) => {
   const { markdownfile } = opts;
