@@ -11,23 +11,6 @@ const CML = require('../src/cml').default;
 const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
-  const legacyEnvironmentVariables = {
-    TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
-    DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
-    RUNNER_IDLE_TIMEOUT: 'CML_RUNNER_IDLE_TIMEOUT',
-    RUNNER_LABELS: 'CML_RUNNER_LABELS',
-    RUNNER_SINGLE: 'CML_RUNNER_SINGLE',
-    RUNNER_REUSE: 'CML_RUNNER_REUSE',
-    RUNNER_NO_RETRY: 'CML_RUNNER_NO_RETRY',
-    RUNNER_DRIVER: 'CML_RUNNER_DRIVER',
-    RUNNER_REPO: 'CML_RUNNER_REPO',
-    RUNNER_PATH: 'CML_RUNNER_PATH'
-  };
-
-  for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
-    if (process.env[oldName]) process.env[newName] = process.env[oldName];
-  }
-
   const legacyEnvironmentPrefixes = {
     CML_CI: 'CML_REPO',
     CML_PUBLISH: 'CML_ASSET',
@@ -44,6 +27,23 @@ const aliasLegacyEnvironmentVariables = () => {
       if (key.startsWith(`${oldPrefix}_`))
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
+  }
+  
+  const legacyEnvironmentVariables = {
+    TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
+    DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
+    RUNNER_IDLE_TIMEOUT: 'CML_RUNNER_IDLE_TIMEOUT',
+    RUNNER_LABELS: 'CML_RUNNER_LABELS',
+    RUNNER_SINGLE: 'CML_RUNNER_SINGLE',
+    RUNNER_REUSE: 'CML_RUNNER_REUSE',
+    RUNNER_NO_RETRY: 'CML_RUNNER_NO_RETRY',
+    RUNNER_DRIVER: 'CML_RUNNER_DRIVER',
+    RUNNER_REPO: 'CML_RUNNER_REPO',
+    RUNNER_PATH: 'CML_RUNNER_PATH'
+  };
+
+  for (const [oldName, newName] of Object.entries(legacyEnvironmentVariables)) {
+    if (process.env[oldName]) process.env[newName] = process.env[oldName];
   }
 };
 
