@@ -28,7 +28,7 @@ const aliasLegacyEnvironmentVariables = () => {
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
   }
-  
+
   const legacyEnvironmentVariables = {
     TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
     DOCKER_MACHINE: 'CML_RUNNER_DOCKER_MACHINE',
