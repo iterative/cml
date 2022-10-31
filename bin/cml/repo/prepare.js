@@ -22,9 +22,7 @@ exports.builder = (yargs) =>
 exports.options = kebabcaseKeys({
   fetchDepth: {
     type: 'number',
-    default: 1,
-    description:
-      'Number of commits to fetch. 0 indicates all history for all branches and tags'
+    description: 'Number of commits to fetch (use `0` for all branches & tags)'
   },
   unshallow: {
     type: 'boolean',
