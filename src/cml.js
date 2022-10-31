@@ -501,20 +501,18 @@ class CML {
       userName = GIT_USER_NAME,
       remote = GIT_REMOTE
     } = opts;
-    let { fetchDepth } = opts;
+    const { fetchDepth = unshallow ? 0 : undefined } = opts;
 
     const driver = this.getDriver();
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
-    if (unshallow) {
-      if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-        fetchDepth = 0;
-      }
-    }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
-        return await exec('git fetch --all --unshallow');
+        if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
+          return await exec('git fetch --all --unshallow');
+        }
+      } else {
+        return await exec(`git fetch --all --depth=${fetchDepth}`);
       }
-      return await exec(`git fetch --all --depth=${fetchDepth}`);
     }
   }
 
