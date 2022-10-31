@@ -152,12 +152,12 @@ cat results.txt >> report.md
 
 :framed_picture: **Images** Display images using the markdown or HTML. Note that
 if an image is an output of your ML workflow (i.e., it is produced by your
-workflow), you can add `--publish` flag to include it a CML report. For example,
-if `graph.png` is output by `python train.py`, run:
+workflow), it can be uploaded and included automaticlly to your CML report. For
+example, if `graph.png` is output by `python train.py`, run:
 
 ```bash
 echo "![](./graph.png)" >> report.md
-cml comment create --publish report.md
+cml comment create report.md
 ```
 
 ### Getting Started
@@ -201,7 +201,7 @@ jobs:
 
           cat metrics.txt >> report.md
           echo "![](./plot.png)" >> report.md
-          cml comment create --publish report.md
+          cml comment create report.md
 ```
 
 3. In your text editor of choice, edit line 16 of `train.py` to `depth = 5`.
@@ -287,7 +287,7 @@ jobs:
           vl2png vega.json -s 1.5 > plot.png
           echo "![](./plot.png)" >> report.md
 
-          cml comment create --publish report.md
+          cml comment create report.md
 ```
 
 > :warning: If you're using DVC with cloud storage, take note of environment
