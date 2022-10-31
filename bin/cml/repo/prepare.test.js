@@ -20,8 +20,8 @@ describe('CML e2e', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --fetch-depth  Number of commits to fetch. 0 indicates all history for all
-                       branches and tags                         [number] [default: 1]
+        --fetch-depth  Number of commits to fetch (use \`0\` for all branches & tags)
+                                                                              [number]
         --user-email   Git user email        [string] [default: \\"olivaw@iterative.ai\\"]
         --user-name    Git user name                 [string] [default: \\"Olivaw[bot]\\"]"
     `);
