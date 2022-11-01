@@ -4,8 +4,11 @@ const winston = require('winston');
 
 const { CML } = require('../../../src/cml');
 
+const DESCRIPTION = 'Publish an asset';
+const DOCSURL = 'https://cml.dev/doc/usage#cml-reports';
+
 exports.command = 'publish <asset>';
-exports.description = 'Publish an asset';
+exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   if (opts.gitlabUploads) {
@@ -56,6 +59,7 @@ exports.options = kebabcaseKeys({
   rmWatermark: {
     type: 'boolean',
     description: 'Avoid CML watermark.',
+    hidden: true,
     telemetryData: 'name'
   },
   mimeType: {
@@ -76,3 +80,4 @@ exports.options = kebabcaseKeys({
       'Specifies the repo to be used. If not specified is extracted from the CI ENV.'
   }
 });
+exports.DOCSURL = DOCSURL;

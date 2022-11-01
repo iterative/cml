@@ -8,8 +8,12 @@ const ProxyAgent = require('proxy-agent');
 
 const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
 
-const { BITBUCKET_COMMIT, BITBUCKET_BRANCH, BITBUCKET_PIPELINE_UUID } =
-  process.env;
+const {
+  BITBUCKET_COMMIT,
+  BITBUCKET_BRANCH,
+  BITBUCKET_PIPELINE_UUID,
+  BITBUCKET_BUILD_NUMBER
+} = process.env;
 
 class BitbucketCloud {
   constructor(opts = {}) {
@@ -419,6 +423,14 @@ class BitbucketCloud {
     git remote set-url ${remote} "${repo.toString()}"`;
 
     return command;
+  }
+
+  get workflowId() {
+    return BITBUCKET_PIPELINE_UUID;
+  }
+
+  get runId() {
+    return BITBUCKET_BUILD_NUMBER;
   }
 
   get sha() {

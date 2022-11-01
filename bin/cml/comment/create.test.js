@@ -3,7 +3,6 @@ const { exec } = require('../../../src/utils');
 describe('Comment integration tests', () => {
   test('cml send-comment --help', async () => {
     const output = await exec(`node ./bin/cml.js send-comment --help`);
-
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-comment <markdown file>
 
@@ -31,8 +30,9 @@ describe('Comment integration tests', () => {
         --publish-native, --native  Uses driver's native capabilities to upload assets
                                     instead of CML's storage; not available on GitHub
                                                                              [boolean]
-        --rm-watermark              Avoid watermark; CML needs a watermark to be able
-                                    to distinguish CML comments from others  [boolean]"
+        --watermark-title           Hidden comment marker (used for targeting in
+                                    subsequent \`cml comment update\`); \\"{workflow}\\" &
+                                    \\"{run}\\" are auto-replaced   [string] [default: \\"\\"]"
     `);
   });
 });

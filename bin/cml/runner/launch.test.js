@@ -11,6 +11,7 @@ describe('CML e2e', () => {
 
       Commands:
         cml.js runner launch  Launch and register a self-hosted runner
+                              https://cml.dev/doc/ref/runner
 
       Global Options:
         --log     Logging verbosity

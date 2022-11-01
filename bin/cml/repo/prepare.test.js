@@ -20,10 +20,10 @@ describe('CML e2e', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --unshallow   Fetch as much as possible, converting a shallow repository to a
-                      complete one                                           [boolean]
-        --user-email  Git user email         [string] [default: \\"olivaw@iterative.ai\\"]
-        --user-name   Git user name                  [string] [default: \\"Olivaw[bot]\\"]"
+        --fetch-depth  Number of commits to fetch (use \`0\` for all branches & tags)
+                                                                              [number]
+        --user-email   Git user email        [string] [default: \\"olivaw@iterative.ai\\"]
+        --user-name    Git user name                 [string] [default: \\"Olivaw[bot]\\"]"
     `);
   });
 });
