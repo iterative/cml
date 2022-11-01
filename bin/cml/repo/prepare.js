@@ -20,10 +20,15 @@ exports.builder = (yargs) =>
     .options(exports.options);
 
 exports.options = kebabcaseKeys({
+  fetchDepth: {
+    type: 'number',
+    description: 'Number of commits to fetch (use `0` for all branches & tags)'
+  },
   unshallow: {
     type: 'boolean',
     description:
-      'Fetch as much as possible, converting a shallow repository to a complete one'
+      'Fetch as much as possible, converting a shallow repository to a complete one',
+    hidden: true
   },
   userEmail: {
     type: 'string',
