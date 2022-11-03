@@ -163,7 +163,7 @@ cml comment create report.md
 ### Getting Started
 
 1. Fork our
-   [example project repository](https://github.com/iterative/example_cml).
+   [example project repository](https://github.com/iterative-test/cml-example-base).
 
 > :warning: Note that if you are using GitLab,
 > [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
