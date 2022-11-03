@@ -163,7 +163,7 @@ cml comment create report.md
 ### Getting Started
 
 1. Fork our
-   [example project repository](https://github.com/iterative/example_cml).
+   [example project repository](https://github.com/iterative-test/cml-example-base).
 
 > :warning: Note that if you are using GitLab,
 > [you will need to create a Personal Access Token](https://github.com/iterative/cml/wiki/CML-with-GitLab#variables)
@@ -632,11 +632,11 @@ apt-get install -y nodejs
 
 These are some example projects using CML.
 
-- [Basic CML project](https://github.com/iterative/cml_base_case)
-- [CML with DVC to pull data](https://github.com/iterative/cml_dvc_case)
-- [CML with Tensorboard](https://github.com/iterative/cml_tensorboard_case)
-- [CML with a small EC2 instance](https://github.com/iterative/cml-runner-base-case)
+- [Basic CML project](https://github.com/iterative-test/cml-example-minimal)
+- [CML with DVC to pull data](https://github.com/iterative-test/cml-example-dvc)
+- [CML with Tensorboard](https://github.com/iterative-test/cml-example-tensorboard)
+- [CML with a small EC2 instance](https://github.com/iterative-test/cml-example-cloud)
   :key:
-- [CML with EC2 GPU](https://github.com/iterative/cml_cloud_case) :key:
+- [CML with EC2 GPU](https://github.com/iterative-test/cml-example-cloud-gpu) :key:
 
 :key: needs a [PAT](#environment-variables).
