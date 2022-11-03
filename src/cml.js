@@ -176,9 +176,6 @@ class CML {
       triggerFile
     } = opts;
 
-    const commitSha =
-      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
-
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
 
@@ -270,7 +267,7 @@ class CML {
     };
 
     const target = await parseCommentTarget({
-      commitSha,
+      inCommitSha,
       pr,
       target: commentTarget,
       drv

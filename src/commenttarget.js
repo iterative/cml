@@ -1,16 +1,10 @@
 const SEPARATOR = '#';
 
 async function parseCommentTarget(opts = {}) {
-  const { commitSha: commit, issue, pr, target, drv } = opts;
+  const { commitSha: commit, pr, target, drv } = opts;
 
   let commentTarget = target;
   // Handle legacy comment target flags.
-  if (issue) {
-    drv.warn(
-      'cml: the --issue flag will be deprecated, please use --target="issue#123"'
-    );
-    commentTarget = `issue#${issue}`;
-  }
   if (commit) {
     drv.warn(
       'cml: the --commitSha flag will be deprecated, please use --target="commit#<sha>"'
