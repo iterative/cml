@@ -27,8 +27,7 @@ describe('Comment integration tests', () => {
                                                             [string] [default: \\"auto\\"]
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
-        --commit-sha, --head-sha    Commit SHA linked to this comment
-                                                            [string] [default: \\"HEAD\\"]
+        --commit-sha, --head-sha    Commit SHA linked to this comment         [string]
         --watch                     Watch for changes and automatically update the
                                     comment                                  [boolean]
         --publish                   Upload any local images found in the Markdown

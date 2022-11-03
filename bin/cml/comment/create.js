@@ -37,7 +37,6 @@ exports.options = kebabcaseKeys({
   commitSha: {
     type: 'string',
     alias: 'head-sha',
-    default: 'HEAD',
     description: 'Commit SHA linked to this comment'
   },
   watch: {
