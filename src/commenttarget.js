@@ -28,6 +28,7 @@ async function parseCommentTarget(opts = {}) {
     case 'commit':
       return { target: 'commit', commitSha: drv.sha };
     case 'pr':
+    case 'auto':
       // Determine PR id from forge env vars (if we're in a PR context).
       prId = drv.pr;
       if (prId) {
@@ -36,11 +37,15 @@ async function parseCommentTarget(opts = {}) {
       // Or fallback to determining PR by HEAD commit.
       // TODO: handle issue with PR HEAD commit not matching source branch in github.
       [commitPr = {}] = await drv.commitPrs({ commitSha: drv.sha });
-      if (!commitPr.url) {
-        throw new Error(`PR for commit sha "${drv.sha}" not found`);
+      if (commitPr.url) {
+        [prId] = commitPr.url.split('/').slice(-1);
+        return { target: 'pr', prNumber: prId };
       }
-      [prId] = commitPr.url.split('/').slice(-1);
-      return { target: 'pr', prNumber: prId };
+      // If target is 'auto', fallback to issuing commit comments.
+      if (commentTarget === 'auto') {
+        return { target: 'commit', commitSha: drv.sha };
+      }
+      throw new Error(`PR for commit sha "${drv.sha}" not found`);
   }
   // Handle qualified comment targets, e.g. 'issue#id'.
   const separatorPos = commentTarget.indexOf(SEPARATOR);

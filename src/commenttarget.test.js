@@ -127,4 +127,47 @@ describe('comment target tests', () => {
       expect(error.message).toBe('comment target "issue" could not be parsed');
     }
   });
+
+  test('auto comment target: pr context', async () => {
+    const drv = {
+      warn: () => {},
+      pr: '4' // driver returns the PR id from context
+    };
+
+    const target = await parseCommentTarget({
+      drv,
+      target: 'auto'
+    });
+    expect(target).toEqual({ target: 'pr', prNumber: '4' });
+  });
+
+  test('auto comment target: pr, commit sha', async () => {
+    const drv = {
+      warn: () => {},
+      pr: null, // not in PR context
+      commitPrs: () => [{ url: 'forge/pr/5' }],
+      sha: 'abcdefg'
+    };
+
+    const target = await parseCommentTarget({
+      drv,
+      target: 'auto'
+    });
+    expect(target).toEqual({ target: 'pr', prNumber: '5' });
+  });
+
+  test('auto comment target: fallback commit sha', async () => {
+    const drv = {
+      warn: () => {},
+      pr: null, // not in PR context
+      commitPrs: () => [],
+      sha: 'abcdefg'
+    };
+
+    const target = await parseCommentTarget({
+      drv,
+      target: 'auto'
+    });
+    expect(target).toEqual({ target: 'commit', commitSha: 'abcdefg' });
+  });
 });

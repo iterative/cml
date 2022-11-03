@@ -19,8 +19,12 @@ describe('Comment integration tests', () => {
 
       Options:
         --target                    Forge object to create comment on, can be one of
-                                    pr, commit or issue.Specify 'issue#123' to create
-                                    a comment on a specific issue.            [string]
+                                    pr, commit or issue. Specify 'issue#123' to create
+                                    a comment on a specific issue. The default 'auto'
+                                    will create a PR comment if running in a forge
+                                    PR-related action or if HEAD is in a PR branch.
+                                    Otherwise a commit comment will be created.
+                                                            [string] [default: \\"auto\\"]
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
         --commit-sha, --head-sha    Commit SHA linked to this comment
