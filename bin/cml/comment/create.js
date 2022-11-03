@@ -25,7 +25,6 @@ exports.options = kebabcaseKeys({
       "Specify 'issue#123' to create a comment on a specific issue. " +
       "The default 'auto' will create a PR comment if running in a forge PR-related action " +
       'or if HEAD is in a PR branch. Otherwise a commit comment will be created.',
-    conflicts: ['pr', 'issue', 'commitSha'],
     default: 'auto'
   },
   pr: {
