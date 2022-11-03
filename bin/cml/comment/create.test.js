@@ -23,7 +23,6 @@ describe('Comment integration tests', () => {
                                     a comment on a specific issue.            [string]
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
-        --issue                     Post to the given issue number            [number]
         --commit-sha, --head-sha    Commit SHA linked to this comment
                                                             [string] [default: \\"HEAD\\"]
         --watch                     Watch for changes and automatically update the

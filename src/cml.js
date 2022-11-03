@@ -164,7 +164,6 @@ class CML {
   async commentCreate(opts = {}) {
     const {
       commitSha: inCommitSha,
-      issue: issueId,
       rmWatermark,
       update,
       pr,
@@ -272,16 +271,13 @@ class CML {
 
     const target = await parseCommentTarget({
       commitSha,
-      issue: issueId,
       pr,
       target: commentTarget,
       drv
     });
 
     if (update) {
-      comment = updatableComment(
-        await drv[target.target + 'Comments']({ issueId })
-      );
+      comment = updatableComment(await drv[target.target + 'Comments'](target));
 
       if (comment)
         return await drv[target.target + 'CommentUpdate']({
