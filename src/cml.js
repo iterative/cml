@@ -171,7 +171,7 @@ class CML {
       publishUrl,
       markdownFile,
       report: testReport,
-      target: commentTarget,
+      target: commentTarget = 'auto',
       watch,
       triggerFile
     } = opts;
