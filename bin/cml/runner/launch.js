@@ -495,7 +495,8 @@ exports.options = kebabcaseKeys({
   cloudType: {
     type: 'string',
     description:
-      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro'
+      'Instance type. Choices: [m, l, xl]. Also supports native types like i.e. t2.micro',
+    telemetryData: 'full'
   },
   cloudPermissionSet: {
     type: 'string',
@@ -518,7 +519,8 @@ exports.options = kebabcaseKeys({
     type: 'string',
     description:
       'GPU type. Choices: k80, v100, or native types e.g. nvidia-tesla-t4',
-    coerce: (val) => (val === 'nogpu' ? undefined : val)
+    coerce: (val) => (val === 'nogpu' ? undefined : val),
+    telemetryData: 'full'
   },
   cloudHddSize: {
     type: 'number',

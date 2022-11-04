@@ -24,6 +24,7 @@ const {
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
+const WATERMARK_IMAGE = 'https://cml.dev/watermark.png';
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
@@ -164,24 +165,53 @@ class CML {
   async commentCreate(opts = {}) {
     const {
       commitSha: inCommitSha,
-      rmWatermark,
-      update,
+      markdownFile,
       pr,
       publish,
       publishUrl,
-      markdownFile,
       report: testReport,
+      rmWatermark,
       target: commentTarget = 'auto',
+      triggerFile,
+      update,
       watch,
-      triggerFile
+      watermarkTitle
     } = opts;
+
+    const drv = this.getDriver();
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
 
+    // Create the watermark.
+    const genWatermark = (opts = {}) => {
+      const { label = '', workflow, run } = opts;
+      // Replace {workflow} and {run} placeholders in label with actual values.
+      const lbl = label.replace('{workflow}', workflow).replace('{run}', run);
+
+      let title = `CML watermark ${lbl}`.trim();
+      // Github appears to escape underscores and asterisks in markdown content.
+      // Without escaping them, the watermark content in comments retrieved
+      // from github will not match the input.
+      const patterns = [
+        [/_/g, '\\_'], // underscore
+        [/\*/g, '\\*'], // asterisk
+        [/\[/g, '\\['], // opening square bracket
+        [/</g, '\\<'] // opening angle bracket
+      ];
+      title = patterns.reduce(
+        (label, pattern) => label.replace(pattern[0], pattern[1]),
+        title
+      );
+      return `![](${WATERMARK_IMAGE} "${title}")`;
+    };
     const watermark = rmWatermark
       ? ''
-      : '![CML watermark](https://raw.githubusercontent.com/iterative/cml/master/assets/watermark.svg)';
+      : genWatermark({
+          label: watermarkTitle,
+          workflow: drv.workflowId,
+          run: drv.runId
+        });
 
     let userReport = testReport;
     try {
@@ -193,15 +223,17 @@ class CML {
     }
 
     let report = `${userReport}\n\n${watermark}`;
-    const drv = this.getDriver();
 
     const publishLocalFiles = async (tree) => {
       const nodes = [];
 
       visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
 
+      const isWatermark = (node) => {
+        return node.title && node.title.startsWith('CML watermark');
+      };
       const visitor = async (node) => {
-        if (node.url && node.alt !== 'CML watermark') {
+        if (node.url && !isWatermark(node)) {
           const absolutePath = path.resolve(
             path.dirname(markdownFile),
             node.url
@@ -262,7 +294,7 @@ class CML {
     let comment;
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
-        return body.includes('watermark.svg');
+        return body.includes(watermark);
       });
     };
 
@@ -435,19 +467,19 @@ class CML {
       userName = GIT_USER_NAME,
       remote = GIT_REMOTE
     } = opts;
-    let { fetchDepth = 1 } = opts;
+    const { fetchDepth = unshallow ? 0 : undefined } = opts;
 
     const driver = this.getDriver();
     await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
-    if (unshallow) {
-      if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-        fetchDepth = 0;
+    if (fetchDepth !== undefined) {
+      if (fetchDepth <= 0) {
+        if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
+          return await exec('git fetch --all --unshallow');
+        }
+      } else {
+        return await exec(`git fetch --all --depth=${fetchDepth}`);
       }
     }
-    if (fetchDepth <= 0) {
-      return await exec('git fetch --all --unshallow');
-    }
-    return await exec(`git fetch --all --depth=${fetchDepth}`);
   }
 
   async prCreate(opts = {}) {
