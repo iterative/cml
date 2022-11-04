@@ -11,7 +11,8 @@ const winston = require('winston');
 
 const { fetchUploadData, download, gpuPresent } = require('../utils');
 
-const { IN_DOCKER, CI_PIPELINE_ID } = process.env;
+const { CI_JOB_ID, CI_PIPELINE_ID, IN_DOCKER } = process.env;
+
 const API_VER = 'v4';
 class Gitlab {
   constructor(opts = {}) {
@@ -487,6 +488,14 @@ class Gitlab {
     }"`;
 
     return command;
+  }
+
+  get workflowId() {
+    return CI_PIPELINE_ID;
+  }
+
+  get runId() {
+    return CI_JOB_ID;
   }
 
   get sha() {
