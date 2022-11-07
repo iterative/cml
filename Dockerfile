@@ -68,6 +68,11 @@ RUN curl --location https://apt.releases.hashicorp.com/gpg | sudo apt-key add - 
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/*
 
+# INSTALL LEO
+RUN curl --location https://github.com/iterative/terraform-provider-iterative/releases/latest/download/leo_linux_amd64 \
+ --output /usr/bin/leo \
+ && chmod +x /usr/bin/leo
+
 # INSTALL PYTHON
 ARG PYTHON_VERSION=3
 RUN add-apt-repository universe --yes \
