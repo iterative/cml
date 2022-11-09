@@ -299,7 +299,7 @@ class CML {
     };
 
     const target = await parseCommentTarget({
-      inCommitSha,
+      commitSha: inCommitSha,
       pr,
       target: commentTarget,
       drv
