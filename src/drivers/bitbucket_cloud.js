@@ -71,7 +71,7 @@ class BitbucketCloud {
     );
   }
 
-  async commentCreate(opts = {}) {
+  async commitCommentCreate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report } = opts;
 
@@ -85,7 +85,7 @@ class BitbucketCloud {
     ).links.html.href;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report, id } = opts;
 
@@ -475,6 +475,16 @@ class BitbucketCloud {
     return BITBUCKET_COMMIT;
   }
 
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if ('BITBUCKET_PR_ID' in process.env) {
+      return process.env.BITBUCKET_PR_ID;
+    }
+    return null;
+  }
+
   get branch() {
     return BITBUCKET_BRANCH;
   }
@@ -535,6 +545,10 @@ class BitbucketCloud {
     }
 
     return responseBody;
+  }
+
+  warn(message) {
+    winston.warn(message);
   }
 }
 

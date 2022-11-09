@@ -10,6 +10,7 @@ const winston = require('winston');
 const remark = require('remark');
 const visit = require('unist-util-visit');
 
+const { parseCommentTarget } = require('./commenttarget');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
@@ -162,16 +163,15 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
-    const triggerSha = await this.triggerSha();
     const {
-      commitSha: inCommitSha = triggerSha,
-      issue: issueId,
+      commitSha,
       markdownFile,
       pr,
       publish,
       publishUrl,
       report: testReport,
       rmWatermark,
+      target: commentTarget = 'auto',
       triggerFile,
       update,
       watch,
@@ -179,9 +179,6 @@ class CML {
     } = opts;
 
     const drv = this.getDriver();
-
-    const commitSha =
-      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
@@ -300,76 +297,27 @@ class CML {
         return body.includes(watermark);
       });
     };
-    // Create or update an issue comment.
-    if (issueId) {
-      if (update) {
-        comment = updatableComment(await drv.issueComments({ issueId }));
 
-        if (comment)
-          return await drv.issueCommentUpdate({
-            report,
-            id: comment.id,
-            issueId
-          });
-      }
-      return await drv.issueCommentCreate({
-        report,
-        issueId
-      });
-    }
-
-    const isBB = this.driver === BB;
-    if (pr || isBB) {
-      let commentUrl;
-
-      if (commitSha !== triggerSha)
-        winston.info(
-          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
-        );
-
-      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr = {}] = await drv.commitPrs({ commitSha });
-      const { url } = commitPr;
-
-      if (!url && !isBB)
-        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
-
-      if (url) {
-        const [prNumber] = url.split('/').slice(-1);
-
-        if (update)
-          comment = updatableComment(await drv.prComments({ prNumber }));
-
-        if (update && comment) {
-          commentUrl = await drv.prCommentUpdate({
-            report: longReport,
-            id: comment.id,
-            prNumber
-          });
-        } else
-          commentUrl = await drv.prCommentCreate({
-            report: longReport,
-            prNumber
-          });
-
-        if (this.driver !== 'bitbucket') return commentUrl;
-      }
-    }
+    const target = await parseCommentTarget({
+      commitSha,
+      pr,
+      target: commentTarget,
+      drv
+    });
 
     if (update) {
-      comment = updatableComment(await drv.commitComments({ commitSha }));
+      comment = updatableComment(await drv[target.target + 'Comments'](target));
 
       if (comment)
-        return await drv.commentUpdate({
+        return await drv[target.target + 'CommentUpdate']({
           report,
           id: comment.id,
-          commitSha
+          ...target
         });
     }
-
-    return await drv.commentCreate({
+    return await drv[target.target + 'CommentCreate']({
       report,
-      commitSha
+      ...target
     });
   }
 

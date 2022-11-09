@@ -17,11 +17,16 @@ describe('Comment integration tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
+        --target                    Forge object to create comment on, can be one of
+                                    pr, commit or issue. Specify 'issue#123' to create
+                                    a comment on a specific issue. By default cml will
+                                    create a PR comment if running in a forge
+                                    PR-related action or if HEAD is in a PR branch.
+                                    Otherwise a commit comment will be created.
+                                                                              [string]
         --pr                        Post to an existing PR/MR associated with the
                                     specified commit                         [boolean]
-        --issue                     Post to the given issue number            [number]
-        --commit-sha, --head-sha    Commit SHA linked to this comment
-                                                            [string] [default: \\"HEAD\\"]
+        --commit-sha, --head-sha    Commit SHA linked to this comment         [string]
         --watch                     Watch for changes and automatically update the
                                     comment                                  [boolean]
         --publish                   Upload any local images found in the Markdown

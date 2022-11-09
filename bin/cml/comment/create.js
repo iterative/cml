@@ -18,22 +18,25 @@ exports.builder = (yargs) =>
     .options(exports.options);
 
 exports.options = kebabcaseKeys({
+  target: {
+    type: 'string',
+    description:
+      'Forge object to create comment on, can be one of pr, commit or issue. ' +
+      "Specify 'issue#123' to create a comment on a specific issue. " +
+      'By default cml will create a PR comment if running in a forge PR-related action ' +
+      'or if HEAD is in a PR branch. Otherwise a commit comment will be created.'
+  },
   pr: {
     type: 'boolean',
     description:
       'Post to an existing PR/MR associated with the specified commit',
-    conflicts: ['issue']
-  },
-  issue: {
-    type: 'number',
-    description: 'Post to the given issue number',
-    conflicts: ['pr']
+    conflicts: ['target', 'commitSha']
   },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
-    default: 'HEAD',
-    description: 'Commit SHA linked to this comment'
+    description: 'Commit SHA linked to this comment',
+    conflicts: ['target', 'pr']
   },
   watch: {
     type: 'boolean',
