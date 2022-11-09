@@ -164,7 +164,7 @@ class CML {
 
   async commentCreate(opts = {}) {
     const {
-      commitSha: inCommitSha,
+      commitSha,
       markdownFile,
       pr,
       publish,
@@ -299,7 +299,7 @@ class CML {
     };
 
     const target = await parseCommentTarget({
-      commitSha: inCommitSha,
+      commitSha,
       pr,
       target: commentTarget,
       drv

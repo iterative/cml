@@ -16,7 +16,7 @@ async function parseCommentTarget(opts = {}) {
     commentTarget = 'pr';
   }
   // Handle comment targets that are incomplete, e.g. 'pr' or 'commit'.
-  let prId;
+  let prNumber;
   let commitPr;
   switch (commentTarget) {
     case 'commit':
@@ -24,16 +24,16 @@ async function parseCommentTarget(opts = {}) {
     case 'pr':
     case 'auto':
       // Determine PR id from forge env vars (if we're in a PR context).
-      prId = drv.pr;
-      if (prId) {
-        return { target: 'pr', prNumber: prId };
+      prNumber = drv.pr;
+      if (prNumber) {
+        return { target: 'pr', prNumber: prNumber };
       }
       // Or fallback to determining PR by HEAD commit.
       // TODO: handle issue with PR HEAD commit not matching source branch in github.
       [commitPr = {}] = await drv.commitPrs({ commitSha: drv.sha });
       if (commitPr.url) {
-        [prId] = commitPr.url.split('/').slice(-1);
-        return { target: 'pr', prNumber: prId };
+        [prNumber] = commitPr.url.split('/').slice(-1);
+        return { target: 'pr', prNumber };
       }
       // If target is 'auto', fallback to issuing commit comments.
       if (commentTarget === 'auto') {

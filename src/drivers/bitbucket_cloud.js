@@ -548,7 +548,7 @@ class BitbucketCloud {
   }
 
   warn(message) {
-    console.error(message);
+    winston.warn(message);
   }
 }
 
