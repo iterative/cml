@@ -30,12 +30,13 @@ exports.options = kebabcaseKeys({
     type: 'boolean',
     description:
       'Post to an existing PR/MR associated with the specified commit',
-    conflicts: ['issue']
+    conflicts: ['target', 'commitSha']
   },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
-    description: 'Commit SHA linked to this comment'
+    description: 'Commit SHA linked to this comment',
+    conflicts: ['target', 'pr']
   },
   watch: {
     type: 'boolean',
