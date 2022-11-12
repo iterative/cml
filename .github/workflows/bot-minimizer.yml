@@ -1,0 +1,23 @@
+name: Hide Bot Comment
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pr_commented:
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Minimize bot Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api graphql -F reason='RESOLVED' -F node_id='${{ github.event.comment.node_id }}' -f query='
+          mutation {
+            minimizeComment(input: {classifier: $reason, subjectId: $node_id}) {
+              minimizedComment {
+                isMinimized
+              }
+            }
+          }
+          '
