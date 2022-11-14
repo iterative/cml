@@ -569,6 +569,7 @@ class CML {
     ).includes(source);
 
     if (branchExists) {
+      driver.warn(`Branch ${source} already exists`);
       const prs = await driver.prs();
       const { url } =
         prs.find(
