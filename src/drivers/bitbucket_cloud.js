@@ -463,10 +463,6 @@ class BitbucketCloud {
     return command;
   }
 
-  warn(message) {
-    winston.warn(message);
-  }
-
   get workflowId() {
     return BITBUCKET_PIPELINE_UUID;
   }

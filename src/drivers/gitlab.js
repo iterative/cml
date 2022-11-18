@@ -490,10 +490,6 @@ class Gitlab {
     return command;
   }
 
-  warn(message) {
-    winston.warn(message);
-  }
-
   get workflowId() {
     return CI_PIPELINE_ID;
   }
