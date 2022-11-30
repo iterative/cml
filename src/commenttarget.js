@@ -18,7 +18,7 @@ async function parseCommentTarget(opts = {}) {
   // Handle comment targets that are incomplete, e.g. 'pr' or 'commit'.
   let prNumber;
   let commitPr;
-  switch (commentTarget) {
+  switch (commentTarget.toLowerCase()) {
     case 'commit':
       return { target: 'commit', commitSha: drv.sha };
     case 'pr':
@@ -48,7 +48,7 @@ async function parseCommentTarget(opts = {}) {
   }
   const targetType = commentTarget.slice(0, separatorPos);
   const id = commentTarget.slice(separatorPos + 1);
-  switch (targetType) {
+  switch (targetType.toLowerCase()) {
     case 'commit':
       return { target: targetType, commitSha: id };
     case 'pr':
