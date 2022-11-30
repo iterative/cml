@@ -57,7 +57,7 @@ jobs:
           --header "PRIVATE-TOKEN: ${{ github.token }}" \
           --request GET \
           | jq -r .id \
-          | xargs -0 printf "::set-output name=hash::%s"
+          | xargs -0 printf "hash=%s" >> $GITHUB_OUTPUT
       - run: npm ci
       - name: Run cml-send-comment
         run: |
