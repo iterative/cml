@@ -441,7 +441,7 @@ exports.options = kebabcaseKeys({
   },
   name: {
     type: 'string',
-    default: `cml-${randid()}`,
+    default: `${randid()}`,
     defaultDescription: 'cml-{ID}',
     description: 'Name displayed in the repository once registered'
   },
