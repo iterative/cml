@@ -71,7 +71,13 @@ jobs:
               echo "${registry}/cml:${tag}"
             done | head -c-1
           )"
-          echo tags="${TAGS//$'\n'/'%0A'}" >> $GITHUB_OUTPUT
+
+          # https://github.com/orgs/community/discussions/26288#discussioncomment-3876281
+          # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+          delim="$(openssl rand -hex 8)"
+          echo "tags<<${delim}" >> $GITHUB_OUTPUT
+          echo "${TAGS}" >> $GITHUB_OUTPUT
+          echo "${delim}" >> $GITHUB_OUTPUT
       - uses: docker/setup-buildx-action@v2
       - uses: actions/cache@v3
         with:
