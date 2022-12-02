@@ -508,7 +508,7 @@ class CML {
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
         if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-          return await exec('git fetch --all --unshallow');
+          return await exec('git fetch --all --tags --unshallow');
         }
       } else {
         return await exec(`git fetch --all --depth=${fetchDepth}`);
