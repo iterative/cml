@@ -543,7 +543,7 @@ class CML {
     };
 
     const { files } = await git.status();
-    if (!files.length && globs.length) {
+    if (!files.length) {
       winston.warn('No files changed. Nothing to do.');
       return;
     }
@@ -551,6 +551,10 @@ class CML {
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
+    if (!paths.length) {
+      winston.warn('Input files are not affected. Nothing to do.');
+      return;
+    }
 
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
@@ -577,16 +581,12 @@ class CML {
       await exec(`git fetch ${remote} ${sha}`);
       await exec(`git checkout -B ${target} ${sha}`);
       await exec(`git checkout -b ${source}`);
-
-      if (paths.length) {
-        await exec(`git add ${paths.join(' ')}`);
-        let commitMessage = message || `CML PR for ${shaShort}`;
-        if (skipCi || (!message && !(merge || rebase || squash))) {
-          commitMessage += ' [skip ci]';
-        }
-        await exec(`git commit -m "${commitMessage}"`);
+      await exec(`git add ${paths.join(' ')}`);
+      let commitMessage = message || `CML PR for ${shaShort}`;
+      if (skipCi || (!message && !(merge || rebase || squash))) {
+        commitMessage += ' [skip ci]';
       }
-
+      await exec(`git commit -m "${commitMessage}"`);
       await exec(`git push --set-upstream ${remote} ${source}`);
     }
 

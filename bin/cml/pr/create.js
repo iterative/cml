@@ -9,7 +9,7 @@ const {
 const DESCRIPTION = 'Create a pull request with the specified files';
 const DOCSURL = 'https://cml.dev/doc/ref/pr';
 
-exports.command = 'create [glob path...]';
+exports.command = 'create <glob path...>';
 exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
