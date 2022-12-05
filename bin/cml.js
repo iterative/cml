@@ -12,12 +12,20 @@ const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
   const legacyEnvironmentPrefixes = {
-    CML_CI: 'CML_REPO',
-    CML_PUBLISH: 'CML_ASSET',
-    CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
-    CML_SEND_COMMENT: 'CML_COMMENT',
-    CML_SEND_GITHUB_CHECK: 'CML_CHECK',
-    CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
+    CML_CI: 'CML',
+    CML_PUBLISH: 'CML',
+    CML_RERUN_WORKFLOW: 'CML',
+    CML_SEND_COMMENT: 'CML',
+    CML_SEND_GITHUB_CHECK: 'CML',
+    CML_TENSORBOARD_DEV: 'CML',
+    CML_ASSET: 'CML',
+    CML_CHECK: 'CML',
+    CML_COMMENT: 'CML',
+    CML_PR: 'CML',
+    CML_REPO: 'CML',
+    CML_RUNNER: 'CML',
+    CML_TENSORBOARD: 'CML',
+    CML_WORKFLOW: 'CML'
   };
 
   for (const [oldPrefix, newPrefix] of Object.entries(
@@ -124,7 +132,6 @@ const handleError = (message, error) => {
 
   try {
     await yargs
-      .env('CML')
       .options({
         log: {
           type: 'string',
@@ -146,10 +153,11 @@ const handleError = (message, error) => {
           description: 'Repository URL or slug',
           group: 'Global Options:'
         },
-        token: {
+        driverToken: {
           type: 'string',
+          alias: 'token',
           defaultDescription: 'infer from the environment',
-          description: 'Personal access token',
+          description: 'Driver personal access token',
           group: 'Global Options:'
         }
       })

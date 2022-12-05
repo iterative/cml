@@ -7,14 +7,16 @@ describe('Comment integration tests', () => {
       "cml.js send-comment <markdown file>
 
       Global Options:
-        --log     Logging verbosity
+        --log                   Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver  Git provider where the repository is hosted
+        --driver                Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-        --repo    Repository URL or slug[string] [default: infer from the environment]
-        --token   Personal access token [string] [default: infer from the environment]
-        --help    Show help                                                  [boolean]
+        --repo                  Repository URL or slug
+                                        [string] [default: infer from the environment]
+        --driverToken, --token  Driver personal access token
+                                        [string] [default: infer from the environment]
+        --help                  Show help                                    [boolean]
 
       Options:
         --pr                        Post to an existing PR/MR associated with the

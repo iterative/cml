@@ -18,14 +18,16 @@ describe('command-line interface tests', () => {
         cml.js ci                 Prepare Git repository for CML operations
 
       Global Options:
-        --log     Logging verbosity
+        --log                   Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver  Git provider where the repository is hosted
+        --driver                Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-        --repo    Repository URL or slug[string] [default: infer from the environment]
-        --token   Personal access token [string] [default: infer from the environment]
-        --help    Show help                                                  [boolean]
+        --repo                  Repository URL or slug
+                                        [string] [default: infer from the environment]
+        --driverToken, --token  Driver personal access token
+                                        [string] [default: infer from the environment]
+        --help                  Show help                                    [boolean]
 
       Options:
         --version  Show version number                                       [boolean]"
