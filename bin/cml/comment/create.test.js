@@ -14,7 +14,7 @@ describe('Comment integration tests', () => {
                                                                           environment]
         --repo                   Repository URL or slug
                                         [string] [default: infer from the environment]
-        --driver-token, --token  Driver personal access token
+        --driver-token, --token  CI driver personal/project access token (PAT)
                                         [string] [default: infer from the environment]
         --help                   Show help                                   [boolean]
 

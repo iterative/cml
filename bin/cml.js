@@ -159,7 +159,7 @@ const handleError = (message, error) => {
             type: 'string',
             alias: 'token',
             defaultDescription: 'infer from the environment',
-            description: 'Driver personal access token',
+            description: 'CI driver personal/project access token (PAT)',
             group: 'Global Options:'
           }
         })

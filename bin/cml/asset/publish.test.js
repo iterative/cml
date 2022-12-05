@@ -16,7 +16,7 @@ describe('CML cli test', () => {
             --repo                   Specifies the repo to be used. If not specified
                                      is extracted from the CI ENV.
                                         [string] [default: infer from the environment]
-            --driver-token, --token  Driver personal access token
+            --driver-token, --token  CI driver personal/project access token (PAT)
                                         [string] [default: infer from the environment]
             --help                   Show help                               [boolean]
 
