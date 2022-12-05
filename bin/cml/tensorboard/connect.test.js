@@ -8,16 +8,16 @@ describe('CML e2e', () => {
       "cml.js tensorboard-dev
 
       Global Options:
-            --log                   Logging verbosity
+            --log                    Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver                Git provider where the repository is hosted
+            --driver                 Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-            --repo                  Repository URL or slug
+            --repo                   Repository URL or slug
                                         [string] [default: infer from the environment]
-            --driverToken, --token  Driver personal access token
+            --driver-token, --token  Driver personal access token
                                         [string] [default: infer from the environment]
-            --help                  Show help                                [boolean]
+            --help                   Show help                               [boolean]
 
       Options:
         -c, --credentials  TensorBoard credentials as JSON, usually found at

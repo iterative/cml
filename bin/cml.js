@@ -3,6 +3,7 @@
 const { basename } = require('path');
 const { pseudoexec } = require('pseudoexec');
 
+const kebabcaseKeys = require('kebabcase-keys');
 const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
@@ -132,35 +133,37 @@ const handleError = (message, error) => {
 
   try {
     await yargs
-      .options({
-        log: {
-          type: 'string',
-          description: 'Logging verbosity',
-          choices: ['error', 'warn', 'info', 'debug'],
-          default: 'info',
-          group: 'Global Options:'
-        },
-        driver: {
-          type: 'string',
-          choices: ['github', 'gitlab', 'bitbucket'],
-          defaultDescription: 'infer from the environment',
-          description: 'Git provider where the repository is hosted',
-          group: 'Global Options:'
-        },
-        repo: {
-          type: 'string',
-          defaultDescription: 'infer from the environment',
-          description: 'Repository URL or slug',
-          group: 'Global Options:'
-        },
-        driverToken: {
-          type: 'string',
-          alias: 'token',
-          defaultDescription: 'infer from the environment',
-          description: 'Driver personal access token',
-          group: 'Global Options:'
-        }
-      })
+      .options(
+        kebabcaseKeys({
+          log: {
+            type: 'string',
+            description: 'Logging verbosity',
+            choices: ['error', 'warn', 'info', 'debug'],
+            default: 'info',
+            group: 'Global Options:'
+          },
+          driver: {
+            type: 'string',
+            choices: ['github', 'gitlab', 'bitbucket'],
+            defaultDescription: 'infer from the environment',
+            description: 'Git provider where the repository is hosted',
+            group: 'Global Options:'
+          },
+          repo: {
+            type: 'string',
+            defaultDescription: 'infer from the environment',
+            description: 'Repository URL or slug',
+            group: 'Global Options:'
+          },
+          driverToken: {
+            type: 'string',
+            alias: 'token',
+            defaultDescription: 'infer from the environment',
+            description: 'Driver personal access token',
+            group: 'Global Options:'
+          }
+        })
+      )
       .global('version', false)
       .group('help', 'Global Options:')
       .fail(handleError)

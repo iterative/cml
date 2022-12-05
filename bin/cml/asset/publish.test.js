@@ -8,17 +8,17 @@ describe('CML cli test', () => {
       "cml.js publish <asset>
 
       Global Options:
-            --log                   Logging verbosity
+            --log                    Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver                Git provider where the repository is hosted
+            --driver                 Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-            --repo                  Specifies the repo to be used. If not specified is
-                                    extracted from the CI ENV.
+            --repo                   Specifies the repo to be used. If not specified
+                                     is extracted from the CI ENV.
                                         [string] [default: infer from the environment]
-            --driverToken, --token  Driver personal access token
+            --driver-token, --token  Driver personal access token
                                         [string] [default: infer from the environment]
-            --help                  Show help                                [boolean]
+            --help                   Show help                               [boolean]
 
       Options:
             --md         Output in markdown format [title || name](url)      [boolean]
