@@ -22,17 +22,19 @@ const getos = async () => {
 
 const waitForever = () => new Promise((resolve) => resolve);
 
-const exec = async (command) => {
+const exec = async (file, ...args) => {
   return new Promise((resolve, reject) => {
-    require('child_process').exec(
-      command,
+    require('child_process').execFile(
+      file,
+      args,
       { ...process.env },
       (error, stdout, stderr) => {
         if (!process.stdout.isTTY) {
           stdout = stripAnsi(stdout);
           stderr = stripAnsi(stderr);
         }
-        if (error) reject(new Error(`${command}\n\t${stdout}\n\t${stderr}`));
+        if (error)
+          reject(new Error(`${[file, ...args]}\n\t${stdout}\n\t${stderr}`));
 
         resolve((stdout || stderr).slice(0, -1));
       }

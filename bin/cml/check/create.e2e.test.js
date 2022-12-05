@@ -15,7 +15,7 @@ describe('CML e2e', () => {
 
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTIONS &&
-      (await exec(`node ./bin/cml.js send-github-check ${path}`));
+      (await exec('node', './bin/cml.js', 'send-github-check', path));
   });
 
   test('cml send-github-check failure with tile "CML neutral test"', async () => {
@@ -26,7 +26,14 @@ describe('CML e2e', () => {
     await fs.writeFile(path, report);
     process.env.GITHUB_ACTIONS &&
       (await exec(
-        `node ./bin/cml.js send-github-check ${path} --title "${title}" --conclusion "${conclusion}"`
+        'node',
+        './bin/cml.js',
+        'send-github-check',
+        path,
+        '--title',
+        title,
+        '--conclusion',
+        conclusion
       ));
   });
 });

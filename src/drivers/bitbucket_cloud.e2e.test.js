@@ -50,14 +50,51 @@ describe('Non Enviromental tests', () => {
       remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
-      "
-          git config --unset user.name;
-          git config --unset user.email;
-          git config --unset push.default;
-          git config --unset http.http://bitbucket.org/test/test.proxy;
-          git config user.name \\"john\\" &&
-          git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test\\""
+      Array [
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "user.name",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "user.email",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "push.default",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "http.http://bitbucket.org/test/test.proxy",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.name",
+          "john",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.email",
+          "john@test.com",
+        ],
+        Array [
+          "git",
+          "remote",
+          "set-url",
+          "origin",
+          "https://user:pass@bitbucket.org/test/test",
+        ],
+      ]
     `);
   });
 });
