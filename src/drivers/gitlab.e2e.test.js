@@ -72,7 +72,7 @@ describe('Non Enviromental tests', () => {
           "remote",
           "set-url",
           "origin",
-          "",
+          "https://token:dXNlcjpwYXNz@gitlab.com/test/test.git",
         ],
       ]
     `);

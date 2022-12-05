@@ -443,7 +443,7 @@ class Gitlab {
         'remote',
         'set-url',
         remote,
-        repo.toString() + repo.toString().endsWith('.git') ? '' : '.git'
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
       ]
     ];
 
