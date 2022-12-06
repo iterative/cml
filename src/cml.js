@@ -520,7 +520,7 @@ class CML {
           return await exec('git', 'fetch', '--all', '--unshallow');
         }
       } else {
-        return await exec('git', 'fetch', '--all', `--depth=${fetchDepth}`);
+        return await exec('git', 'fetch', '--all', '--depth', fetchDepth);
       }
     }
   }
