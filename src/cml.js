@@ -520,7 +520,7 @@ class CML {
     const driver = this.getDriver();
     const {
       remote = GIT_REMOTE,
-      globs = ['dvc.lock', '.gitignore'],
+      globs = [],
       md,
       skipCi,
       branch,
