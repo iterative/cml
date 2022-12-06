@@ -2,7 +2,7 @@ const { exec } = require('../../../src/utils');
 
 describe('CML cli test', () => {
   test('cml publish --help', async () => {
-    const output = await exec(`node ./bin/cml.js publish --help`);
+    const output = await exec('node', './bin/cml.js', 'publish', '--help');
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js publish <asset>
