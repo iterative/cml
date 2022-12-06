@@ -286,7 +286,7 @@ class Github {
         '--work',
         resolve(workdir, '_work'),
         // adds `--ephemeral` to the array only if `single` is set
-        ...(single && ['--ephemeral'])
+        ...(single ? ['--ephemeral'] : [])
       );
 
       return spawn(resolve(workdir, 'run.sh'), {

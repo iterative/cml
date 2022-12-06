@@ -64,7 +64,7 @@ const destroy = async (opts = {}) => {
     dir,
     'destroy',
     '-auto-approve',
-    ...(target && ['-target', target])
+    ...(target ? ['-target', target] : [])
   );
 };
 
