@@ -2,7 +2,12 @@ const { exec } = require('../../../src/utils');
 
 describe('CML e2e', () => {
   test('cml tensorboard-dev --help', async () => {
-    const output = await exec(`node ./bin/cml.js tensorboard-dev --help`);
+    const output = await exec(
+      'node',
+      './bin/cml.js',
+      'tensorboard-dev',
+      '--help'
+    );
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js tensorboard-dev

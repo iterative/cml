@@ -15,9 +15,27 @@ const {
 
 const launchRunner = async (opts) => {
   const { cloud, type, repo, token, privateKey, name } = opts;
-  const command = `node ./bin/cml.js runner --cloud ${cloud} --cloud-type ${type} --repo ${repo} --token ${token} --cloud-ssh-private="${privateKey}" --name ${name} --cloud-spot true --idle-timeout ${IDLE_TIMEOUT}`;
-
-  const output = await exec(command);
+  const output = await exec(
+    'node',
+    './bin/cml.js',
+    'runner',
+    '--cloud',
+    cloud,
+    '--cloud-type',
+    type,
+    '--repo',
+    repo,
+    '--token',
+    token,
+    '--cloud-ssh-private',
+    privateKey,
+    '--name',
+    name,
+    '--cloud-spot',
+    'true',
+    '--idle-timeout',
+    IDLE_TIMEOUT
+  );
   const state = JSON.parse(output.split(/\n/).pop());
 
   return state;
