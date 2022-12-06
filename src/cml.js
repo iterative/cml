@@ -586,20 +586,20 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git checkout -b ${source}`);
-      await exec(`git fetch ${remote} ${sha}`);
-      await exec(`git checkout -B ${target} ${sha}`);
+      await exec('git', 'fetch', remote, sha);
+      await exec('git', 'checkout', '-b', source);
+      await exec('git', 'checkout', '-B', target, sha);
 
       if (paths.length) {
-        await exec(`git add ${paths.join(' ')}`);
+        await exec('git', 'add', paths.join(' '));
         let commitMessage = message || `CML PR for ${shaShort}`;
         if (skipCi || (!message && !(merge || rebase || squash))) {
           commitMessage += ' [skip ci]';
         }
-        await exec(`git commit -m "${commitMessage}"`);
+        await exec('git', 'commit', '-m', commitMessage);
       }
 
-      await exec(`git push --set-upstream ${remote} ${source}`);
+      await exec('git', 'push', '--set-upstream', remote, source);
     }
 
     const url = await driver.prCreate({
