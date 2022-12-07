@@ -595,7 +595,7 @@ class CML {
       await exec('git', 'checkout', '-B', target, sha);
 
       if (paths.length) {
-        await exec('git', 'add', paths.join(' '));
+        await exec('git', 'add', ...paths);
         let commitMessage = message || `CML PR for ${shaShort}`;
         if (skipCi || (!message && !(merge || rebase || squash))) {
           commitMessage += ' [skip ci]';
