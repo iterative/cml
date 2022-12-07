@@ -95,7 +95,7 @@ const userId = async ({ cml } = {}) => {
       } else if (ci === 'bitbucket') {
         rawId = BITBUCKET_STEP_TRIGGERER_UUID;
       } else {
-        rawId = await exec(`git log -1 --pretty=format:'%ae'`);
+        rawId = await exec('git', 'log', '-1', "--pretty=format:'%ae'");
       }
 
       return await deterministic(rawId);

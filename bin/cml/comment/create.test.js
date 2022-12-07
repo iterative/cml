@@ -2,7 +2,7 @@ const { exec } = require('../../../src/utils');
 
 describe('Comment integration tests', () => {
   test('cml send-comment --help', async () => {
-    const output = await exec(`node ./bin/cml.js send-comment --help`);
+    const output = await exec('node', './bin/cml.js', 'send-comment', '--help');
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-comment <markdown file>
 

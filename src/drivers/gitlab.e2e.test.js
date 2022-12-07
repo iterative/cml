@@ -63,10 +63,27 @@ describe('Non Enviromental tests', () => {
       remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
-      "
-          git config user.name \\"john\\" &&
-          git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://token:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+      Array [
+        Array [
+          "git",
+          "config",
+          "user.name",
+          "john",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.email",
+          "john@test.com",
+        ],
+        Array [
+          "git",
+          "remote",
+          "set-url",
+          "origin",
+          "https://token:dXNlcjpwYXNz@gitlab.com/test/test.git",
+        ],
+      ]
     `);
   });
 });

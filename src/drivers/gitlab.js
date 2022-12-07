@@ -480,14 +480,19 @@ class Gitlab {
     repo.password = this.token;
     repo.username = 'token';
 
-    const command = `
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url ${remote} "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
+    const commands = [
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      [
+        'git',
+        'remote',
+        'set-url',
+        remote,
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
+      ]
+    ];
 
-    return command;
+    return commands;
   }
 
   get workflowId() {

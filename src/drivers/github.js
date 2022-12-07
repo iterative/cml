@@ -273,15 +273,20 @@ class Github {
       }
 
       await exec(
-        `${resolve(
-          workdir,
-          'config.sh'
-        )} --unattended --token "${await this.runnerToken()}" --url "${
-          this.repo
-        }" --name "${name}" --labels "${labels}" --work "${resolve(
-          workdir,
-          '_work'
-        )}" ${single ? ' --ephemeral' : ''}`
+        resolve(workdir, 'config.sh'),
+        '--unattended',
+        '--token',
+        await this.runnerToken(),
+        '--url',
+        this.repo,
+        '--name',
+        name,
+        '--labels',
+        labels,
+        '--work',
+        resolve(workdir, '_work'),
+        // adds `--ephemeral` to the array only if `single` is set
+        ...(single ? ['--ephemeral'] : [])
       );
 
       return spawn(resolve(workdir, 'run.sh'), {
@@ -746,15 +751,20 @@ class Github {
     repo.password = this.token;
     repo.username = 'token';
 
-    const command = `
-    git config --unset http.https://github.com/.extraheader;
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url ${remote} "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
+    const commands = [
+      ['git', 'config', '--unset', 'http.https://github.com/.extraheader'],
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      [
+        'git',
+        'remote',
+        'set-url',
+        remote,
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
+      ]
+    ];
 
-    return command;
+    return commands;
   }
 
   get workflowId() {

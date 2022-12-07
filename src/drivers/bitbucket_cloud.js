@@ -247,7 +247,7 @@ class BitbucketCloud {
         throw err;
       }
     } finally {
-      await exec(`docker stop ${name}`);
+      await exec('docker', 'stop', name);
     }
   }
 
@@ -451,16 +451,22 @@ class BitbucketCloud {
     repo.protocol = 'https';
     repo.pathname = repo.pathname.replace('.git', '');
 
-    const command = `
-    git config --unset user.name;
-    git config --unset user.email;
-    git config --unset push.default;
-    git config --unset http.http://${repo.host}${repo.pathname}.proxy;
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url ${remote} "${repo.toString()}"`;
+    const commands = [
+      ['git', 'config', '--unset', 'user.name'],
+      ['git', 'config', '--unset', 'user.email'],
+      ['git', 'config', '--unset', 'push.default'],
+      [
+        'git',
+        'config',
+        '--unset',
+        `http.http://${repo.host}${repo.pathname}.proxy`
+      ],
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      ['git', 'remote', 'set-url', remote, repo.toString()]
+    ];
 
-    return command;
+    return commands;
   }
 
   get workflowId() {

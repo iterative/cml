@@ -8,8 +8,8 @@ const commands = Object.keys(bin)
 describe('command-line interface tests', () => {
   for (const command of commands)
     test(`legacy cml-${command} behaves as the new cml ${command}`, async () => {
-      const legacyOutput = await exec(`cml-${command} --help`);
-      const newOutput = await exec(`cml ${command} --help`);
+      const legacyOutput = await exec(`cml-${command}`, '--help');
+      const newOutput = await exec('cml', command, '--help');
       expect(legacyOutput).toBe(newOutput);
     });
 });

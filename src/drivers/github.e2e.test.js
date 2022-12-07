@@ -54,11 +54,33 @@ describe('Non Enviromental tests', () => {
     });
     const command = await client.updateGitConfig({ remote: 'origin' });
     expect(command).toMatchInlineSnapshot(`
-      "
-          git config --unset http.https://github.com/.extraheader;
-          git config user.name \\"GitHub Action\\" &&
-          git config user.email \\"action@github.com\\" &&
-          git remote set-url origin \\"https://token:dXNlcjpwYXNz@github.com/test/test.git\\""
+      Array [
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "http.https://github.com/.extraheader",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.name",
+          "GitHub Action",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.email",
+          "action@github.com",
+        ],
+        Array [
+          "git",
+          "remote",
+          "set-url",
+          "origin",
+          "https://token:dXNlcjpwYXNz@github.com/test/test.git",
+        ],
+      ]
     `);
   });
 
