@@ -510,7 +510,11 @@ class CML {
       remote
     });
     for (const command of commands) {
-      await exec(...command);
+      try {
+        await exec(...command);
+      } catch (err) {
+        winston.warn(err);
+      }
     }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
