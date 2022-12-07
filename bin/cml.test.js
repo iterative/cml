@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 describe('command-line interface tests', () => {
   test('cml --help', async () => {
-    const output = await exec(`node ./bin/cml.js --help`);
+    const output = await exec('node', './bin/cml.js', '--help');
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js <command>

@@ -2,7 +2,12 @@ const { exec } = require('../../../src/utils');
 
 describe('CML e2e', () => {
   test('cml send-github-check --help', async () => {
-    const output = await exec(`node ./bin/cml.js send-github-check --help`);
+    const output = await exec(
+      'node',
+      './bin/cml.js',
+      'send-github-check',
+      '--help'
+    );
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js send-github-check <markdown file>

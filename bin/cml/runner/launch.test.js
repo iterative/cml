@@ -2,7 +2,7 @@ const { exec } = require('../../../src/utils');
 
 describe('CML e2e', () => {
   test('cml-runner --help', async () => {
-    const output = await exec(`echo none | node ./bin/cml.js runner --help`);
+    const output = await exec('node', './bin/cml.js', 'runner', '--help');
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js runner

@@ -87,7 +87,7 @@ exports.handler = async (opts) => {
   await fs.mkdir(path, { recursive: true });
   await fs.writeFile(`${path}/uploader-creds.json`, credentials);
 
-  const help = await exec('tensorboard dev upload -h');
+  const help = await exec('tensorboard', 'dev', 'upload', '-h');
   const extraParamsFound =
     (name || description) && help.indexOf('--description') >= 0;
   const extraParams = extraParamsFound
