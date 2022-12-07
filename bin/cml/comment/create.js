@@ -21,22 +21,22 @@ exports.options = kebabcaseKeys({
   target: {
     type: 'string',
     description:
-      'Forge object to create comment on, can be one of pr, commit or issue. ' +
-      "Specify 'issue#123' to create a comment on a specific issue. " +
-      'By default cml will create a PR comment if running in a forge PR-related action ' +
-      'or if HEAD is in a PR branch. Otherwise a commit comment will be created.'
+      'Comment type (`commit`, `pr`, `issue`, `commit#f00bar`, `pr#42`, `issue#1337`),' +
+      'default is automatic (`pr` but fallback to `commit`).'
   },
   pr: {
     type: 'boolean',
     description:
       'Post to an existing PR/MR associated with the specified commit',
-    conflicts: ['target', 'commitSha']
+    conflicts: ['target', 'commitSha'],
+    hidden: true
   },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
     description: 'Commit SHA linked to this comment',
-    conflicts: ['target', 'pr']
+    conflicts: ['target', 'pr'],
+    hidden: true
   },
   watch: {
     type: 'boolean',
