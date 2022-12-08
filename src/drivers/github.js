@@ -700,8 +700,22 @@ class Github {
     repo.password = this.token;
     repo.username = 'token';
 
+    // dont run --unset twice
+    let rmHeader = true;
+    try {
+      await exec(
+        'git',
+        'config',
+        '--get',
+        'http.https://github.com/.extraheader'
+      );
+    } catch (err) {
+      rmHeader = false;
+    }
     const commands = [
-      ['git', 'config', '--unset', 'http.https://github.com/.extraheader'],
+      rmHeader
+        ? ['git', 'config', '--unset', 'http.https://github.com/.extraheader']
+        : [],
       ['git', 'config', 'user.name', userName || this.userName],
       ['git', 'config', 'user.email', userEmail || this.userEmail],
       [
