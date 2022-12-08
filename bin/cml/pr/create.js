@@ -6,7 +6,9 @@ const {
   GIT_USER_EMAIL
 } = require('../../../src/cml');
 
-const DESCRIPTION = 'Create a pull request, optionally committing the specified files first.';
+const DESCRIPTION =
+  'Create a pull request, optionally committing the specified files first.';
+
 const DOCSURL = 'https://cml.dev/doc/ref/pr';
 
 exports.command = 'create [glob path...]';
