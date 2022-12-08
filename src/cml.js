@@ -509,10 +509,11 @@ class CML {
       userEmail,
       remote
     });
-    console.log(commands);
+    // console.log(commands);
     for (const command of commands) {
-      console.log(command);
-      await exec(command);
+      console.log(...command);
+      await exec(...command);
+      // await exec.apply(this, command)
     }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
