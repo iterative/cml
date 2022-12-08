@@ -700,6 +700,18 @@ class Github {
     repo.password = this.token;
     repo.username = 'token';
 
+    const commands = [
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      [
+        'git',
+        'remote',
+        'set-url',
+        remote,
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
+      ]
+    ];
+
     // dont run --unset twice
     let rmHeader = true;
     try {
@@ -712,20 +724,14 @@ class Github {
     } catch (err) {
       rmHeader = false;
     }
-    const commands = [
-      rmHeader
-        ? ['git', 'config', '--unset', 'http.https://github.com/.extraheader']
-        : [],
-      ['git', 'config', 'user.name', userName || this.userName],
-      ['git', 'config', 'user.email', userEmail || this.userEmail],
-      [
+    if (rmHeader) {
+      commands.unshift([
         'git',
-        'remote',
-        'set-url',
-        remote,
-        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
-      ]
-    ];
+        'config',
+        '--unset',
+        'http.https://github.com/.extraheader'
+      ]);
+    }
 
     return commands;
   }
