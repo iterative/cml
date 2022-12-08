@@ -1,4 +1,4 @@
-const SEPARATOR = '#';
+const SEPARATOR = '/';
 
 async function parseCommentTarget(opts = {}) {
   const { commitSha: commit, pr, target, drv } = opts;
@@ -7,9 +7,9 @@ async function parseCommentTarget(opts = {}) {
   // Handle legacy comment target flags.
   if (commit) {
     drv.warn(
-      'cml: the --commitSha flag will be deprecated, please use --target="commit#<sha>"'
+      'cml: the --commitSha flag will be deprecated, please use --target="commit/<sha>"'
     );
-    commentTarget = `commit#${commit}`;
+    commentTarget = `commit${SEPARATOR}${commit}`;
   }
   if (pr) {
     drv.warn('cml: the --pr flag will be deprecated, please use --target="pr"');
@@ -41,7 +41,7 @@ async function parseCommentTarget(opts = {}) {
       }
       throw new Error(`PR for commit sha "${drv.sha}" not found`);
   }
-  // Handle qualified comment targets, e.g. 'issue#id'.
+  // Handle qualified comment targets, e.g. 'issue/id'.
   const separatorPos = commentTarget.indexOf(SEPARATOR);
   if (separatorPos === -1) {
     throw new Error(`comment target "${commentTarget}" could not be parsed`);

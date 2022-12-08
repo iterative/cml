@@ -17,8 +17,8 @@ describe('Comment integration tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --target                    Comment type (\`commit\`, \`pr\`, \`commit#f00bar\`,
-                                    \`pr#42\`, \`issue#1337\`),default is automatic (\`pr\`
+        --target                    Comment type (\`commit\`, \`pr\`, \`commit/f00bar\`,
+                                    \`pr/42\`, \`issue/1337\`),default is automatic (\`pr\`
                                     but fallback to \`commit\`).                [string]
         --watch                     Watch for changes and automatically update the
                                     comment                                  [boolean]
