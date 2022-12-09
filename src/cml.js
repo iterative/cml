@@ -615,7 +615,11 @@ class CML {
       res = await exec('git', 'push', '--set-upstream', remote, source);
       console.log(`result: ${res}`);
     }
-
+    console.log('******');
+    console.log(source);
+    console.log('******');
+    console.log(target);
+    console.log('******');
     const url = await driver.prCreate({
       source,
       target,
