@@ -7,21 +7,21 @@ describe('comment target tests', () => {
 
   test('qualified comment target: pr', async () => {
     const target = await parseCommentTarget({
-      target: 'pr#3'
+      target: 'pr/3'
     });
     expect(target).toEqual({ target: 'pr', prNumber: '3' });
   });
 
   test('qualified comment target: commit', async () => {
     const target = await parseCommentTarget({
-      target: 'commit#abcdefg'
+      target: 'commit/abcdefg'
     });
     expect(target).toEqual({ target: 'commit', commitSha: 'abcdefg' });
   });
 
   test('qualified comment target: issue', async () => {
     const target = await parseCommentTarget({
-      target: 'issue#3'
+      target: 'issue/3'
     });
     expect(target).toEqual({ target: 'issue', issueId: '3' });
   });
@@ -29,10 +29,10 @@ describe('comment target tests', () => {
   test('qualified comment target: unsupported', async () => {
     try {
       await parseCommentTarget({
-        target: 'unsupported#3'
+        target: 'unsupported/3'
       });
     } catch (error) {
-      expect(error.message).toBe('unsupported comment target "unsupported#3"');
+      expect(error.message).toBe('unsupported comment target "unsupported/3"');
     }
   });
 
@@ -41,7 +41,7 @@ describe('comment target tests', () => {
     const target = await parseCommentTarget({
       drv,
       commitSha: 'abcdefg',
-      target: 'issue#3' // target will be replaced with commit
+      target: 'issue/3' // target will be replaced with commit
     });
     expect(target).toEqual({ target: 'commit', commitSha: 'abcdefg' });
   });
@@ -55,7 +55,7 @@ describe('comment target tests', () => {
     const target = await parseCommentTarget({
       drv,
       pr: true,
-      target: 'issue#3' // target will be replaced
+      target: 'issue/3' // target will be replaced
     });
     expect(target).toEqual({ target: 'pr', prNumber: '4' });
   });
@@ -71,7 +71,7 @@ describe('comment target tests', () => {
     const target = await parseCommentTarget({
       drv,
       pr: true,
-      target: 'issue#3' // target will be replaced
+      target: 'issue/3' // target will be replaced
     });
     expect(target).toEqual({ target: 'pr', prNumber: '4' });
   });

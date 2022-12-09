@@ -21,7 +21,7 @@ exports.options = kebabcaseKeys({
   target: {
     type: 'string',
     description:
-      'Comment type (`commit`, `pr`, `commit#f00bar`, `pr#42`, `issue#1337`),' +
+      'Comment type (`commit`, `pr`, `commit/f00bar`, `pr/42`, `issue/1337`),' +
       'default is automatic (`pr` but fallback to `commit`).'
   },
   pr: {
