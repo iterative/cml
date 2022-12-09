@@ -552,6 +552,11 @@ class CML {
     };
 
     const { files } = await git.status();
+    console.log('**********');
+    console.log(files);
+    console.log('**********');
+    console.log(globs);
+    console.log('**********');
     if (!files.length && globs.length) {
       winston.warn('No files changed. Nothing to do.');
       return;
@@ -560,6 +565,8 @@ class CML {
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
+    console.log(paths);
+    console.log('**********');
 
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
