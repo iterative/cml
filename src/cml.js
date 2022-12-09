@@ -593,20 +593,27 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec('git', 'fetch', remote, sha);
-      await exec('git', 'checkout', '-b', source);
-      await exec('git', 'checkout', '-B', target, sha);
+      let res;
+      res = await exec('git', 'fetch', remote, sha);
+      console.log(`result: ${res}`);
+      res = await exec('git', 'checkout', '-b', source);
+      console.log(`result: ${res}`);
+      res = await exec('git', 'checkout', '-B', target, sha);
+      console.log(`result: ${res}`);
 
       if (paths.length) {
-        await exec('git', 'add', ...paths);
+        res = await exec('git', 'add', ...paths);
+        console.log(`result: ${res}`);
         let commitMessage = message || `CML PR for ${shaShort}`;
         if (skipCi || (!message && !(merge || rebase || squash))) {
           commitMessage += ' [skip ci]';
         }
-        await exec('git', 'commit', '-m', commitMessage);
+        res = await exec('git', 'commit', '-m', commitMessage);
+        console.log(`result: ${res}`);
       }
 
-      await exec('git', 'push', '--set-upstream', remote, source);
+      res = await exec('git', 'push', '--set-upstream', remote, source);
+      console.log(`result: ${res}`);
     }
 
     const url = await driver.prCreate({
