@@ -7,12 +7,12 @@ async function parseCommentTarget(opts = {}) {
   // Handle legacy comment target flags.
   if (commit) {
     drv.warn(
-      'cml: the --commitSha flag will be deprecated, please use --target="commit/<sha>"'
+      `Deprecation warning: use --target="commit${SEPARATOR}<sha>" instead of --commit-sha=<sha>`
     );
     commentTarget = `commit${SEPARATOR}${commit}`;
   }
   if (pr) {
-    drv.warn('cml: the --pr flag will be deprecated, please use --target="pr"');
+    drv.warn('Deprecation warning: use --target=pr instead of --pr');
     commentTarget = 'pr';
   }
   // Handle comment targets that are incomplete, e.g. 'pr' or 'commit'.
@@ -44,7 +44,7 @@ async function parseCommentTarget(opts = {}) {
   // Handle qualified comment targets, e.g. 'issue/id'.
   const separatorPos = commentTarget.indexOf(SEPARATOR);
   if (separatorPos === -1) {
-    throw new Error(`comment target "${commentTarget}" could not be parsed`);
+    throw new Error(`Failed to parse comment --target="${commentTarget}"`);
   }
   const targetType = commentTarget.slice(0, separatorPos);
   const id = commentTarget.slice(separatorPos + 1);

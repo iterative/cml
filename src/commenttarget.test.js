@@ -124,7 +124,7 @@ describe('comment target tests', () => {
         target: 'issue'
       });
     } catch (error) {
-      expect(error.message).toBe('comment target "issue" could not be parsed');
+      expect(error.message).toBe('failed to parse comment --target="issue"');
     }
   });
 
