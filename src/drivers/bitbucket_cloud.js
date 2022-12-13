@@ -483,6 +483,9 @@ class BitbucketCloud {
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
+    winston.debug(
+      `Bitbucket API request, method: ${method}, url: "${requestUrl}"`
+    );
     const response = await fetch(requestUrl, {
       method,
       headers,
@@ -495,6 +498,7 @@ class BitbucketCloud {
       : await response.text();
 
     if (!response.ok) {
+      winston.debug(`Response status is ${response.status}`);
       // Attempt to get additional context. We have observed two different error schemas
       // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
       // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.

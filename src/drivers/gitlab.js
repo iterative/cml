@@ -488,6 +488,8 @@ class Gitlab {
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
+    winston.debug(`Gitlab API request, method: ${method}, url: "${url}"`);
+
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const response = await fetch(url, {
       method,
@@ -495,7 +497,10 @@ class Gitlab {
       body,
       agent: new ProxyAgent()
     });
-    if (response.status > 300) throw new Error(response.statusText);
+    if (!response.ok) {
+      winston.debug(`Response status is ${response.status}`);
+      throw new Error(response.statusText);
+    }
     if (raw) return response;
 
     return await response.json();
