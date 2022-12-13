@@ -1,3 +1,5 @@
+const winston = require('winston');
+
 const SEPARATOR = '/';
 
 async function parseCommentTarget(opts = {}) {
@@ -20,12 +22,16 @@ async function parseCommentTarget(opts = {}) {
   let commitPr;
   switch (commentTarget.toLowerCase()) {
     case 'commit':
+      winston.debug(`Comment target "commit" mapped to "commit/${drv.sha}"`);
       return { target: 'commit', commitSha: drv.sha };
     case 'pr':
     case 'auto':
       // Determine PR id from forge env vars (if we're in a PR context).
       prNumber = drv.pr;
       if (prNumber) {
+        winston.debug(
+          `Comment target "${commentTarget}" mapped to "pr/${prNumber}"`
+        );
         return { target: 'pr', prNumber: prNumber };
       }
       // Or fallback to determining PR by HEAD commit.
@@ -33,10 +39,16 @@ async function parseCommentTarget(opts = {}) {
       [commitPr = {}] = await drv.commitPrs({ commitSha: drv.sha });
       if (commitPr.url) {
         [prNumber] = commitPr.url.split('/').slice(-1);
+        winston.debug(
+          `Comment target "${commentTarget}" mapped to "pr/${prNumber}" based on commit "${drv.sha}"`
+        );
         return { target: 'pr', prNumber };
       }
       // If target is 'auto', fallback to issuing commit comments.
       if (commentTarget === 'auto') {
+        winston.debug(
+          `Comment target "${commentTarget}" mapped to "commit/${drv.sha}"`
+        );
         return { target: 'commit', commitSha: drv.sha };
       }
       throw new Error(`PR for commit sha "${drv.sha}" not found`);
