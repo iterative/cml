@@ -2,7 +2,7 @@ const { exec, upload } = require('./utils');
 
 describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
-    const output = await exec('echo hello');
+    const output = await exec('echo', 'hello');
     expect(output).toMatch('hello');
   });
 

@@ -21,7 +21,16 @@ describe('Comment integration tests', () => {
 
     await fs.writeFile(path, report);
     await exec(
-      `node ./bin/cml.js send-comment --repo=${repo} --token=${token} --commit-sha=${sha} ${path}`
+      'node',
+      './bin/cml.js',
+      'send-comment',
+      '--repo',
+      repo,
+      '--token',
+      token,
+      '--commit-sha',
+      sha,
+      path
     );
   });
 
@@ -29,13 +38,13 @@ describe('Comment integration tests', () => {
     const report = `## Test Comment`;
 
     await fs.writeFile(path, report);
-    await exec(`node ./bin/cml.js send-comment ${path}`);
+    await exec('node', './bin/cml.js', 'send-comment', path);
   });
 
   test('cml send-comment --publish to current repo', async () => {
     const report = `## Test Comment\n![](assets/logo.png)`;
 
     await fs.writeFile(path, report);
-    await exec(`node ./bin/cml.js send-comment --publish ${path}`);
+    await exec('node', './bin/cml.js', 'send-comment', '--publish', path);
   });
 });

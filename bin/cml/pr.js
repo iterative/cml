@@ -17,4 +17,5 @@ exports.builder = (yargs) =>
       )
     )
     .option('options', { default: options, hidden: true })
+    .check(({ globpath }) => globpath)
     .strict();

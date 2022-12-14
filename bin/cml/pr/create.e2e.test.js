@@ -2,7 +2,7 @@ const { exec } = require('../../../src/utils');
 
 describe('CML e2e', () => {
   test('cml-pr --help', async () => {
-    const output = await exec(`echo none | node ./bin/cml.js pr --help`);
+    const output = await exec('node', './bin/cml.js', 'pr', '--help');
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js pr <glob path...>
@@ -10,7 +10,7 @@ describe('CML e2e', () => {
       Manage pull requests
 
       Commands:
-        cml.js pr create [glob path...]  Create a pull request with the specified
+        cml.js pr create <glob path...>  Create a pull request with the specified
                                          files
                                          https://cml.dev/doc/ref/pr
 

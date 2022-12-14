@@ -132,7 +132,7 @@ class CML {
 
   async revParse({ ref = 'HEAD' } = {}) {
     try {
-      return await exec(`git rev-parse ${ref}`);
+      return await exec('git', 'rev-parse', ref);
     } catch (err) {
       winston.warn(
         'Failed to obtain SHA. Perhaps not in the correct git folder'
@@ -147,7 +147,7 @@ class CML {
 
   async branch() {
     const { branch } = this.getDriver();
-    return branch || (await exec(`git branch --show-current`));
+    return branch || (await exec('git', 'branch', '--show-current'));
   }
 
   getDriver() {
@@ -504,14 +504,30 @@ class CML {
     const { fetchDepth = unshallow ? 0 : undefined } = opts;
 
     const driver = this.getDriver();
-    await exec(await driver.updateGitConfig({ userName, userEmail, remote }));
+    const commands = await driver.updateGitConfig({
+      userName,
+      userEmail,
+      remote
+    });
+    for (const command of commands) {
+      await exec(...command);
+    }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
-        if ((await exec('git rev-parse --is-shallow-repository')) === 'true') {
-          return await exec('git fetch --all --tags --unshallow');
+        if (
+          (await exec('git', 'rev-parse', '--is-shallow-repository')) === 'true'
+        ) {
+          return await exec('git', 'fetch', '--all', '--tags', '--unshallow');
         }
       } else {
-        return await exec(`git fetch --all --tags --depth=${fetchDepth}`);
+        return await exec(
+          'git',
+          'fetch',
+          '--all',
+          '--tags',
+          '--depth',
+          fetchDepth
+        );
       }
     }
   }
@@ -543,7 +559,7 @@ class CML {
     };
 
     const { files } = await git.status();
-    if (!files.length && globs.length) {
+    if (!files.length) {
       winston.warn('No files changed. Nothing to do.');
       return;
     }
@@ -551,6 +567,10 @@ class CML {
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
+    if (!paths.length) {
+      winston.warn('Input files are not affected. Nothing to do.');
+      return;
+    }
 
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
@@ -560,7 +580,10 @@ class CML {
 
     const branchExists = (
       await exec(
-        `git ls-remote $(git config --get remote.${remote}.url) ${source}`
+        'git',
+        'ls-remote',
+        await exec('git', 'config', '--get', `remote.${remote}.url`),
+        source
       )
     ).includes(source);
 
@@ -574,20 +597,16 @@ class CML {
 
       if (url) return renderPr(url);
     } else {
-      await exec(`git fetch ${remote} ${sha}`);
-      await exec(`git checkout -B ${target} ${sha}`);
-      await exec(`git checkout -b ${source}`);
-
-      if (paths.length) {
-        await exec(`git add ${paths.join(' ')}`);
-        let commitMessage = message || `CML PR for ${shaShort}`;
-        if (skipCi || (!message && !(merge || rebase || squash))) {
-          commitMessage += ' [skip ci]';
-        }
-        await exec(`git commit -m "${commitMessage}"`);
+      await exec('git', 'fetch', remote, sha);
+      await exec('git', 'checkout', '-B', target, sha);
+      await exec('git', 'checkout', '-b', source);
+      await exec('git', 'add', paths.join(' '));
+      let commitMessage = message || `CML PR for ${shaShort}`;
+      if (skipCi || (!message && !(merge || rebase || squash))) {
+        commitMessage += ' [skip ci]';
       }
-
-      await exec(`git push --set-upstream ${remote} ${source}`);
+      await exec('git', 'commit', '-m', commitMessage);
+      await exec('git', 'push', '--set-upstream', remote, source);
     }
 
     const url = await driver.prCreate({

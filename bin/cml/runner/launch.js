@@ -67,7 +67,13 @@ const shutdown = async (opts) => {
 
     try {
       return await exec(
-        `leo destroy-runner --cloud=${cloud} --region=${region} ${id}`
+        'leo',
+        'destroy-runner',
+        '--cloud',
+        cloud,
+        '--region',
+        region,
+        id
       );
     } catch (err) {
       winston.error(`\tFailed destroying with LEO: ${err.message}`);
