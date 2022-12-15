@@ -6,5 +6,6 @@ exports.description = false;
 exports.handler = handler;
 exports.builder = addDeprecationNotice({
   builder,
-  notice: '"cml publish" is deprecated, please use "cml asset publish"'
+  notice:
+    '"cml publish" is deprecated since "cml comment" now supports "![inline](./asset.png)"'
 });
