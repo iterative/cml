@@ -517,10 +517,17 @@ class CML {
         if (
           (await exec('git', 'rev-parse', '--is-shallow-repository')) === 'true'
         ) {
-          return await exec('git', 'fetch', '--all', '--unshallow');
+          return await exec('git', 'fetch', '--all', '--tags', '--unshallow');
         }
       } else {
-        return await exec('git', 'fetch', '--all', '--depth', fetchDepth);
+        return await exec(
+          'git',
+          'fetch',
+          '--all',
+          '--tags',
+          '--depth',
+          fetchDepth
+        );
       }
     }
   }
