@@ -17,10 +17,9 @@ describe('Comment integration tests', () => {
         --help    Show help                                                  [boolean]
 
       Options:
-        --pr                        Post to an existing PR/MR associated with the
-                                    specified commit                         [boolean]
-        --commit-sha, --head-sha    Commit SHA linked to this comment
-                                                            [string] [default: \\"HEAD\\"]
+        --target                    Comment type (\`commit\`, \`pr\`, \`commit/f00bar\`,
+                                    \`pr/42\`, \`issue/1337\`),default is automatic (\`pr\`
+                                    but fallback to \`commit\`).                [string]
         --watch                     Watch for changes and automatically update the
                                     comment                                  [boolean]
         --publish                   Upload any local images found in the Markdown

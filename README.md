@@ -637,6 +637,7 @@ These are some example projects using CML.
 - [CML with Tensorboard](https://github.com/iterative-test/cml-example-tensorboard)
 - [CML with a small EC2 instance](https://github.com/iterative-test/cml-example-cloud)
   :key:
-- [CML with EC2 GPU](https://github.com/iterative-test/cml-example-cloud-gpu) :key:
+- [CML with EC2 GPU](https://github.com/iterative-test/cml-example-cloud-gpu)
+  :key:
 
 :key: needs a [PAT](#environment-variables).
