@@ -33,7 +33,8 @@ describe('Non Enviromental tests', () => {
     );
   });
 
-  test('Runner token', async () => {
+  // TODO: reenable the test once github test tokens are updated.
+  test.skip('Runner token', async () => {
     const output = await client.runnerToken();
     expect(output.length).toBe(29);
   });
