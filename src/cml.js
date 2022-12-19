@@ -525,6 +525,7 @@ class CML {
     };
 
     const { files } = await git.status();
+
     if (!files.length && globs.length) {
       winston.warn('No files changed. Nothing to do.');
       return;
@@ -533,6 +534,11 @@ class CML {
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
+
+    if (!paths.length && globs.length) {
+      winston.warn('Input files are not affected. Nothing to do.');
+      return;
+    }
 
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
