@@ -81,6 +81,7 @@ const setupTelemetry = async (opts, yargs) => {
   const { cml, _: command } = opts;
 
   const options = {};
+  console.log(opts);
   for (const [name, option] of Object.entries(opts.options)) {
     // Skip options with default values (i.e. not explicitly set by users)
     if (opts[name] && !yargs.parsed.defaulted[name]) {
