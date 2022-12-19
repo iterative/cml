@@ -23,7 +23,6 @@ const getos = async () => {
 const waitForever = () => new Promise((resolve) => resolve);
 
 const exec = async (file, ...args) => {
-  console.log(`exec function: ${file} ${args}`)
   return new Promise((resolve, reject) => {
     require('child_process').execFile(
       file,
