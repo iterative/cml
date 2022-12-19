@@ -566,8 +566,8 @@ class CML {
       if (url) return renderPr(url);
     } else {
       await exec('git', 'fetch', remote, sha);
+      if (paths.length) await exec('git', 'checkout', '-B', target, sha);
       await exec('git', 'checkout', '-b', source);
-      await exec('git', 'checkout', '-B', target, sha);
 
       if (paths.length) {
         await exec('git', 'add', ...paths);
