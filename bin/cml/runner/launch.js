@@ -410,9 +410,14 @@ const run = async (opts) => {
     console.log('workdir lstat error', err);
   }
 
-  const res = await fs.mkdir(workdir, { recursive: true });
-  console.log(res);
+  await fs.mkdir(workdir, { recursive: true });
   await fs.chmod(workdir, '766');
+  try {
+    const res = await fs.lstat(workdir);
+    console.log(res);
+  } catch (err) {
+    console.log('workdir lstat error', err);
+  }
 
   if (cloud) await runCloud(opts);
   else await runLocal(opts);
