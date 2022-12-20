@@ -43,7 +43,7 @@ const apply = async (opts = {}) => {
   try {
     await tfCapture(
       'terraform',
-      [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+      [`-chdir=${dir}`, 'apply', '-auto-approve', '-json'],
       {
         cwd: process.cwd(),
         env,
