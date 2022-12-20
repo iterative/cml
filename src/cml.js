@@ -476,7 +476,15 @@ class CML {
       remote
     });
     for (const command of commands) {
-      await exec(...command);
+      try {
+        await exec(...command);
+      } catch (err) {
+        if (
+          JSON.stringify(command.slice(0, 3)) !==
+          JSON.stringify(['git', 'config', '--unset'])
+        )
+          throw err;
+      }
     }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
@@ -502,7 +510,7 @@ class CML {
     const driver = this.getDriver();
     const {
       remote = GIT_REMOTE,
-      globs = ['dvc.lock', '.gitignore'],
+      globs = [],
       md,
       skipCi,
       branch,
@@ -525,15 +533,17 @@ class CML {
     };
 
     const { files } = await git.status();
-    if (!files.length) {
-      winston.warn('No files changed. Nothing to do.');
+
+    if (!files.length && globs.length) {
+      winston.warn('No changed files matched by glob path. Nothing to do.');
       return;
     }
 
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
-    if (!paths.length) {
+
+    if (!paths.length && globs.length) {
       winston.warn('Input files are not affected. Nothing to do.');
       return;
     }
@@ -564,14 +574,18 @@ class CML {
       if (url) return renderPr(url);
     } else {
       await exec('git', 'fetch', remote, sha);
-      await exec('git', 'checkout', '-B', target, sha);
+      if (paths.length) await exec('git', 'checkout', '-B', target, sha);
       await exec('git', 'checkout', '-b', source);
-      await exec('git', 'add', paths.join(' '));
-      let commitMessage = message || `CML PR for ${shaShort}`;
-      if (skipCi || (!message && !(merge || rebase || squash))) {
-        commitMessage += ' [skip ci]';
+
+      if (paths.length) {
+        await exec('git', 'add', ...paths);
+        let commitMessage = message || `CML PR for ${shaShort}`;
+        if (skipCi || (!message && !(merge || rebase || squash))) {
+          commitMessage += ' [skip ci]';
+        }
+        await exec('git', 'commit', '-m', commitMessage);
       }
-      await exec('git', 'commit', '-m', commitMessage);
+
       await exec('git', 'push', '--set-upstream', remote, source);
     }
 
