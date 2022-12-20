@@ -42,7 +42,7 @@
     "cml-pr": "bin/legacy/link.js"
   },
   "scripts": {
-    "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
+    "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md}'",
     "lint": "eslint ./",
     "test": "jest --forceExit",
     "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
