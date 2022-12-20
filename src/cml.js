@@ -535,7 +535,7 @@ class CML {
     const { files } = await git.status();
 
     if (!files.length && globs.length) {
-      winston.warn('No files changed. Nothing to do.');
+      winston.warn('No changed files matched by glob path. Nothing to do.');
       return;
     }
 
