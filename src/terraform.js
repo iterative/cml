@@ -33,7 +33,7 @@ const saveTfState = async (opts = {}) => {
 
 const init = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec('terraform', '-chdir', dir, 'init');
+  return await exec('terraform', `-chdir="${dir}"`, 'init');
 };
 
 const apply = async (opts = {}) => {
