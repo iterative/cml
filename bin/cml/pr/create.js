@@ -7,7 +7,7 @@ const {
 } = require('../../../src/cml');
 
 const DESCRIPTION =
-  'Create a pull request, optionally committing the specified files first.';
+  'Create a pull request (committing any given paths first)';
 
 const DOCSURL = 'https://cml.dev/doc/ref/pr';
 
