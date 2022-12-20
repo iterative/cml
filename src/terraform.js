@@ -33,7 +33,7 @@ const saveTfState = async (opts = {}) => {
 
 const init = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec('terraform', `-chdir="${dir}"`, 'init');
+  return await exec('terraform', `-chdir=${dir}`, 'init');
 };
 
 const apply = async (opts = {}) => {
@@ -60,7 +60,7 @@ const destroy = async (opts = {}) => {
   const { dir = './', target } = opts;
   return await exec(
     'terraform',
-    `-chdir="${dir}"`,
+    `-chdir=${dir}`,
     'destroy',
     '-auto-approve',
     ...(target ? ['-target', target] : [])
