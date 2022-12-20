@@ -10,8 +10,8 @@ describe('CML e2e', () => {
       Manage pull requests
 
       Commands:
-        cml.js pr create <glob path...>  Create a pull request with the specified
-                                         files
+        cml.js pr create [glob path...]  Create a pull request (committing any given
+                                         paths first)
                                          https://cml.dev/doc/ref/pr
 
       Global Options:
