@@ -60,8 +60,7 @@ const destroy = async (opts = {}) => {
   const { dir = './', target } = opts;
   return await exec(
     'terraform',
-    '-chdir',
-    dir,
+    `-chdir="${dir}"`,
     'destroy',
     '-auto-approve',
     ...(target ? ['-target', target] : [])
