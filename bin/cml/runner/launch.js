@@ -403,6 +403,13 @@ const run = async (opts) => {
     );
 
   winston.info(`Preparing workdir ${workdir}...`);
+  try {
+    const res = await fs.lstat(workdir);
+    console.log(res);
+  } catch (err) {
+    console.log('workdir lstat error', err);
+  }
+
   await fs.mkdir(workdir, { recursive: true });
   await fs.chmod(workdir, '766');
 
