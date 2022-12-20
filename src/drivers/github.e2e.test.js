@@ -58,6 +58,12 @@ describe('Non Enviromental tests', () => {
         Array [
           "git",
           "config",
+          "--unset",
+          "http.https://github.com/.extraheader",
+        ],
+        Array [
+          "git",
+          "config",
           "user.name",
           "GitHub Action",
         ],

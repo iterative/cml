@@ -751,7 +751,8 @@ class Github {
     repo.password = this.token;
     repo.username = 'token';
 
-    const commands = [
+    return [
+      ['git', 'config', '--unset', 'http.https://github.com/.extraheader'],
       ['git', 'config', 'user.name', userName || this.userName],
       ['git', 'config', 'user.email', userEmail || this.userEmail],
       [
@@ -762,29 +763,6 @@ class Github {
         repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
       ]
     ];
-
-    // dont run --unset twice
-    let rmHeader = true;
-    try {
-      await exec(
-        'git',
-        'config',
-        '--get',
-        'http.https://github.com/.extraheader'
-      );
-    } catch (err) {
-      rmHeader = false;
-    }
-    if (rmHeader) {
-      commands.unshift([
-        'git',
-        'config',
-        '--unset',
-        'http.https://github.com/.extraheader'
-      ]);
-    }
-
-    return commands;
   }
 
   get workflowId() {

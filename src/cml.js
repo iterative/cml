@@ -476,7 +476,15 @@ class CML {
       remote
     });
     for (const command of commands) {
-      await exec(...command);
+      try {
+        await exec(...command);
+      } catch (err) {
+        if (
+          JSON.stringify(command.slice(0, 3)) !==
+          JSON.stringify(['git', 'config', '--unset'])
+        )
+          throw err;
+      }
     }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
