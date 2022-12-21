@@ -12,6 +12,7 @@ const CML = require('../src/cml').default;
 const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
+  // Remap environment variable prefixes so e.g. CML_COMMAND_OPTION be
   const legacyEnvironmentPrefixes = {
     CML_CI: 'CML',
     CML_PUBLISH: 'CML',
@@ -19,6 +20,9 @@ const aliasLegacyEnvironmentVariables = () => {
     CML_SEND_COMMENT: 'CML',
     CML_SEND_GITHUB_CHECK: 'CML',
     CML_TENSORBOARD_DEV: 'CML',
+    // Remap environment variable prefixes so e.g. CML_COMMAND_OPTION becomes an
+    // an alias for CML_OPTION, regardless of the command it't referring to.
+    // See also https://github.com/yargs/yargs/issues/873#issuecomment-917441475
     CML_ASSET: 'CML',
     CML_CHECK: 'CML',
     CML_COMMENT: 'CML',
