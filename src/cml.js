@@ -10,6 +10,7 @@ const winston = require('winston');
 const remark = require('remark');
 const visit = require('unist-util-visit');
 
+const { parseCommentTarget } = require('./commenttarget');
 const Gitlab = require('./drivers/gitlab');
 const Github = require('./drivers/github');
 const BitbucketCloud = require('./drivers/bitbucket_cloud');
@@ -162,15 +163,15 @@ class CML {
   }
 
   async commentCreate(opts = {}) {
-    const triggerSha = await this.triggerSha();
     const {
-      commitSha: inCommitSha = triggerSha,
+      commitSha,
       markdownFile,
       pr,
       publish,
       publishUrl,
       report: testReport,
       rmWatermark,
+      target: commentTarget = 'auto',
       triggerFile,
       update,
       watch,
@@ -178,9 +179,6 @@ class CML {
     } = opts;
 
     const drv = this.getDriver();
-
-    const commitSha =
-      (await this.revParse({ ref: inCommitSha })) || inCommitSha;
 
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
@@ -300,58 +298,26 @@ class CML {
       });
     };
 
-    const isBB = this.driver === BB;
-    if (pr || isBB) {
-      let commentUrl;
-
-      if (commitSha !== triggerSha)
-        winston.info(
-          `Looking for PR associated with --commit-sha="${inCommitSha}".\nSee https://cml.dev/doc/ref/send-comment.`
-        );
-
-      const longReport = `${commitSha.substr(0, 7)}\n\n${report}`;
-      const [commitPr = {}] = await drv.commitPrs({ commitSha });
-      const { url } = commitPr;
-
-      if (!url && !isBB)
-        throw new Error(`PR for commit sha "${inCommitSha}" not found`);
-
-      if (url) {
-        const [prNumber] = url.split('/').slice(-1);
-
-        if (update)
-          comment = updatableComment(await drv.prComments({ prNumber }));
-
-        if (update && comment) {
-          commentUrl = await drv.prCommentUpdate({
-            report: longReport,
-            id: comment.id,
-            prNumber
-          });
-        } else
-          commentUrl = await drv.prCommentCreate({
-            report: longReport,
-            prNumber
-          });
-
-        if (this.driver !== 'bitbucket') return commentUrl;
-      }
-    }
+    const target = await parseCommentTarget({
+      commitSha,
+      pr,
+      target: commentTarget,
+      drv
+    });
 
     if (update) {
-      comment = updatableComment(await drv.commitComments({ commitSha }));
+      comment = updatableComment(await drv[target.target + 'Comments'](target));
 
       if (comment)
-        return await drv.commentUpdate({
+        return await drv[target.target + 'CommentUpdate']({
           report,
           id: comment.id,
-          commitSha
+          ...target
         });
     }
-
-    return await drv.commentCreate({
+    return await drv[target.target + 'CommentCreate']({
       report,
-      commitSha
+      ...target
     });
   }
 
@@ -510,17 +476,32 @@ class CML {
       remote
     });
     for (const command of commands) {
-      await exec(...command);
+      try {
+        await exec(...command);
+      } catch (err) {
+        if (
+          JSON.stringify(command.slice(0, 3)) !==
+          JSON.stringify(['git', 'config', '--unset'])
+        )
+          throw err;
+      }
     }
     if (fetchDepth !== undefined) {
       if (fetchDepth <= 0) {
         if (
           (await exec('git', 'rev-parse', '--is-shallow-repository')) === 'true'
         ) {
-          return await exec('git', 'fetch', '--all', '--unshallow');
+          return await exec('git', 'fetch', '--all', '--tags', '--unshallow');
         }
       } else {
-        return await exec('git', 'fetch', '--all', '--depth', fetchDepth);
+        return await exec(
+          'git',
+          'fetch',
+          '--all',
+          '--tags',
+          '--depth',
+          fetchDepth
+        );
       }
     }
   }
@@ -529,7 +510,7 @@ class CML {
     const driver = this.getDriver();
     const {
       remote = GIT_REMOTE,
-      globs = ['dvc.lock', '.gitignore'],
+      globs = [],
       md,
       skipCi,
       branch,
@@ -552,15 +533,17 @@ class CML {
     };
 
     const { files } = await git.status();
-    if (!files.length) {
-      winston.warn('No files changed. Nothing to do.');
+
+    if (!files.length && globs.length) {
+      winston.warn('No changed files matched by glob path. Nothing to do.');
       return;
     }
 
     const paths = (await globby(globs)).filter((path) =>
       files.map((file) => file.path).includes(path)
     );
-    if (!paths.length) {
+
+    if (!paths.length && globs.length) {
       winston.warn('Input files are not affected. Nothing to do.');
       return;
     }
@@ -591,14 +574,18 @@ class CML {
       if (url) return renderPr(url);
     } else {
       await exec('git', 'fetch', remote, sha);
-      await exec('git', 'checkout', '-B', target, sha);
+      if (paths.length) await exec('git', 'checkout', '-B', target, sha);
       await exec('git', 'checkout', '-b', source);
-      await exec('git', 'add', paths.join(' '));
-      let commitMessage = message || `CML PR for ${shaShort}`;
-      if (skipCi || (!message && !(merge || rebase || squash))) {
-        commitMessage += ' [skip ci]';
+
+      if (paths.length) {
+        await exec('git', 'add', ...paths);
+        let commitMessage = message || `CML PR for ${shaShort}`;
+        if (skipCi || (!message && !(merge || rebase || squash))) {
+          commitMessage += ' [skip ci]';
+        }
+        await exec('git', 'commit', '-m', commitMessage);
       }
-      await exec('git', 'commit', '-m', commitMessage);
+
       await exec('git', 'push', '--set-upstream', remote, source);
     }
 

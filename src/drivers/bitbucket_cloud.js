@@ -33,7 +33,45 @@ class BitbucketCloud {
     }
   }
 
-  async commentCreate(opts = {}) {
+  async issueCommentUpsert(opts = {}) {
+    const { projectPath } = this;
+    const { issueId, report, id } = opts;
+
+    const endpoint =
+      `/repositories/${projectPath}/issues/${issueId}/` +
+      `comments/${id ? id + '/' : ''}`;
+    return (
+      await this.request({
+        endpoint,
+        method: id ? 'PUT' : 'POST',
+        body: JSON.stringify({ content: { raw: report } })
+      })
+    ).links.html.href;
+  }
+
+  async issueCommentCreate(opts = {}) {
+    const { id, ...rest } = opts;
+    return this.issueCommentUpsert(rest);
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    if (!opts.id) throw new Error('Id is missing updating comment');
+    return this.issueCommentUpsert(opts);
+  }
+
+  async issueComments(opts = {}) {
+    const { projectPath } = this;
+    const { issueId } = opts;
+
+    const endpoint = `/repositories/${projectPath}/issues/${issueId}/comments/`;
+    return (await this.paginatedRequest({ endpoint, method: 'GET' })).map(
+      ({ id, content: { raw: body = '' } = {} }) => {
+        return { id, body };
+      }
+    );
+  }
+
+  async commitCommentCreate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report } = opts;
 
@@ -47,7 +85,7 @@ class BitbucketCloud {
     ).links.html.href;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     const { projectPath } = this;
     const { commitSha, report, id } = opts;
 
@@ -431,10 +469,6 @@ class BitbucketCloud {
     return commands;
   }
 
-  warn(message) {
-    winston.warn(message);
-  }
-
   get workflowId() {
     return BITBUCKET_PIPELINE_UUID;
   }
@@ -445,6 +479,16 @@ class BitbucketCloud {
 
   get sha() {
     return BITBUCKET_COMMIT;
+  }
+
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if ('BITBUCKET_PR_ID' in process.env) {
+      return process.env.BITBUCKET_PR_ID;
+    }
+    return null;
   }
 
   get branch() {
@@ -483,6 +527,9 @@ class BitbucketCloud {
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
+    winston.debug(
+      `Bitbucket API request, method: ${method}, url: "${requestUrl}"`
+    );
     const response = await fetch(requestUrl, {
       method,
       headers,
@@ -495,6 +542,7 @@ class BitbucketCloud {
       : await response.text();
 
     if (!response.ok) {
+      winston.debug(`Response status is ${response.status}`);
       // Attempt to get additional context. We have observed two different error schemas
       // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
       // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
@@ -507,6 +555,10 @@ class BitbucketCloud {
     }
 
     return responseBody;
+  }
+
+  warn(message) {
+    winston.warn(message);
   }
 }
 
