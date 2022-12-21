@@ -12,7 +12,6 @@ const CML = require('../src/cml').default;
 const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
-  // Remap environment variable prefixes so e.g. CML_COMMAND_OPTION be
   const legacyEnvironmentPrefixes = {
     CML_CI: 'CML',
     CML_PUBLISH: 'CML',
