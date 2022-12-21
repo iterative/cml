@@ -13,15 +13,17 @@ describe('CML e2e', () => {
       "cml.js send-github-check <markdown file>
 
       Global Options:
-        --log     Logging verbosity
+        --log                    Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-        --driver  Git provider where the repository is hosted
+        --driver                 Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-        --repo    Repository URL or slug[string] [default: infer from the environment]
-        --token   GITHUB_TOKEN or Github App token. Personal access token won't work
+        --repo                   Repository URL or slug
                                         [string] [default: infer from the environment]
-        --help    Show help                                                  [boolean]
+        --driver-token, --token  GITHUB_TOKEN or Github App token. Personal access
+                                 token won't work
+                                        [string] [default: infer from the environment]
+        --help                   Show help                                   [boolean]
 
       Options:
         --commit-sha, --head-sha  Commit SHA linked to this comment

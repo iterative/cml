@@ -3,6 +3,7 @@
 const { basename } = require('path');
 const { pseudoexec } = require('pseudoexec');
 
+const kebabcaseKeys = require('kebabcase-keys');
 const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
@@ -12,12 +13,23 @@ const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
   const legacyEnvironmentPrefixes = {
-    CML_CI: 'CML_REPO',
-    CML_PUBLISH: 'CML_ASSET',
-    CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
-    CML_SEND_COMMENT: 'CML_COMMENT',
-    CML_SEND_GITHUB_CHECK: 'CML_CHECK',
-    CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
+    CML_CI: 'CML',
+    CML_PUBLISH: 'CML',
+    CML_RERUN_WORKFLOW: 'CML',
+    CML_SEND_COMMENT: 'CML',
+    CML_SEND_GITHUB_CHECK: 'CML',
+    CML_TENSORBOARD_DEV: 'CML',
+    // Remap environment variable prefixes so e.g. CML_COMMAND_OPTION becomes an
+    // an alias for CML_OPTION, regardless of the command it't referring to.
+    // See also https://github.com/yargs/yargs/issues/873#issuecomment-917441475
+    CML_ASSET: 'CML',
+    CML_CHECK: 'CML',
+    CML_COMMENT: 'CML',
+    CML_PR: 'CML',
+    CML_REPO: 'CML',
+    CML_RUNNER: 'CML',
+    CML_TENSORBOARD: 'CML',
+    CML_WORKFLOW: 'CML'
   };
 
   for (const [oldPrefix, newPrefix] of Object.entries(
@@ -124,35 +136,37 @@ const handleError = (message, error) => {
 
   try {
     await yargs
-      .env('CML')
-      .options({
-        log: {
-          type: 'string',
-          description: 'Logging verbosity',
-          choices: ['error', 'warn', 'info', 'debug'],
-          default: 'info',
-          group: 'Global Options:'
-        },
-        driver: {
-          type: 'string',
-          choices: ['github', 'gitlab', 'bitbucket'],
-          defaultDescription: 'infer from the environment',
-          description: 'Git provider where the repository is hosted',
-          group: 'Global Options:'
-        },
-        repo: {
-          type: 'string',
-          defaultDescription: 'infer from the environment',
-          description: 'Repository URL or slug',
-          group: 'Global Options:'
-        },
-        token: {
-          type: 'string',
-          defaultDescription: 'infer from the environment',
-          description: 'Personal access token',
-          group: 'Global Options:'
-        }
-      })
+      .options(
+        kebabcaseKeys({
+          log: {
+            type: 'string',
+            description: 'Logging verbosity',
+            choices: ['error', 'warn', 'info', 'debug'],
+            default: 'info',
+            group: 'Global Options:'
+          },
+          driver: {
+            type: 'string',
+            choices: ['github', 'gitlab', 'bitbucket'],
+            defaultDescription: 'infer from the environment',
+            description: 'Git provider where the repository is hosted',
+            group: 'Global Options:'
+          },
+          repo: {
+            type: 'string',
+            defaultDescription: 'infer from the environment',
+            description: 'Repository URL or slug',
+            group: 'Global Options:'
+          },
+          driverToken: {
+            type: 'string',
+            alias: 'token',
+            defaultDescription: 'infer from the environment',
+            description: 'CI driver personal/project access token (PAT)',
+            group: 'Global Options:'
+          }
+        })
+      )
       .global('version', false)
       .group('help', 'Global Options:')
       .fail(handleError)
