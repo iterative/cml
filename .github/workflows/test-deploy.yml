@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - run: npm ci
       - run: npm run lint
   test:
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
@@ -58,12 +58,15 @@ jobs:
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
           TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
           TEST_GITHUB_SHA: 0cd16da26e35f8e5d57b2549a97e22618abf08f6
+          TEST_GITHUB_ISSUE: 1
           TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
           TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
           TEST_GITLAB_SHA: f8b8b49a253243830ef59a7f090eb887157b2b67
+          TEST_GITLAB_ISSUE: 1
           TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
           TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
           TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
+          TEST_BBCLOUD_ISSUE: 1
   test-os:
     needs: authorize
     name: test-${{ matrix.system }}
@@ -76,7 +79,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - if: matrix.system == 'windows'
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
       - name: install
         shell: bash
         run: |
@@ -97,7 +100,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install

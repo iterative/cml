@@ -7,11 +7,11 @@ const MIN_TF_VER = '0.14.0';
 
 const version = async () => {
   try {
-    const output = await exec('terraform version -json');
+    const output = await exec('terraform', 'version', '-json');
     const { terraform_version: ver } = JSON.parse(output);
     return ver;
   } catch (err) {
-    const output = await exec('terraform version');
+    const output = await exec('terraform', 'version');
     const matches = output.match(/Terraform v(\d{1,2}\.\d{1,2}\.\d{1,2})/);
 
     if (matches.length < 2) throw new Error('Unable to get TF version');
@@ -33,7 +33,7 @@ const saveTfState = async (opts = {}) => {
 
 const init = async (opts = {}) => {
   const { dir = './' } = opts;
-  return await exec(`terraform -chdir='${dir}' init`);
+  return await exec('terraform', `-chdir=${dir}`, 'init');
 };
 
 const apply = async (opts = {}) => {
@@ -43,7 +43,7 @@ const apply = async (opts = {}) => {
   try {
     await tfCapture(
       'terraform',
-      [`-chdir='${dir}'`, 'apply', '-auto-approve', '-json'],
+      [`-chdir=${dir}`, 'apply', '-auto-approve', '-json'],
       {
         cwd: process.cwd(),
         env,
@@ -58,9 +58,12 @@ const apply = async (opts = {}) => {
 
 const destroy = async (opts = {}) => {
   const { dir = './', target } = opts;
-  const targetop = target ? `-target=${target}` : '';
   return await exec(
-    `terraform -chdir='${dir}' destroy -auto-approve ${targetop}`
+    'terraform',
+    `-chdir=${dir}`,
+    'destroy',
+    '-auto-approve',
+    ...(target ? ['-target', target] : [])
   );
 };
 

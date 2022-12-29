@@ -13,21 +13,30 @@ exports.handler = async (opts) => {
 
 exports.builder = (yargs) =>
   yargs
-    .env('CML_COMMENT')
+    .env('CML')
     .option('options', { default: exports.options, hidden: true })
     .options(exports.options);
 
 exports.options = kebabcaseKeys({
+  target: {
+    type: 'string',
+    description:
+      'Comment type (`commit`, `pr`, `commit/f00bar`, `pr/42`, `issue/1337`),' +
+      'default is automatic (`pr` but fallback to `commit`).'
+  },
   pr: {
     type: 'boolean',
     description:
-      'Post to an existing PR/MR associated with the specified commit'
+      'Post to an existing PR/MR associated with the specified commit',
+    conflicts: ['target', 'commitSha'],
+    hidden: true
   },
   commitSha: {
     type: 'string',
     alias: 'head-sha',
-    default: 'HEAD',
-    description: 'Commit SHA linked to this comment'
+    description: 'Commit SHA linked to this comment',
+    conflicts: ['target', 'pr'],
+    hidden: true
   },
   watch: {
     type: 'boolean',

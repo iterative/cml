@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.18.10",
+  "version": "0.18.14",
   "description": "<p align=\"center\"> <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "author": {
     "name": "Iterative Inc",
@@ -42,7 +42,7 @@
     "cml-pr": "bin/legacy/link.js"
   },
   "scripts": {
-    "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md,yaml,yml}'",
+    "lintfix": "eslint --fix ./ && prettier --write '**/*.{js,json,md}'",
     "lint": "eslint ./",
     "test": "jest --forceExit",
     "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
@@ -94,7 +94,7 @@
     "pseudoexec": "^0.2.0",
     "remark": "^13.0.0",
     "semver": "^7.3.5",
-    "simple-git": "^3.7.1",
+    "simple-git": "^3.15.0",
     "strip-ansi": "^6.0.1",
     "strip-url-auth": "^1.0.1",
     "tar": "^6.1.11",

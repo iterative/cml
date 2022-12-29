@@ -74,7 +74,13 @@ const shutdown = async (opts) => {
 
     try {
       return await exec(
-        `leo destroy-runner --cloud=${cloud} --region=${region} ${id}`
+        'leo',
+        'destroy-runner',
+        '--cloud',
+        cloud,
+        '--region',
+        region,
+        id
       );
     } catch (err) {
       winston.error(`\tFailed destroying with LEO: ${err.message}`);
@@ -431,7 +437,7 @@ exports.handler = async (opts) => {
 
 exports.builder = (yargs) =>
   yargs
-    .env('CML_RUNNER')
+    .env('CML')
     .option('options', { default: exports.options, hidden: true })
     .options(exports.options);
 
@@ -451,7 +457,7 @@ exports.options = kebabcaseKeys({
   },
   name: {
     type: 'string',
-    default: `cml-${randid()}`,
+    default: `${randid()}`,
     defaultDescription: 'cml-{ID}',
     description: 'Name displayed in the repository once registered'
   },

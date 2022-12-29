@@ -66,7 +66,7 @@ class Gitlab {
     return this.detectedBase;
   }
 
-  async commentCreate(opts = {}) {
+  async commitCommentCreate(opts = {}) {
     const { commitSha, report } = opts;
 
     const projectPath = await this.projectPath();
@@ -79,7 +79,7 @@ class Gitlab {
     return `${this.repo}/-/commit/${commitSha}`;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     throw new Error('GitLab does not support comment updates!');
   }
 
@@ -330,6 +330,51 @@ class Gitlab {
     }
   }
 
+  async issueCommentUpsert(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { issueId, report, id: commentId } = opts;
+
+    const endpoint =
+      `/projects/${projectPath}/issues/${issueId}/notes` +
+      `${commentId ? '/' + commentId : ''}`;
+    const body = new URLSearchParams();
+    body.append('body', report);
+
+    const { id } = await this.request({
+      endpoint,
+      method: commentId ? 'PUT' : 'POST',
+      body
+    });
+
+    return `${this.repo}/-/issues/${issueId}#note_${id}`;
+  }
+
+  async issueCommentCreate(opts = {}) {
+    const { id, ...rest } = opts;
+    return this.issueCommentUpsert(rest);
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    if (!opts.id) throw new Error('Id is missing updating comment');
+    return this.issueCommentUpsert(opts);
+  }
+
+  async issueComments(opts = {}) {
+    const projectPath = await this.projectPath();
+    const { issueId } = opts;
+
+    const endpoint = `/projects/${projectPath}/issues/${issueId}/notes`;
+
+    const comments = await this.request({
+      endpoint,
+      method: 'GET'
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
+  }
+
   async prCommentCreate(opts = {}) {
     const projectPath = await this.projectPath();
     const { report, prNumber } = opts;
@@ -435,18 +480,19 @@ class Gitlab {
     repo.password = this.token;
     repo.username = 'token';
 
-    const command = `
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url ${remote} "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
+    const commands = [
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      [
+        'git',
+        'remote',
+        'set-url',
+        remote,
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
+      ]
+    ];
 
-    return command;
-  }
-
-  warn(message) {
-    winston.warn(message);
+    return commands;
   }
 
   get workflowId() {
@@ -459,6 +505,16 @@ class Gitlab {
 
   get sha() {
     return process.env.CI_COMMIT_SHA;
+  }
+
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if ('CI_MERGE_REQUEST_IID' in process.env) {
+      return process.env.CI_MERGE_REQUEST_IID;
+    }
+    return null;
   }
 
   get branch() {
@@ -483,6 +539,8 @@ class Gitlab {
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
+    winston.debug(`Gitlab API request, method: ${method}, url: "${url}"`);
+
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const response = await fetch(url, {
       method,
@@ -490,10 +548,17 @@ class Gitlab {
       body,
       agent: new ProxyAgent()
     });
-    if (response.status > 300) throw new Error(response.statusText);
+    if (!response.ok) {
+      winston.debug(`Response status is ${response.status}`);
+      throw new Error(response.statusText);
+    }
     if (raw) return response;
 
     return await response.json();
+  }
+
+  warn(message) {
+    winston.warn(message);
   }
 }
 
