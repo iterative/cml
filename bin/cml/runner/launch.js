@@ -31,11 +31,18 @@ const shutdown = async (opts) => {
     try {
       winston.info(`Unregistering runner ${name}...`);
       await cml.unregisterRunner({ name });
-      RUNNER && RUNNER.kill('SIGINT');
-      winston.info('\tSuccess');
     } catch (err) {
+      if (err.message.includes('is still running a job')) {
+        winston.warn(`\tCancelling shutdown: ${err.message}`);
+        return false;
+      }
+
       winston.error(`\tFailed: ${err.message}`);
     }
+
+    RUNNER && RUNNER.kill('SIGINT');
+    winston.info('\tSuccess');
+    return true;
   };
 
   const retryWorkflows = async () => {
@@ -76,7 +83,10 @@ const shutdown = async (opts) => {
 
   if (!cloud) {
     try {
-      await unregisterRunner();
+      if (!(await unregisterRunner())) {
+        RUNNER_SHUTTING_DOWN = false;
+        return;
+      }
       await retryWorkflows();
     } catch (err) {
       winston.error(`Error connecting the SCM: ${err.message}`);
