@@ -26,7 +26,7 @@ const shutdown = async (opts) => {
   const { name, tfResource, noRetry, reason, destroyDelay, watcher } = opts;
 
   const unregisterRunner = async () => {
-    if (!RUNNER) true;
+    if (!RUNNER) return true;
 
     try {
       winston.info(`Unregistering runner ${name}...`);
