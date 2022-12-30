@@ -23,19 +23,26 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const { name, tfResource, noRetry, reason, destroyDelay } = opts;
+  const { name, tfResource, noRetry, reason, destroyDelay, watcher } = opts;
 
   const unregisterRunner = async () => {
-    if (!RUNNER) return;
+    if (!RUNNER) return true;
 
     try {
       winston.info(`Unregistering runner ${name}...`);
       await cml.unregisterRunner({ name });
-      RUNNER && RUNNER.kill('SIGINT');
-      winston.info('\tSuccess');
     } catch (err) {
+      if (err.message.includes('is still running a job')) {
+        winston.warn(`\tCancelling shutdown: ${err.message}`);
+        return false;
+      }
+
       winston.error(`\tFailed: ${err.message}`);
     }
+
+    RUNNER.kill('SIGINT');
+    winston.info('\tSuccess');
+    return true;
   };
 
   const retryWorkflows = async () => {
@@ -82,7 +89,12 @@ const shutdown = async (opts) => {
 
   if (!cloud) {
     try {
-      await unregisterRunner();
+      if (!(await unregisterRunner())) {
+        RUNNER_SHUTTING_DOWN = false;
+        RUNNER_TIMER = 0;
+        return;
+      }
+      clearInterval(watcher);
       await retryWorkflows();
     } catch (err) {
       winston.error(`Error connecting the SCM: ${err.message}`);
@@ -273,7 +285,13 @@ const runLocal = async (opts) => {
       }
 
       if (log.status === 'job_ended') {
-        RUNNER_JOBS_RUNNING.pop();
+        // Runners can only take a job at a time, so the whole concept of using
+        // an array as a stack/counter (formerly RUNNER_JOBS_RUNNING.pop() on
+        // the line below) is a footgun. It should be just a boolean variable
+        // to hold the busy/idle status. To avoid too much refactoring, we just
+        // empty the array, so empty means idle and populated means busy.
+        RUNNER_JOBS_RUNNING.length = 0;
+
         if (single) await shutdown({ ...opts, reason: 'single job' });
       }
     }
@@ -305,8 +323,7 @@ const runLocal = async (opts) => {
       const idle = RUNNER_JOBS_RUNNING.length === 0;
 
       if (RUNNER_TIMER >= idleTimeout) {
-        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
-        clearInterval(watcher);
+        shutdown({ ...opts, reason: `timeout:${idleTimeout}`, watcher });
       }
 
       RUNNER_TIMER = idle ? RUNNER_TIMER + 1 : 0;
