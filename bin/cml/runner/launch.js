@@ -26,7 +26,7 @@ const shutdown = async (opts) => {
   const { name, tfResource, noRetry, reason, destroyDelay, watcher } = opts;
 
   const unregisterRunner = async () => {
-    if (!RUNNER) return;
+    if (!RUNNER) true;
 
     try {
       winston.info(`Unregistering runner ${name}...`);
@@ -40,7 +40,7 @@ const shutdown = async (opts) => {
       winston.error(`\tFailed: ${err.message}`);
     }
 
-    RUNNER && RUNNER.kill('SIGINT');
+    RUNNER.kill('SIGINT');
     winston.info('\tSuccess');
     return true;
   };
