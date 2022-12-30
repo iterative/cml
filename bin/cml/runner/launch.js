@@ -283,7 +283,13 @@ const runLocal = async (opts) => {
       }
 
       if (log.status === 'job_ended') {
-        RUNNER_JOBS_RUNNING.pop();
+        // Runners can only take a job at a time, so the whole concept of using
+        // an array as a stack/counter (formerly RUNNER_JOBS_RUNNING.pop() on
+        // the line below) is a footgun. It should be just a boolean variable
+        // to hold the busy/idle status. To avoid too much refactoring, we just
+        // empty the array, so empty means idle and populated means busy.
+        RUNNER_JOBS_RUNNING.length = 0;
+
         if (single) await shutdown({ ...opts, reason: 'single job' });
       }
     }
