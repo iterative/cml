@@ -23,7 +23,7 @@ const shutdown = async (opts) => {
   RUNNER_SHUTTING_DOWN = true;
 
   const { error, cloud } = opts;
-  const { name, tfResource, noRetry, reason, destroyDelay } = opts;
+  const { name, tfResource, noRetry, reason, destroyDelay, watcher } = opts;
 
   const unregisterRunner = async () => {
     if (!RUNNER) return;
@@ -91,8 +91,10 @@ const shutdown = async (opts) => {
     try {
       if (!(await unregisterRunner())) {
         RUNNER_SHUTTING_DOWN = false;
+        RUNNER_TIMER = 0;
         return;
       }
+      clearInterval(watcher);
       await retryWorkflows();
     } catch (err) {
       winston.error(`Error connecting the SCM: ${err.message}`);
@@ -321,8 +323,7 @@ const runLocal = async (opts) => {
       const idle = RUNNER_JOBS_RUNNING.length === 0;
 
       if (RUNNER_TIMER >= idleTimeout) {
-        shutdown({ ...opts, reason: `timeout:${idleTimeout}` });
-        clearInterval(watcher);
+        shutdown({ ...opts, reason: `timeout:${idleTimeout}`, watcher });
       }
 
       RUNNER_TIMER = idle ? RUNNER_TIMER + 1 : 0;
