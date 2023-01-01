@@ -87,6 +87,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
     resource: {
       iterative_cml_runner: {
         runner: {
+          ...(opts.image && { image: opts.image }),
           ...(opts.awsSecurityGroup && {
             aws_security_group: opts.awsSecurityGroup
           }),
