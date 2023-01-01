@@ -53,18 +53,23 @@ const ownerRepo = (opts) => {
 const octokit = (token, repo) => {
   if (!token) throw new Error('token not found');
 
-  const throttleHandler = (retryAfter, options) => {
+  const throttleHandler = (reason, offset) => async (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      winston.info(`Retrying after ${retryAfter} seconds!`);
+      winston.info(
+        `Retrying because of ${reason} after ${retryAfter + offset} seconds`
+      );
+      await new Promise((resolve) => setTimeout(resolve, offset * 1000));
       return true;
     }
   };
   const octokitOptions = {
     request: { agent: new ProxyAgent() },
     auth: token,
+    log: console,
     throttle: {
-      onRateLimit: throttleHandler,
-      onAbuseLimit: throttleHandler
+      onAbuseLimit: throttleHandler('abuse limit', 120), // deprecated, see onSecondaryRateLimit
+      onRateLimit: throttleHandler('rate limit', 30),
+      onSecondaryRateLimit: throttleHandler('secondary rate limit', 30)
     }
   };
   const { host, hostname } = new url.URL(repo);
