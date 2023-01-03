@@ -339,7 +339,8 @@ class CML {
 
     if (!rmWatermark) {
       const [, type] = mime.split('/');
-      uri = watermarkUri({ uri, type });
+      const sha = await this.triggerSha();
+      uri = watermarkUri({ uri, type, sha });
     }
 
     uri = preventcacheUri({ uri });
