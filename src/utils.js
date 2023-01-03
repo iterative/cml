@@ -137,8 +137,8 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const watermarkUri = ({ uri, type } = {}) => {
-  return uriParam({ uri, param: 'cml', value: type });
+const watermarkUri = ({ uri, type, sha } = {}) => {
+  return uriParam({ uri, param: 'cml', value: type, sha });
 };
 
 const preventcacheUri = ({ uri } = {}) => {
@@ -146,8 +146,11 @@ const preventcacheUri = ({ uri } = {}) => {
 };
 
 const uriParam = (opts = {}) => {
-  const { uri, param, value } = opts;
+  const { uri, param, value, sha } = opts;
   const url = new URL(uri);
+  if (sha) {
+    url.searchParams.set('sha', sha);
+  }
   url.searchParams.set(param, value);
   return url.toString();
 };
