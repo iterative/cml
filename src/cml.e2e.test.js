@@ -32,6 +32,7 @@ describe('Github tests', () => {
 
     expect(output.startsWith('https://')).toBe(true);
     expect(output.includes('cml=png')).toBe(true);
+    expect(output.includes('sha=')).toBe(true);
   });
 
   test('Publish image with markdown', async () => {
@@ -43,6 +44,7 @@ describe('Github tests', () => {
     expect(output.startsWith('![](https://')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
     expect(output.includes('cml=png')).toBe(true);
+    expect(output.includes('sha=')).toBe(true);
   });
 
   test('Publish a non image file in markdown', async () => {
@@ -50,10 +52,10 @@ describe('Github tests', () => {
     const title = 'my title';
 
     const output = await new CML().publish({ path, md: true, title });
-
     expect(output.startsWith(`[${title}](https://`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
     expect(output.includes('cml=pdf')).toBe(true);
+    expect(output.includes('sha=')).toBe(true);
   });
 
   test('Comment should succeed with a valid sha', async () => {

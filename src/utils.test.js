@@ -1,4 +1,4 @@
-const { exec, upload } = require('./utils');
+const { exec, upload, uriParam, watermarkUri, addshaUri } = require('./utils');
 
 describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
@@ -15,6 +15,46 @@ describe('exec tests', () => {
     }
 
     expect(error).not.toBeNull();
+  });
+});
+
+describe('uri tests', () => {
+  test('uriParam', () => {
+    const result = uriParam({
+      uri: 'https://example.com/',
+      param: 'test',
+      value: 'works'
+    });
+    const url = new URL(result);
+
+    expect(url.searchParams.get('test')).toBe('works');
+  });
+  test('watermarkUri', () => {
+    const result = watermarkUri({
+      uri: 'https://example.com/',
+      type: 'pdf'
+    });
+    const url = new URL(result);
+
+    expect(url.searchParams.get('test')).toBe('works');
+    expect(url.searchParams.get('cml')).toBe('pdf');
+  });
+  test('addshaUri', () => {
+    const result = addshaUri({
+      uri: 'https://example.com/',
+      sha: 'deadbeef'
+    });
+    const url = new URL(result);
+
+    expect(url.searchParams.get('sha')).toBe('deadbeef');
+  });
+  test('preventcacheUri', () => {
+    const result = addshaUri({
+      uri: 'https://example.com/'
+    });
+    const url = new URL(result);
+
+    expect(url.searchParams.get('cache-bypass')).not.toBeNull();
   });
 });
 
