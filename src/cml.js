@@ -19,7 +19,8 @@ const {
   exec,
   watermarkUri,
   preventcacheUri,
-  waitForever
+  waitForever,
+  addshaUri
 } = require('./utils');
 
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
@@ -340,7 +341,8 @@ class CML {
     if (!rmWatermark) {
       const [, type] = mime.split('/');
       const sha = await this.triggerSha();
-      uri = watermarkUri({ uri, type, sha });
+      uri = watermarkUri({ uri, type });
+      uri = addshaUri({ uri, sha });
     }
 
     uri = preventcacheUri({ uri });

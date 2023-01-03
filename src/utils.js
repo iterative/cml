@@ -137,20 +137,20 @@ const isProcRunning = async (opts) => {
   });
 };
 
-const watermarkUri = ({ uri, type, sha } = {}) => {
-  return uriParam({ uri, param: 'cml', value: type, sha });
+const watermarkUri = ({ uri, type } = {}) => {
+  return uriParam({ uri, param: 'cml', value: type });
 };
 
+const addshaUri = ({ uri, sha } = {}) => {
+  return uriParam({ uri, param: 'sha', value: sha });
+};
 const preventcacheUri = ({ uri } = {}) => {
   return uriParam({ uri, param: 'cache-bypass', value: uuid.v4() });
 };
 
 const uriParam = (opts = {}) => {
-  const { uri, param, value, sha } = opts;
+  const { uri, param, value } = opts;
   const url = new URL(uri);
-  if (sha) {
-    url.searchParams.set('sha', sha);
-  }
   url.searchParams.set(param, value);
   return url.toString();
 };
@@ -254,6 +254,8 @@ exports.randid = randid;
 exports.sleep = sleep;
 exports.isProcRunning = isProcRunning;
 exports.watermarkUri = watermarkUri;
+exports.addshaUri = addshaUri;
+exports.uriParam = uriParam;
 exports.preventcacheUri = preventcacheUri;
 exports.download = download;
 exports.sshConnection = sshConnection;
