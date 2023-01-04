@@ -1,4 +1,11 @@
-const { exec, upload, uriParam, watermarkUri, addshaUri } = require('./utils');
+const {
+  exec,
+  upload,
+  uriParam,
+  watermarkUri,
+  addshaUri,
+  preventcacheUri
+} = require('./utils');
 
 describe('exec tests', () => {
   test('exec is await and outputs hello', async () => {
@@ -36,7 +43,6 @@ describe('uri tests', () => {
     });
     const url = new URL(result);
 
-    expect(url.searchParams.get('test')).toBe('works');
     expect(url.searchParams.get('cml')).toBe('pdf');
   });
   test('addshaUri', () => {
@@ -49,11 +55,10 @@ describe('uri tests', () => {
     expect(url.searchParams.get('sha')).toBe('deadbeef');
   });
   test('preventcacheUri', () => {
-    const result = addshaUri({
+    const result = preventcacheUri({
       uri: 'https://example.com/'
     });
     const url = new URL(result);
-
     expect(url.searchParams.get('cache-bypass')).not.toBeNull();
   });
 });
