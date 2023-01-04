@@ -231,6 +231,7 @@ const runLocal = async (opts) => {
     single,
     idleTimeout,
     noRetry,
+    cloudSpot,
     dockerVolumes,
     tfResource,
     tpiVersion
@@ -274,28 +275,30 @@ const runLocal = async (opts) => {
     });
   }
 
-  const dataHandler = async (data) => {
-    const logs = await cml.parseRunnerLog({ data, name });
-    for (const log of logs) {
-      winston.info('runner status', log);
+  const dataHandler =
+    ({ cloudSpot }) =>
+    async (data) => {
+      const logs = await cml.parseRunnerLog({ data, name, cloudSpot });
+      for (const log of logs) {
+        winston.info('runner status', log);
 
-      if (log.status === 'job_started') {
-        const { job: id, pipeline, date } = log;
-        RUNNER_JOBS_RUNNING.push({ id, pipeline, date });
+        if (log.status === 'job_started') {
+          const { job: id, pipeline, date } = log;
+          RUNNER_JOBS_RUNNING.push({ id, pipeline, date });
+        }
+
+        if (log.status === 'job_ended') {
+          // Runners can only take a job at a time, so the whole concept of using
+          // an array as a stack/counter (formerly RUNNER_JOBS_RUNNING.pop() on
+          // the line below) is a footgun. It should be just a boolean variable
+          // to hold the busy/idle status. To avoid too much refactoring, we just
+          // empty the array, so empty means idle and populated means busy.
+          RUNNER_JOBS_RUNNING.length = 0;
+
+          if (single) await shutdown({ ...opts, reason: 'single job' });
+        }
       }
-
-      if (log.status === 'job_ended') {
-        // Runners can only take a job at a time, so the whole concept of using
-        // an array as a stack/counter (formerly RUNNER_JOBS_RUNNING.pop() on
-        // the line below) is a footgun. It should be just a boolean variable
-        // to hold the busy/idle status. To avoid too much refactoring, we just
-        // empty the array, so empty means idle and populated means busy.
-        RUNNER_JOBS_RUNNING.length = 0;
-
-        if (single) await shutdown({ ...opts, reason: 'single job' });
-      }
-    }
-  };
+    };
 
   const proc = await cml.startRunner({
     workdir,
@@ -306,8 +309,8 @@ const runLocal = async (opts) => {
     dockerVolumes
   });
 
-  proc.stderr.on('data', dataHandler);
-  proc.stdout.on('data', dataHandler);
+  proc.stderr.on('data', dataHandler({ cloudSpot }));
+  proc.stdout.on('data', dataHandler({ cloudSpot }));
   proc.on('disconnect', () =>
     shutdown({ ...opts, error: new Error('runner proccess lost') })
   );

@@ -357,7 +357,7 @@ class CML {
   }
 
   async parseRunnerLog(opts = {}) {
-    let { data } = opts;
+    let { data, name, cloudSpot } = opts;
     if (!data) return [];
 
     data = data.toString('utf8');
@@ -387,12 +387,11 @@ class CML {
           log.job = parseId('job');
           log.pipeline = parseId('pipeline');
 
-          // THE SOURCE OF ALL EVIL
-          // if (name && this.driver === GITHUB) {
-          //   const { id: runnerId } = await this.runnerByName({ name });
-          //   const { id } = await driver.runnerJob({ runnerId });
-          //   log.job = id;
-          // }
+          if (name && cloudSpot && this.driver === GITHUB) {
+            const { id: runnerId } = await this.runnerByName({ name });
+            const { id } = await driver.runnerJob({ runnerId });
+            log.job = id;
+          }
         }
 
         if (status === 'job_ended')
