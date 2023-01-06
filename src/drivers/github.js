@@ -56,7 +56,7 @@ const octokit = (token, repo) => {
   const throttleHandler = (reason, offset) => async (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
       winston.info(
-        `Retrying because of ${reason} after ${retryAfter + offset} seconds`
+        `Retrying because of ${reason} in ${retryAfter + offset} seconds`
       );
       await new Promise((resolve) => setTimeout(resolve, offset * 1000));
       return true;
