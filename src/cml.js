@@ -106,7 +106,6 @@ const fixGitSafeDirectory = () => {
   // Fail meaningfully if git is not available,
   // see https://github.com/nodejs/node/issues/33458
   spawnSync('git');
-  
   // Fix for git>=2.36.0
   addSafeDirectory('*');
 
