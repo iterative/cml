@@ -300,8 +300,6 @@ class CML {
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
         // break body to find and strip watermark
-        console.log(body);
-        console.log(body.split('\n'));
         return body
           .split('\n')
           .map((line) => this.stripWatermarkFragment(line))
