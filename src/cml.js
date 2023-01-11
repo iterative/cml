@@ -204,7 +204,9 @@ class CML {
         (label, pattern) => label.replace(pattern[0], pattern[1]),
         title
       );
-      return `![](${WATERMARK_IMAGE} "${title}")`;
+      const sha = this.triggerSha();
+      const watermarkURL = addshaUri({ uri: WATERMARK_IMAGE, sha });
+      return `![](${watermarkURL} "${title}")`;
     };
     const watermark = rmWatermark
       ? ''
@@ -293,9 +295,16 @@ class CML {
     }
 
     let comment;
+
+    const strippedWatermark = this.stripWatermarkFragment(watermark);
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
-        return body.includes(watermark);
+        // break body to find and strip watermark
+        return body
+          .split('\n')
+          .map((line) => this.stripWatermarkFragment(line))
+          .join('\n')
+          .includes(strippedWatermark);
       });
     };
 
@@ -320,6 +329,22 @@ class CML {
       report,
       ...target
     });
+  }
+
+  stripWatermarkFragment(watermark) {
+    // "![](" + watermark image + # + 40 char sha + ")"
+
+    // noop conditions / work with old style comments.
+    if (!watermark.startsWith('![](')) return watermark;
+    if (!watermark.includes(WATERMARK_IMAGE)) return watermark;
+    // seperate watermark image and title
+    const terminator = watermark.indexOf(' "');
+    if (terminator === -1) return watermark;
+    const fullURL = watermark.substring(4, terminator);
+    const url = new URL(fullURL);
+    url.hash = '';
+    watermark.replace(fullURL, url.toString());
+    return watermark;
   }
 
   async checkCreate(opts = {}) {

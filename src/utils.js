@@ -142,7 +142,7 @@ const watermarkUri = ({ uri, type } = {}) => {
 };
 
 const addshaUri = ({ uri, sha } = {}) => {
-  return uriParam({ uri, param: 'sha', value: sha });
+  return uriFragment({ uri, fragment: sha });
 };
 const preventcacheUri = ({ uri } = {}) => {
   return uriParam({ uri, param: 'cache-bypass', value: uuid.v4() });
@@ -152,6 +152,13 @@ const uriParam = (opts = {}) => {
   const { uri, param, value } = opts;
   const url = new URL(uri);
   url.searchParams.set(param, value);
+  return url.toString();
+};
+
+const uriFragment = (opts = {}) => {
+  const { uri, fragment } = opts;
+  const url = new URL(uri);
+  url.hash = fragment;
   return url.toString();
 };
 
