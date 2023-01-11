@@ -345,8 +345,7 @@ class CML {
     const fullURL = watermark.substring(4, terminator);
     const url = new URL(fullURL);
     url.hash = '';
-    watermark.replace(fullURL, url.toString());
-    return watermark;
+    return watermark.replace(fullURL, url.toString());
   }
 
   async checkCreate(opts = {}) {
