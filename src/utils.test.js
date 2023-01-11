@@ -52,7 +52,7 @@ describe('uri tests', () => {
     });
     const url = new URL(result);
 
-    expect(url.hash).toBe('deadbeef');
+    expect(url.hash).toBe('#deadbeef');
   });
   test('preventcacheUri', () => {
     const result = preventcacheUri({
