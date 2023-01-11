@@ -184,6 +184,7 @@ class CML {
     if (rmWatermark && update)
       throw new Error('watermarks are mandatory for updateable comments');
 
+    const sha = await this.triggerSha();
     // Create the watermark.
     const genWatermark = (opts = {}) => {
       const { label = '', workflow, run } = opts;
@@ -204,7 +205,6 @@ class CML {
         (label, pattern) => label.replace(pattern[0], pattern[1]),
         title
       );
-      const sha = this.triggerSha();
       const watermarkURL = addshaUri({ uri: WATERMARK_IMAGE, sha });
       return `![](${watermarkURL} "${title}")`;
     };
