@@ -60,7 +60,7 @@ jobs:
           fi
 
           TAGS="$(
-            for registry in docker.io/{dvcorg,iterativeai} ghcr.io/iterative; do
+            for registry in docker.io/iterativeai ghcr.io/iterative; do
               if [[ "${{ matrix.latest }}" == "true" ]]; then
                 if [[ "${{ matrix.gpu }}" == "true" ]]; then
                   echo "${registry}/cml:latest-gpu"
