@@ -276,7 +276,7 @@ class CML {
     let comment;
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
-        return watermark === null || watermark.isIn(body);
+        return !watermark || watermark.isIn(body);
       });
     };
 
