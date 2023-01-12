@@ -66,6 +66,17 @@ describe('watermark tests', () => {
     expect(watermark.isIn(report)).toEqual(true);
   });
 
+  test('check for presence of the watermark with special chars in a report', async () => {
+    const watermark = new Watermark({
+      label: 'custom_1-vm',
+      workflow: 'workflow-id',
+      run: 'run-id',
+      sha: 'deadbeef'
+    });
+    const report = watermark.appendTo('some report');
+    expect(watermark.isIn(report)).toEqual(true);
+  });
+
   test('check for presence of the watermark in a report, different sha', async () => {
     const watermark = new Watermark({
       label: 'some-label-{run}',
