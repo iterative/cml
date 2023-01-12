@@ -189,7 +189,7 @@ class CML {
           label: watermarkTitle,
           workflow: drv.workflowId,
           run: drv.runId,
-          sha: commitSha
+          sha: commitSha || (await this.triggerSha())
         });
 
     let userReport = testReport;

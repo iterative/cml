@@ -68,7 +68,7 @@ describe('watermark tests', () => {
 
   test('check for presence of the watermark with special chars in a report', async () => {
     const watermark = new Watermark({
-      label: 'custom_1-vm',
+      label: 'custom_1[*]-vm',
       workflow: 'workflow-id',
       run: 'run-id',
       sha: 'deadbeef'
