@@ -343,7 +343,7 @@ class CML {
   }
 
   async parseRunnerLog(opts = {}) {
-    let { data, name } = opts;
+    let { data, name, cloudSpot } = opts;
     if (!data) return [];
 
     data = data.toString('utf8');
@@ -373,7 +373,15 @@ class CML {
           log.job = parseId('job');
           log.pipeline = parseId('pipeline');
 
-          if (name && this.driver === GITHUB) {
+          // GitHub API doesn’t seem to provide a straightforward way to get the
+          // job identifier from the runner logs, so we need to query several API
+          // endpoints to retrieve it. Due to several broken parts of our logic and
+          // some unexpected API responses, performing these queries may trigger API
+          // rate limits, causing the whole `cml` process to crash. Given that
+          // retrieving the job identifier is only useful for spot instance recovery
+          // (i.e. automated retryWorkflow), we can save ourselves all the hassle if
+          // —-cloud-spot is not set or —-driver is not GitHub.
+          if (cloudSpot && this.driver === GITHUB) {
             const { id: runnerId } = await this.runnerByName({ name });
             const { id } = await driver.runnerJob({ runnerId });
             log.job = id;

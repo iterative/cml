@@ -50,21 +50,26 @@ const ownerRepo = (opts) => {
   return { owner, repo };
 };
 
-const octokit = (token, repo) => {
+const octokit = (token, repo, log) => {
   if (!token) throw new Error('token not found');
 
-  const throttleHandler = (retryAfter, options) => {
+  const throttleHandler = (reason, offset) => async (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      winston.info(`Retrying after ${retryAfter} seconds!`);
+      winston.info(
+        `Retrying because of ${reason} in ${retryAfter + offset} seconds`
+      );
+      await new Promise((resolve) => setTimeout(resolve, offset * 1000));
       return true;
     }
   };
   const octokitOptions = {
     request: { agent: new ProxyAgent() },
     auth: token,
+    log,
     throttle: {
-      onRateLimit: throttleHandler,
-      onAbuseLimit: throttleHandler
+      onAbuseLimit: throttleHandler('abuse limit', 120), // deprecated, see onSecondaryRateLimit
+      onRateLimit: throttleHandler('rate limit', 30),
+      onSecondaryRateLimit: throttleHandler('secondary rate limit', 30)
     }
   };
   const { host, hostname } = new url.URL(repo);
@@ -204,7 +209,7 @@ class Github {
 
   async runnerToken() {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo !== 'undefined') {
       const {
@@ -233,7 +238,7 @@ class Github {
   async unregisterRunner(opts) {
     const { runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
@@ -299,7 +304,7 @@ class Github {
 
   async runners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { paginate, actions } = octokit(this.token, this.repo);
+    const { paginate, actions } = octokit(this.token, this.repo, winston);
 
     let runners;
     if (typeof repo === 'undefined') {
@@ -321,7 +326,7 @@ class Github {
   async runnerById(opts = {}) {
     const { id } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo === 'undefined') {
       const { data: runner } = await actions.getSelfHostedRunnerForOrg({
@@ -343,7 +348,7 @@ class Github {
 
   async runnerJob({ runnerId, status = 'queued' } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const octokitClient = octokit(this.token, this.repo);
+    const octokitClient = octokit(this.token, this.repo, winston);
 
     if (status === 'running') status = 'in_progress';
 
@@ -677,7 +682,7 @@ class Github {
 
   async pipelineRerun({ id = GITHUB_RUN_ID, jobId } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (!id && jobId) {
       ({
@@ -726,7 +731,7 @@ class Github {
   async pipelineJobs(opts = {}) {
     const { jobs: runnerJobs } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     const jobs = await Promise.all(
       runnerJobs.map(async (job) => {
