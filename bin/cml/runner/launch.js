@@ -135,6 +135,7 @@ const runCloud = async (opts) => {
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
       cloudAwsSubnet: awsSubnet,
+      cloudImage: image,
       workdir
     } = opts;
 
@@ -171,6 +172,7 @@ const runCloud = async (opts) => {
       startupScript,
       awsSecurityGroup,
       awsSubnet,
+      image,
       dockerVolumes
     });
 
@@ -581,6 +583,11 @@ exports.options = kebabcaseKeys({
     default: '',
     description: 'Specifies the subnet to use within AWS',
     alias: 'cloud-aws-subnet-id'
+  },
+  cloudImage: {
+    type: 'string',
+    description: 'Custom machine/container image',
+    hidden: true
   },
   tpiVersion: {
     type: 'string',

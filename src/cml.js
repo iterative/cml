@@ -21,10 +21,9 @@ const {
   preventcacheUri,
   waitForever
 } = require('./utils');
-
+const { Watermark } = require('./watermark');
 const { GITHUB_REPOSITORY, CI_PROJECT_URL, BITBUCKET_REPO_UUID } = process.env;
 
-const WATERMARK_IMAGE = 'https://cml.dev/watermark.png';
 const GIT_USER_NAME = 'Olivaw[bot]';
 const GIT_USER_EMAIL = 'olivaw@iterative.ai';
 const GIT_REMOTE = 'origin';
@@ -185,36 +184,16 @@ class CML {
     const drv = this.getDriver();
 
     if (rmWatermark && update)
-      throw new Error('watermarks are mandatory for updateable comments');
+      throw new Error('watermarks are mandatory for updatable comments');
 
     // Create the watermark.
-    const genWatermark = (opts = {}) => {
-      const { label = '', workflow, run } = opts;
-      // Replace {workflow} and {run} placeholders in label with actual values.
-      const lbl = label.replace('{workflow}', workflow).replace('{run}', run);
-
-      let title = `CML watermark ${lbl}`.trim();
-      // Github appears to escape underscores and asterisks in markdown content.
-      // Without escaping them, the watermark content in comments retrieved
-      // from github will not match the input.
-      const patterns = [
-        [/_/g, '\\_'], // underscore
-        [/\*/g, '\\*'], // asterisk
-        [/\[/g, '\\['], // opening square bracket
-        [/</g, '\\<'] // opening angle bracket
-      ];
-      title = patterns.reduce(
-        (label, pattern) => label.replace(pattern[0], pattern[1]),
-        title
-      );
-      return `![](${WATERMARK_IMAGE} "${title}")`;
-    };
     const watermark = rmWatermark
-      ? ''
-      : genWatermark({
+      ? null
+      : new Watermark({
           label: watermarkTitle,
           workflow: drv.workflowId,
-          run: drv.runId
+          run: drv.runId,
+          sha: commitSha || (await this.triggerSha())
         });
 
     let userReport = testReport;
@@ -226,7 +205,10 @@ class CML {
       if (!watch) throw err;
     }
 
-    let report = `${userReport}\n\n${watermark}`;
+    let report = userReport;
+    if (watermark) {
+      report = watermark.appendTo(userReport);
+    }
 
     const publishLocalFiles = async (tree) => {
       const nodes = [];
@@ -298,7 +280,7 @@ class CML {
     let comment;
     const updatableComment = (comments) => {
       return comments.reverse().find(({ body }) => {
-        return body.includes(watermark);
+        return !watermark || watermark.isIn(body);
       });
     };
 
