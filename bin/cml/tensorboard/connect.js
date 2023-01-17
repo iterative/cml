@@ -101,7 +101,7 @@ exports.handler = async (opts) => {
 
 exports.builder = (yargs) =>
   yargs
-    .env('CML')
+    .env('CML_TENSORBOARD')
     .option('options', { default: exports.options, hidden: true })
     .options(exports.options);
 

@@ -13,23 +13,12 @@ const { jitsuEventPayload, send } = require('../src/analytics');
 
 const aliasLegacyEnvironmentVariables = () => {
   const legacyEnvironmentPrefixes = {
-    CML_CI: 'CML',
-    CML_PUBLISH: 'CML',
-    CML_RERUN_WORKFLOW: 'CML',
-    CML_SEND_COMMENT: 'CML',
-    CML_SEND_GITHUB_CHECK: 'CML',
-    CML_TENSORBOARD_DEV: 'CML',
-    // Remap environment variable prefixes so e.g. CML_COMMAND_OPTION becomes an
-    // an alias for CML_OPTION, regardless of the command it't referring to.
-    // See also https://github.com/yargs/yargs/issues/873#issuecomment-917441475
-    CML_ASSET: 'CML',
-    CML_CHECK: 'CML',
-    CML_COMMENT: 'CML',
-    CML_PR: 'CML',
-    CML_REPO: 'CML',
-    CML_RUNNER: 'CML',
-    CML_TENSORBOARD: 'CML',
-    CML_WORKFLOW: 'CML'
+    CML_CI: 'CML_REPO',
+    CML_PUBLISH: 'CML_ASSET',
+    CML_RERUN_WORKFLOW: 'CML_WORKFLOW',
+    CML_SEND_COMMENT: 'CML_COMMENT',
+    CML_SEND_GITHUB_CHECK: 'CML_CHECK',
+    CML_TENSORBOARD_DEV: 'CML_TENSORBOARD'
   };
 
   for (const [oldPrefix, newPrefix] of Object.entries(
@@ -40,6 +29,24 @@ const aliasLegacyEnvironmentVariables = () => {
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
   }
+
+  // Remap environment variable prefixes so e.g. CML_OPTION global options become
+  // an alias for CML_COMMAND_OPTION, to be interpreted by the appropriate subcommands.
+  // See also https://github.com/yargs/yargs/issues/873#issuecomment-917441475
+  for (const globalOption of ['DRIVER', 'DRIVER_TOKEN', 'LOG', 'REPO', 'TOKEN'])
+    for (const subcommand of [
+      'ASSET',
+      'CHECK',
+      'COMMENT',
+      'PR',
+      'REPO',
+      'RUNNER',
+      'TENSORBOARD',
+      'WORKFLOW'
+    ])
+      if (process.env[`CML_${globalOption}`] !== undefined)
+        process.env[`CML_${subcommand}_${globalOption}`] =
+          process.env[`CML_${globalOption}`];
 
   const legacyEnvironmentVariables = {
     TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
