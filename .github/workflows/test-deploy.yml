@@ -119,8 +119,8 @@ jobs:
       - if: inputs.release
         run:
           # wait for the release draftbefore uploading artifacts; blame GitHub API for eventual inconsistency?
-          until gh release view $(basename ${{ github.head_ref }}); do sleep 10; done
-          find build -type f | xargs gh release upload $(basename ${{ github.head_ref }})
+          until gh release view "$GITHUB_REF_NAME"; do sleep 10; done
+          find build -type f | xargs gh release upload "$GITHUB_REF_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
