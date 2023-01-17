@@ -118,10 +118,9 @@ jobs:
           cp build/cml-macos{-x64,}
       - if: inputs.release
         run:
-          find build -type f | xargs gh release upload $(basename ${{
-          github.head_ref }})
+          find build -type f | xargs gh release upload "$GITHUB_REF_NAME"
         env:
-          GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
   images:
     needs: packages
     secrets: inherit
