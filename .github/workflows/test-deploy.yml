@@ -118,8 +118,9 @@ jobs:
           cp build/cml-macos{-x64,}
       - if: inputs.release
         run:
-          find build -type f | xargs gh release upload $(basename ${{
-          github.head_ref }})
+          # wait for the release draftbefore uploading artifacts; blame GitHub API for eventual inconsistency?
+          until gh release view $(basename ${{ github.head_ref }}); do sleep 10; done
+          find build -type f | xargs gh release upload $(basename ${{ github.head_ref }})
         env:
           GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
   images:
