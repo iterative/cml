@@ -2,6 +2,7 @@ const fs = require('fs');
 const PATH = require('path');
 const { Buffer } = require('buffer');
 const fetch = require('node-fetch');
+const ProxyAgent = require('proxy-agent');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
 const winston = require('winston');
@@ -154,7 +155,7 @@ const uriParam = (opts = {}) => {
 
 const download = async (opts = {}) => {
   const { url, path } = opts;
-  const res = await fetch(url);
+  const res = await fetch(url, { agent: new ProxyAgent() });
   const stream = fs.createWriteStream(path);
   return new Promise((resolve, reject) => {
     stream.on('error', (err) => reject(err));
