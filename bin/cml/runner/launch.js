@@ -609,6 +609,12 @@ exports.options = kebabcaseKeys({
     hidden: true,
     alias: 'tf_resource'
   },
+  gcpAccessToken: {
+    hidden: true
+  },
+  runnerPath: {
+    hidden: true
+  },
   destroyDelay: {
     type: 'number',
     default: 10,
