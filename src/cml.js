@@ -508,6 +508,7 @@ class CML {
       md,
       skipCi,
       branch,
+      targetBranch,
       message,
       title,
       body,
@@ -545,7 +546,22 @@ class CML {
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
 
-    const target = await this.branch();
+    let target = await this.branch();
+    const targetBranchExists =
+      targetBranch &&
+      (
+        await exec(
+          'git',
+          'ls-remote',
+          await exec('git', 'config', '--get', `remote.${remote}.url`),
+          targetBranch
+        )
+      ).includes(targetBranch);
+
+    if (targetBranchExists) {
+      target = targetBranch;
+    }
+
     const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
