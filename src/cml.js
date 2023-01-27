@@ -547,19 +547,22 @@ class CML {
     const shaShort = sha.substr(0, 8);
 
     let target = await this.branch();
-    const targetBranchExists =
-      targetBranch &&
-      (
+
+    if (targetBranch) {
+      try {
         await exec(
           'git',
           'ls-remote',
+          '--exit-code',
           await exec('git', 'config', '--get', `remote.${remote}.url`),
           targetBranch
-        )
-      ).includes(targetBranch);
+        );
 
-    if (targetBranchExists) {
-      target = targetBranch;
+        target = targetBranch;
+      } catch (error) {
+        winston.error('The target branch does not exist.');
+        process.exit(1);
+      }
     }
 
     const source = branch || `${target}-cml-pr-${shaShort}`;
