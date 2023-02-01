@@ -280,6 +280,7 @@ const runLocal = async (opts) => {
   const dataHandler =
     ({ cloudSpot }) =>
     async (data) => {
+      winston.debug(data.toString());
       const logs = await cml.parseRunnerLog({ data, name, cloudSpot });
       for (const log of logs) {
         winston.info('runner status', log);
