@@ -104,7 +104,12 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install
-      - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
+      - run: |
+          if [$GITHUB_RUN_ATTEMPT == 1 ]; then
+            npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
+          else
+            echo "Job being re-run, skipping"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # Step required "thanks" to https://github.com/actions/runner-images/issues/6283
