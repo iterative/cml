@@ -233,7 +233,7 @@ class CML {
             });
           } catch (err) {
             if (err.code === 'ENOENT') winston.warn(`file not found: ${node.url}`);
-            else throw err:
+            else throw err;
           }
         }
       };
