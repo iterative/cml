@@ -104,7 +104,10 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install
-      - run: npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
+      - run: |
+          VERSION=$(jq -r .version < package.json)
+          npm install --dry-run @dvcorg/cml@$VERSION ||
+          npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # Step required "thanks" to https://github.com/actions/runner-images/issues/6283
@@ -118,7 +121,8 @@ jobs:
           cp build/cml-macos{-x64,}
       - if: inputs.release
         run:
-          find build -type f | xargs gh release upload "$GITHUB_REF_NAME"
+          find build -type f | xargs gh release upload
+          "${GITHUB_REF_NAME#bump/}"
         env:
           GITHUB_TOKEN: ${{ github.token }}
   images:
