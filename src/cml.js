@@ -631,4 +631,3 @@ module.exports = {
   GIT_USER_NAME,
   GIT_REMOTE
 };
-
