@@ -334,6 +334,8 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { issueId, report, id: commentId } = opts;
 
+    if (report.length >= 1000000) throw new Error('GitLab Comment too Large');
+
     const endpoint =
       `/projects/${projectPath}/issues/${issueId}/notes` +
       `${commentId ? '/' + commentId : ''}`;
@@ -379,6 +381,8 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { report, prNumber } = opts;
 
+    if (report.length >= 1000000) throw new Error('GitLab Comment too Large');
+
     const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
     const body = new URLSearchParams();
     body.append('body', report);
@@ -395,6 +399,8 @@ class Gitlab {
   async prCommentUpdate(opts = {}) {
     const projectPath = await this.projectPath();
     const { report, prNumber, id: commentId } = opts;
+
+    if (report.length >= 1000000) throw new Error('GitLab Comment too Large');
 
     const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes/${commentId}`;
     const body = new URLSearchParams();
