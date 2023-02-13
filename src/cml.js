@@ -534,8 +534,14 @@ class CML {
       return;
     }
 
+    const prefix = await new Promise((resolve, reject) =>
+      git.revparse(['--show-prefix'], (err, data) =>
+        err !== null ? reject(err) : resolve(data)
+      )
+    );
+
     const paths = (await globby(globs)).filter((path) =>
-      files.map((file) => file.path).includes(path)
+      files.map((file) => file.path).includes(prefix + path)
     );
 
     if (!paths.length && globs.length) {
