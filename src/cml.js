@@ -508,6 +508,7 @@ class CML {
       md,
       skipCi,
       branch,
+      targetBranch,
       message,
       title,
       body,
@@ -551,7 +552,25 @@ class CML {
     const sha = await this.triggerSha();
     const shaShort = sha.substr(0, 8);
 
-    const target = await this.branch();
+    let target = await this.branch();
+
+    if (targetBranch) {
+      try {
+        await exec(
+          'git',
+          'ls-remote',
+          '--exit-code',
+          await exec('git', 'config', '--get', `remote.${remote}.url`),
+          targetBranch
+        );
+
+        target = targetBranch;
+      } catch (error) {
+        winston.error('The target branch does not exist.');
+        process.exit(1);
+      }
+    }
+
     const source = branch || `${target}-cml-pr-${shaShort}`;
 
     const branchExists = (
