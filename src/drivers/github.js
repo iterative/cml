@@ -50,21 +50,26 @@ const ownerRepo = (opts) => {
   return { owner, repo };
 };
 
-const octokit = (token, repo) => {
+const octokit = (token, repo, log) => {
   if (!token) throw new Error('token not found');
 
-  const throttleHandler = (retryAfter, options) => {
+  const throttleHandler = (reason, offset) => async (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      winston.info(`Retrying after ${retryAfter} seconds!`);
+      winston.info(
+        `Retrying because of ${reason} in ${retryAfter + offset} seconds`
+      );
+      await new Promise((resolve) => setTimeout(resolve, offset * 1000));
       return true;
     }
   };
   const octokitOptions = {
     request: { agent: new ProxyAgent() },
     auth: token,
+    log,
     throttle: {
-      onRateLimit: throttleHandler,
-      onAbuseLimit: throttleHandler
+      onAbuseLimit: throttleHandler('abuse limit', 120), // deprecated, see onSecondaryRateLimit
+      onRateLimit: throttleHandler('rate limit', 30),
+      onSecondaryRateLimit: throttleHandler('secondary rate limit', 30)
     }
   };
   const { host, hostname } = new url.URL(repo);
@@ -101,7 +106,7 @@ class Github {
     return user;
   }
 
-  async commentCreate(opts = {}) {
+  async commitCommentCreate(opts = {}) {
     const { report: body, commitSha } = opts;
     const { repos } = octokit(this.token, this.repo);
 
@@ -114,7 +119,7 @@ class Github {
     ).data.html_url;
   }
 
-  async commentUpdate(opts = {}) {
+  async commitCommentUpdate(opts = {}) {
     const { report: body, id } = opts;
     const { repos } = octokit(this.token, this.repo);
 
@@ -204,7 +209,7 @@ class Github {
 
   async runnerToken() {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo !== 'undefined') {
       const {
@@ -233,7 +238,7 @@ class Github {
   async unregisterRunner(opts) {
     const { runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
@@ -275,15 +280,20 @@ class Github {
       }
 
       await exec(
-        `${resolve(
-          workdir,
-          'config.sh'
-        )} --unattended --token "${await this.runnerToken()}" --url "${
-          this.repo
-        }" --name "${name}" --labels "${labels}" --work "${resolve(
-          workdir,
-          '_work'
-        )}" ${single ? ' --ephemeral' : ''}`
+        resolve(workdir, 'config.sh'),
+        '--unattended',
+        '--token',
+        await this.runnerToken(),
+        '--url',
+        this.repo,
+        '--name',
+        name,
+        '--labels',
+        labels,
+        '--work',
+        resolve(workdir, '_work'),
+        // adds `--ephemeral` to the array only if `single` is set
+        ...(single ? ['--ephemeral'] : [])
       );
 
       return spawn(resolve(workdir, 'run.sh'), {
@@ -297,7 +307,7 @@ class Github {
 
   async runners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { paginate, actions } = octokit(this.token, this.repo);
+    const { paginate, actions } = octokit(this.token, this.repo, winston);
 
     let runners;
     if (typeof repo === 'undefined') {
@@ -319,7 +329,7 @@ class Github {
   async runnerById(opts = {}) {
     const { id } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (typeof repo === 'undefined') {
       const { data: runner } = await actions.getSelfHostedRunnerForOrg({
@@ -341,7 +351,7 @@ class Github {
 
   async runnerJob({ runnerId, status = 'queued' } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const octokitClient = octokit(this.token, this.repo);
+    const octokitClient = octokit(this.token, this.repo, winston);
 
     if (status === 'running') status = 'in_progress';
 
@@ -376,7 +386,7 @@ class Github {
 
         job.runner_id = jobRunnerId;
         if (job.runner_id === runnerId) break;
-        sleep(1);
+        await sleep(16);
       }
     }
 
@@ -547,6 +557,57 @@ class Github {
     }
   }
 
+  async issueCommentCreate(opts = {}) {
+    const { issueId, report } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.createComment({
+      owner,
+      repo,
+      body: report,
+      issue_number: issueId
+    });
+
+    return htmlUrl;
+  }
+
+  async issueCommentUpdate(opts = {}) {
+    const { id, report } = opts;
+    if (!id) throw new Error('Id is missing updating comment');
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const {
+      data: { html_url: htmlUrl }
+    } = await issues.updateComment({
+      owner,
+      repo,
+      body: report,
+      comment_id: id
+    });
+
+    return htmlUrl;
+  }
+
+  async issueComments(opts = {}) {
+    const { issueId } = opts;
+    const { owner, repo } = ownerRepo({ uri: this.repo });
+    const { issues } = octokit(this.token, this.repo);
+
+    const { data: comments } = await issues.listComments({
+      owner,
+      repo,
+      issue_number: issueId
+    });
+
+    return comments.map(({ id, body }) => {
+      return { id, body };
+    });
+  }
+
   async prCommentCreate(opts = {}) {
     const { report: body, prNumber } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
@@ -624,7 +685,7 @@ class Github {
 
   async pipelineRerun({ id = GITHUB_RUN_ID, jobId } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     if (!id && jobId) {
       ({
@@ -673,7 +734,7 @@ class Github {
   async pipelineJobs(opts = {}) {
     const { jobs: runnerJobs } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo);
+    const { actions } = octokit(this.token, this.repo, winston);
 
     const jobs = await Promise.all(
       runnerJobs.map(async (job) => {
@@ -698,15 +759,18 @@ class Github {
     repo.password = this.token;
     repo.username = 'token';
 
-    const command = `
-    git config --unset http.https://github.com/.extraheader;
-    git config user.name "${userName || this.userName}" &&
-    git config user.email "${userEmail || this.userEmail}" &&
-    git remote set-url ${remote} "${repo.toString()}${
-      repo.toString().endsWith('.git') ? '' : '.git'
-    }"`;
-
-    return command;
+    return [
+      ['git', 'config', '--unset', 'http.https://github.com/.extraheader'],
+      ['git', 'config', 'user.name', userName || this.userName],
+      ['git', 'config', 'user.email', userEmail || this.userEmail],
+      [
+        'git',
+        'remote',
+        'set-url',
+        remote,
+        repo.toString() + (repo.toString().endsWith('.git') ? '' : '.git')
+      ]
+    ];
   }
 
   get workflowId() {
@@ -726,6 +790,16 @@ class Github {
       return github.context.payload.pull_request.head.sha;
 
     return GITHUB_SHA;
+  }
+
+  /**
+   * Returns the PR number if we're in a PR-related action event.
+   */
+  get pr() {
+    if (['pull_request', 'pull_request_target'].includes(GITHUB_EVENT_NAME)) {
+      return github.context.payload.pull_request.number;
+    }
+    return null;
   }
 
   get branch() {

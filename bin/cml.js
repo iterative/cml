@@ -3,6 +3,7 @@
 const { basename } = require('path');
 const { pseudoexec } = require('pseudoexec');
 
+const kebabcaseKeys = require('kebabcase-keys');
 const which = require('which');
 const winston = require('winston');
 const yargs = require('yargs');
@@ -28,6 +29,24 @@ const aliasLegacyEnvironmentVariables = () => {
         process.env[key.replace(oldPrefix, newPrefix)] = process.env[key];
     }
   }
+
+  // Remap environment variable prefixes so e.g. CML_OPTION global options become
+  // an alias for CML_COMMAND_OPTION, to be interpreted by the appropriate subcommands.
+  // See also https://github.com/yargs/yargs/issues/873#issuecomment-917441475
+  for (const globalOption of ['DRIVER', 'DRIVER_TOKEN', 'LOG', 'REPO', 'TOKEN'])
+    for (const subcommand of [
+      'ASSET',
+      'CHECK',
+      'COMMENT',
+      'PR',
+      'REPO',
+      'RUNNER',
+      'TENSORBOARD',
+      'WORKFLOW'
+    ])
+      if (process.env[`CML_${globalOption}`] !== undefined)
+        process.env[`CML_${subcommand}_${globalOption}`] =
+          process.env[`CML_${globalOption}`];
 
   const legacyEnvironmentVariables = {
     TB_CREDENTIALS: 'CML_TENSORBOARD_CREDENTIALS',
@@ -124,35 +143,37 @@ const handleError = (message, error) => {
 
   try {
     await yargs
-      .env('CML')
-      .options({
-        log: {
-          type: 'string',
-          description: 'Logging verbosity',
-          choices: ['error', 'warn', 'info', 'debug'],
-          default: 'info',
-          group: 'Global Options:'
-        },
-        driver: {
-          type: 'string',
-          choices: ['github', 'gitlab', 'bitbucket'],
-          defaultDescription: 'infer from the environment',
-          description: 'Git provider where the repository is hosted',
-          group: 'Global Options:'
-        },
-        repo: {
-          type: 'string',
-          defaultDescription: 'infer from the environment',
-          description: 'Repository URL or slug',
-          group: 'Global Options:'
-        },
-        token: {
-          type: 'string',
-          defaultDescription: 'infer from the environment',
-          description: 'Personal access token',
-          group: 'Global Options:'
-        }
-      })
+      .options(
+        kebabcaseKeys({
+          log: {
+            type: 'string',
+            description: 'Logging verbosity',
+            choices: ['error', 'warn', 'info', 'debug'],
+            default: 'info',
+            group: 'Global Options:'
+          },
+          driver: {
+            type: 'string',
+            choices: ['github', 'gitlab', 'bitbucket'],
+            defaultDescription: 'infer from the environment',
+            description: 'Git provider where the repository is hosted',
+            group: 'Global Options:'
+          },
+          repo: {
+            type: 'string',
+            defaultDescription: 'infer from the environment',
+            description: 'Repository URL or slug',
+            group: 'Global Options:'
+          },
+          driverToken: {
+            type: 'string',
+            alias: 'token',
+            defaultDescription: 'infer from the environment',
+            description: 'CI driver personal/project access token (PAT)',
+            group: 'Global Options:'
+          }
+        })
+      )
       .global('version', false)
       .group('help', 'Global Options:')
       .fail(handleError)

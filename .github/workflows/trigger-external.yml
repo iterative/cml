@@ -8,11 +8,27 @@ on:
         required: true
   release:
     types: [published]
-  pull_request:
+  pull_request_target:
+    branches: [master]
+  push:
     branches: [master]
 jobs:
+  push:
+    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repos: [cml-playground]
+    steps:
+      - name: Trigger external actions
+        run: |
+          curl --silent --show-error --request POST \
+            --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
+            --data '{"event_type":"push", "client_payload": {"branch":"master"}}'
   pr:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

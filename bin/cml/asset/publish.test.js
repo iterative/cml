@@ -2,22 +2,23 @@ const { exec } = require('../../../src/utils');
 
 describe('CML cli test', () => {
   test('cml publish --help', async () => {
-    const output = await exec(`node ./bin/cml.js publish --help`);
+    const output = await exec('node', './bin/cml.js', 'publish', '--help');
 
     expect(output).toMatchInlineSnapshot(`
       "cml.js publish <asset>
 
       Global Options:
-            --log     Logging verbosity
+            --log                    Logging verbosity
                 [string] [choices: \\"error\\", \\"warn\\", \\"info\\", \\"debug\\"] [default: \\"info\\"]
-            --driver  Git provider where the repository is hosted
+            --driver                 Git provider where the repository is hosted
           [string] [choices: \\"github\\", \\"gitlab\\", \\"bitbucket\\"] [default: infer from the
                                                                           environment]
-            --repo    Specifies the repo to be used. If not specified is extracted
-                      from the CI ENV.  [string] [default: infer from the environment]
-            --token   Personal access token
+            --repo                   Specifies the repo to be used. If not specified
+                                     is extracted from the CI ENV.
                                         [string] [default: infer from the environment]
-            --help    Show help                                              [boolean]
+            --driver-token, --token  CI driver personal/project access token (PAT)
+                                        [string] [default: infer from the environment]
+            --help                   Show help                               [boolean]
 
       Options:
             --md         Output in markdown format [title || name](url)      [boolean]

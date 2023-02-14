@@ -3,7 +3,8 @@ const GitlabClient = require('./gitlab');
 const {
   TEST_GITLAB_TOKEN: TOKEN,
   TEST_GITLAB_REPO: REPO,
-  TEST_GITLAB_SHA: SHA
+  TEST_GITLAB_SHA: SHA,
+  TEST_GITLAB_ISSUE: ISSUE = 1
 } = process.env;
 
 describe('Non Enviromental tests', () => {
@@ -14,10 +15,18 @@ describe('Non Enviromental tests', () => {
     expect(client.token).toBe(TOKEN);
   });
 
+  test('Issue comment', async () => {
+    const report = '## Test comment';
+    const issueId = ISSUE;
+    const url = await client.issueCommentCreate({ issueId, report });
+
+    expect(url.startsWith(REPO)).toBe(true);
+  });
+
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-    const url = await client.commentCreate({
+    const url = await client.commitCommentCreate({
       report,
       commitSha
     });
@@ -54,10 +63,27 @@ describe('Non Enviromental tests', () => {
       remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
-      "
-          git config user.name \\"john\\" &&
-          git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://token:dXNlcjpwYXNz@gitlab.com/test/test.git\\""
+      Array [
+        Array [
+          "git",
+          "config",
+          "user.name",
+          "john",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.email",
+          "john@test.com",
+        ],
+        Array [
+          "git",
+          "remote",
+          "set-url",
+          "origin",
+          "https://token:dXNlcjpwYXNz@gitlab.com/test/test.git",
+        ],
+      ]
     `);
   });
 });

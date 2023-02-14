@@ -15,7 +15,7 @@ const isTbRunning = async () => {
 
 const rmTbDevExperiment = async (tbOutput) => {
   const id = /experiment\/([a-zA-Z0-9]{22})/.exec(tbOutput)[1];
-  await exec(`tensorboard dev delete --experiment_id ${id}`);
+  await exec('tensorboard', 'dev', 'delete', '--experiment_id', id);
 };
 
 describe('tbLink', () => {
@@ -56,9 +56,20 @@ describe('CML e2e', () => {
     const desc = 'Test experiment';
     const title = 'go to the experiment';
     const output = await exec(
-      `node ./bin/cml.js tensorboard-dev --credentials '${CREDENTIALS}' \
-        --md --title '${title}' \
-        --logdir logs --name '${name}' --description '${desc}'`
+      'node',
+      './bin/cml.js',
+      'tensorboard-dev',
+      '--credentials',
+      CREDENTIALS,
+      '--md',
+      '--title',
+      title,
+      '--logdir',
+      'logs',
+      '--name',
+      name,
+      '--description',
+      desc
     );
 
     const isRunning = await isTbRunning();
@@ -71,7 +82,13 @@ describe('CML e2e', () => {
 
   test('cml tensorboard-dev invalid creds', async () => {
     try {
-      await exec(`node ./bin/cml.js tensorboard-dev --credentials 'invalid'`);
+      await exec(
+        'node',
+        './bin/cml.js',
+        'tensorboard-dev',
+        '--credentials',
+        'invalid'
+      );
     } catch (err) {
       expect(err.message.includes('json.decoder.JSONDecodeError')).toBe(true);
     }

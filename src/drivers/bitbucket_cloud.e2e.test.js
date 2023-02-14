@@ -2,7 +2,8 @@ const BitbucketCloud = require('./bitbucket_cloud');
 const {
   TEST_BBCLOUD_TOKEN: TOKEN,
   TEST_BBCLOUD_REPO: REPO,
-  TEST_BBCLOUD_SHA: SHA
+  TEST_BBCLOUD_SHA: SHA,
+  TEST_BBCLOUD_ISSUE: ISSUE = 1
 } = process.env;
 
 describe('Non Enviromental tests', () => {
@@ -13,12 +14,20 @@ describe('Non Enviromental tests', () => {
     expect(client.token).toBe(TOKEN);
   });
 
+  test('Issue comment', async () => {
+    const report = '## Test comment';
+    const issueId = ISSUE;
+    const url = await client.issueCommentCreate({ report, issueId });
+
+    expect(url.startsWith('https://')).toBe(true);
+  });
+
   test('Comment', async () => {
     const report = '## Test comment';
     const commitSha = SHA;
-    const url = await client.commentCreate({ report, commitSha });
+    const url = await client.commitCommentCreate({ report, commitSha });
 
-    expect(url.startsWith('https://')).toBe(true);
+    expect(url.startsWith(REPO)).toBe(true);
   });
 
   test('Check', async () => {
@@ -50,14 +59,51 @@ describe('Non Enviromental tests', () => {
       remote: 'origin'
     });
     expect(command).toMatchInlineSnapshot(`
-      "
-          git config --unset user.name;
-          git config --unset user.email;
-          git config --unset push.default;
-          git config --unset http.http://bitbucket.org/test/test.proxy;
-          git config user.name \\"john\\" &&
-          git config user.email \\"john@test.com\\" &&
-          git remote set-url origin \\"https://user:pass@bitbucket.org/test/test\\""
+      Array [
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "user.name",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "user.email",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "push.default",
+        ],
+        Array [
+          "git",
+          "config",
+          "--unset",
+          "http.http://bitbucket.org/test/test.proxy",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.name",
+          "john",
+        ],
+        Array [
+          "git",
+          "config",
+          "user.email",
+          "john@test.com",
+        ],
+        Array [
+          "git",
+          "remote",
+          "set-url",
+          "origin",
+          "https://user:pass@bitbucket.org/test/test",
+        ],
+      ]
     `);
   });
 });
