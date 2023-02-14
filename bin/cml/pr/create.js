@@ -54,6 +54,10 @@ exports.options = kebabcaseKeys({
     type: 'string',
     description: 'Pull request branch name'
   },
+  targetBranch: {
+    type: 'string',
+    description: 'Pull request target branch name'
+  },
   title: {
     type: 'string',
     description: 'Pull request title'
