@@ -16,7 +16,7 @@ const { CI_JOB_ID, CI_PIPELINE_ID, IN_DOCKER } = process.env;
 const API_VER = 'v4';
 const MAX_COMMENT_SIZE = 1000000;
 const ERROR_COMMENT_SIZE =
-  'GitLab Comment is too large, this is likely caused by the `--publish-native` flag';
+  'GitLab Comment is too large, this is likely caused by the `--publish-native` flag causing the comment to pass the 1M character limit';
 
 class Gitlab {
   constructor(opts = {}) {
