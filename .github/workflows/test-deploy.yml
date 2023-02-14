@@ -1,105 +1,12 @@
 name: Test & Deploy
-on:
-  pull_request_target:
-  workflow_dispatch:
-  workflow_call:
-    inputs:
-      release:
-        required: true
-        type: boolean
-  schedule:
-    - cron: '0 8 * * 1' # M H d m w (Mondays at 8:00)
+on: push
 jobs:
-  authorize:
-    environment:
-      ${{ (github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.full_name != github.repository) &&
-      'external' || 'internal' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo ✓
-  check-lock:
-    needs: authorize
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - name: npm lock file is v2
-        run: jq --exit-status .lockfileVersion==2 < package-lock.json
-  lint:
-    needs: authorize
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run lint
-  test:
-    needs: authorize
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - uses: actions/setup-node@v3
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
-      - run: |
-          pip install tensorboard
-          pip install -I protobuf==3.20.1
-      - run: npm ci && npm install --global
-      - run: npm run test
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
-          TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
-          TEST_GITHUB_SHA: 0cd16da26e35f8e5d57b2549a97e22618abf08f6
-          TEST_GITHUB_ISSUE: 1
-          TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
-          TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
-          TEST_GITLAB_SHA: f8b8b49a253243830ef59a7f090eb887157b2b67
-          TEST_GITLAB_ISSUE: 1
-          TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
-          TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
-          TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
-          TEST_BBCLOUD_ISSUE: 1
-  test-os:
-    needs: authorize
-    name: test-${{ matrix.system }}
-    strategy:
-      matrix:
-        system: [ubuntu, macos, windows]
-    runs-on: ${{ matrix.system }}-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - if: matrix.system == 'windows'
-        uses: actions/setup-node@v3
-      - name: install
-        shell: bash
-        run: |
-          # https://github.com/npm/npm/issues/18503#issuecomment-347579469
-          npm pack && npm install -g --no-save ./*cml*.tgz
-          for cmd in '' runner publish pr; do
-            cml $cmd --version
-          done
-      - if: matrix.system != 'windows'
-        run: |
-          for cmd in runner publish pr; do
-            cml-$cmd --version
-          done
   packages:
-    needs: [lint, test, test-os]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+          ref: v0.18.20
       - uses: actions/setup-node@v3
         with:
           registry-url: https://registry.npmjs.org
@@ -122,12 +29,6 @@ jobs:
       - if: inputs.release
         run:
           find build -type f | xargs gh release upload
-          "${GITHUB_REF_NAME#bump/}"
+          v0.18.20
         env:
           GITHUB_TOKEN: ${{ github.token }}
-  images:
-    needs: packages
-    secrets: inherit
-    uses: ./.github/workflows/images.yml
-    with:
-      release: ${{ inputs.release || false }}
