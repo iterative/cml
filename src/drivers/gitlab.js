@@ -15,6 +15,9 @@ const { CI_JOB_ID, CI_PIPELINE_ID, IN_DOCKER } = process.env;
 
 const API_VER = 'v4';
 const MAX_COMMENT_SIZE = 1000000;
+const ERROR_COMMENT_SIZE =
+  'GitLab Comment is too large, this is likely caused by the `--publish-native` flag';
+
 class Gitlab {
   constructor(opts = {}) {
     const { repo, token } = opts;
@@ -70,8 +73,7 @@ class Gitlab {
   async commitCommentCreate(opts = {}) {
     const { commitSha, report } = opts;
 
-    if (report.length >= MAX_COMMENT_SIZE)
-      throw new Error('GitLab Comment too Large');
+    if (report.length >= MAX_COMMENT_SIZE) throw new Error(ERROR_COMMENT_SIZE);
 
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/repository/commits/${commitSha}/comments`;
@@ -338,8 +340,7 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { issueId, report, id: commentId } = opts;
 
-    if (report.length >= MAX_COMMENT_SIZE)
-      throw new Error('GitLab Comment too Large');
+    if (report.length >= MAX_COMMENT_SIZE) throw new Error(ERROR_COMMENT_SIZE);
 
     const endpoint =
       `/projects/${projectPath}/issues/${issueId}/notes` +
@@ -386,8 +387,7 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { report, prNumber } = opts;
 
-    if (report.length >= MAX_COMMENT_SIZE)
-      throw new Error('GitLab Comment too Large');
+    if (report.length >= MAX_COMMENT_SIZE) throw new Error(ERROR_COMMENT_SIZE);
 
     const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes`;
     const body = new URLSearchParams();
@@ -406,8 +406,7 @@ class Gitlab {
     const projectPath = await this.projectPath();
     const { report, prNumber, id: commentId } = opts;
 
-    if (report.length >= MAX_COMMENT_SIZE)
-      throw new Error('GitLab Comment too Large');
+    if (report.length >= MAX_COMMENT_SIZE) throw new Error(ERROR_COMMENT_SIZE);
 
     const endpoint = `/projects/${projectPath}/merge_requests/${prNumber}/notes/${commentId}`;
     const body = new URLSearchParams();
