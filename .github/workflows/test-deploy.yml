@@ -122,7 +122,7 @@ jobs:
       - if: inputs.release
         run:
           find build -type f | xargs gh release upload
-          "${GITHUB_REF_NAME#bump/}"
+          "${GITHUB_HEAD_REF#bump/}"
         env:
           GITHUB_TOKEN: ${{ github.token }}
   images:
