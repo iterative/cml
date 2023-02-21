@@ -257,7 +257,9 @@ class Github {
   async startRunner(opts) {
     const { workdir, single, name, labels, env } = opts;
     
-    this.warn('cloud credentials are no longer available on self-hosted runner steps; please use step.env and secrets instead');
+    this.warn(
+      'cloud credentials are no longer available on self-hosted runner steps; please use step.env and secrets instead'
+    );
     
     try {
       const runnerCfg = resolve(workdir, '.runner');
