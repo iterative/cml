@@ -28,7 +28,7 @@ jobs:
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
             --data '{"event_type":"push", "client_payload": {"branch":"master"}}'
   pr:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
