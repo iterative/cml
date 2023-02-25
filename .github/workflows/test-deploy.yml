@@ -111,7 +111,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # Step required "thanks" to https://github.com/actions/runner-images/issues/6283
-      - uses: Homebrew/actions/setup-homebrew@29b2973f18e5aca5443f4b3d87f68eda7a27b22b
+      - uses: Homebrew/actions/setup-homebrew@b84b9c947470719ff4138cc1c70b996918e1a612
       - run: brew install ldid
       - run: |
           cp node_modules/@npcz/magic/dist/magic.mgc assets/magic.mgc
