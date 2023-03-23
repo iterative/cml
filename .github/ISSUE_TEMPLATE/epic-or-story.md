@@ -1,7 +1,7 @@
 ---
 name: Epic/Story Issue Template
 about: Template for "top" level issues - Epics (>2 weeks) / Stories (<2 weeks)
-title: 'Epic: New Feature'
+title: 'New Feature'
 labels: epic
 assignees:
 ---
