@@ -135,6 +135,7 @@ const runCloud = async (opts) => {
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
       cloudAwsSubnet: awsSubnet,
+      cloudKubernetesNodeSelector: kubernetesNodeSelector,
       cloudImage: image,
       workdir
     } = opts;
@@ -172,6 +173,7 @@ const runCloud = async (opts) => {
       startupScript,
       awsSecurityGroup,
       awsSubnet,
+      kubernetesNodeSelector,
       image,
       dockerVolumes
     });
@@ -587,6 +589,20 @@ exports.options = kebabcaseKeys({
     default: '',
     description: 'Specifies the subnet to use within AWS',
     alias: 'cloud-aws-subnet-id'
+  },
+  cloudKubernetesNodeSelector: {
+    type: 'string',
+    default: 'accelerator=inferred',
+    description:
+      'Specifies the node selector to use within Kubernetes. By default, the node selector is inferred from the GPU configuration',
+    coerce: (val) => {
+      const [key, value] = val.split(/=(.+)/);
+
+      return {
+        key,
+        value
+      };
+    }
   },
   cloudImage: {
     type: 'string',

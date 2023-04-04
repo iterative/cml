@@ -115,7 +115,11 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
           ...(opts.sshPrivate && { ssh_private: opts.sshPrivate }),
           ...(opts.startupScript && { startup_script: opts.startupScript }),
           ...(opts.token && { token: opts.token }),
-          ...(opts.type && { instance_type: opts.type })
+          ...(opts.type && { instance_type: opts.type }),
+          ...(opts.kubernetesNodeSelector && {
+            kubernetes_node_selector_key: opts.kubernetesNodeSelector.key,
+            kubernetes_node_selector_value: opts.kubernetesNodeSelector.value
+          })
         }
       }
     }
