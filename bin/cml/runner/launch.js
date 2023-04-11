@@ -591,18 +591,15 @@ exports.options = kebabcaseKeys({
     alias: 'cloud-aws-subnet-id'
   },
   cloudKubernetesNodeSelector: {
-    type: 'string',
-    default: 'accelerator=inferred',
+    type: 'array',
+    string: true,
+    default: [],
+    coerce: (items) => {
+      const keyValuePairs = items.map((item) => [...item.split(/=(.+)/), null]);
+      return Object.fromEntries(keyValuePairs);
+    },
     description:
-      'Specifies the node selector to use within Kubernetes. By default, the node selector is inferred from the GPU configuration',
-    coerce: (val) => {
-      const [key, value] = val.split(/=(.+)/);
-
-      return {
-        key,
-        value
-      };
-    }
+      'Key Value pairs to specify the node selector to use within Kubernetes i.e. tags/labels "key=value"'
   },
   cloudImage: {
     type: 'string',

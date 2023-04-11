@@ -117,8 +117,7 @@ const iterativeCmlRunnerTpl = (opts = {}) => {
           ...(opts.token && { token: opts.token }),
           ...(opts.type && { instance_type: opts.type }),
           ...(opts.kubernetesNodeSelector && {
-            kubernetes_node_selector_key: opts.kubernetesNodeSelector.key,
-            kubernetes_node_selector_value: opts.kubernetesNodeSelector.value
+            kubernetes_node_selector: opts.kubernetesNodeSelector
           })
         }
       }
