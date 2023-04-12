@@ -218,7 +218,8 @@ const runCloud = async (opts) => {
           single: attributes.single,
           spot: attributes.spot,
           spotPrice: attributes.spot_price,
-          timeouts: attributes.timeouts
+          timeouts: attributes.timeouts,
+          kubernetesNodeSelector: attributes.kubernetes_node_selector
         };
         winston.info(JSON.stringify(nonSensitiveValues));
       }
@@ -593,7 +594,7 @@ exports.options = kebabcaseKeys({
   cloudKubernetesNodeSelector: {
     type: 'array',
     string: true,
-    default: [],
+    default: ['accelerator=infer'],
     coerce: (items) => {
       const keyValuePairs = items.map((item) => [...item.split(/=(.+)/), null]);
       return Object.fromEntries(keyValuePairs);
