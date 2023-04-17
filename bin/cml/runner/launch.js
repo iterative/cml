@@ -594,13 +594,13 @@ exports.options = kebabcaseKeys({
   cloudKubernetesNodeSelector: {
     type: 'array',
     string: true,
-    default: ['accelerator=infer'],
+    default: [],
     coerce: (items) => {
       const keyValuePairs = items.map((item) => [...item.split(/=(.+)/), null]);
       return Object.fromEntries(keyValuePairs);
     },
     description:
-      'Key Value pairs to specify the node selector to use within Kubernetes i.e. tags/labels "key=value"'
+      'Key Value pairs to specify the node selector to use within Kubernetes i.e. tags/labels "key=value". If not provided a default "accelerator=infer" key pair will be used'
   },
   cloudImage: {
     type: 'string',
