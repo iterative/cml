@@ -779,7 +779,7 @@ class Github {
   }
 
   warn(message) {
-    console.log(`::warning::${message}`);
+    console.error(`::warning::${message}`);
   }
 
   get sha() {
