@@ -232,7 +232,9 @@ class CML {
               url: publishUrl
             });
           } catch (err) {
-            if (err.code !== 'ENOENT') throw err;
+            if (err.code === 'ENOENT')
+              winston.debug(`file not found: ${node.url} (${absolutePath})`);
+            else throw err;
           }
         }
       };
