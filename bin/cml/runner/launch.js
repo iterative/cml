@@ -135,6 +135,7 @@ const runCloud = async (opts) => {
       cloudStartupScript: startupScript,
       cloudAwsSecurityGroup: awsSecurityGroup,
       cloudAwsSubnet: awsSubnet,
+      cloudKubernetesNodeSelector: kubernetesNodeSelector,
       cloudImage: image,
       workdir
     } = opts;
@@ -172,6 +173,7 @@ const runCloud = async (opts) => {
       startupScript,
       awsSecurityGroup,
       awsSubnet,
+      kubernetesNodeSelector,
       image,
       dockerVolumes
     });
@@ -216,7 +218,8 @@ const runCloud = async (opts) => {
           single: attributes.single,
           spot: attributes.spot,
           spotPrice: attributes.spot_price,
-          timeouts: attributes.timeouts
+          timeouts: attributes.timeouts,
+          kubernetesNodeSelector: attributes.kubernetes_node_selector
         };
         winston.info(JSON.stringify(nonSensitiveValues));
       }
@@ -587,6 +590,17 @@ exports.options = kebabcaseKeys({
     default: '',
     description: 'Specifies the subnet to use within AWS',
     alias: 'cloud-aws-subnet-id'
+  },
+  cloudKubernetesNodeSelector: {
+    type: 'array',
+    string: true,
+    default: [],
+    coerce: (items) => {
+      const keyValuePairs = items.map((item) => [...item.split(/=(.+)/), null]);
+      return Object.fromEntries(keyValuePairs);
+    },
+    description:
+      'Key Value pairs to specify the node selector to use within Kubernetes i.e. tags/labels "key=value". If not provided a default "accelerator=infer" key pair will be used'
   },
   cloudImage: {
     type: 'string',
