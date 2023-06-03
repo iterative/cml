@@ -45,6 +45,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
       - uses: actions/setup-node@v3
+        with:
+          node-version: 16
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
