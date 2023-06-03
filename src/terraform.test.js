@@ -209,6 +209,71 @@ describe('Terraform tests', () => {
     `);
   });
 
+  test('basic settings with kubernetes node selector', async () => {
+    const output = iterativeCmlRunnerTpl({
+      repo: 'https://',
+      token: 'abc',
+      driver: 'gitlab',
+      labels: 'mylabel',
+      idleTimeout: 300,
+      name: 'myrunner',
+      single: true,
+      cloud: 'aws',
+      region: 'west',
+      type: 'mymachinetype',
+      gpu: 'mygputype',
+      hddSize: 50,
+      sshPrivate: 'myprivate',
+      spot: true,
+      spotPrice: '0.0001',
+      kubernetesNodeSelector: {
+        accelerator: 'infer',
+        ram: null,
+        'disk type': 'hard drives'
+      }
+    });
+    expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`
+      "{
+        \\"terraform\\": {
+          \\"required_providers\\": {
+            \\"iterative\\": {
+              \\"source\\": \\"iterative/iterative\\"
+            }
+          }
+        },
+        \\"provider\\": {
+          \\"iterative\\": {}
+        },
+        \\"resource\\": {
+          \\"iterative_cml_runner\\": {
+            \\"runner\\": {
+              \\"cloud\\": \\"aws\\",
+              \\"driver\\": \\"gitlab\\",
+              \\"instance_gpu\\": \\"mygputype\\",
+              \\"instance_hdd_size\\": 50,
+              \\"idle_timeout\\": 300,
+              \\"labels\\": \\"mylabel\\",
+              \\"name\\": \\"myrunner\\",
+              \\"region\\": \\"west\\",
+              \\"repo\\": \\"https://\\",
+              \\"single\\": true,
+              \\"spot\\": true,
+              \\"spot_price\\": \\"0.0001\\",
+              \\"ssh_private\\": \\"myprivate\\",
+              \\"token\\": \\"abc\\",
+              \\"instance_type\\": \\"mymachinetype\\",
+              \\"kubernetes_node_selector\\": {
+                \\"accelerator\\": \\"infer\\",
+                \\"ram\\": null,
+                \\"disk type\\": \\"hard drives\\"
+              }
+            }
+          }
+        }
+      }"
+    `);
+  });
+
   test('basic settings with docker volumes', async () => {
     const output = iterativeCmlRunnerTpl({
       repo: 'https://',
