@@ -85,7 +85,7 @@ RUN add-apt-repository universe --yes \
  && rm --recursive --force /var/lib/apt/lists/*
 
 # INSTALL DVC
-ARG DVC_VERSION=2
+ARG DVC_VERSION=3
 RUN cd /etc/apt/sources.list.d \
  && wget https://dvc.org/deb/dvc.list \
  && apt-get update \
