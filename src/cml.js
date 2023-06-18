@@ -220,9 +220,10 @@ class CML {
       };
       const visitor = async (node) => {
         if (node.url && !isWatermark(node)) {
+          const encodedUrl = encodeURIComponent(node.url);
           const absolutePath = path.resolve(
             path.dirname(markdownFile),
-            node.url
+            encodedUrl
           );
           if (!triggerFile && watch) watcher.add(absolutePath);
           try {
