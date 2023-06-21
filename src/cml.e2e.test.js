@@ -45,6 +45,17 @@ describe('Github tests', () => {
     expect(output.includes('cml=png')).toBe(true);
   });
 
+  test('Publish image embedded in markdown', async () => {
+    const path = `${__dirname}/../assets/test.md`;
+    const title = 'my title';
+
+    const output = await new CML().publish({ path, md: true, title });
+
+    expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.endsWith(')')).toBe(true);
+    expect(output.includes('cml=plain')).toBe(true);
+  });
+
   test('Publish a non image file in markdown', async () => {
     const path = `${__dirname}/../assets/logo.pdf`;
     const title = 'my title';

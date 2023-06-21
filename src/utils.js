@@ -71,7 +71,6 @@ const fetchUploadData = async (opts) => {
   const size = path ? (await fs.promises.stat(path)).size : buffer.length;
   const data = path ? fs.createReadStream(path) : buffer;
   const mime = mimeTypeIn || (await mimeType(opts));
-
   return { mime, size, data };
 };
 
@@ -88,7 +87,6 @@ const upload = async (opts) => {
   };
 
   if (session) headers['Content-Address-Seed'] = `${session}:${path}`;
-
   const response = await fetch(url, { method: 'POST', headers, body });
   const uri = await response.text();
 

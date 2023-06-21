@@ -220,21 +220,40 @@ class CML {
       };
       const visitor = async (node) => {
         if (node.url && !isWatermark(node)) {
-          const absolutePath = path.resolve(
-            path.dirname(markdownFile),
-            node.url
-          );
-          if (!triggerFile && watch) watcher.add(absolutePath);
-          try {
+          // Check for embedded images from dvclive
+          if (node.url.startsWith('data:image/')) {
+            winston.debug(
+              `found already embedded image, head: ${node.url.slice(0, 25)}`
+            );
+            const encodedData = node.url.slice(node.url.indexOf(',') + 1);
+            const mimeType = node.url.slice(
+              node.url.indexOf(':') + 1,
+              node.url.indexOf(';')
+            );
+            const data = Buffer.from(encodedData, 'base64');
             node.url = await this.publish({
               ...opts,
-              path: absolutePath,
+              mimeType: mimeType,
+              buffer: data,
               url: publishUrl
             });
-          } catch (err) {
-            if (err.code === 'ENOENT')
-              winston.debug(`file not found: ${node.url} (${absolutePath})`);
-            else throw err;
+          } else {
+            const absolutePath = path.resolve(
+              path.dirname(markdownFile),
+              node.url
+            );
+            if (!triggerFile && watch) watcher.add(absolutePath);
+            try {
+              node.url = await this.publish({
+                ...opts,
+                path: absolutePath,
+                url: publishUrl
+              });
+            } catch (err) {
+              if (err.code === 'ENOENT')
+                winston.debug(`file not found: ${node.url} (${absolutePath})`);
+              else throw err;
+            }
           }
         }
       };
