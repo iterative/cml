@@ -51,8 +51,8 @@ describe('Github tests', () => {
 
     const output = await new CML().publish({ path, md: true, title });
 
-    expect(output.startsWith('![](https://')).toBe(true);
-    expect(output.endsWith(` "${title}")`)).toBe(true);
+    expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.endsWith(')')).toBe(true);
     expect(output.includes('cml=plain')).toBe(true);
   });
 
