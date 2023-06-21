@@ -53,7 +53,7 @@ describe('Github tests', () => {
 
     expect(output.startsWith('![](https://')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
-    expect(output.includes('cml=png')).toBe(true);
+    expect(output.includes('cml=plain')).toBe(true);
   });
 
   test('Publish a non image file in markdown', async () => {
