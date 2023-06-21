@@ -213,7 +213,11 @@ class CML {
     const publishLocalFiles = async (tree) => {
       const nodes = [];
 
-      visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
+      console.log(tree);
+      visit(tree, ['definition', 'image', 'link'], (node) => {
+        console.log(node);
+        nodes.push(node);
+      });
 
       const isWatermark = (node) => {
         return node.title && node.title.startsWith('CML watermark');
