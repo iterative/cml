@@ -531,7 +531,7 @@ class Gitlab {
 
   get branch() {
     if ('CI_COMMIT_BRANCH' in process.env) {
-      return process.env.CI_COMMIT_BRANCH
+      return process.env.CI_COMMIT_BRANCH;
     }
     return process.env.CI_COMMIT_REF_NAME;
   }
