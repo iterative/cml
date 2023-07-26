@@ -28,7 +28,7 @@ jobs:
           ; user.password = '${{ github.token }}'
           ; user.password_confirmation = '${{ github.token }}'
           ; user.save!
-          ; token = user.personal_access_tokens.create(scopes: [:api], name: 'Token')
+          ; token = user.personal_access_tokens.create(scopes: [:api], name: 'Token', expires_at: 1.days.from_now)
           ; token.set_token('${{ github.token }}')
           ; token.save!
           "
