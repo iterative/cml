@@ -644,4 +644,4 @@ These are some example projects using CML.
 
 
 # :warning: Maintence :warning:
-- ~2023-07 Nvidia has dropped container cuda images with 10.x/cudnn7 and 11.1.1/cudnn8, CML images will be updated accrodingly
+- ~2023-07 Nvidia has dropped container cuda images with 10.x/cudnn7 and 11.2.1/cudnn8, CML images will be updated accrodingly
