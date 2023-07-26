@@ -643,5 +643,5 @@ These are some example projects using CML.
 :key: needs a [PAT](#environment-variables).
 
 
-# :warning: Maintence :warning:
+# :warning: Maintenance :warning:
 - ~2023-07 Nvidia has dropped container cuda images with 10.x/cudnn7 and 11.1.1/cudnn8, CML images will be updated accrodingly
