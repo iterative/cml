@@ -200,8 +200,9 @@ class Gitlab {
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
 
+      var waitTimeout = idleTimeout;
       if (idleTimeout === 'never') {
-        idleTimeout = '0';
+        waitTimeout = '0';
       }
 
       let dockerVolumesTpl = '';
@@ -214,7 +215,7 @@ class Gitlab {
         --url "${protocol}//${host}" \
         --name "${name}" \
         --token "${token}" \
-        --wait-timeout ${idleTimeout} \
+        --wait-timeout ${waitTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
         ${gpu ? '--docker-runtime nvidia' : ''} \
