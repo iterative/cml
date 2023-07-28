@@ -200,6 +200,11 @@ class Gitlab {
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
 
+      let waitTimeout = idleTimeout;
+      if (idleTimeout === 'never') {
+        waitTimeout = '0';
+      }
+
       let dockerVolumesTpl = '';
       dockerVolumes.forEach((vol) => {
         dockerVolumesTpl += `--docker-volumes ${vol} `;
@@ -210,7 +215,7 @@ class Gitlab {
         --url "${protocol}//${host}" \
         --name "${name}" \
         --token "${token}" \
-        --wait-timeout ${idleTimeout} \
+        --wait-timeout ${waitTimeout} \
         --executor "${IN_DOCKER ? 'shell' : 'docker'}" \
         --docker-image "iterativeai/cml:${gpu ? 'latest-gpu' : 'latest'}" \
         ${gpu ? '--docker-runtime nvidia' : ''} \
@@ -530,7 +535,10 @@ class Gitlab {
   }
 
   get branch() {
-    return process.env.CI_BUILD_REF_NAME;
+    if ('CI_COMMIT_BRANCH' in process.env) {
+      return process.env.CI_COMMIT_BRANCH;
+    }
+    return process.env.CI_COMMIT_REF_NAME;
   }
 
   get userEmail() {
