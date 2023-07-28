@@ -200,7 +200,7 @@ class Gitlab {
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
 
-      var waitTimeout = idleTimeout;
+      let waitTimeout = idleTimeout;
       if (idleTimeout === 'never') {
         waitTimeout = '0';
       }
