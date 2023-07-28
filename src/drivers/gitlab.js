@@ -200,6 +200,10 @@ class Gitlab {
       const { protocol, host } = new URL(this.repo);
       const { token } = await this.registerRunner({ tags: labels, name });
 
+      if (idleTimeout === 'never') {
+        idleTimeout = '0';
+      }
+
       let dockerVolumesTpl = '';
       dockerVolumes.forEach((vol) => {
         dockerVolumesTpl += `--docker-volumes ${vol} `;
