@@ -94,7 +94,7 @@
     "pseudoexec": "^0.2.0",
     "remark": "^13.0.0",
     "semver": "^7.5.2",
-    "simple-git": "^3.16.0",
+    "simple-git": "^3.19.1",
     "strip-ansi": "^6.0.1",
     "strip-url-auth": "^1.0.1",
     "tar": "^6.1.15",
