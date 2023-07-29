@@ -69,7 +69,7 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "@actions/github": "^4.0.0",
-    "@npcz/magic": "^1.3.12",
+    "@npcz/magic": "^1.3.14",
     "@octokit/core": "^3.5.1",
     "@octokit/graphql": "^4.8.0",
     "@octokit/plugin-throttling": "^3.5.2",
