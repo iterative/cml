@@ -93,7 +93,7 @@
     "proxy-agent": "^5.0.0",
     "pseudoexec": "^0.2.0",
     "remark": "^13.0.0",
-    "semver": "^7.5.2",
+    "semver": "^7.5.4",
     "simple-git": "^3.16.0",
     "strip-ansi": "^6.0.1",
     "strip-url-auth": "^1.0.1",
@@ -104,7 +104,7 @@
     "uuid": "^8.3.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
-    "yargs": "^17.5.0"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "eslint": "^8.1.0",
