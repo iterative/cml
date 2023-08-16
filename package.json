@@ -103,7 +103,7 @@
     "unist-util-visit": "^2.0.3",
     "uuid": "^8.3.2",
     "which": "^2.0.2",
-    "winston": "^3.3.3",
+    "winston": "^3.10.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
