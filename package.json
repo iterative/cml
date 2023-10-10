@@ -87,7 +87,7 @@
     "is-docker": "2.2.1",
     "js-base64": "^3.7.2",
     "kebabcase-keys": "^1.0.0",
-    "node-fetch": "^2.6.11",
+    "node-fetch": "^2.6.12",
     "node-ssh": "^12.0.0",
     "os-name": "^5.0.1",
     "proxy-agent": "^5.0.0",
