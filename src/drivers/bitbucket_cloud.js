@@ -166,7 +166,7 @@ class BitbucketCloud {
 
   async startRunner(opts) {
     const { projectPath } = this;
-    const { workdir, name, labels } = opts;
+    const { workdir, name, labels, env } = opts;
 
     winston.warn(
       `Bitbucket runner is working under /tmp folder and not under ${workdir} as expected`
@@ -197,7 +197,7 @@ class BitbucketCloud {
       ${gpu ? '--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all' : ''} \
       docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
 
-      return spawn(command, { shell: true });
+      return spawn(command, { shell: true, env });
     } catch (err) {
       throw new Error(`Failed preparing runner: ${err.message}`);
     }
