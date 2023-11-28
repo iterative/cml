@@ -90,7 +90,7 @@
     "node-fetch": "^2.6.11",
     "node-ssh": "^12.0.0",
     "os-name": "^5.0.1",
-    "proxy-agent": "^5.0.0",
+    "proxy-agent": "^6.3.0",
     "pseudoexec": "^0.2.0",
     "remark": "^13.0.0",
     "semver": "^7.5.4",
