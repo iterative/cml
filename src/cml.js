@@ -214,7 +214,7 @@ class CML {
       const nodes = [];
 
       visit(tree, ['definition', 'image', 'link'], (node) => {
-        nodes.push(node)
+        nodes.push(node);
       });
 
       const isWatermark = (node) => {
