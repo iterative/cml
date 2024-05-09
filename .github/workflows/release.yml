@@ -30,12 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - env:
-        HEAD_REF: ${{ github.head_ref }}
       - run: >
           gh release create --target ${{
           github.event.pull_request.merge_commit_sha }} {--title=CML\
-          ,}$(basename $HEAD_REF) --generate-notes --draft
+          ,}"$(basename "$GITHUB_HEAD_REF")" --generate-notes --draft
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
   package:
