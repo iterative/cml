@@ -9,12 +9,12 @@ on:
   release:
     types: [published]
   pull_request_target:
-    branches: [master]
+    branches: [main]
   push:
-    branches: [master]
+    branches: [main]
 jobs:
   push:
-    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+    if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,7 +26,7 @@ jobs:
             --header "Authorization: token ${{ secrets.TEST_GITHUB_TOKEN }}" \
             --header "Accept: application/vnd.github.v3+json" \
             --url "https://api.github.com/repos/iterative/${{ matrix.repos }}/dispatches" \
-            --data '{"event_type":"push", "client_payload": {"branch":"master"}}'
+            --data '{"event_type":"push", "client_payload": {"branch":"main"}}'
   pr:
     if: ${{ github.event_name == 'pull_request_target' }}
     runs-on: ubuntu-latest
