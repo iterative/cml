@@ -38,7 +38,10 @@
       "es6": true,
       "jest": true
     },
-    "extends": ["standard", "prettier"],
+    "extends": [
+      "standard",
+      "prettier"
+    ],
     "globals": {
       "Atomics": "readonly",
       "SharedArrayBuffer": "readonly"
@@ -46,12 +49,23 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "ignorePatterns": ["assets/", "dist/", "node_modules/"],
+    "ignorePatterns": [
+      "assets/",
+      "dist/",
+      "node_modules/"
+    ],
     "rules": {
-      "camelcase": [1, { "properties": "never" }],
+      "camelcase": [
+        1,
+        {
+          "properties": "never"
+        }
+      ],
       "prettier/prettier": "error"
     },
-    "plugins": ["prettier"]
+    "plugins": [
+      "prettier"
+    ]
   },
   "prettier": {
     "arrowParens": "always",
