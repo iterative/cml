@@ -1,18 +1,6 @@
-const winston = require('winston');
 const { iterativeCmlRunnerTpl } = require('./terraform');
 
 describe('Terraform tests', () => {
-  beforeAll(() => {
-    winston.configure({
-      transports: [
-        new winston.transports.Console({
-          level: 'error',
-          handleExceptions: true
-        })
-      ]
-    });
-  });
-
   test('default options', async () => {
     const output = iterativeCmlRunnerTpl({});
     expect(JSON.stringify(output, null, 2)).toMatchInlineSnapshot(`

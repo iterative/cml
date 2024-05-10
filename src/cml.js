@@ -6,7 +6,7 @@ const git = require('simple-git')('./');
 const path = require('path');
 const fs = require('fs').promises;
 const chokidar = require('chokidar');
-const winston = require('winston');
+const { logger } = require('./logger');
 const remark = require('remark');
 const visit = require('unist-util-visit');
 
@@ -138,7 +138,7 @@ class CML {
     try {
       return await exec('git', 'rev-parse', ref);
     } catch (err) {
-      winston.warn(
+      logger.warn(
         'Failed to obtain SHA. Perhaps not in the correct git folder'
       );
     }
@@ -213,7 +213,9 @@ class CML {
     const publishLocalFiles = async (tree) => {
       const nodes = [];
 
-      visit(tree, ['definition', 'image', 'link'], (node) => nodes.push(node));
+      visit(tree, ['definition', 'image', 'link'], (node) => {
+        nodes.push(node);
+      });
 
       const isWatermark = (node) => {
         return node.title && node.title.startsWith('CML watermark');
@@ -222,7 +224,7 @@ class CML {
         if (node.url && !isWatermark(node)) {
           // Check for embedded images from dvclive
           if (node.url.startsWith('data:image/')) {
-            winston.debug(
+            logger.debug(
               `found already embedded image, head: ${node.url.slice(0, 25)}`
             );
             const encodedData = node.url.slice(node.url.indexOf(',') + 1);
@@ -251,7 +253,7 @@ class CML {
               });
             } catch (err) {
               if (err.code === 'ENOENT')
-                winston.debug(`file not found: ${node.url} (${absolutePath})`);
+                logger.debug(`file not found: ${node.url} (${absolutePath})`);
               else throw err;
             }
           }
@@ -279,7 +281,7 @@ class CML {
         if (lock) return;
         lock = true;
         try {
-          winston.info(`watcher event: ${event} ${path}`);
+          logger.info(`watcher event: ${event} ${path}`);
           await this.commentCreate({
             ...opts,
             update: update || !first,
@@ -289,12 +291,12 @@ class CML {
             await fs.unlink(triggerFile);
           }
         } catch (err) {
-          winston.warn(err);
+          logger.warn(err);
         }
         first = false;
         lock = false;
       });
-      winston.info('watching for file changes...');
+      logger.info('watching for file changes...');
       await waitForever();
     }
 
@@ -421,7 +423,14 @@ class CML {
   }
 
   async startRunner(opts = {}) {
-    return await this.getDriver().startRunner(opts);
+    const env = {};
+    const sensitive = [
+      '_CML_RUNNER_SENSITIVE_ENV',
+      ...(process.env._CML_RUNNER_SENSITIVE_ENV || '').split(':')
+    ];
+    for (const variable in process.env)
+      if (!sensitive.includes(variable)) env[variable] = process.env[variable];
+    return await this.getDriver().startRunner({ ...opts, env });
   }
 
   async registerRunner(opts = {}) {
@@ -551,7 +560,7 @@ class CML {
     const { files } = await git.status();
 
     if (!files.length && globs.length) {
-      winston.warn('No changed files matched by glob path. Nothing to do.');
+      logger.warn('No changed files matched by glob path. Nothing to do.');
       return;
     }
 
@@ -566,7 +575,7 @@ class CML {
     );
 
     if (!paths.length && globs.length) {
-      winston.warn('Input files are not affected. Nothing to do.');
+      logger.warn('Input files are not affected. Nothing to do.');
       return;
     }
 
@@ -587,7 +596,7 @@ class CML {
 
         target = targetBranch;
       } catch (error) {
-        winston.error('The target branch does not exist.');
+        logger.error('The target branch does not exist.');
         process.exit(1);
       }
     }
@@ -660,7 +669,7 @@ Automated commits for ${this.repo}/commit/${sha} created by CML.
   }
 
   logError(e) {
-    winston.error(e.message);
+    logger.error(e.message);
   }
 }
 
