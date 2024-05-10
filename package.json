@@ -142,7 +142,7 @@
     "simple-git": "^3.16.0",
     "strip-ansi": "^6.0.1",
     "strip-url-auth": "^1.0.1",
-    "tar": "^6.1.15",
+    "tar": "^6.2.1",
     "tempy": "^0.6.0",
     "timestring": "^6.0.0",
     "unist-util-visit": "^2.0.3",
