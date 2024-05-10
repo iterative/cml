@@ -5,7 +5,7 @@ const fetch = require('node-fetch');
 const ProxyAgent = require('proxy-agent');
 const NodeSSH = require('node-ssh').NodeSSH;
 const stripAnsi = require('strip-ansi');
-const winston = require('winston');
+const { logger } = require('./logger');
 const uuid = require('uuid');
 const getOS = require('getos');
 
@@ -212,12 +212,12 @@ const tfCapture = async (command, args = [], options = {}) => {
         try {
           const { '@level': level, '@message': message } = JSON.parse(line);
           if (level === 'error') {
-            winston.error(`terraform error: ${message}`);
+            logger.error(`terraform error: ${message}`);
           } else {
-            winston.info(message);
+            logger.info(message);
           }
         } catch (err) {
-          winston.info(line);
+          logger.info(line);
         }
       };
       buf.toString('utf8').split('\n').forEach(parse);

@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const kebabcaseKeys = require('kebabcase-keys');
-const winston = require('winston');
+const { logger } = require('../../../src/logger');
 
 const { CML } = require('../../../src/cml');
 
@@ -12,7 +12,7 @@ exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
   if (opts.gitlabUploads) {
-    winston.warn(
+    logger.warn(
       '--gitlab-uploads will be deprecated soon, use --native instead'
     );
     opts.native = true;
