@@ -1,4 +1,4 @@
-const winston = require('winston');
+const { logger } = require('../../src/logger');
 
 // addDeprecationNotice adds middleware to the yargs chain to display a deprecation notice.
 const addDeprecationNotice = (opts = {}) => {
@@ -13,7 +13,7 @@ const deprecationNotice = (opts, notice) => {
   if (driver.warn) {
     driver.warn(notice);
   } else {
-    winston.warn(notice);
+    logger.warn(notice);
   }
 };
 

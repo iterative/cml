@@ -65,10 +65,10 @@ jobs:
           TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
           TEST_GITLAB_SHA: f8b8b49a253243830ef59a7f090eb887157b2b67
           TEST_GITLAB_ISSUE: 1
-          TEST_BBCLOUD_TOKEN: ${{ secrets.TEST_BBCLOUD_TOKEN }}
-          TEST_BBCLOUD_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
-          TEST_BBCLOUD_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
-          TEST_BBCLOUD_ISSUE: 1
+          TEST_BITBUCKET_TOKEN: ${{ secrets.TEST_BITBUCKET_TOKEN }}
+          TEST_BITBUCKET_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
+          TEST_BITBUCKET_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
+          TEST_BITBUCKET_ISSUE: 1
   test-os:
     needs: authorize
     name: test-${{ matrix.system }}

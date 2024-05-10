@@ -111,7 +111,7 @@ RUN add-apt-repository universe --yes \
  && apt-get clean \
  && rm --recursive --force /var/lib/apt/lists/* \
  && npm config set user 0 \
- && npm install --global canvas@2 vega@5 vega-cli@5 vega-lite@5
+ && npm install --global canvas@2 vega@5 vega-cli@5 vega-lite@5.14.1
 
 # CONFIGURE RUNNER PATH
 ENV CML_RUNNER_PATH=/home/runner
