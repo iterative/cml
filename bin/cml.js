@@ -5,7 +5,7 @@ const { pseudoexec } = require('pseudoexec');
 
 const kebabcaseKeys = require('kebabcase-keys');
 const which = require('which');
-const winston = require('winston');
+const { logger, setupLogger } = require('../src/logger');
 const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
@@ -72,30 +72,6 @@ const setupOpts = (opts) => {
   opts.cml = new CML(opts);
 };
 
-const setupLogger = (opts) => {
-  const { log: level } = opts;
-
-  winston.configure({
-    format: process.stdout.isTTY
-      ? winston.format.combine(
-          winston.format.colorize({ all: true }),
-          winston.format.simple()
-        )
-      : winston.format.combine(
-          winston.format.errors({ stack: true }),
-          winston.format.json()
-        ),
-    transports: [
-      new winston.transports.Console({
-        stderrLevels: Object.keys(winston.config.npm.levels),
-        handleExceptions: true,
-        handleRejections: true,
-        level
-      })
-    ]
-  });
-};
-
 const setupTelemetry = async (opts, yargs) => {
   const { cml, _: command } = opts;
 
@@ -141,7 +117,7 @@ const handleError = (message, error) => {
   aliasLegacyEnvironmentVariables();
   setupLogger({ log: 'debug' });
 
-  try {
+  // try {
     await yargs
       .options(
         kebabcaseKeys({
@@ -195,13 +171,13 @@ const handleError = (message, error) => {
 
     const { telemetryEvent } = yargs.parsed.argv;
     await send({ event: telemetryEvent });
-  } catch (err) {
-    if (yargs.parsed.argv) {
-      const { telemetryEvent } = yargs.parsed.argv;
-      const event = { ...telemetryEvent, error: err.message };
-      await send({ event });
-    }
-    winston.error(err);
-    process.exit(1);
-  }
+  // } catch (err) {
+  //   if (yargs.parsed.argv) {
+  //     const { telemetryEvent } = yargs.parsed.argv;
+  //     const event = { ...telemetryEvent, error: err.message };
+  //     await send({ event });
+  //   }
+  //   logger.error(err);
+  //   process.exit(1);
+  // }
 })();

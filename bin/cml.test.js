@@ -13,7 +13,6 @@ describe('command-line interface tests', () => {
         cml.js comment            Manage comments
         cml.js pr <glob path...>  Manage pull requests
         cml.js runner             Manage self-hosted (cloud & on-premise) CI runners
-        cml.js tensorboard        Manage tensorboard.dev connections
         cml.js workflow           Manage CI workflows
         cml.js ci                 Prepare Git repository for CML operations
 
