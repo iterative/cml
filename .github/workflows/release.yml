@@ -33,7 +33,7 @@ jobs:
       - run: >
           gh release create --target ${{
           github.event.pull_request.merge_commit_sha }} {--title=CML\
-          ,}$(basename ${{ github.head_ref }}) --generate-notes --draft
+          ,}"$(basename "$GITHUB_HEAD_REF")" --generate-notes --draft
         env:
           GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
   package:

@@ -1,10 +1,10 @@
 const crypto = require('crypto');
 const fetch = require('node-fetch');
-const winston = require('winston');
 const { URL } = require('url');
 const { spawn } = require('child_process');
 const FormData = require('form-data');
 const ProxyAgent = require('proxy-agent');
+const { logger } = require('../logger');
 
 const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
 
@@ -166,9 +166,9 @@ class BitbucketCloud {
 
   async startRunner(opts) {
     const { projectPath } = this;
-    const { workdir, name, labels } = opts;
+    const { workdir, name, labels, env } = opts;
 
-    winston.warn(
+    logger.warn(
       `Bitbucket runner is working under /tmp folder and not under ${workdir} as expected`
     );
 
@@ -197,7 +197,7 @@ class BitbucketCloud {
       ${gpu ? '--runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all' : ''} \
       docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1`;
 
-      return spawn(command, { shell: true });
+      return spawn(command, { shell: true, env });
     } catch (err) {
       throw new Error(`Failed preparing runner: ${err.message}`);
     }
@@ -320,7 +320,7 @@ class BitbucketCloud {
   }
 
   async prAutoMerge({ pullRequestId, mergeMode, mergeMessage }) {
-    winston.warn(
+    logger.warn(
       'Auto-merge is unsupported by Bitbucket Cloud; see https://jira.atlassian.com/browse/BCLOUD-14286. Trying to merge immediately...'
     );
     const { projectPath } = this;
@@ -420,7 +420,7 @@ class BitbucketCloud {
     const { projectPath } = this;
 
     if (!id && jobId)
-      winston.warn('BitBucket Cloud does not support pipelineRerun by jobId!');
+      logger.warn('BitBucket Cloud does not support pipelineRerun by jobId!');
 
     const { target } = await this.request({
       endpoint: `/repositories/${projectPath}/pipelines/${id}`,
@@ -435,7 +435,7 @@ class BitbucketCloud {
   }
 
   async pipelineJobs(opts = {}) {
-    winston.warn('BitBucket Cloud does not support pipelineJobs yet!');
+    logger.warn('BitBucket Cloud does not support pipelineJobs yet!');
 
     return [];
   }
@@ -527,7 +527,7 @@ class BitbucketCloud {
       headers['Content-Type'] = 'application/json';
 
     const requestUrl = url || `${api}${endpoint}`;
-    winston.debug(
+    logger.debug(
       `Bitbucket API request, method: ${method}, url: "${requestUrl}"`
     );
     const response = await fetch(requestUrl, {
@@ -542,7 +542,7 @@ class BitbucketCloud {
       : await response.text();
 
     if (!response.ok) {
-      winston.debug(`Response status is ${response.status}`);
+      logger.debug(`Response status is ${response.status}`);
       // Attempt to get additional context. We have observed two different error schemas
       // from BitBucket API responses: `{"error": {"message": "Error message"}}` and
       // `{"error": "Error message"}`, apart from plain text responses like `Bad Request`.
@@ -558,7 +558,7 @@ class BitbucketCloud {
   }
 
   warn(message) {
-    winston.warn(message);
+    logger.warn(message);
   }
 }
 
