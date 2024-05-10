@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const fs = require('fs').promises;
 const fse = require('fs-extra');
 const { resolve } = require('path');
-const ProxyAgent = require('proxy-agent');
+const { ProxyAgent } = require('proxy-agent');
 const { backOff } = require('exponential-backoff');
 const { logger } = require('../logger');
 

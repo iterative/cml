@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const fetch = require('node-fetch');
-const ProxyAgent = require('proxy-agent');
+const { ProxyAgent } = require('proxy-agent');
 const { promisify } = require('util');
 const { scrypt } = require('crypto');
 const { v4: uuidv4, v5: uuidv5, parse } = require('uuid');
