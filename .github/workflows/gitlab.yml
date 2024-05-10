@@ -1,7 +1,7 @@
 name: GitLab
 on: pull_request
 jobs:
-  test:
+  gitlab:
     runs-on: ubuntu-latest
     services:
       gitlab:
