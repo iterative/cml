@@ -117,7 +117,7 @@ const handleError = (message, error) => {
   aliasLegacyEnvironmentVariables();
   setupLogger({ log: 'debug' });
 
-  // try {
+  try {
     await yargs
       .options(
         kebabcaseKeys({
@@ -171,13 +171,13 @@ const handleError = (message, error) => {
 
     const { telemetryEvent } = yargs.parsed.argv;
     await send({ event: telemetryEvent });
-  // } catch (err) {
-  //   if (yargs.parsed.argv) {
-  //     const { telemetryEvent } = yargs.parsed.argv;
-  //     const event = { ...telemetryEvent, error: err.message };
-  //     await send({ event });
-  //   }
-  //   logger.error(err);
-  //   process.exit(1);
-  // }
+  } catch (err) {
+    if (yargs.parsed.argv) {
+      const { telemetryEvent } = yargs.parsed.argv;
+      const event = { ...telemetryEvent, error: err.message };
+      await send({ event });
+    }
+    logger.error(err);
+    process.exit(1);
+  }
 })();
