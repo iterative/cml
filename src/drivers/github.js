@@ -12,7 +12,7 @@ const tar = require('tar');
 const ProxyAgent = require('proxy-agent');
 
 const { download, exec, sleep } = require('../utils');
-const winston = require('winston');
+const { logger } = require('../logger');
 
 const CHECK_TITLE = 'CML Report';
 process.env.RUNNER_ALLOW_RUNASROOT = 1;
@@ -55,7 +55,7 @@ const octokit = (token, repo, log) => {
 
   const throttleHandler = (reason, offset) => async (retryAfter, options) => {
     if (options.request.retryCount <= 5) {
-      winston.info(
+      logger.info(
         `Retrying because of ${reason} in ${retryAfter + offset} seconds`
       );
       await new Promise((resolve) => setTimeout(resolve, offset * 1000));
@@ -184,9 +184,9 @@ class Github {
     const warning =
       'This command only works inside a Github runner or a Github app.';
 
-    if (!CI || TPI_TASK) winston.warn(warning);
+    if (!CI || TPI_TASK) logger.warn(warning);
     if (GITHUB_TOKEN && GITHUB_TOKEN !== this.token)
-      winston.warn(
+      logger.warn(
         `Your token is different than the GITHUB_TOKEN, this command does not work with PAT. ${warning}`
       );
 
@@ -209,7 +209,7 @@ class Github {
 
   async runnerToken() {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo, winston);
+    const { actions } = octokit(this.token, this.repo, logger);
 
     if (typeof repo !== 'undefined') {
       const {
@@ -238,7 +238,7 @@ class Github {
   async unregisterRunner(opts) {
     const { runnerId } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo, winston);
+    const { actions } = octokit(this.token, this.repo, logger);
 
     if (typeof repo !== 'undefined') {
       await actions.deleteSelfHostedRunnerFromRepo({
@@ -255,7 +255,11 @@ class Github {
   }
 
   async startRunner(opts) {
-    const { workdir, single, name, labels } = opts;
+    const { workdir, single, name, labels, env } = opts;
+
+    this.warn(
+      'cloud credentials are no longer available on self-hosted runner steps; please use step.env and secrets instead'
+    );
 
     try {
       const runnerCfg = resolve(workdir, '.runner');
@@ -295,7 +299,8 @@ class Github {
       );
 
       return spawn(resolve(workdir, 'run.sh'), {
-        shell: true
+        shell: true,
+        env
       });
     } catch (err) {
       throw new Error(`Failed preparing GitHub runner: ${err.message}`);
@@ -304,7 +309,7 @@ class Github {
 
   async runners(opts = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { paginate, actions } = octokit(this.token, this.repo, winston);
+    const { paginate, actions } = octokit(this.token, this.repo, logger);
 
     let runners;
     if (typeof repo === 'undefined') {
@@ -326,7 +331,7 @@ class Github {
   async runnerById(opts = {}) {
     const { id } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo, winston);
+    const { actions } = octokit(this.token, this.repo, logger);
 
     if (typeof repo === 'undefined') {
       const { data: runner } = await actions.getSelfHostedRunnerForOrg({
@@ -348,7 +353,7 @@ class Github {
 
   async runnerJob({ runnerId, status = 'queued' } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const octokitClient = octokit(this.token, this.repo, winston);
+    const octokitClient = octokit(this.token, this.repo, logger);
 
     if (status === 'running') status = 'in_progress';
 
@@ -527,18 +532,18 @@ class Github {
 
       try {
         if (await this.isProtected({ branch: base })) {
-          winston.warn(
+          logger.warn(
             `Failed to enable auto-merge: Enable the feature in your repository settings: ${settingsUrl}#merge_types_auto_merge. Trying to merge immediately...`
           );
         } else {
-          winston.warn(
+          logger.warn(
             `Failed to enable auto-merge: Set up branch protection and add "required status checks" for branch '${base}': ${settingsUrl}/branches. Trying to merge immediately...`
           );
         }
       } catch (err) {
         if (!err.message.includes('Resource not accessible by integration'))
           throw err;
-        winston.warn(
+        logger.warn(
           `Failed to enable auto-merge. Trying to merge immediately...`
         );
       }
@@ -682,7 +687,7 @@ class Github {
 
   async pipelineRerun({ id = GITHUB_RUN_ID, jobId } = {}) {
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo, winston);
+    const { actions } = octokit(this.token, this.repo, logger);
 
     if (!id && jobId) {
       ({
@@ -731,7 +736,7 @@ class Github {
   async pipelineJobs(opts = {}) {
     const { jobs: runnerJobs } = opts;
     const { owner, repo } = ownerRepo({ uri: this.repo });
-    const { actions } = octokit(this.token, this.repo, winston);
+    const { actions } = octokit(this.token, this.repo, logger);
 
     const jobs = await Promise.all(
       runnerJobs.map(async (job) => {
