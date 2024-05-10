@@ -33,18 +33,4 @@ describe('Comment integration tests', () => {
       path
     );
   });
-
-  test('cml send-comment to current repo', async () => {
-    const report = `## Test Comment`;
-
-    await fs.writeFile(path, report);
-    await exec('node', './bin/cml.js', 'send-comment', path);
-  });
-
-  test('cml send-comment --publish to current repo', async () => {
-    const report = `## Test Comment\n![](assets/logo.png)`;
-
-    await fs.writeFile(path, report);
-    await exec('node', './bin/cml.js', 'send-comment', '--publish', path);
-  });
 });

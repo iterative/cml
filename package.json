@@ -1,6 +1,6 @@
 {
   "name": "@dvcorg/cml",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "description": "<p align=\"center\"> <img src=\"https://static.iterative.ai/img/cml/title_strip_trim.png\" width=400> </p>",
   "author": {
     "name": "Iterative Inc",
@@ -28,10 +28,55 @@
     "dvc"
   ],
   "license": "Apache-2.0",
-  "main": "index.js",
   "engines": {
     "node": ">=16.0.0"
   },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "commonjs": true,
+      "es6": true,
+      "jest": true
+    },
+    "extends": [
+      "standard",
+      "prettier"
+    ],
+    "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "ignorePatterns": [
+      "assets/",
+      "dist/",
+      "node_modules/"
+    ],
+    "rules": {
+      "camelcase": [
+        1,
+        {
+          "properties": "never"
+        }
+      ],
+      "prettier/prettier": "error"
+    },
+    "plugins": [
+      "prettier"
+    ]
+  },
+  "prettier": {
+    "arrowParens": "always",
+    "singleQuote": true,
+    "trailingComma": "none",
+    "printWidth": 80,
+    "tabWidth": 2,
+    "useTabs": false,
+    "proseWrap": "always"
+  },
+  "main": "index.js",
   "bin": {
     "cml": "bin/cml.js",
     "cml-send-github-check": "bin/legacy/link.js",
@@ -47,7 +92,7 @@
     "test": "jest --forceExit",
     "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
     "test:e2e": "jest --testNamePattern='e2e.test.js$' --forceExit",
-    "do_snapshots": "jest --updateSnapshot"
+    "snapshot": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {

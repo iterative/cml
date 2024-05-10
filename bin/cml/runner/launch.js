@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const net = require('net');
 const kebabcaseKeys = require('kebabcase-keys');
 const timestring = require('timestring');
-const winston = require('winston');
+const { logger } = require('../../../src/logger');
 
 const { exec, randid, sleep } = require('../../../src/utils');
 const tf = require('../../../src/terraform');
@@ -29,26 +29,26 @@ const shutdown = async (opts) => {
     if (!RUNNER) return true;
 
     try {
-      winston.info(`Unregistering runner ${name}...`);
+      logger.info(`Unregistering runner ${name}...`);
       await cml.unregisterRunner({ name });
     } catch (err) {
       if (err.message.includes('is still running a job')) {
-        winston.warn(`\tCancelling shutdown: ${err.message}`);
+        logger.warn(`\tCancelling shutdown: ${err.message}`);
         return false;
       }
 
-      winston.error(`\tFailed: ${err.message}`);
+      logger.error(`\tFailed: ${err.message}`);
     }
 
     RUNNER.kill('SIGINT');
-    winston.info('\tSuccess');
+    logger.info('\tSuccess');
     return true;
   };
 
   const retryWorkflows = async () => {
     try {
       if (!noRetry && RUNNER_JOBS_RUNNING.length > 0) {
-        winston.info(`Still pending jobs, retrying workflow...`);
+        logger.info(`Still pending jobs, retrying workflow...`);
 
         await Promise.all(
           RUNNER_JOBS_RUNNING.map(
@@ -58,14 +58,14 @@ const shutdown = async (opts) => {
         );
       }
     } catch (err) {
-      winston.error(err);
+      logger.error(err);
     }
   };
 
   const destroyLeo = async () => {
     if (!tfResource) return;
 
-    winston.info(`Waiting ${destroyDelay} seconds to destroy`);
+    logger.info(`Waiting ${destroyDelay} seconds to destroy`);
     await sleep(destroyDelay);
 
     const { cloud, id, region } = JSON.parse(
@@ -83,7 +83,7 @@ const shutdown = async (opts) => {
         id
       );
     } catch (err) {
-      winston.error(`\tFailed destroying with LEO: ${err.message}`);
+      logger.error(`\tFailed destroying with LEO: ${err.message}`);
     }
   };
 
@@ -97,7 +97,7 @@ const shutdown = async (opts) => {
       clearInterval(watcher);
       await retryWorkflows();
     } catch (err) {
-      winston.error(`Error connecting the SCM: ${err.message}`);
+      logger.error(`Error connecting the SCM: ${err.message}`);
     }
   }
 
@@ -105,13 +105,13 @@ const shutdown = async (opts) => {
 
   if (error) throw error;
 
-  winston.info('runner status', { reason, status: 'terminated' });
+  logger.info('runner status', { reason, status: 'terminated' });
   process.exit(0);
 };
 
 const runCloud = async (opts) => {
   const runTerraform = async (opts) => {
-    winston.info('Terraform apply...');
+    logger.info('Terraform apply...');
 
     const { token, repo, driver } = cml;
     const {
@@ -143,7 +143,7 @@ const runCloud = async (opts) => {
     await tf.checkMinVersion();
 
     if (gpu === 'tesla')
-      winston.warn(
+      logger.warn(
         'GPU model "tesla" has been deprecated; please use "v100" instead.'
       );
 
@@ -189,7 +189,7 @@ const runCloud = async (opts) => {
     return tfstate;
   };
 
-  winston.info('Deploying cloud runner plan...');
+  logger.info('Deploying cloud runner plan...');
   const tfstate = await runTerraform(opts);
   const { resources } = tfstate;
   for (const resource of resources) {
@@ -221,14 +221,14 @@ const runCloud = async (opts) => {
           timeouts: attributes.timeouts,
           kubernetesNodeSelector: attributes.kubernetes_node_selector
         };
-        winston.info(JSON.stringify(nonSensitiveValues));
+        logger.info(JSON.stringify(nonSensitiveValues));
       }
     }
   }
 };
 
 const runLocal = async (opts) => {
-  winston.info(`Launching ${cml.driver} runner`);
+  logger.info(`Launching ${cml.driver} runner`);
   const {
     workdir,
     name,
@@ -265,10 +265,10 @@ const runLocal = async (opts) => {
   if (process.platform === 'linux') {
     const acpiSock = net.connect('/var/run/acpid.socket');
     acpiSock.on('connect', () => {
-      winston.info('Connected to acpid service.');
+      logger.info('Connected to acpid service.');
     });
     acpiSock.on('error', (err) => {
-      winston.warn(
+      logger.warn(
         `Error connecting to ACPI socket: ${err.message}. The acpid.service helps with instance termination detection.`
       );
     });
@@ -283,10 +283,10 @@ const runLocal = async (opts) => {
   const dataHandler =
     ({ cloudSpot }) =>
     async (data) => {
-      winston.debug(data.toString());
+      logger.debug(data.toString());
       const logs = await cml.parseRunnerLog({ data, name, cloudSpot });
       for (const log of logs) {
-        winston.info('runner status', log);
+        logger.info('runner status', log);
 
         if (log.status === 'job_started') {
           const { job: id, pipeline, date } = log;
@@ -380,7 +380,7 @@ const run = async (opts) => {
       throw new Error(
         `Runner name ${name} is already in use. Please change the name or terminate the existing runner.`
       );
-    winston.info(`Reusing existing runner named ${name}...`);
+    logger.info(`Reusing existing runner named ${name}...`);
     return;
   }
 
@@ -390,9 +390,7 @@ const run = async (opts) => {
       (runner) => runner.online
     )
   ) {
-    winston.info(
-      `Reusing existing online runners with the ${labels} labels...`
-    );
+    logger.info(`Reusing existing online runners with the ${labels} labels...`);
     return;
   }
 
@@ -402,7 +400,7 @@ const run = async (opts) => {
         'cml runner flag --reuse-idle is unsupported by bitbucket'
       );
     }
-    winston.info(
+    logger.info(
       `Checking for existing idle runner matching labels: ${labels}.`
     );
     const currentRunners = await cml.runnersByLabels({ labels, runners });
@@ -410,25 +408,25 @@ const run = async (opts) => {
       (runner) => runner.online && !runner.busy
     );
     if (availableRunner) {
-      winston.info('Found matching idle runner.', availableRunner);
+      logger.info('Found matching idle runner.', availableRunner);
       return;
     }
   }
 
   if (dockerVolumes.length && cml.driver !== 'gitlab')
-    winston.warn('Parameters --docker-volumes is only supported in gitlab');
+    logger.warn('Parameters --docker-volumes is only supported in gitlab');
 
   if (cml.driver === 'github')
-    winston.warn(
+    logger.warn(
       'Github Actions timeout has been updated from 72h to 35 days. Update your workflow accordingly to be able to restart it automatically.'
     );
 
   if (RUNNER_NAME)
-    winston.warn(
+    logger.warn(
       'ignoring RUNNER_NAME environment variable, use CML_RUNNER_NAME or --name instead'
     );
 
-  winston.info(`Preparing workdir ${workdir}...`);
+  logger.info(`Preparing workdir ${workdir}...`);
   await fs.mkdir(workdir, { recursive: true });
   await fs.chmod(workdir, '766');
 

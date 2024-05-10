@@ -8,7 +8,7 @@ const { promisify } = require('util');
 const { scrypt } = require('crypto');
 const { v4: uuidv4, v5: uuidv5, parse } = require('uuid');
 const { userConfigDir } = require('appdirs');
-const winston = require('winston');
+const { logger } = require('./logger');
 const isDocker = require('is-docker');
 
 const { version: VERSION } = require('../package.json');
@@ -18,7 +18,7 @@ const {
   ITERATIVE_ANALYTICS_ENDPOINT = 'https://telemetry.cml.dev/api/v1/s2s/event?ip_policy=strict',
   ITERATIVE_ANALYTICS_TOKEN = 's2s.jtyjusrpsww4k9b76rrjri.bl62fbzrb7nd9n6vn5bpqt',
   ITERATIVE_DO_NOT_TRACK,
-
+  CODESPACES,
   GITHUB_SERVER_URL,
   GITHUB_REPOSITORY_OWNER,
   GITHUB_ACTOR,
@@ -52,7 +52,7 @@ const deterministic = async (data) => {
 };
 
 const guessCI = () => {
-  if (GITHUB_SERVER_URL) return 'github';
+  if (GITHUB_SERVER_URL && !CODESPACES) return 'github';
   if (CI_SERVER_URL) return 'gitlab';
   if (BITBUCKET_WORKSPACE) return 'bitbucket';
   if (TF_BUILD) return 'azure';
@@ -133,7 +133,7 @@ const userId = async ({ cml } = {}) => {
 
     return id;
   } catch (err) {
-    winston.debug(`userId failure: ${err.message}`);
+    logger.debug(`userId failure: ${err.message}`);
   }
 };
 
@@ -223,7 +223,7 @@ const send = async ({
     });
     clearInterval(id);
   } catch (err) {
-    winston.debug(`Send analytics failed: ${err.message}`);
+    logger.debug(`Send analytics failed: ${err.message}`);
   }
 };
 
