@@ -1,4 +1,4 @@
-const winston = require('winston');
+const { logger } = require('./logger');
 
 const SEPARATOR = '/';
 
@@ -22,14 +22,14 @@ async function parseCommentTarget(opts = {}) {
   let commitPr;
   switch (commentTarget.toLowerCase()) {
     case 'commit':
-      winston.debug(`Comment target "commit" mapped to "commit/${drv.sha}"`);
+      logger.debug(`Comment target "commit" mapped to "commit/${drv.sha}"`);
       return { target: 'commit', commitSha: drv.sha };
     case 'pr':
     case 'auto':
       // Determine PR id from forge env vars (if we're in a PR context).
       prNumber = drv.pr;
       if (prNumber) {
-        winston.debug(
+        logger.debug(
           `Comment target "${commentTarget}" mapped to "pr/${prNumber}"`
         );
         return { target: 'pr', prNumber: prNumber };
@@ -39,14 +39,14 @@ async function parseCommentTarget(opts = {}) {
       [commitPr = {}] = await drv.commitPrs({ commitSha: drv.sha });
       if (commitPr.url) {
         [prNumber] = commitPr.url.split('/').slice(-1);
-        winston.debug(
+        logger.debug(
           `Comment target "${commentTarget}" mapped to "pr/${prNumber}" based on commit "${drv.sha}"`
         );
         return { target: 'pr', prNumber };
       }
       // If target is 'auto', fallback to issuing commit comments.
       if (commentTarget === 'auto') {
-        winston.debug(
+        logger.debug(
           `Comment target "${commentTarget}" mapped to "commit/${drv.sha}"`
         );
         return { target: 'commit', commitSha: drv.sha };

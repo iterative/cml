@@ -92,7 +92,7 @@
     "test": "jest --forceExit",
     "test:unit": "jest --testPathIgnorePatterns='e2e.test.js$' --forceExit",
     "test:e2e": "jest --testNamePattern='e2e.test.js$' --forceExit",
-    "do_snapshots": "jest --updateSnapshot"
+    "snapshot": "jest --updateSnapshot"
   },
   "husky": {
     "hooks": {

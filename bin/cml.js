@@ -5,7 +5,7 @@ const { pseudoexec } = require('pseudoexec');
 
 const kebabcaseKeys = require('kebabcase-keys');
 const which = require('which');
-const winston = require('winston');
+const { logger, setupLogger } = require('../src/logger');
 const yargs = require('yargs');
 
 const CML = require('../src/cml').default;
@@ -70,30 +70,6 @@ const setupOpts = (opts) => {
   const { markdownfile } = opts;
   opts.markdownFile = markdownfile;
   opts.cml = new CML(opts);
-};
-
-const setupLogger = (opts) => {
-  const { log: level } = opts;
-
-  winston.configure({
-    format: process.stdout.isTTY
-      ? winston.format.combine(
-          winston.format.colorize({ all: true }),
-          winston.format.simple()
-        )
-      : winston.format.combine(
-          winston.format.errors({ stack: true }),
-          winston.format.json()
-        ),
-    transports: [
-      new winston.transports.Console({
-        stderrLevels: Object.keys(winston.config.npm.levels),
-        handleExceptions: true,
-        handleRejections: true,
-        level
-      })
-    ]
-  });
 };
 
 const setupTelemetry = async (opts, yargs) => {
@@ -201,7 +177,7 @@ const handleError = (message, error) => {
       const event = { ...telemetryEvent, error: err.message };
       await send({ event });
     }
-    winston.error(err);
+    logger.error(err);
     process.exit(1);
   }
 })();

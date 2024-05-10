@@ -7,7 +7,7 @@ const fse = require('fs-extra');
 const { resolve } = require('path');
 const ProxyAgent = require('proxy-agent');
 const { backOff } = require('exponential-backoff');
-const winston = require('winston');
+const { logger } = require('../logger');
 
 const { fetchUploadData, download, gpuPresent } = require('../utils');
 
@@ -144,11 +144,21 @@ class Gitlab {
     return { uri: `${repo}${url}`, mime, size };
   }
 
-  async runnerToken() {
+  async runnerToken(body) {
     const projectPath = await this.projectPath();
-    const endpoint = `/projects/${projectPath}`;
+    const legacyEndpoint = `/projects/${projectPath}`;
+    const endpoint = `/user/runners`;
 
-    const { runners_token: runnersToken } = await this.request({ endpoint });
+    const { id, runners_token: runnersToken } = await this.request({
+      endpoint: legacyEndpoint
+    });
+
+    if (runnersToken === null) {
+      if (!body) body = new URLSearchParams();
+      body.append('project_id', id);
+      body.append('runner_type', 'project_type');
+      return (await this.request({ endpoint, method: 'POST', body })).token;
+    }
 
     return runnersToken;
   }
@@ -156,16 +166,18 @@ class Gitlab {
   async registerRunner(opts = {}) {
     const { tags, name } = opts;
 
-    const token = await this.runnerToken();
     const endpoint = `/runners`;
     const body = new URLSearchParams();
     body.append('description', name);
     body.append('tag_list', tags);
-    body.append('token', token);
     body.append('locked', 'true');
     body.append('run_untagged', 'true');
     body.append('access_level', 'not_protected');
 
+    const token = await this.runnerToken(new URLSearchParams(body));
+    if (token.startsWith('glrt-')) return { token };
+
+    body.append('token', token);
     return await this.request({ endpoint, method: 'POST', body });
   }
 
@@ -330,7 +342,7 @@ class Gitlab {
         })
       );
     } catch ({ message }) {
-      winston.warn(
+      logger.warn(
         `Failed to enable auto-merge: ${message}. Trying to merge immediately...`
       );
       body.set('merge_when_pipeline_succeeds', false);
@@ -560,7 +572,7 @@ class Gitlab {
     }
     if (!url) throw new Error('Gitlab API endpoint not found');
 
-    winston.debug(`Gitlab API request, method: ${method}, url: "${url}"`);
+    logger.debug(`Gitlab API request, method: ${method}, url: "${url}"`);
 
     const headers = { 'PRIVATE-TOKEN': token, Accept: 'application/json' };
     const response = await fetch(url, {
@@ -570,7 +582,7 @@ class Gitlab {
       agent: new ProxyAgent()
     });
     if (!response.ok) {
-      winston.debug(`Response status is ${response.status}`);
+      logger.debug(`Response status is ${response.status}`);
       throw new Error(response.statusText);
     }
     if (raw) return response;
@@ -579,7 +591,7 @@ class Gitlab {
   }
 
   warn(message) {
-    winston.warn(message);
+    logger.warn(message);
   }
 }
 
