@@ -9,7 +9,7 @@ const { Octokit } = require('@octokit/rest');
 const { withCustomRequest } = require('@octokit/graphql');
 const { throttling } = require('@octokit/plugin-throttling');
 const tar = require('tar');
-const ProxyAgent = require('proxy-agent');
+const { ProxyAgent } = require('proxy-agent');
 
 const { download, exec, sleep } = require('../utils');
 const { logger } = require('../logger');

@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { URL } = require('url');
 const { spawn } = require('child_process');
 const FormData = require('form-data');
-const ProxyAgent = require('proxy-agent');
+const { ProxyAgent } = require('proxy-agent');
 const { logger } = require('../logger');
 
 const { fetchUploadData, exec, gpuPresent, sleep } = require('../utils');
