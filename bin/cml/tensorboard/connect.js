@@ -3,7 +3,7 @@ const kebabcaseKeys = require('kebabcase-keys');
 const { spawn } = require('child_process');
 const { homedir } = require('os');
 const tempy = require('tempy');
-const winston = require('winston');
+const { logger } = require('../../../src/logger');
 
 const { exec, watermarkUri, sleep } = require('../../../src/utils');
 
@@ -29,7 +29,7 @@ const tbLink = async (opts = {}) => {
     chrono = chrono + chronoStep;
   }
 
-  winston.error(await fs.readFile(stderror, 'utf8'));
+  logger.error(await fs.readFile(stderror, 'utf8'));
   throw new Error(`Tensorboard took too long`);
 };
 
@@ -52,7 +52,7 @@ const launchAndWaitLink = async (opts = {}) => {
   proc.unref();
   proc.on('exit', async (code, signal) => {
     if (code || signal) {
-      winston.error(await fs.readFile(stderrPath, 'utf8'));
+      logger.error(await fs.readFile(stderrPath, 'utf8'));
       throw new Error(`Tensorboard failed with error ${code || signal}`);
     }
   });
@@ -81,6 +81,11 @@ exports.command = 'connect';
 exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 
 exports.handler = async (opts) => {
+  if (new Date() > new Date('2024-01-01')) {
+    logger.error('TensorBoard.dev has been shut down as of January 1, 2024');
+    return;
+  }
+
   const { file, credentials, name, description } = opts;
 
   const path = `${homedir()}/.config/tensorboard/credentials`;

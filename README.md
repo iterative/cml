@@ -109,7 +109,7 @@ jobs:
 ## Usage
 
 We helpfully provide CML and other useful libraries pre-installed on our
-[custom Docker images](https://github.com/iterative/cml/blob/master/Dockerfile).
+[custom Docker images](https://github.com/iterative/cml/blob/mains/Dockerfile).
 In the above example, uncommenting the field
 `container: ghcr.io/iterative/cml:0-dvc2-base1`) will make the runner pull the
 CML Docker image. The image already has NodeJS, Python 3, DVC and CML set up on
@@ -215,7 +215,7 @@ git push origin experiment
 ```
 
 5. In GitHub, open up a pull request to compare the `experiment` branch to
-   `master`.
+   `main`.
 
 ![](https://static.iterative.ai/img/cml/make_pr.png)
 
@@ -272,18 +272,18 @@ jobs:
           # Report metrics
           echo "## Metrics" >> report.md
           git fetch --prune
-          dvc metrics diff master --show-md >> report.md
+          dvc metrics diff main --show-md >> report.md
 
           # Publish confusion matrix diff
           echo "## Plots" >> report.md
           echo "### Class confusions" >> report.md
-          dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega master > vega.json
+          dvc plots diff --target classes.csv --template confusion -x actual -y predicted --show-vega main > vega.json
           vl2png vega.json -s 1.5 > confusion_plot.png
           echo "![](./confusion_plot.png)" >> report.md
 
           # Publish regularization function diff
           echo "### Effects of regularization" >> report.md
-          dvc plots diff --target estimators.csv -x Regularization --show-vega master > vega.json
+          dvc plots diff --target estimators.csv -x Regularization --show-vega main > vega.json
           vl2png vega.json -s 1.5 > plot.png
           echo "![](./plot.png)" >> report.md
 
@@ -642,6 +642,9 @@ These are some example projects using CML.
 
 :key: needs a [PAT](#environment-variables).
 
-
 # :warning: Maintenance :warning:
-- ~2023-07 Nvidia has dropped container CUDA images with [10.x](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=10)/[cudnn7](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=cudnn7) and [11.2.1](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=11.2.1), CML images will be updated accrodingly
+
+- ~2023-07 Nvidia has dropped container CUDA images with
+  [10.x](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=10)/[cudnn7](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=cudnn7)
+  and [11.2.1](https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=11.2.1),
+  CML images will be updated accrodingly

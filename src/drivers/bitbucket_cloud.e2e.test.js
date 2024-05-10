@@ -1,9 +1,9 @@
 const BitbucketCloud = require('./bitbucket_cloud');
 const {
-  TEST_BBCLOUD_TOKEN: TOKEN,
-  TEST_BBCLOUD_REPO: REPO,
-  TEST_BBCLOUD_SHA: SHA,
-  TEST_BBCLOUD_ISSUE: ISSUE = 1
+  TEST_BITBUCKET_TOKEN: TOKEN,
+  TEST_BITBUCKET_REPO: REPO,
+  TEST_BITBUCKET_SHA: SHA,
+  TEST_BITBUCKET_ISSUE: ISSUE = 1
 } = process.env;
 
 describe('Non Enviromental tests', () => {
