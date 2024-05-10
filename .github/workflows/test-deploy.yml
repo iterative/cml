@@ -98,6 +98,8 @@ jobs:
   packages:
     needs: [lint, test, test-os]
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.publish.outputs.version }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -106,8 +108,10 @@ jobs:
         with:
           registry-url: https://registry.npmjs.org
       - run: npm install
-      - run: |
+      - id: publish
+        run: |
           VERSION=$(jq -r .version < package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           npm install --dry-run @dvcorg/cml@$VERSION ||
           npm ${{ inputs.release && 'publish' || 'publish --dry-run' }}
         env:
@@ -133,3 +137,4 @@ jobs:
     uses: ./.github/workflows/images.yml
     with:
       release: ${{ inputs.release || false }}
+      version: ${{ needs.packages.outputs.version }}

@@ -4,6 +4,9 @@ on:
       release:
         required: true
         type: boolean
+      version:
+        required: false
+        type: string
 jobs:
   images:
     runs-on: ubuntu-latest
@@ -33,8 +36,11 @@ jobs:
           fetch-depth: 0
       - name: Metadata
         id: metadata
+        env:
+          CML_VERSION: ${{ inputs.version }}
         run: |
           latest_tag=$(git describe --tags | cut -d- -f1)
+          test -n "$CML_VERSION" && latest_tag="$CML_VERSION"
           cml_version=${latest_tag##v}
           dvc_version=$(python3 -c '
           from distutils.version import StrictVersion as Ver
