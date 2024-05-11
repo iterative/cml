@@ -6,6 +6,7 @@ const tempy = require('tempy');
 const { logger } = require('../../../src/logger');
 
 const { exec, watermarkUri, sleep } = require('../../../src/utils');
+const yargs = require('yargs');
 
 const tbLink = async (opts = {}) => {
   const { stdout, stderror, title, name, rmWatermark, md, timeout = 60 } = opts;
@@ -83,7 +84,7 @@ exports.description = `${DESCRIPTION}\n${DOCSURL}`;
 exports.handler = async (opts) => {
   if (new Date() > new Date('2024-01-01')) {
     logger.error('TensorBoard.dev has been shut down as of January 1, 2024');
-    return;
+    yargs.exit(1);
   }
 
   const { file, credentials, name, description } = opts;
