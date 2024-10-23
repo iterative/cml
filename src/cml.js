@@ -570,7 +570,7 @@ class CML {
       )
     );
 
-    const paths = (await globby(globs)).filter((path) =>
+    const paths = (await globby(globs, { dot: true })).filter((path) =>
       files.map((file) => file.path).includes(prefix + path)
     );
 
