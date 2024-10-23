@@ -7,9 +7,9 @@ const { exec, sshConnection, randid, sleep } = require('../../../src/utils');
 const IDLE_TIMEOUT = 15;
 const {
   TEST_GITHUB_TOKEN,
-  TEST_GITHUB_REPO,
+  TEST_GITHUB_REPOSITORY,
   TEST_GITLAB_TOKEN,
-  TEST_GITLAB_REPO,
+  TEST_GITLAB_REPOSITORY,
   SSH_PRIVATE
 } = process.env;
 
@@ -70,7 +70,7 @@ const testRunner = async (opts) => {
 describe('CML e2e', () => {
   test.skip('cml-runner GL/AWS', async () => {
     const opts = {
-      repo: TEST_GITLAB_REPO,
+      repo: TEST_GITLAB_REPOSITORY,
       token: TEST_GITLAB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'aws',
@@ -83,7 +83,7 @@ describe('CML e2e', () => {
 
   test.skip('cml-runner GH/AWS', async () => {
     const opts = {
-      repo: TEST_GITHUB_REPO,
+      repo: TEST_GITHUB_REPOSITORY,
       token: TEST_GITHUB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'aws',
@@ -96,7 +96,7 @@ describe('CML e2e', () => {
 
   test.skip('cml-runner GL/Azure', async () => {
     const opts = {
-      repo: TEST_GITLAB_REPO,
+      repo: TEST_GITLAB_REPOSITORY,
       token: TEST_GITLAB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'azure',
@@ -109,7 +109,7 @@ describe('CML e2e', () => {
 
   test.skip('cml-runner GH/Azure', async () => {
     const opts = {
-      repo: TEST_GITHUB_REPO,
+      repo: TEST_GITHUB_REPOSITORY,
       token: TEST_GITHUB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'azure',
@@ -122,7 +122,7 @@ describe('CML e2e', () => {
 
   test.skip('cml-runner GL/GCP', async () => {
     const opts = {
-      repo: TEST_GITLAB_REPO,
+      repo: TEST_GITLAB_REPOSITORY,
       token: TEST_GITLAB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'gcp',
@@ -135,7 +135,7 @@ describe('CML e2e', () => {
 
   test.skip('cml-runner GH/GCP', async () => {
     const opts = {
-      repo: TEST_GITHUB_REPO,
+      repo: TEST_GITHUB_REPOSITORY,
       token: TEST_GITHUB_TOKEN,
       privateKey: SSH_PRIVATE,
       cloud: 'gcp',

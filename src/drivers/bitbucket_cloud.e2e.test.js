@@ -1,8 +1,8 @@
 const BitbucketCloud = require('./bitbucket_cloud');
 const {
   TEST_BITBUCKET_TOKEN: TOKEN,
-  TEST_BITBUCKET_REPO: REPO,
-  TEST_BITBUCKET_SHA: SHA,
+  TEST_BITBUCKET_REPOSITORY: REPO,
+  TEST_BITBUCKET_COMMIT: SHA,
   TEST_BITBUCKET_ISSUE: ISSUE = 1
 } = process.env;
 

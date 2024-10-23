@@ -1,7 +1,7 @@
 const { send, jitsuEventPayload, isCI } = require('./analytics');
 const CML = require('../src/cml').default;
 
-const { TEST_GITHUB_TOKEN: TOKEN, TEST_GITHUB_REPO: REPO } = process.env;
+const { TEST_GITHUB_TOKEN: TOKEN, TEST_GITHUB_REPOSITORY: REPO } = process.env;
 
 describe('analytics tests', () => {
   test('userId', async () => {

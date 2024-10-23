@@ -110,7 +110,8 @@ describe('CML e2e', () => {
   });
 
   test('cml publish assets/test.svg in Gitlab storage', async () => {
-    const { TEST_GITLAB_REPO: repo, TEST_GITLAB_TOKEN: token } = process.env;
+    const { TEST_GITLAB_REPOSITORY: repo, TEST_GITLAB_TOKEN: token } =
+      process.env;
 
     const output = await exec(
       'node',

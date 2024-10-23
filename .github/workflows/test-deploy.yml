@@ -58,17 +58,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TEST_GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN }}
-          TEST_GITHUB_REPO: https://github.com/iterative/cml_qa_tests_dummy
-          TEST_GITHUB_SHA: 0cd16da26e35f8e5d57b2549a97e22618abf08f6
-          TEST_GITHUB_ISSUE: 1
+          TEST_GITHUB_REPOSITORY: ${{ vars.TEST_GITHUB_REPOSITORY }}
+          TEST_GITHUB_COMMIT: ${{ vars.TEST_GITHUB_COMMIT }}
+          TEST_GITHUB_ISSUE: ${{ vars.TEST_GITHUB_ISSUE }}
           TEST_GITLAB_TOKEN: ${{ secrets.TEST_GITLAB_TOKEN }}
-          TEST_GITLAB_REPO: https://gitlab.com/iterative.ai/cml_qa_tests_dummy
-          TEST_GITLAB_SHA: f8b8b49a253243830ef59a7f090eb887157b2b67
-          TEST_GITLAB_ISSUE: 1
+          TEST_GITLAB_REPOSITORY: ${{ vars.TEST_GITLAB_REPOSITORY }}
+          TEST_GITLAB_COMMIT: ${{ vars.TEST_GITLAB_COMMIT }}
+          TEST_GITLAB_ISSUE: ${{ vars.TEST_GITLAB_ISSUE }}
           TEST_BITBUCKET_TOKEN: ${{ secrets.TEST_BITBUCKET_TOKEN }}
-          TEST_BITBUCKET_REPO: https://bitbucket.org/iterative-ai/cml-qa-tests-dummy
-          TEST_BITBUCKET_SHA: b511535a89f76d3d311b1c15e3e712b15c0b94e3
-          TEST_BITBUCKET_ISSUE: 1
+          TEST_BITBUCKET_REPOSITORY: ${{ vars.TEST_BITBUCKET_REPOSITORY }}
+          TEST_BITBUCKET_COMMIT: ${{ vars.TEST_BITBUCKET_COMMIT }}
+          TEST_BITBUCKET_ISSUE: ${{ vars.TEST_BITBUCKET_ISSUE }}
   test-os:
     needs: authorize
     name: test-${{ matrix.system }}
