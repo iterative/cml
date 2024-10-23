@@ -2,8 +2,8 @@ const GithubClient = require('./github');
 
 const {
   TEST_GITHUB_TOKEN: TOKEN,
-  TEST_GITHUB_REPO: REPO,
-  TEST_GITHUB_SHA: SHA,
+  TEST_GITHUB_REPOSITORY: REPO,
+  TEST_GITHUB_COMMIT: SHA,
   TEST_GITHUB_ISSUE: ISSUE = 1
 } = process.env;
 

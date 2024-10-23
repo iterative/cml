@@ -12,9 +12,9 @@ describe('Comment integration tests', () => {
 
   test('cml send-comment to specific repo', async () => {
     const {
-      TEST_GITHUB_REPO: repo,
+      TEST_GITHUB_REPOSITORY: repo,
       TEST_GITHUB_TOKEN: token,
-      TEST_GITHUB_SHA: sha
+      TEST_GITHUB_COMMIT: sha
     } = process.env;
 
     const report = `## Test Comment Report specific`;

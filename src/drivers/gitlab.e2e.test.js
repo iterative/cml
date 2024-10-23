@@ -2,8 +2,8 @@ const GitlabClient = require('./gitlab');
 
 const {
   TEST_GITLAB_TOKEN: TOKEN,
-  TEST_GITLAB_REPO: REPO,
-  TEST_GITLAB_SHA: SHA,
+  TEST_GITLAB_REPOSITORY: REPO,
+  TEST_GITLAB_COMMIT: SHA,
   TEST_GITLAB_ISSUE: ISSUE = 1
 } = process.env;
 

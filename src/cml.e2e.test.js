@@ -5,8 +5,8 @@ describe('Github tests', () => {
 
   const {
     TEST_GITHUB_TOKEN: TOKEN,
-    TEST_GITHUB_REPO: REPO,
-    TEST_GITHUB_SHA: SHA
+    TEST_GITHUB_REPOSITORY: REPO,
+    TEST_GITHUB_COMMIT: SHA
   } = process.env;
 
   beforeEach(() => {
@@ -116,8 +116,8 @@ describe('Gitlab tests', () => {
 
   const {
     TEST_GITLAB_TOKEN: TOKEN,
-    TEST_GITLAB_REPO: REPO,
-    TEST_GITLAB_SHA: SHA
+    TEST_GITLAB_REPOSITORY: REPO,
+    TEST_GITLAB_COMMIT: SHA
   } = process.env;
 
   beforeEach(() => {
