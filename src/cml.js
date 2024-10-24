@@ -346,12 +346,14 @@ class CML {
       ({ mime, uri } = await upload(opts));
     }
 
-    if (!rmWatermark) {
+    if (!rmWatermark && !native) {
       const [, type] = mime.split('/');
       uri = watermarkUri({ uri, type });
     }
 
-    uri = preventcacheUri({ uri });
+    if (!native) {
+      uri = preventcacheUri({ uri });
+    }
 
     if (md && mime.match('(image|video)/.*'))
       return `![](${uri}${title ? ` "${title}"` : ''})`;

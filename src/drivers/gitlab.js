@@ -139,7 +139,7 @@ class Gitlab {
 
     const { url } = await this.request({ endpoint, method: 'POST', body });
 
-    return { uri: `${await this.repoBase()}${url}`, mime, size };
+    return { uri: url, mime, size };
   }
 
   async runnerToken(body) {
