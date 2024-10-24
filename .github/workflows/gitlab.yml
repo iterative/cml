@@ -59,6 +59,11 @@ jobs:
           | jq -r .id \
           | xargs -0 printf "hash=%s" >> $GITHUB_OUTPUT
       - run: npm ci
+      - uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+        env:
+          TEST_GITLAB_TOKEN: ${{ github.token }}
       - name: Run cml-send-comment
         run: |
           node bin/cml.js send-comment \
