@@ -61,12 +61,11 @@ RUN add-apt-repository ppa:git-core/ppa --yes \
  && rm --recursive --force /var/lib/apt/lists/*
 
 # INSTALL TERRAFORM
-RUN curl --location https://apt.releases.hashicorp.com/gpg | sudo apt-key add - \
- && apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release --codename --short) main" \
- && apt update \
- && apt-get install --yes terraform \
- && apt-get clean \
- && rm --recursive --force /var/lib/apt/lists/*
+RUN curl --remote-name --location https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip \
+ && unzip terraform_1.9.8_linux_amd64.zip \
+ && mv terraform /usr/bin \
+ && rm LICENSE.txt terraform_1.9.8_linux_amd64.zip \
+ && terraform version # make sure it works
 
 # INSTALL LEO
 RUN curl --location https://github.com/iterative/terraform-provider-iterative/releases/latest/download/leo_linux_amd64 \
