@@ -144,8 +144,8 @@ describe('Gitlab tests', () => {
       native: true
     });
 
-    expect(output.startsWith('https://')).toBe(true);
-    expect(output.includes('cml=png')).toBe(true);
+    expect(output.startsWith('/uploads/')).toBe(true);
+    expect(output.includes('cml=png')).toBe(false);
   });
 
   test('Publish image using gl with markdown', async () => {
@@ -159,9 +159,9 @@ describe('Gitlab tests', () => {
       native: true
     });
 
-    expect(output.startsWith('![](https://')).toBe(true);
+    expect(output.startsWith('![](/uploads/')).toBe(true);
     expect(output.endsWith(` "${title}")`)).toBe(true);
-    expect(output.includes('cml=png')).toBe(true);
+    expect(output.includes('cml=png')).toBe(false);
   });
 
   test('Publish a non image file using gl in markdown', async () => {
@@ -175,9 +175,9 @@ describe('Gitlab tests', () => {
       native: true
     });
 
-    expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.startsWith(`[${title}](/uploads/`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
-    expect(output.includes('cml=pdf')).toBe(true);
+    expect(output.includes('cml=pdf')).toBe(false);
   });
 
   test('Publish a non image file using native', async () => {
@@ -191,9 +191,9 @@ describe('Gitlab tests', () => {
       native: true
     });
 
-    expect(output.startsWith(`[${title}](https://`)).toBe(true);
+    expect(output.startsWith(`[${title}](/uploads/`)).toBe(true);
     expect(output.endsWith(')')).toBe(true);
-    expect(output.includes('cml=pdf')).toBe(true);
+    expect(output.includes('cml=pdf')).toBe(false);
   });
 
   test('Publish should fail with an invalid driver', async () => {

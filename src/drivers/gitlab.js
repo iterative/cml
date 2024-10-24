@@ -131,8 +131,6 @@ class Gitlab {
   }
 
   async upload(opts = {}) {
-    const { repo } = this;
-
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/uploads`;
     const { size, mime, data } = await fetchUploadData(opts);
@@ -141,7 +139,7 @@ class Gitlab {
 
     const { url } = await this.request({ endpoint, method: 'POST', body });
 
-    return { uri: `${repo}${url}`, mime, size };
+    return { uri: url, mime, size };
   }
 
   async runnerToken(body) {
