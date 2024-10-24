@@ -125,7 +125,7 @@ describe('CML e2e', () => {
       'assets/test.svg'
     );
 
-    expect(output.startsWith('https://')).toBe(true);
+    expect(output.startsWith('/uploads/')).toBe(true);
   });
 
   test('cml publish /nonexistent produces file error', async () => {
