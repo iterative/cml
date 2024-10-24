@@ -131,8 +131,6 @@ class Gitlab {
   }
 
   async upload(opts = {}) {
-    const { repo } = this;
-
     const projectPath = await this.projectPath();
     const endpoint = `/projects/${projectPath}/uploads`;
     const { size, mime, data } = await fetchUploadData(opts);
