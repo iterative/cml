@@ -1,0 +1,140 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Image hosting for CML reports, see https://github.com/iterative/cml/tree/main/image-server
+
+Parameters:
+  UploadToken:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    AllowedPattern: '[A-Za-z0-9]+'
+    Description: Secret that CI jobs must include in the publish URL to upload
+
+Resources:
+  # Private bucket: images are served through the function URL below
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: images
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub '${Bucket.Arn}/*'
+
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.13
+      Handler: index.handler
+      Role: !GetAtt Role.Arn
+      MemorySize: 256
+      Timeout: 30
+      Environment:
+        Variables:
+          BUCKET: !Ref Bucket
+          UPLOAD_TOKEN: !Ref UploadToken
+      Code:
+        ZipFile: |
+          import base64, hashlib, hmac, os, re
+          import boto3
+
+          s3 = boto3.client("s3")
+          BUCKET = os.environ["BUCKET"]
+          TOKEN = os.environ["UPLOAD_TOKEN"].encode()
+
+
+          def handler(event, context):
+              method = event["requestContext"]["http"]["method"]
+              if method == "POST":
+                  return upload(event)
+              if method == "GET":
+                  return download(event)
+              return {"statusCode": 405}
+
+
+          def upload(event):
+              # CML can't send custom headers, so the token is part of the URL
+              token = (event.get("queryStringParameters") or {}).get("token", "")
+              if not hmac.compare_digest(token.encode(), TOKEN):
+                  return {"statusCode": 403}  # CML prints the status code
+              body = event.get("body") or ""
+              data = base64.b64decode(body) if event["isBase64Encoded"] else body.encode()
+              if not data:
+                  return {"statusCode": 400}
+              key = hashlib.sha256(data).hexdigest()
+              s3.put_object(
+                  Bucket=BUCKET,
+                  Key=key,
+                  Body=data,
+                  ContentType=event["headers"].get("content-type", "application/octet-stream"),
+              )
+              return {"statusCode": 200, "body": f"https://{event['requestContext']['domainName']}/{key}"}
+
+
+          def download(event):
+              key = event["rawPath"].lstrip("/")
+              if not re.fullmatch(r"[0-9a-f]{64}", key):
+                  return {"statusCode": 404}
+              try:
+                  obj = s3.get_object(Bucket=BUCKET, Key=key)
+              except s3.exceptions.NoSuchKey:
+                  return {"statusCode": 404}
+              return {
+                  "statusCode": 200,
+                  "headers": {
+                      "Content-Type": obj["ContentType"],
+                      "Cache-Control": "public, max-age=31536000, immutable",
+                  },
+                  "body": base64.b64encode(obj["Body"].read()).decode(),
+                  "isBase64Encoded": True,
+              }
+
+  FunctionUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt Function.Arn
+      AuthType: NONE
+
+  # Public function URLs need both of these permissions
+  InvokeUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Function
+      Action: lambda:InvokeFunctionUrl
+      Principal: '*'
+      FunctionUrlAuthType: NONE
+
+  InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Function
+      Action: lambda:InvokeFunction
+      Principal: '*'
+      InvokedViaFunctionUrl: true
+
+Outputs:
+  FunctionUrl:
+    Description: Publish URL without the token (append ?token=<UploadToken>)
+    Value: !GetAtt FunctionUrl.FunctionUrl
+  Bucket:
+    Description: Bucket holding the uploaded images
+    Value: !Ref Bucket
