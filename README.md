@@ -160,6 +160,11 @@ echo "![](./graph.png)" >> report.md
 cml comment create report.md
 ```
 
+> :warning: The default image server, `asset.cml.dev`, no longer accepts
+> uploads. Use `--publish-native` on GitLab and Bitbucket, or deploy
+> [your own image server](image-server) and set `CML_COMMENT_PUBLISH_URL`. See
+> [Image Hosting](https://cml.dev/doc/image-hosting).
+
 ### Getting Started
 
 1. Fork our
